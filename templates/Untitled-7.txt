@@ -1,0 +1,479 @@
+<!-- product.html copy -->
+{% extends 'base.html' %}
+{% block title %}
+{{ _('Here Should be Product Name or Add new product') }}
+{% endblock %}
+
+
+{% block head %}
+
+<!-- Include Quill.js stylesheet -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">
+<!-- <link rel="stylesheet" href="{{ url_for('static', filename='modal.css') }}"> -->
+
+<!-- Bootstrap modal -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+
+    <style>
+        /* body { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5; /* Optional: add a background color 
+            padding-top: 60px; /* Adjust padding to accommodate nav height 
+        }
+        
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            min-width: 300px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #editor-container {
+            width: 100%;
+            height: 60vh;
+        }
+        #submit-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #submit-btn:hover {
+            background-color: #0056b3;
+        }
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 10px;
+            }
+            #editor-container {
+                height: 50vh;
+            }
+            #submit-btn {
+                width: 100%;
+                padding: 15px;
+            }
+        }
+
+*/
+.dz-details:hover {
+    cursor: all-scroll;
+}
+
+.dz-remove-btn:hover {
+    background-color: #c82333;
+    cursor: pointer;
+}
+
+
+.alt-input:hover {
+    cursor: auto;
+}
+
+        
+        
+    </style>
+{% endblock %}
+
+
+{% block content %}
+
+    <!-- Top Left Navigation Bar -->
+    <nav class="top-left-nav">
+        <button class="chooseBlock" id="headerButton">{{ _('Header') }}</button>
+        <button class="chooseBlock" id="slideshowButton">{{ _('Slideshow') }}</button>
+        <button class="chooseBlock" id="textEditorButton">{{ _('Editor') }}</button>
+        <button class="chooseBlock" id="priceButton">{{ _('Price') }}</button>
+    </nav>
+
+    <!-- Top Right Navigation Bar -->
+
+
+    {{ prData }}
+    <!-- Middle part -->
+
+    <div class="container" >
+    <!-- Slide Show and image uploader -->
+    <span class="blocks" id="mySlideShow">
+        <div class="overlay" id="overlay"></div>
+        
+        
+        <form action="/upload" class="dropzone" id="myDropzone">
+            <div class="dz-message dz-button">{{ _('Click here to upload files') }}</div>
+        </form>
+        
+        <button id="uploadButton">{{ _('Upload Files') }}</button>
+
+    <!-- Script for Dropzone (image upload) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
+    <script>
+    
+        // Initialize Dropzone
+        Dropzone.autoDiscover = false;
+        var myDropzone = new Dropzone("#myDropzone", {
+            url: "/upload",
+            autoProcessQueue: false,
+            addRemoveLinks: false,  // Disable default remove link
+            previewsContainer: "#myDropzone",
+            clickable: true,
+            init: function() {
+                var dz = this;
+    
+                dz.on("addedfile", function(file) {
+                    // Create a new FileReader instance
+                    var reader = new FileReader();
+    
+                    // Define the onload function for the FileReader
+                    reader.onload = function(event) {
+                        // Get the image data URL from the FileReader
+                        var imageUrl = event.target.result;
+    
+                        // Open the image editor modal
+                        openImageEditorModal(imageUrl, function(editedImageBlob) {
+                            // Create a new Dropzone file object from the edited image blob
+                            var editedFile = new File([editedImageBlob], file.name, { type: file.type });
+                            dz.removeFile(file);
+                            dz.addFile(editedFile);
+                        });
+                    };
+    
+                    // Read the image file as a data URL
+                    reader.readAsDataURL(file);
+    
+                    // Add a custom remove button to the preview element
+                    var removeButton = Dropzone.createElement("<button class='dz-remove-btn'>&times;</button>");
+                    removeButton.addEventListener("click", function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dz.removeFile(file);
+                    });
+                    file.previewElement.appendChild(removeButton);
+    
+                    var progressBars = file.previewElement.querySelectorAll("[data-dz-uploadprogress], .dz-progress");
+                    progressBars.forEach(function(progressBar) {
+                        progressBar.style.display = "none";
+                    });
+    
+                    // Add a text input for the alt attribute
+                    var altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='{{ _('Enter alt text') }}'>");
+                    file.previewElement.appendChild(altInput);
+                });
+    
+                dz.on("complete", function(file) {
+                    // Hide progress bar when upload is completed
+                    var progressBars = file.previewElement.querySelectorAll("[data-dz-uploadprogress], .dz-progress");
+                    progressBars.forEach(function(progressBar) {
+                        progressBar.style.display = "none";
+                    });
+                });
+    
+                // Handle the file upload when the button is clicked
+                document.getElementById("uploadButton").addEventListener("click", function() {
+                    // Create a FormData object to hold the files
+                    var formData = new FormData();
+    
+                    // Append each file to the FormData object
+                    dz.files.forEach(function(file) {
+                        formData.append("files[]", file);
+    
+                        // Add the alt text as a separate field
+                        var altText = file.previewElement.querySelector(".alt-input").value;
+                        formData.append("alt_text[]", altText);
+                    });
+    
+                    // Send the files via POST using the Fetch API
+                    fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Upload success:", data);
+                        alert("Files uploaded successfully!");
+                    })
+                    .catch(error => {
+                        console.error("Upload error:", error);
+                        alert("An error occurred while uploading the files.");
+                    });
+                });
+            }
+        });
+    
+        // Initialize Sortable.js
+        Sortable.create(myDropzone.previewsContainer, {
+            draggable: ".dz-preview",
+            onEnd: function(evt) {
+                // Handle reorder logic if necessary
+                console.log("Files reordered:", evt);
+            }
+        });
+    
+        // Image Editor Modal Logic
+        var cropper;
+    
+        function openImageEditorModal(imageUrl, callback) {
+        // Show the overlay
+        document.getElementById('overlay').classList.add('show');
+    
+        // Create modal element
+        var imageEditorModal = document.createElement('div');
+        imageEditorModal.id = 'imageEditorModal';
+        imageEditorModal.className = 'modal open';
+        imageEditorModal.innerHTML = `
+            <img id="imageToEdit" src="${imageUrl}" alt="Image to edit">
+            <br>
+            <button id="saveEditedImage">{{ _('Crop') }}</button>
+            <button id="cancelEdit">{{ _('Close') }}</button>
+        `;
+        document.body.appendChild(imageEditorModal);
+    
+        var imageToEdit = document.getElementById('imageToEdit');
+    
+        cropper = new Cropper(imageToEdit, {
+            aspectRatio: 2 / 1.5,  // Set the aspect ratio to 2:1
+            viewMode: 1,
+            ready: function() {
+                // Get the Cropper instance
+                var cropperInstance = this.cropper;
+    
+                // Get the natural size of the image
+                var naturalWidth = cropperInstance.imageData.naturalWidth;
+                var naturalHeight = cropperInstance.imageData.naturalHeight;
+    
+                // Calculate the maximum size of the crop box
+                var maxCropBoxWidth = naturalWidth;
+                var maxCropBoxHeight = naturalHeight / (2 / 1.5);
+    
+                // Set the crop box data to the maximum size
+                cropperInstance.setCropBoxData({
+                    width: maxCropBoxWidth,
+                    height: maxCropBoxHeight,
+                    left: (naturalWidth - maxCropBoxWidth) / 2,
+                    top: (naturalHeight - maxCropBoxHeight) / 2
+                });
+            }
+        });
+    
+        document.getElementById('saveEditedImage').onclick = function() {
+            cropper.getCroppedCanvas().toBlob(function(blob) {
+                closeImageEditorModal(imageEditorModal);  // Close the modal first
+                callback(blob);
+            });
+        };
+    
+        document.getElementById('cancelEdit').onclick = function() {
+            closeImageEditorModal(imageEditorModal);
+        };
+    }
+    
+    function closeImageEditorModal(modal) {
+        cropper.destroy();
+        modal.remove();
+        // Hide the overlay
+        document.getElementById('overlay').classList.remove('show');
+    }
+    
+    </script>
+    
+        <!-- End of script for Dropzone (image upload) -->
+    
+        
+    </span>    
+    <!-- End of Slide Show and image uploader -->
+    </div>
+
+    
+    <!-- Reach Text Editor -->
+    <div class="container">
+        
+        <span class="blocks" id="myReachTextEditor">
+            <h1>{{ _('Quill.js Editor') }}</h1>
+            <!-- Quill.js editor container -->
+            <div id="editor-container"></div>
+            <!-- Button to submit content -->
+            <button id="submit-btn">{{ _('Submit') }}</button>
+        </span>
+        <!-- End of Reach Text Editor -->
+
+
+    </div>
+
+    <!-- Include Quill.js script -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        // Initialize Quill.js editor
+        const toolbarOptions = [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            ['link', 'image', 'video', 'formula'],
+            [{ 'header': 1 }, { 'header': 2 }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+            [{ 'script': 'sub'}, { 'script': 'super' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            [{ 'direction': 'rtl' }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'font': [] }],
+            [{ 'align': [] }],
+            ['clean']
+        ];
+
+        const quill = new Quill('#editor-container', {
+            modules: { toolbar: toolbarOptions },
+            theme: 'snow'
+        });
+
+        document.getElementById('submit-btn').onclick = function() {
+            let content = quill.root.innerHTML;
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', '/submit_reach_text', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    console.log('Content submitted successfully');
+                    let response = JSON.parse(xhr.responseText);
+                    let submittedContent = response.content;
+                    alert(response.message);
+                    document.getElementById('submitted-content').innerHTML = submittedContent;
+                } else {
+                    console.error('Error submitting content:', xhr.responseText);
+                }
+            };
+            xhr.send(JSON.stringify({ content: content }));
+        };
+    </script>
+
+    <div id="submitted-content"></div>
+
+
+    
+    <script>
+        document.querySelectorAll('.chooseBlock').forEach(item => {
+            item.addEventListener('click', function(event) {
+                // Hide all elements with the class 'blocks'
+                document.querySelectorAll('.blocks').forEach(block => {
+                    block.style.display = 'none';
+                });
+        
+                // Get the id of the clicked element
+                const clickedId = event.currentTarget.id;
+        
+                // Conditionally show the correct element based on the clicked id
+                if (clickedId === 'slideshowButton') {
+                    document.getElementById('mySlideShow').style.display = 'block';
+                } else if (clickedId === 'textEditorButton') {
+                    document.getElementById('myReachTextEditor').style.display = 'block';
+                }
+            });
+        });
+        
+    </script>
+<style>
+    /* Custom styling to ensure modal is centered */
+</style>
+<!-- Modal structure -->
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+    Launch static backdrop modal
+  </button>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div id="form-container"></div>
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Understood</button>
+        </div>
+      </div>
+    </div>
+  </div>
+            <!-- End of Modal -->
+
+<!-- Modal JS for Editing Product Name (Title), URL (Link), Category -->
+
+
+<!-- Include jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+        
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var ProductName = 'My product name';
+    var ProductLink = 'My product link';
+    var languageID = '8';
+    var root_url = 'your_root_url_here';  // Replace with your actual root URL
+
+    // Function to create and return the form HTML
+    function createForm() {
+        var form = `
+            <form id="add-product-form">
+                <div class="form-group">
+                    <label for="product-name">Product name</label>
+                    <input type="text" class="form-control" value="${ProductName}" id="product-name" placeholder="Product name">
+                </div>
+                <div class="form-group">
+                    <label for="product-link">Product link</label>
+                    <input type="text" class="form-control" value="${ProductLink}" id="product-link" placeholder="Product link ${root_url}This-is-Your-Product-Link">
+                </div>
+                <input type="hidden" id="language-id" value="${languageID}">
+                <input type="hidden" id="ref-key" value="ref-key-value-here"> <!-- Replace with actual ref key value -->
+                <button type="submit" class="btn btn-primary" id="saveButton">Submit</button>
+                <div id="saving" class="hidden">Saving...</div>
+            </form>
+        `;
+        return form;
+    }
+
+    // Add form to modal container
+    document.getElementById("form-container").innerHTML = createForm();
+
+    // Get headerButton
+    var headerButton = document.getElementById("headerButton");
+
+    // Show modal on headerButton click
+    headerButton.onclick = function() {
+        alert('aaa')
+        var myModal = document.getElementById('staticBackdrop')
+        var myInput = document.getElementById('myInput')
+
+        myModal.addEventListener('shown.bs.modal', function () {
+        myInput.focus()
+        })
+        // $('#modal').modal('show');
+    }
+});
+
+
+</script>
+<!-- End of modal JS -->
+{% endblock %}

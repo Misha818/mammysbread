@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}">  
+
+    <style>
+        .dz-details:hover {
+            cursor: pointer;
+        }
+    
+        .dz-remove-btn:hover {
+            background-color: #c82333;
+            cursor: pointer;
+        }
+    
+    
+        .alt-input:hover {
+            cursor: auto;
+        }
+    
+    </style>
+{% endblock %}
+{% block title %}
+    {{ _('Stuff sign up') }}
+{% endblock %}
+
+
+
+{% block content %}
+<div class="overlay" id="overlay"></div>
+<div class="containerS">
+    <h1>{{ _('Welcome Dear Teammate!') }}</h1>
+    <!-- Form for adding a product -->
+    {{ result.data}}
+    <form>
+        <div id="mistakes" style="width: 80%"></div>
+        
+        <input type="text" id="role" placeholder="{{ _('Role') }}">
+        <div class="form-group row" id="actionsDropDown"></div>
+
+            
+        <input type="hidden" id="language-id" value="{{ languageID }}">
+        
+        <div id="saveButton" class="pcButtonS margin10">{{ _('Submit') }}</div>
+        <div id="saving" class="pcButtonS margin10 hidden">{{ _('Saving...') }}</div>
+    </form>
+
+
+</div>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    const row = {{ row | tojson }};
+    
+
+
+
+    // When the form is submitted
+    const saveButton = document.getElementById('saveButton');
+
+    saveButton.addEventListener('click', function (event) {
+
+        event.preventDefault();
+                
+        const selectElement = document.getElementById('actions');
+        const Actions = [];
+
+        for (let i = 0; i < selectElement.options.length; i++) {
+        if (selectElement.options[i].selected) {
+            Actions.push(selectElement.options[i].value);
+        }
+        }
+      
+        const saveButton = document.getElementById('saveButton');
+        const saving = document.getElementById('saving');
+        
+        saveButton.classList.add('hidden');
+        saving.classList.remove('hidden');
+        
+        let formData = new FormData();
+         
+        let languageID = document.getElementById('language-id').value;
+        let Role = document.getElementById('role').value;
+        
+
+        
+        // Create a new FormData object
+        formData.append('languageID', languageID);
+        formData.append('Role', Role);
+        formData.append('Actions', Actions);
+        
+
+        // Create a new XMLHttpRequest object
+        let xhr = new XMLHttpRequest();
+
+        // Configure the request
+        postUrl = '/stuff-signin/' + row.Url
+        xhr.open('POST', );
+
+        // Define what happens on successful data submission
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText);
+
+                let mistakesDiv = document.getElementById('mistakes');
+                mistakesDiv.innerHTML = ''; // Clear previous messages
+
+                if (response.status === '0') {
+                    // Handle empty product name
+                    mistakesDiv.innerHTML = response.answer;
+                    mistakesDiv.style.color = 'red';
+                    mistakesDiv.style.display = 'flex';
+
+                    // Scroll the window to the mistakesDiv with smooth behavior
+                    mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                    saveButton.classList.remove('hidden');
+                    saving.classList.add('hidden');
+
+                } 
+                
+                if (response.status === '1') {
+                    // Handle success
+                    let prURL = window.location.origin  + '/roles';
+                    location.href = prURL;
+
+                    // location.reload();
+                }
+            } else {
+                // Handle error response
+                saveButton.classList.remove('hidden');
+                saving.classList.add('hidden');
+
+                console.error('Error adding category:', xhr.responseText);
+            }
+        };
+
+        // Send the request with the FormData object
+        xhr.send(formData);
+    });
+
+});
+</script>
+
+
+{% endblock %}

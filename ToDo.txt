@@ -1,0 +1,62 @@
+Product
+  
+    Edit Thumbnail image repair!
+    Publish/Unpublish product
+    create function that removes unused images
+    Description
+    meta tags      
+    Log in/out for stuff
+    - queriov hanum es konkret useri rolin patkanogh functionner@ u dnum es ekranin
+    - functionneri mej avelacnum es functionner voronq veraberum en erkrordakan lezunerin. (Thumbnail, Article, Article Category)
+    Login form
+    Stugel log in eghac a te che, nor menak toghnel ogtvi functionneric
+    Add rol
+        Rol (name)
+        Actions (multyselectial dropdown)
+    Edit Rol
+    Admin panel
+        Add teammate
+            Firstname
+            Lastname            
+            Email
+            Rol
+            send data to teammate's email for confirmation, where he/she creates her unique username and password
+                Min 8 charaqteres
+                Max 64 chars
+                Nums, lower/upper cases, symbols
+                Stugel vor himar passwordner chlini (sagh zroner, tver/tarer achman/nvazman kergerov ...)
+                Two factor autentication (send email)
+                Disable teammate (temporarily, forever)
+CREATE A WRAPPER FOR ACTION PERMISSIONS
+
+===========================================================
+
+
+    stuff side bar # Add more safety options!!!!!!!!!
+    permisions for other languages
+    csrf_token
+    Contacts {style, backend}
+
+    Header
+    Footer
+    About {style, content}
+
+
+
+    in sysadmin.py
+
+        def getDefLang():
+        return {'id': 2, 'Prefix': 'en', 'Language': 'English'}
+
+
+        def getSupportedLangs():
+            return ['en', 'hy', 'ru']
+
+        def getUserID():
+            return 1
+
+
+- Add user function for superuser (serveri vren es testavorelu, qani vor mutqagrelu es rol, email, ayd mailin gnum a jamanakavor hghum vorov nor employeen mutq a gorcum)
+
+Style ideas
+https://copyblogger.com/

@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}">  
+
+    <style>
+        .dz-details:hover {
+            cursor: pointer;
+        }
+    
+        .dz-remove-btn:hover {
+            background-color: #c82333;
+            cursor: pointer;
+        }
+    
+    
+        .alt-input:hover {
+            cursor: auto;
+        }
+    
+    </style>
+{% endblock %}
+{% block title %}
+    {{ _('Teammate Signup') }}
+{% endblock %}
+
+
+
+{% block content %}
+<div class="overlay" id="overlay"></div>
+<div class="containerS">
+    <h1 style="padding: 15px;">{{ _('Teammate Signup') }}</h1>
+    <!-- Form for adding a product -->
+    
+    <form>
+        <div id="mistakes" style="width: 100%; margin: 1%; padding: 3%;"></div>
+        
+        <input class="form_input" type="text" id="firstname" placeholder="{{ _('Firstname') }}">
+        <input class="form_input" type="text" id="lastname" placeholder="{{ _('Lastname') }}">
+        <input class="form_input" type="text" id="username" placeholder="{{ _('Username') }}">
+        <input class="form_input" type="password" id="password" placeholder="{{ _('Password') }}">
+        <input class="form_input" type="password" id="password2" placeholder="{{ _('Confirm assword') }}">
+
+        <!-- Choose prefared language -->
+        <div class="form-group row" id="langDropDown" style="margin-left: 8px; width: 100%;"></div>
+
+            
+        <input type="hidden" id="buffer-id" value="{{ bufferID }}">
+        
+        <div id="saveButton" class="pcButtonS">{{ _('Submit') }}</div>
+        <div id="saving" class="pcButtonS hidden">{{ _('Saving...') }}</div>
+    </form>
+</div>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const row = {{ row | tojson }}
+
+    function langDropDown() {
+
+        const languages = {{ languages | tojson }}
+        const dropdownContainer = document.getElementById('langDropDown');
+
+        if (languages.length > 1) {
+
+                const select = document.createElement('select');
+                select.name = 'languages';
+                select.id = 'language-id';
+                select.classList.add('form-control');
+                select.classList.add('styled-select');
+                
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = '{{ _("Preferred language") }}';
+                // defaultOption.disabled = true;
+                select.appendChild(defaultOption);
+                
+                languages.forEach(val => {
+                    const optVal = val['Prefix'];
+                    if (optVal !== null) {
+                        const option = document.createElement('option');
+                        option.value = val['ID'];
+                        
+                        option.textContent = optVal;
+                        
+                        // option.selected = true;
+                        select.appendChild(option);
+                    }
+                });
+                
+                dropdownContainer.appendChild(select); // Append the select element to the body or any other specific location
+        } else {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'languages';
+                input.id = 'language-id';
+                input.value = languages[0]['ID'];
+                dropdownContainer.appendChild(input); // Append the select element to the body or any other specific location
+        }
+    };
+
+    langDropDown();
+
+    // When the form is submitted
+    const saveButton = document.getElementById('saveButton');
+
+    saveButton.addEventListener('click', function (event) {
+
+        event.preventDefault();
+        
+        const saveButton = document.getElementById('saveButton');
+        const saving = document.getElementById('saving');
+        
+        saveButton.classList.add('hidden');
+        saving.classList.remove('hidden');
+        
+        let formData = new FormData();
+         
+        let firstname = document.getElementById('firstname').value;
+        let lastname = document.getElementById('lastname').value;
+        let username = document.getElementById('username').value;
+        let password = document.getElementById('password').value;
+        let password2 = document.getElementById('password2').value;
+        let languageID = document.getElementById('language-id').value;
+        
+        // Create a new FormData object
+        formData.append('Firstname', firstname);
+        formData.append('Lastname', lastname );
+        formData.append('Username', username );
+        formData.append('Password', password );
+        formData.append('Password2', password2);
+        formData.append('LanguageID', languageID);
+
+
+        // Create a new XMLHttpRequest object
+        let xhr = new XMLHttpRequest();
+
+        // Configure the request
+        uniqueUrl  = '/stuff-signup/' + row['Url']
+        xhr.open('POST', uniqueUrl);
+
+        // Define what happens on successful data submission
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText);
+
+                let mistakesDiv = document.getElementById('mistakes');
+                mistakesDiv.innerHTML = ''; // Clear previous messages
+
+                if (response.status === '0') {
+                    // Handle empty product name
+                    mistakesDiv.innerHTML = response.answer;
+                    mistakesDiv.style.color = 'red';
+                    mistakesDiv.style.display = 'flex';
+
+                    // Scroll the window to the mistakesDiv with smooth behavior
+                    mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                    saveButton.classList.remove('hidden');
+                    saving.classList.add('hidden');
+
+                } 
+                
+                if (response.status === '2') {
+                    // Handle password mistakes
+                    myHTML = '';
+                   
+                    errorList =  response.answer;
+                    for (let i = 0; i < errorList.length; i++) {
+                        content = '<p>' + errorList[i] + '</p>';
+                        myHTML += content
+                    }
+                    mistakesDiv.innerHTML = myHTML;
+                    mistakesDiv.style.color = 'red';
+                    mistakesDiv.style.display = 'flex';
+                    mistakesDiv.style.flexDirection = 'column';
+
+                    // Scroll the window to the mistakesDiv with smooth behavior
+                    mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                    saveButton.classList.remove('hidden');
+                    saving.classList.add('hidden');
+
+                } 
+                if (response.status === '1') {
+
+                    // alert(response.answer)
+                    // Handle success
+                    let prURL = window.location.origin  + '/login';
+                    location.href = prURL;
+
+                    // location.reload();
+                }
+            } else {
+                // Handle error response
+                saveButton.classList.remove('hidden');
+                saving.classList.add('hidden');
+
+                console.error('Error adding category:', xhr.responseText);
+            }
+        };
+
+        // Send the request with the FormData object
+        xhr.send(formData);
+    });
+
+});
+
+</script>
+
+
+{% endblock %}

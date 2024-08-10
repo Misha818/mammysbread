@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}">  
+
+    <style>
+        .dz-details:hover {
+            cursor: pointer;
+        }
+    
+        .dz-remove-btn:hover {
+            background-color: #c82333;
+            cursor: pointer;
+        }
+    
+    
+        .alt-input:hover {
+            cursor: auto;
+        }
+    
+    </style>
+{% endblock %}
+{% block title %}
+    {{ _('Add Product Category') }}
+{% endblock %}
+
+
+
+{% block content %}
+        <div class="containerS">
+            <h1>{{ _('Add Article Category') }}</h1>
+            <!-- Form for adding product category -->
+            <div id="mistakes"></div>
+            <form id="product-category-form">
+                <input type="text" id="category-name" placeholder="{{ _('Article Category') }}" style="width: 100%; height: 22px;">
+                <input type="file" id="fileInput" name="file" style="display: block;">
+               
+
+
+
+                <div id="saveButton" class="pcButtonS">{{ _('Submit') }}</div>
+                <div  id="saving"    class="pcButtonS hidden">{{ _('Saving...') }}</div>
+            </form>
+        </div>
+    
+        <!-- Include jQuery library -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+          
+
+// Get the form element
+var form = document.getElementById('product-category-form');
+
+// When the form is submitted
+    const saveButton = document.getElementById('saveButton');
+    
+    saveButton.addEventListener('click', function(event) {
+    // Prevent the default form submission
+    event.preventDefault();
+    
+    const saveButton = document.getElementById('saveButton');
+    const saving = document.getElementById('saving');
+
+    saveButton.classList.add('hidden');
+    saving.classList.remove('hidden');
+
+    // Get the category name from the input field
+    var categoryName = document.getElementById('category-name').value;
+
+    // Get the file input
+    var fileInput = document.getElementById('fileInput');
+    var languageID = document.getElementById('language-id');
+    var file = fileInput.files[0];
+
+    // Create a new FormData object
+    var formData = new FormData();
+    formData.append('categoryName', categoryName);
+    formData.append('language-id', languageID);
+    formData.append('file', file);
+
+    // Create a new XMLHttpRequest object
+    var xhr = new XMLHttpRequest();
+
+    // Configure the request
+    xhr.open('POST', '/add_article_category');
+
+    // Define what happens on successful data submission
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            var response = JSON.parse(xhr.responseText);
+
+            var mistakesDiv = document.getElementById('mistakes');
+            mistakesDiv.innerHTML = ''; // Clear previous messages
+
+            if (response.status === '2') {
+                // Handle empty category name
+                mistakesDiv.innerHTML = response.answer;
+                mistakesDiv.style.color = 'red';
+
+                // Scroll the window to the mistakesDiv with smooth behavior
+                mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                saveButton.classList.remove('hidden');
+                saving.classList.add('hidden');
+
+            } else if (response.status === '3') {
+                // Handle existing category name
+                mistakesDiv.textContent = response.answer;
+                mistakesDiv.style.color = 'red';
+
+                // Scroll the window to the mistakesDiv with smooth behavior
+                mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                saveButton.classList.remove('hidden');
+                saving.classList.add('hidden');
+                
+            } else if (response.status === '1') {
+                // Handle success
+                alert(response.answer);
+                // location.reload();
+            }
+        } else {
+            // Handle error response
+            console.error('Error adding category:', xhr.responseText);
+        }
+    };
+
+    // Send the request with the FormData object
+    xhr.send(formData);
+});
+
+          
+        </script>
+
+{% endblock %}

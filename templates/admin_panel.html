@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="{{ current_locale }}">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <title>
+        {{ _('Admin Panel') }}
+    </title>
+
+    <script>
+
+    </script>
+    <style>
+
+    </style>
+</head>
+<body>
+
+<div class="header-stuff">
+  <img src="{{ url_for('static', filename='images/error.png')}}" style="width: 80px; height: auto; margin: -15px -15px -15px 10px;;">
+  <div class="header-stuff-right">
+    <a class="" href="{{ url_for('home') + 'logout' }}">{{ _('Logout') }}</a>
+  </div>
+</div>
+  
+
+<div class="card-container">
+{% if result.length > 0 %}
+  {% for row in result.data %}
+  <!-- {{ row }} -->
+  <a href="{{ url_for('home', _external=True) + row['ActionDir'] }}" class="simple-card-button stuff-A" target="_blank">
+    <div class="card">
+      <div class="card-content">
+        <h2 class="card-title">{{ row['ActionName'] }}</h2>
+        
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+{% else %}
+  <h3>{{ _('No data to show!') }}</h3>
+{% endif %}
+</div>
+
+</body>
+
+</html>

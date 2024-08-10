@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ _('Something is wrong') }}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/error.png' ) }}" >
+        <H3> {{ _('Something went wrong.') }} </H3>
+{% endblock %}

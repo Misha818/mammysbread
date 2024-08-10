@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}
+{{ prData.Title }}
+{% endblock %}
+
+
+{% block head %}
+
+    {{ metaTags | safe }}
+
+{% endblock %}
+
+
+{% block content %}
+
+<!-- Top Right Navigation Bar -->
+
+<!-- Middle part -->
+<input type="hidden" value="{{ prData.RefKey }}" id="RefKey">
+<input type="hidden" id="language-id" value="{{ languageID }}">
+
+<div class="overlay" id="overlay"></div>
+
+<div class="container">
+   
+
+<!-- Reach Text Editor -->
+    {% set editorStatus = 0 %}
+    {% set prStyle = "display: none" %}
+    {% set editorStyle = "display: block" %}
+    {% if prData.Text is none %}
+        {% set prStyle = "display: block" %}
+        {% set editorStyle = "display: none" %}
+        {% set editorStatus = 1 %}
+    {% endif %}
+    
+    
+<div style="width: 80% !important;">
+    <span id="editorContent" class="ql-editor" style="{{ editorStyle }}"> 
+        <!-- {% if prData.Text is not none %}
+            {{ prData.Text | safe }}
+        {% endif %} -->
+    </span>
+</div>
+
+    <input type="hidden" id="editorStatus" value="{{ editorStatus }}"
+    
+
+<script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+    
+
+
+
+<!-- Include Quill.js script -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    // let Size = Quill.import('attributors/style/size');
+    // Quill.register(Size, true);
+    // const quill = new Quill('#editor-container', {
+    //     modules: { 
+    //         // toolbar: toolbarOptions 
+    //         toolbar: '#toolbar'
+    //         // scrollingContainer: '#editor-container'
+    //     },
+    //     theme: 'snow'
+    // });
+
+
+
+    // Function to convert HTML to Delta
+    function convertHtmlToDelta(html) {
+        const container = document.createElement('div');
+        container.innerHTML = html;
+        return quill.clipboard.convert(container);
+    }
+    
+    // let htmlToInsert = prData.Text
+    const prData = {{ prData | tojson }};
+    let savedHtmlContent = prData.Text 
+    document.getElementById('editorContent').innerHTML = savedHtmlContent;
+
+
+});
+
+</script>
+
+{% endblock %}

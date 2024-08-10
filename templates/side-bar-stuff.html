@@ -1,0 +1,34 @@
+<div id="mySidenav" class="sidenav">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    
+    <a href="{{ url_for('home') + 'stuff' }}">{{ _('Dashboard') }}</a>
+    {% for row in result %}
+      <a href="{{ url_for('home') + row['ActionDir']}}">{{ _(row['ActionName']) }}</a>
+    {% endfor %}
+
+  <a>  
+    <select onchange="location = '/setlang?lang=' + this.value;" class="styled-select" style="width: 80%;">
+      <option value="en" {{ 'selected' if get_locale() == 'en' else '' }}>English</option>
+      <option value="hy" {{ 'selected' if get_locale() == 'hy' else '' }}>Հայերեն</option>
+      <option value="ru" {{ 'selected' if get_locale() == 'ru' else '' }}>Русский</option>
+    </select>
+  </a>
+    
+    <a href="/logout" id="logoutButton" >{{ _('Logout') }}</a>
+</div>
+
+<span class="stuff-menu" onclick="openNav()">&#9776;</span>
+<script>
+    const openWith = "20%";
+    const closeWith = "0";
+
+    function openNav() {
+      document.getElementById("mySidenav").classList.add('open');
+      document.getElementById("myTable").style.marginLeft = openWith;
+    }
+    
+    function closeNav() {
+      document.getElementById("mySidenav").classList.remove('open');
+      document.getElementById("myTable").style.marginLeft = closeWith;
+    }
+</script>
