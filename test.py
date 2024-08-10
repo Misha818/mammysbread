@@ -4,7 +4,6 @@ from flask import session, redirect
 def login_required(f):
     """
     Decorate routes to require login.
-    And check if the git is working correctly!
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
