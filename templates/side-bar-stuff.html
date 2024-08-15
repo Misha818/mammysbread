@@ -6,13 +6,15 @@
       <a href="{{ url_for('home') + row['ActionDir']}}">{{ _(row['ActionName']) }}</a>
     {% endfor %}
 
+  {% if supportedLangsData | length > 1 %}     
   <a>  
     <select onchange="location = '/setlang?lang=' + this.value;" class="styled-select" style="width: 80%;">
-      <option value="en" {{ 'selected' if get_locale() == 'en' else '' }}>English</option>
-      <option value="hy" {{ 'selected' if get_locale() == 'hy' else '' }}>Հայերեն</option>
-      <option value="ru" {{ 'selected' if get_locale() == 'ru' else '' }}>Русский</option>
+      {% for lang in supportedLangsData %}
+        <option value="{{ lang['Prefix'] }}" {{ 'selected' if get_locale() ==  lang['Prefix']  else '' }}>{{ lang['Language'] }}</option>
+      {% endfor %}
     </select>
   </a>
+  {% endif %}
     
     <a href="/logout" id="logoutButton" >{{ _('Logout') }}</a>
 </div>

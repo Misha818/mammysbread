@@ -8,12 +8,51 @@
 
     {{ metaTags | safe }}
 
+    <style>
+        /* Add this CSS to style the dropdown */
+header div:last-child:hover div {
+    display: block;
+}
+
+header div:last-child a:hover {
+    background-color: #f1f1f1;
+}
+
+    </style>
+
 {% endblock %}
 
 
 {% block content %}
+<!-- <header style="background-color: #f8f9fa; padding: 20px; text-align: right; border-bottom: 1px solid #e0e0e0;     width: 100%;">
+    <nav style="text-align: right;">
+        <a href="#home" style="margin: 0 15px; color: #007bff; text-decoration: none;">Home</a>
+        <a href="#about" style="margin: 0 15px; color: #007bff; text-decoration: none;">About</a>
+        <a href="#contact" style="margin: 0 15px; color: #007bff; text-decoration: none;">Contact</a>
+    </nav>
+</header> -->
 
-<!-- Top Right Navigation Bar -->
+<header style="background-color: #f8f9fa; padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+    <div style="display: flex; align-items: center;">
+        <img src="{{ url_for('static', filename='images/error.png')}}" alt="Logo" style="height: 40px; margin-right: 20px;">
+    </div>
+    <div style="position: relative; display: inline-block;">
+        <nav>
+            <a href="#home" style="margin: 0 15px; color: #007bff; text-decoration: none;">Home</a>
+            <a href="#about" style="margin: 0 15px; color: #007bff; text-decoration: none;">About</a>
+            <a href="#contact" style="margin: 0 15px; color: #007bff; text-decoration: none;">Contact</a>
+            
+            {% if supportedLangsData | length > 1 %}     
+            <select onchange="location = '/setlang?lang=' + this.value;" class="lang-drop-down">
+                {% for lang in supportedLangsData %}
+                <option value="{{ lang['Prefix'] }}" {{ 'selected' if get_locale() ==  lang['Prefix']  else '' }}>{{ lang['Language'] }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
 
 <!-- Middle part -->
 <input type="hidden" value="{{ prData.RefKey }}" id="RefKey">
@@ -45,14 +84,43 @@
 
     <input type="hidden" id="editorStatus" value="{{ editorStatus }}"
     
-
+    <footer style="background-color: #f8f9fa; padding: 40px 20px; text-align: center; border-top: 1px solid #e0e0e0;">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; max-width: 1200px; margin: 0 auto;">
+            <div style="flex: 1; min-width: 200px; padding: 20px;">
+                <h3 style="color: #007bff; margin-bottom: 20px;">Services</h3>
+                <ul style="list-style-type: none; padding: 0;">
+                    <li><a href="#service1" style="color: #007bff; text-decoration: none;">Service 1</a></li>
+                    <li><a href="#service2" style="color: #007bff; text-decoration: none;">Service 2</a></li>
+                    <li><a href="#service3" style="color: #007bff; text-decoration: none;">Service 3</a></li>
+                </ul>
+            </div>
+            <div style="flex: 1; min-width: 200px; padding: 20px;">
+                <h3 style="color: #007bff; margin-bottom: 20px;">Contact</h3>
+                <p style="color: #6c757d;">123 Street Name<br>City, State, 12345<br>Email: info@example.com</p>
+                <div style="margin-top: 20px;">
+                    <a href="https://facebook.com" target="_blank" style="margin-right: 15px;">
+                        <img src="path-to-facebook-icon.png" alt="Facebook" style="height: 24px;">
+                    </a>
+                    <a href="https://twitter.com" target="_blank" style="margin-right: 15px;">
+                        <img src="path-to-twitter-icon.png" alt="Twitter" style="height: 24px;">
+                    </a>
+                    <a href="https://linkedin.com" target="_blank">
+                        <img src="path-to-linkedin-icon.png" alt="LinkedIn" style="height: 24px;">
+                    </a>
+                </div>
+            </div>
+        </div>
+        <p style="color: #6c757d; margin-top: 40px;">&copy; 2024 Your Company. All rights reserved.</p>
+    </footer>
+    
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     
 
 
 
 <!-- Include Quill.js script -->
-<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<!-- <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script> -->
+<script src="{{ url_for('static', filename='JS/1-3-6-quill.js') }}"></script>
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {

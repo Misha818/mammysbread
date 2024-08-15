@@ -23,9 +23,22 @@
 
 <div class="header-stuff">
   <img src="{{ url_for('static', filename='images/error.png')}}" style="width: 80px; height: auto; margin: -15px -15px -15px 10px;;">
+  
   <div class="header-stuff-right">
     <a class="" href="{{ url_for('home') + 'logout' }}">{{ _('Logout') }}</a>
   </div>
+  
+  <div class="header-stuff-right">
+    
+    {% if supportedLangsData | length > 1 %}     
+      <select onchange="location = '/setlang?lang=' + this.value;" class="lang-drop-down">
+        {% for lang in supportedLangsData %}
+          <option value="{{ lang['Prefix'] }}" {{ 'selected' if get_locale() ==  lang['Prefix']  else '' }}>{{ lang['Language'] }}</option>
+        {% endfor %}
+      </select>
+    {% endif %}
+    </div>
+    
 </div>
   
 

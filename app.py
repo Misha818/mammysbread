@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, g, url_for
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from products import checkCategoryName, get_RefKey_LangID_by_link, get_article_category_images, edit_p_h, submit_reach_text, add_p_c_sql, edit_p_c_view, edit_p_c_sql, get_product_categories, get_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import getLangdata, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import os
@@ -50,7 +50,9 @@ def side_bar_stuff():
     sqlValTuple = (stuffID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
-    return render_template('side-bar-stuff.html', result=result['data'], current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+    supportedLangsData = supported_langs()
+
+    return render_template('side-bar-stuff.html', result=result['data'], supportedLangsData=supportedLangsData, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
     # return result
 
 # Handle Ajax request to submit content
@@ -71,14 +73,15 @@ def get_locale():
     # Check if the language query parameter is set and valid
     if 'lang' in request.args:
         lang = request.args.get('lang')
-        if lang in ['en', 'hy']:
+        supportedLangs = getSupportedLangs()
+        if lang in supportedLangs:
             session['lang'] = lang
             return session['lang']
     # If not set via query, check if we have it stored in the session
     elif 'lang' in session:
         return session.get('lang')
     # Otherwise, use the browser's preferred language
-    return request.accept_languages.best_match(['en', 'hy'])
+    return request.accept_languages.best_match(supportedLangs)
 
 
 def get_timezone():
@@ -91,7 +94,8 @@ babel = Babel(app, locale_selector=get_locale, timezone_selector=get_timezone)
 
 @app.route('/setlang')
 def setlang():
-    lang = request.args.get('lang', 'en')
+    defLang = getDefLang()
+    lang = request.args.get('lang', defLang['Prefix'])
     session['lang'] = lang
     return redirect(request.referrer)
 
@@ -130,7 +134,8 @@ def home():
 @app.route('/<myLinks>')
 def index(myLinks):
     content = get_RefKey_LangID_by_link(myLinks)
-    
+    supportedLangsData = []
+
     metaTags = ''
     if content is not None:  
         articleStatus = ' AND `article`.`Article_Status` = 2; '
@@ -138,6 +143,10 @@ def index(myLinks):
         articleStatus = prData.get('Status', 1)
         if articleStatus == 2:
             myHtml = 'article_client.html'
+            
+            langData = getLangdatabyID(content['LanguageID'])
+            session['lang'] = langData['Prefix']
+            
             metaContent = prData
             metaContent['SiteName'] = request.host
             metaContent['Url'] = request.host + '/' + prData['Url']
@@ -146,12 +155,31 @@ def index(myLinks):
 
             prData['test'] = metaContent['ImageUrl']
             metaTags = get_meta_tags(prData)
-        else: 
+
+            # Get active languages
+            RefKey = content['RefKey']
+            sqlQueryL = "SELECT `Language_ID` FROM `article_relatives` WHERE `A_Ref_Key` = %s;"
+            sqlValL = (RefKey,)
+            resultL = sqlSelect(sqlQueryL, sqlValL, False)
+            supportedLangsData = []
+            if resultL['length'] > 1:
+                langueges = supported_langs()
+
+                for langID in resultL['data']:
+                    for lang in langueges:
+                        if lang['Language_ID'] == langID[0]:
+                            supportedLangsData.append(lang)                         
+
+            print('supportedLangsData supportedLangsData')
+            print(supportedLangsData)
+            print('supportedLangsData supportedLangsData')
+            
+        else:
             myHtml = 'error.html'
     else:
         myHtml = 'error.html'
         prData = ''
-    return render_template(myHtml, prData=prData, metaTags=metaTags, current_locale=get_locale())
+    return render_template(myHtml, prData=prData, supportedLangsData=supportedLangsData, metaTags=metaTags, current_locale=get_locale())
 
 
 # Edit thumbnail image
@@ -200,6 +228,7 @@ def pd(RefKey):
     root_url = url_for('home', _external=True)
     errorMessage = False
     languageID = getLangID()
+    supportedLangsData = supported_langs()
 
     productCategory = get_product_categories(None, languageID)
     prData = ''
@@ -238,7 +267,7 @@ def pd(RefKey):
         return render_template('error.html')
     else:
         sideBar = side_bar_stuff()
-        return render_template(productTemplate, prData=prData, sideBar=sideBar, productCategory=productCategory, errorMessage=errorMessage, root_url=root_url, languageID=languageID, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+        return render_template(productTemplate, prData=prData, sideBar=sideBar, productCategory=productCategory, supportedLangsData=supportedLangsData, errorMessage=errorMessage, root_url=root_url, languageID=languageID, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
 
 # edit_thumbnail client-server transaction
@@ -990,12 +1019,8 @@ def stuff_signup(uniqueURL):
         
         
 
-        supportedLangs = getSupportedLangs()
-        languages = []
-
-        for prefix in supportedLangs:
-            languages.append(getLangdata(prefix))
-
+        languages = supported_langs()
+     
         row = ''
         if result['length'] > 0:
             row = result['data'][0]
@@ -1109,8 +1134,10 @@ def stuff():
 
     sqlValTuple = (stuffID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    supportedLangsData = supported_langs()
     
-    return render_template('admin_panel.html', result=result, current_locale=get_locale())
+    return render_template('admin_panel.html', result=result, supportedLangsData=supportedLangsData, current_locale=get_locale())
 
 
 @app.route('/articles', methods=['GET'])

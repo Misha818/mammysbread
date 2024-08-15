@@ -59,7 +59,7 @@ tr:nth-child(even) {
   {% if row['Article_Status'] == 1 %}
     {% set status = _('Unpublished') %}
   {% endif %}
-  {% set editUrl = 'article/' + row['ID']|string %}
+  {% set editUrl = 'article/' + row['A_Ref_Key']|string %}
     <tr>
       <td><img src="{{ url_for('static', filename='images/thumbnails/' + row['Thumbnail']) }}" style="width: 100px;"/></td>
       <td>{{ row['Title'] }}</td>

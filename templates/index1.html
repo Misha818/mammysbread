@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="{{ current_locale }}">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <title>
+        {{ _('Home') }}
+    </title>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        document.addEventListener('click', function(event) {
+          if (event.target.classList.contains('nav-to')) {
+              let target_val = event.target.getAttribute('value');
+              let target_to_navigate = document.getElementById(target_val);
+
+              // Scroll the window to the target div with smooth behavior
+              target_to_navigate.scrollIntoView({ behavior: 'smooth' });
+
+          }
+        });
+      });
+    </script>
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Style inputs */
+input[type=text], select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  margin-top: 6px;
+  margin-bottom: 16px;
+  resize: vertical;
+}
+
+input[type=submit] {
+  background-color: #04AA6D;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  cursor: pointer;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
+}
+
+/* Style the container/contact section */
+/* .container {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 10px;
+  margin-bottom: 2%;
+} */
+
+/* Create two columns that float next to eachother */
+.column {
+  float: left;
+  width: 50%;
+  margin-top: 6px;
+  padding: 20px;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+  .column, input[type=submit] {
+    width: 100%;
+    margin-top: 0;
+  }
+}
+
+</style>
+</head>
+<body>
+    <div class="containerH" id="home">
+        <div class="image-container">
+            <img src="{{ url_for('static', filename='images/home.png') }}" alt="{{ _('Home Image') }}" />
+        </div>
+        <div class="text-container">
+            <h2>
+                <strong class="typewriter">
+                    <span id="text"></span><span class="cursor"></span>
+                </strong>
+            </h2>
+                
+        </div>
+    </div>
+  
+
+<div class="header" style="display: none;">
+    <div class="nav-item">
+      <div class="nav-link nav-to" value="home">{{ _('Home') }}</div>
+      <div class="line"></div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-link nav-to" value="about">{{ _('About') }}</div>
+      <div class="line"></div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-link nav-to" value="contacts">{{ _('Contacts') }}</div>
+      <div class="line"></div>
+    </div>
+  </div>
+
+
+
+
+
+
+<div class="card-container">
+{% if result.length > 0 %}
+  {% for row in result.data %}
+  <!-- {{ row }} -->
+  <div class="card">
+    <img src="{{ url_for('static', filename='images/thumbnails/' + row['Thumbnail']) }}" alt="{{ row['AltText'] }}" class="card-image">
+    <div class="card-content">
+      <h2 class="card-title">{{ row['Title'] }}</h2>
+      <p class="card-text">
+        {% if row['LongDescription']|length > 112 %}
+          {% set LongDescription = row['LongDescription'][:120] %}
+        {% else %}
+          {% set LongDescription = row['LongDescription'] %}
+        {% endif %}
+        {{ LongDescription }}
+        <a href="{{ url_for('home', _external=True) + row['Url'] }}" class="simple-card-button" target="_blank">{{ _('More') }}</a>
+
+      </p>
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <h3>{{ _('No data to show!') }}</h3>
+{% endif %}
+</div>
+<!-- <div style="clear: both;"></div> -->
+<!-- <div class="container" id="about">
+  <div style="text-align:center">
+    <h2>{{ _('About') }}</h2>
+    <p>Some interesting information about what we do</p>
+    <p>And why we do</p>
+  </div>
+  <div class="row">
+
+  
+  </div>
+</div>  -->
+
+
+<!-- 
+<div class="container" id="contacts">
+  <div style="text-align:center">
+    <h2>Contact Us</h2>
+    <p>Swing by for a cup of coffee, or leave us a message:</p>
+  </div>
+
+  <form>
+    <label for="fname">First Name</label>
+    <input type="text" id="fname" name="firstname" placeholder="Your name..">
+    <label for="lname">Last Name</label>
+    <input type="text" id="lname" name="lastname" placeholder="Your last name..">
+    <label for="country">Country</label>
+    <select id="country" name="country">
+      <option value="australia">Australia</option>
+      <option value="canada">Canada</option>
+      <option value="usa">USA</option>
+    </select>
+    <label for="subject">Subject</label>
+    <textarea id="subject" name="subject" placeholder="Write something.." style="height:170px"></textarea>
+    <input type="submit" value="Submit">
+  </form> -->
+  <!-- <div class="row">
+    <div class="column">
+      <img src="https://www.w3schools.com/w3images/map.jpg" style="width:100%">
+    </div>
+    <div class="column">
+      
+    </div>
+  </div> -->
+
+<!-- </div>  -->
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const text = "Ուրիշ մոտեցում սուր հարցերին:";
+        const delay = 100; // Delay in milliseconds
+        let index = 0;
+        
+        function typeWriter() {
+            if (index < text.length) {
+                document.getElementById('text').innerHTML += text.charAt(index);
+                index++;
+                setTimeout(typeWriter, delay);
+                if (index === text.length) {
+                    document.querySelector('.cursor').style.display = 'none';
+                    // setTimeout(slide_moves, 400);
+                }
+            }
+        }
+        
+        window.onload = typeWriter;
+        function slide_moves() {
+
+            const header = document.querySelector('.header');
+            if (header.style.display === 'none') {
+                header.style.display = 'flex'
+                header.classList.remove('slide-up');
+                header.classList.add('slide-down');
+            } else {
+                header.classList.remove('slide-down');
+                header.classList.add('slide-up');
+                setTimeout(() => {
+                    header.style.display = 'none';
+                }, 500); // Match this duration to your animation duration
+            }
+            
+            // modify this function so it opens from top to bottom slowly, with oscillations, undulating
+        }
+
+        
+        const navBar = document.querySelector('.image-container');
+        navBar.addEventListener('click', ()=>{
+            slide_moves();
+        });
+        
+
+    });
+</script>
+
+
+</body>
+
+</html>

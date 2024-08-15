@@ -29,10 +29,11 @@
 
 {% block content %}
 <div class="overlay" id="overlay"></div>
+{{ sideBar | safe }}
 <div class="containerS">
     <h1>{{ _('Add Article in another lang') }}</h1>
     <!-- Form for adding a product -->
-    <div id="mistakes"></div>
+    <div id="mistakes" style="width: 70%"></div>
     <form id="product-category-form">
         <input type="text" class="form_input" id="product-name" placeholder="{{ _('Product name') }}" >
         <input type="text" class="form_input" id="product-link" placeholder="{{ _('Product link') }}  {{ root_url }}{{ _('This-is-Your-Product-Link') }} ">
@@ -318,6 +319,7 @@ saveButton.addEventListener('click', function (event) {
                 // Handle empty product name
                 mistakesDiv.innerHTML = response.answer;
                 mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'flex';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -329,6 +331,7 @@ saveButton.addEventListener('click', function (event) {
                 // Handle existing product name
                 mistakesDiv.textContent = response.answer;
                 mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'flex';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -340,6 +343,7 @@ saveButton.addEventListener('click', function (event) {
                 // Handle empty product link
                 mistakesDiv.textContent = response.answer;
                 mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'flex';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -351,6 +355,7 @@ saveButton.addEventListener('click', function (event) {
                 // Handle existing product link
                 mistakesDiv.textContent = response.answer;
                 mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'flex';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -362,6 +367,7 @@ saveButton.addEventListener('click', function (event) {
                 // Handle product category error
                 mistakesDiv.textContent = response.answer;
                 mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'flex';
                 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -373,6 +379,7 @@ saveButton.addEventListener('click', function (event) {
                 // Handle Unknown Error
                 mistakesDiv.textContent = response.answer;
                 mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'flex';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });

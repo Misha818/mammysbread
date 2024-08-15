@@ -5,14 +5,12 @@ from werkzeug.utils import secure_filename
 from functools import wraps
 
 import mysql.connector
-from mysql.connector import pooling
 import os
 import re
 import base64
 import uuid
 import random
 import string
-import time
 
 load_dotenv()
 
@@ -25,58 +23,12 @@ target_directory = os.path.join(static_folder_path, 'images/quilljs')
 os.makedirs(target_directory, exist_ok=True)
 
 # Create a connection to the MySQL database
-# db_connection = mysql.connector.connect(
-#     host=os.getenv('LOCALHOST'),
-#     user=os.getenv('USER'),
-#     password=os.getenv('PASSWORD'),
-#     database=os.getenv('DATABASE'),
-#     connection_timeout=10
-# )
-
-
-dbconfig = {
-    "database": os.getenv('DATABASE'),
-    "user": os.getenv('USER'),
-    "password": os.getenv('PASSWORD'),
-    "host": os.getenv('LOCALHOST')
-}
-
-pool = mysql.connector.pooling.MySQLConnectionPool(
-    pool_name="mypool",
-    pool_size=5,
-    **dbconfig
+db_connection = mysql.connector.connect(
+    host=os.getenv('LOCALHOST'),
+    user=os.getenv('USER'),
+    password=os.getenv('PASSWORD'),
+    database=os.getenv('DATABASE')
 )
-
-# To get a connection from the pool
-db_connection = pool.get_connection()
-
-
-def get_db_connection(use_dict_cursor=False):
-    retries = 3
-    for i in range(retries):
-        try:
-            db_connection = mysql.connector.connect(
-                user=os.getenv('USER'),
-                password=os.getenv('PASSWORD'),
-                host=os.getenv('LOCALHOST'),
-                database=os.getenv('DATABASE'),
-                connection_timeout=10
-            )
-            if db_connection.is_connected():
-                # Create a cursor with dictionary=True if needed
-                cursor = db_connection.cursor(dictionary=use_dict_cursor)
-                return db_connection, cursor
-        except mysql.connector.Error as err:
-            print(f"Attempt {i + 1} failed: {err}")
-            if i < retries - 1:
-                time.sleep(5)  # Wait before retrying
-            else:
-                raise
-
-
-def close_connection(db_connection):
-    if db_connection.is_connected():
-        db_connection.close()
 
 
 def sqlSelect(sqlQuery, sqlValuesTuple, myDict):
@@ -87,10 +39,9 @@ def sqlSelect(sqlQuery, sqlValuesTuple, myDict):
     try:
         if myDict:
             myData = {}
-            # cursor = db_connection.cursor(dictionary=True)
-            db_connection, cursor = get_db_connection(True)
+            cursor = db_connection.cursor(dictionary=True)
         else:
-            db_connection, cursor = get_db_connection()
+            cursor = db_connection.cursor()
 
         if sqlValuesTuple:
             cursor.execute(sqlQuery, sqlValuesTuple)
@@ -99,8 +50,7 @@ def sqlSelect(sqlQuery, sqlValuesTuple, myDict):
 
         myData = cursor.fetchall()
         db_connection.commit()
-        close_connection(db_connection)
-        # cursor.close()
+        cursor.close()
         if myData is not None:
             dataLen = len(myData)
         
@@ -203,6 +153,21 @@ def getLangID():
 #     return content
 
 
+def getLangdatabyID(langID):
+
+    sqlQuery = "SELECT * FROM `languages` WHERE `Language_ID` = %s"
+    
+    sqlValueTuple = (langID,)
+
+    result = sqlSelect(sqlQuery, sqlValueTuple, True)
+
+    content = {}
+    
+    content['ID'] = result['data'][0]['Language_ID']
+    content['Language'] = result['data'][0]['Language']
+    content['Prefix'] = result['data'][0]['Prefix']
+
+    return content
 
 
 def get_pc_ref_key(pc_id):
@@ -504,7 +469,8 @@ def dataModified(articleID):
         return False
 
 
-def supportedLangsValues():   
+def supportedLangsValues():
+    
     
     supportedLangsData = supported_langs()
     if len(supportedLangsData) > 1:
@@ -524,24 +490,11 @@ def getSupportedLangs():
 
 def supported_langs():
     arr = [
+            {'Language_ID': 1, 'Language': 'Հայերեն', 'Prefix':	'hy'},
             {'Language_ID': 2, 'Language': 'English', 'Prefix':	'en'},
-            {'Language_ID': 8, 'Language': 'Русский', 'Prefix':	'ru'},
-            {'Language_ID': 1, 'Language': 'Հայերեն', 'Prefix':	'hy'}
+            {'Language_ID': 8, 'Language': 'Русский', 'Prefix':	'ru'}
           ]
     return arr
-
-
-def getLangdatabyID(langID):
-    supportedLangs = supported_langs()
-    content = []
-    for lang in supportedLangs:
-        if lang['Language_ID'] == langID:
-            content = lang  
-            
-    return content
-
-    
-
 
 
 def getUserID():
