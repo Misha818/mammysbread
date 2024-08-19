@@ -290,6 +290,7 @@
 
         // Configure the request
         xhr.open('POST', '/add_article_category');
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission
         xhr.onload = function () {

@@ -308,6 +308,7 @@ saveButton.addEventListener('click', function (event) {
 
     // Configure the request
     xhr.open('POST', '/add_article');
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
     // Define what happens on successful data submission
     xhr.onload = function () {

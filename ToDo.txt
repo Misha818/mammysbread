@@ -29,10 +29,23 @@ Product
                 Disable teammate (temporarily, forever)
 CREATE A WRAPPER FOR ACTION PERMISSIONS
 
-===========================================================
 
 
     csrf_token
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        // Function to get the CSRF token from the meta tag
+        function getCsrfToken() {
+            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        }
+        
+        const csrfToken = getCsrfToken();
+
+
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+===========================================================
+
     edit-teammate
     
     Contacts {style, backend}
@@ -41,6 +54,8 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
     Footer
     About {style, content}
     Տեխնիկական բնութագիր
+    mobile friendly dashboard header
+    https 
 
 - Add user function for superuser (serveri vren es testavorelu, qani vor mutqagrelu es rol, email, ayd mailin gnum a jamanakavor hghum vorov nor employeen mutq a gorcum)
 

@@ -3,6 +3,8 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from products import checkCategoryName, get_RefKey_LangID_by_link, get_article_category_images, edit_p_h, submit_reach_text, add_p_c_sql, edit_p_c_view, edit_p_c_sql, get_product_categories, get_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
 from sysadmin import getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask_wtf import CSRFProtect
+from flask_wtf.csrf import CSRFError
 
 import os
 from werkzeug.datastructures import FileStorage
@@ -20,7 +22,12 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['BABEL_DEFAULT_LOCALE'] = defLang['Prefix']
 app.config['BABEL_SUPPORTED_LOCALES'] = getSupportedLangs()  # Supported languages here
 
+csrf = CSRFProtect(app)
 babel = Babel(app)
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    return render_template('csrf_error.html', reason=e.description), 400
 
 def side_bar_stuff():
     stuffID = session.get("user_id")

@@ -444,6 +444,7 @@ saveButton.addEventListener('click', function (event) {
 
     // Configure the request
     xhr.open('POST', '/edit_thumbnail');
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
     // Define what happens on successful data submission
     xhr.onload = function () {

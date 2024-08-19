@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Configure the request
         xhr.open('POST', '/add-teammate');
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission
         xhr.onload = function () {

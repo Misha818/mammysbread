@@ -4,6 +4,7 @@
     <!-- Required meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     
 
@@ -17,6 +18,15 @@
         {% endblock %}
     </title>
 
+    <script>
+        
+      // Function to get the CSRF token from the meta tag
+      function getCsrfToken() {
+          return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      }
+      
+      const csrfToken = getCsrfToken();
+    </script>
     
     {% block head %}
     
@@ -24,17 +34,6 @@
   </head>
   <body>
 
-<!-- Top Right Navigation Bar -->
-<!-- <nav class="top-right-nav">
-  <a href="/login" id="loginButton">{{ _('Login') }}</a>
-  <a href="/signup" id="signupButton">{{ _('Sign Up') }}</a>
-  <select onchange="location = '/setlang?lang=' + this.value;">
-      <option value="en" {{ 'selected' if get_locale() == 'en' else '' }}>English</option>
-      <option value="hy" {{ 'selected' if get_locale() == 'hy' else '' }}>Հայերեն</option>
-      <option value="ru" {{ 'selected' if get_locale() == 'ru' else '' }}>Русский</option>
-  </select>
-</nav>
-       -->
     {% block content %}
 
     {% endblock %}
