@@ -32,30 +32,15 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
 ===========================================================
 
 
-    stuff side bar # Add more safety options!!!!!!!!!
-    
     csrf_token
-    Contacts {style, backend}
     edit-teammate
+    
+    Contacts {style, backend}
 
     Header
     Footer
     About {style, content}
-
-
-
-    in sysadmin.py
-
-        def getDefLang():
-        return {'id': 2, 'Prefix': 'en', 'Language': 'English'}
-
-
-        def getSupportedLangs():
-            return ['en', 'hy', 'ru']
-
-        def getUserID():
-            return 1
-
+    Տեխնիկական բնութագիր
 
 - Add user function for superuser (serveri vren es testavorelu, qani vor mutqagrelu es rol, email, ayd mailin gnum a jamanakavor hghum vorov nor employeen mutq a gorcum)
 

@@ -692,10 +692,6 @@ def get_RefKey_LangID_by_link(myLink):
     sqlValTuple = (myLink,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
-    print('AAAAAAAAAAAAAAAAAAAAA111')
-    print(result)
-    print('BBBBBBBBBBBBBBBBBBBBB222')
-
     if result['length'] == 0:
         return None
     

@@ -24,13 +24,16 @@ header div:last-child a:hover {
 
 
 {% block content %}
-<!-- <header style="background-color: #f8f9fa; padding: 20px; text-align: right; border-bottom: 1px solid #e0e0e0;     width: 100%;">
+
+<!-- 
+<header style="background-color: #f8f9fa; padding: 20px; text-align: right; border-bottom: 1px solid #e0e0e0;     width: 100%;">
     <nav style="text-align: right;">
         <a href="#home" style="margin: 0 15px; color: #007bff; text-decoration: none;">Home</a>
         <a href="#about" style="margin: 0 15px; color: #007bff; text-decoration: none;">About</a>
         <a href="#contact" style="margin: 0 15px; color: #007bff; text-decoration: none;">Contact</a>
     </nav>
-</header> -->
+</header> 
+-->
 
 <header style="background-color: #f8f9fa; padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; width: 100%;">
     <div style="display: flex; align-items: center;">
@@ -43,9 +46,9 @@ header div:last-child a:hover {
             <a href="#contact" style="margin: 0 15px; color: #007bff; text-decoration: none;">Contact</a>
             
             {% if supportedLangsData | length > 1 %}     
-            <select onchange="location = '/setlang?lang=' + this.value;" class="lang-drop-down">
+            <select onchange="location = '/' + this.value;" class="lang-drop-down">
                 {% for lang in supportedLangsData %}
-                <option value="{{ lang['Prefix'] }}" {{ 'selected' if get_locale() ==  lang['Prefix']  else '' }}>{{ lang['Language'] }}</option>
+                <option value="{{ lang[0] }}" {{ 'selected' if get_locale() ==  lang[2]  else '' }}>{{ lang[1] }}</option>
                 {% endfor %}
             </select>
             {% endif %}

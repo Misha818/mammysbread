@@ -22,9 +22,6 @@ app.config['BABEL_SUPPORTED_LOCALES'] = getSupportedLangs()  # Supported languag
 
 babel = Babel(app)
 
-# home_dir = os.path.expanduser("~")
-
-# Add more safety options!!!!!!!!!
 def side_bar_stuff():
     stuffID = session.get("user_id")
 
@@ -71,9 +68,9 @@ def submit_r_t():
 
 def get_locale():
     # Check if the language query parameter is set and valid
+    supportedLangs = getSupportedLangs()
     if 'lang' in request.args:
-        lang = request.args.get('lang')
-        supportedLangs = getSupportedLangs()
+        lang = request.args.get('lang')        
         if lang in supportedLangs:
             session['lang'] = lang
             return session['lang']
@@ -138,15 +135,14 @@ def index(myLinks):
 
     metaTags = ''
     if content is not None:  
+        langData = getLangdatabyID(content['LanguageID'])
+        session['lang'] = langData['Prefix']
         articleStatus = ' AND `article`.`Article_Status` = 2; '
         prData = constructPrData(content['RefKey'], articleStatus)
-        articleStatus = prData.get('Status', 1)
-        if articleStatus == 2:
+        articleStatusResult = prData.get('Status', 1)
+        if articleStatusResult == 2:
             myHtml = 'article_client.html'
-            
-            langData = getLangdatabyID(content['LanguageID'])
-            session['lang'] = langData['Prefix']
-            
+                        
             metaContent = prData
             metaContent['SiteName'] = request.host
             metaContent['Url'] = request.host + '/' + prData['Url']
@@ -158,22 +154,29 @@ def index(myLinks):
 
             # Get active languages
             RefKey = content['RefKey']
-            sqlQueryL = "SELECT `Language_ID` FROM `article_relatives` WHERE `A_Ref_Key` = %s;"
+            # sqlQueryL = "SELECT `Language_ID` FROM `article_relatives` WHERE `A_Ref_Key` = %s;"
+            sqlQueryL = """
+                        SELECT 
+                            `article_relatives`.`Language_ID`,
+                            `Url`
+                        FROM `article_relatives`
+                        LEFT JOIN `article` ON `article`.`ID` = `article_relatives`.`A_ID`
+                        WHERE `A_Ref_Key` = %s AND `article`.`Article_Status` = 2;
+                        """
             sqlValL = (RefKey,)
             resultL = sqlSelect(sqlQueryL, sqlValL, False)
             supportedLangsData = []
             if resultL['length'] > 1:
                 langueges = supported_langs()
 
-                for langID in resultL['data']:
+                for langdata in resultL['data']:
+                    print('AAAAAAAAA')
+                    print(langdata)
+                    print('NNNNNNNNN')
                     for lang in langueges:
-                        if lang['Language_ID'] == langID[0]:
-                            supportedLangsData.append(lang)                         
-
-            print('supportedLangsData supportedLangsData')
-            print(supportedLangsData)
-            print('supportedLangsData supportedLangsData')
-            
+                        if lang['Language_ID'] == langdata[0]:
+                            arr = (langdata[1], lang['Language'], lang['Prefix'])
+                            supportedLangsData.append(arr)                        
         else:
             myHtml = 'error.html'
     else:
