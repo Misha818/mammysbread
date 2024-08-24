@@ -5,6 +5,7 @@ from sysadmin import getLangdatabyID, supported_langs, get_full_website_name, ge
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError
+from OpenSSL import SSL
 
 import os
 from werkzeug.datastructures import FileStorage
@@ -13,6 +14,7 @@ import json
 import re
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
 
@@ -24,6 +26,15 @@ app.config['BABEL_SUPPORTED_LOCALES'] = getSupportedLangs()  # Supported languag
 
 csrf = CSRFProtect(app)
 babel = Babel(app)
+
+# basedir = os.path.abspath(os.path.dirname(__file__))
+# SSL context creation
+# context = SSL.Context(SSL.TLSv1_2_METHOD)
+# context.use_privatekey_file(os.path.join(basedir, 'certs', 'private.key'))
+# context.use_certificate_file(os.path.join(basedir, 'certs', 'certificate.crt'))
+
+key_file = os.path.join(basedir, 'certs', 'private.key')
+cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
@@ -132,6 +143,21 @@ def home():
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
     return render_template('index.html', result=result, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+
+@app.route('/about')
+def about():
+    languageID = getLangID()
+    sqlQuery =  f"""SELECT * FROM `article` 
+                    LEFT JOIN `article_relatives`
+                      ON  `article_relatives`.`A_ID` = `article`.`ID`
+                    WHERE `article_relatives`.`Language_ID` = %s
+                    AND `Article_Status` = 2
+                """
+    
+    sqlValTuple = (languageID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    return render_template('index.html', result=result, scrollTo='about', current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
 
 # Render the index.html template
@@ -751,6 +777,88 @@ def team():
 
     return render_template('team.html', result=result, sideBar=sideBar, current_locale=get_locale())
 
+
+
+@app.route('/edit-teammate/<teammateID>', methods=['GET', 'POST'])
+# @login_required
+def edit_teammate(teammateID):
+    languageID = getLangID()
+    if request.method == 'POST':
+        if len(request.form.get('languageID')) == 0:
+            answer = gettext('Something wrong!')
+            return jsonify({'status': '0', 'answer': answer})  
+        
+        languageID  = request.form.get('languageID')
+
+        # Check if email exists
+        if len(request.form.get('Email')) == 0:
+            answer = gettext('Please specify email')
+            return jsonify({'status': '0', 'answer': answer})  
+
+        Email = request.form.get('Email').strip()
+
+        # Validate email
+        emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+        # Check if the email matches the pattern
+        if not re.match(emailPattern, Email):
+            answer = gettext('Invalid email format')
+            return jsonify({'status': '0', 'answer': answer})
+
+        if len(request.form.get('RoleID')) == 0:
+            answer = gettext('Please specify the role')
+            return jsonify({'status': '0', 'answer': answer})  
+
+        RoleID  = request.form.get('RoleID').strip()
+
+        # Check whether Email exists or not in stuff and buffer tables
+        sqlQuery = "SELECT `Email` FROM `stuff` WHERE `Email` = %s;"
+        sqlValTuple = (Email,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        if result['length'] > 0:
+            answer = f""" Specified email  "{Email}" already exists """
+            return jsonify({'status': '0', 'answer': answer})
+         
+        sqlQuery = "SELECT `Email` FROM `buffer` WHERE `Email` = %s;"
+        sqlValTuple = (Email,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        if result['length'] > 0:
+            answer = f""" Specified email  "{Email}" already exists """
+            return jsonify({'status': '0', 'answer': answer})
+    else:
+        sqlQuery = """
+                    SELECT 
+                        `stuff`.`ID`,
+                        `stuff`.`Firstname`,
+                        `stuff`.`Lastname`,
+                        `stuff`.`Email`,
+                        `stuff`.`Status`,
+                        `rol`.`ID` AS `RoleID`,
+                        `rol`.`Rol`
+                    FROM `stuff`
+                    LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID` 
+                    WHERE `stuff`.`ID` = %s
+                    ; 
+                """
+        sqlValTuple = (teammateID,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        sqlQueryR = """
+                        SELECT 
+                            `ID`,
+                            `Rol`
+                        FROM `rol`
+                        ; 
+                    """
+        sqlValTupleR = ()
+        resultR = sqlSelect(sqlQueryR, sqlValTupleR, True)
+
+        sideBar = side_bar_stuff()
+
+        return render_template('edit-teammate.html', row=result['data'][0], resultR=resultR, sideBar=sideBar, languageID=languageID, current_locale=get_locale())
+
 @app.route('/roles', methods=['GET'])
 @login_required
 def roles():
@@ -842,7 +950,7 @@ def add_teammate():
         
         languageID  = request.form.get('languageID')
 
-
+        # Check if email exists
         if len(request.form.get('Email')) == 0:
             answer = gettext('Please specify email')
             return jsonify({'status': '0', 'answer': answer})  
@@ -1275,4 +1383,4 @@ def validate_password(password):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(ssl_context=(cert_file, key_file), debug=True)

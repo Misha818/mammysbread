@@ -18,13 +18,21 @@
           if (event.target.classList.contains('nav-to')) {
               let target_val = event.target.getAttribute('value');
               let target_to_navigate = document.getElementById(target_val);
-
+              
               // Scroll the window to the target div with smooth behavior
               target_to_navigate.scrollIntoView({ behavior: 'smooth' });
-
-          }
+              
+            }
+          });
         });
-      });
+
+      function headerScroll() {
+          let scrollTo = {{ scrollTo }};  
+          let target_to_navigate = document.getElementById(scrollTo);
+          target_to_navigate.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      headerScroll();
     </script>
     <style>
 body {
@@ -60,8 +68,8 @@ input[type=submit]:hover {
 /* Style the container/contact section */
 .container {
   border-radius: 5px;
-  background-color: #f2f2f2;
-  padding: 10px;
+  background-color: #f1f1f1;
+  padding: 20px;
   margin-bottom: 2%;
 }
 
@@ -119,7 +127,7 @@ input[type=submit]:hover {
       <div class="nav-link nav-to" value="contacts">{{ _('Contacts') }}</div>
       <div class="line"></div>
     </div>
-  </div>
+</div>
 
 
 
@@ -171,7 +179,7 @@ input[type=submit]:hover {
     <p>Swing by for a cup of coffee, or leave us a message:</p>
   </div>
 
-  <form>
+  <!-- <form>
     <label for="fname">First Name</label>
     <input type="text" id="fname" name="firstname" placeholder="Your name..">
     <label for="lname">Last Name</label>
@@ -184,8 +192,8 @@ input[type=submit]:hover {
     </select>
     <label for="subject">Subject</label>
     <textarea id="subject" name="subject" placeholder="Write something.." style="height:170px"></textarea>
-    <input type="submit" value="Submit">
-  </form>
+    <input type="submit" value="Submit" style="background-color: #b8b8b873;">
+  </form> -->
   <!-- <div class="row">
     <div class="column">
       <img src="https://www.w3schools.com/w3images/map.jpg" style="width:100%">
@@ -195,7 +203,42 @@ input[type=submit]:hover {
     </div>
   </div> -->
 </div>
+  
+<div class="container" style="padding: 0px;
+                              width: 100%;
+                              ">
 
+  
+  <footer style="background-color: #f8f9fa; padding: 40px 20px; text-align: center; border-top: 1px solid #e0e0e0;">
+    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; max-width: 1720px; margin: 0 auto;">
+      <div style="flex: 1; min-width: 200px; padding: 20px;">
+        <h3 style="color: #007bff; margin-bottom: 20px;">Services</h3>
+          <ul style="list-style-type: none; padding: 0;">
+              <li><a href="#service1" style="color: #007bff; text-decoration: none;">Service 1</a></li>
+              <li><a href="#service2" style="color: #007bff; text-decoration: none;">Service 2</a></li>
+              <li><a href="#service3" style="color: #007bff; text-decoration: none;">Service 3</a></li>
+            </ul>
+          </div>
+          <div style="flex: 1; min-width: 200px; padding: 20px;">
+            <h3 style="color: #007bff; margin-bottom: 20px;">Contact</h3>
+            <p style="color: #6c757d;">123 Street Name<br>City, State, 12345<br>Email: info@example.com</p>
+            <div style="margin-top: 20px;">
+              <a href="https://facebook.com" target="_blank" style="margin-right: 15px;">
+                <img src="path-to-facebook-icon.png" alt="Facebook" style="height: 24px;">
+              </a>
+              <a href="https://twitter.com" target="_blank" style="margin-right: 15px;">
+                <img src="path-to-twitter-icon.png" alt="Twitter" style="height: 24px;">
+              </a>
+              <a href="https://linkedin.com" target="_blank">
+                <img src="path-to-linkedin-icon.png" alt="LinkedIn" style="height: 24px;">
+              </a>
+            </div>
+          </div>
+        </div>
+        <p style="color: #6c757d; margin-top: 40px;">&copy; 2024 Your Company. All rights reserved.</p>
+      </footer>
+      
+    </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -240,6 +283,10 @@ input[type=submit]:hover {
         navBar.addEventListener('click', ()=>{
             slide_moves();
         });
+
+    window.addEventListener('load', () => {
+      document.querySelector('body').classList.add('loaded');
+    });
         
 
     });

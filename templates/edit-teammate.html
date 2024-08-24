@@ -24,31 +24,49 @@
     </style>
 {% endblock %}
 {% block title %}
-    {{ _('Add Role') }}
+    {{ _('Edit Role') }}
 {% endblock %}
 
 
 
 {% block content %}
-<div class="overlay" id="overlay"></div>
-
 {{ sideBar | safe }}
 
+<!-- {{ row }} -->
+
+<div class="overlay" id="overlay"></div>
 <div class="containerS">
-    <h1>{{ _('Add Role') }}</h1>
+    <h1 style="padding-bottom: 15px;">{{ _('Edit Teammate') }}</h1>
     <!-- Form for adding a product -->
     <div id="mistakes" style="width: 85%;"></div>
 
-    <form>
+    <form id="add-product-form">
+        <input type="text" id="firstname" placeholder="{{ _('Firstname') }}" value="{{ row['Firstname'] }}" 
+            style="width: 100%;padding: 15px;"
+        >
         
-        <input type="text" id="role" placeholder="{{ _('Role') }}" style="width:100%; padding: 15px;">
-        <div class="form-group row" id="actionsDropDown"></div>
+        <input type="text" id="lastname" placeholder="{{ _('Lastname') }}" value="{{ row['Lastname'] }}" 
+            style="width: 100%;padding: 15px;"
+        >
+        
+        <input type="text" id="email" placeholder="{{ _('Email') }}" value="{{ row['Email'] }}" 
+            style="width: 100%;padding: 15px;"
+        >
+
+        <div class="form-group row" id="rolesDropDown"></div>
+        
+        <div class="status-container" style="{{ statusWidth }}">
+            <label>{{ _('Status') }}</label>
+            <label><input type="radio" name="status" value="1" {% if row['Status'] == 1 %} checked {% endif %}> {{ _('Active') }}</label>
+            <label><input type="radio" name="status" value="0" {% if row['Status'] == 0 %} checked {% endif %}> {{ _('Passive') }}</label>
+        </div>
 
             
         <input type="hidden" id="language-id" value="{{ languageID }}">
+        <input type="hidden" id="role-id" value="{{ row['ID'] }}">
         
-        <div id="saveButton" class="pcButtonS modifiedB">{{ _('Submit') }}</div>
-        <div id="saving" class="pcButtonS hidden modifiedB">{{ _('Saving...') }}</div>
+        <div id="saveButton" class="pcButtonS" style="width: 100%">{{ _('Submit') }}</div>
+        <div id="saving" class="pcButtonS hidden" style="width: 100%">{{ _('Saving...') }}</div>
     </form>
 
 
@@ -59,59 +77,53 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    function actionsDropDown() {
+    function rolesDropDown() {
 
-        const actions = {{ result | tojson }}
+        const roles = {{ resultR | tojson }};
+        const row = {{ row | tojson }};
 
-        const dropdownContainer = document.getElementById('actionsDropDown');
-        if (actions['length'] > 0) {
+        const dropdownContainer = document.getElementById('rolesDropDown');
+        if (roles['length'] > 0) {
             const select = document.createElement('select');
-            select.name = 'actions';
-            select.id = 'actions';
+            select.name = 'roles';
+            select.id = 'roles';
             select.classList.add('form-control');
             select.classList.add('styled-select');
-            select.style = ('height: 250px;');
-            select.multiple = true; // Adds the multiple attribute
-
+        
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = '{{ _("Choose actions") }}';
-            defaultOption.disabled = true;
+            defaultOption.textContent = '{{ _("Choose Role") }}';
+            // defaultOption.disabled = true;
             select.appendChild(defaultOption);
 
-            actions.data.forEach(val => {
-                const optVal = val['Name'];
+            roles.data.forEach(val => {
+                const optVal = val['Rol'];
                 if (optVal !== null) {
                     const option = document.createElement('option');
                     option.value = val['ID'];
-                 
+                
                     option.textContent = optVal;
 
+                    // option.selected = true;
+                    if (row['RoleID'] === val['ID']) {
+                            option.selected = true;
+                        }
                     select.appendChild(option);
                 }
             });
 
             dropdownContainer.appendChild(select); // Append the select element to the body or any other specific location
-        }
-    };
+        };
+        };
 
-    actionsDropDown();
-
+        rolesDropDown();
     // When the form is submitted
     const saveButton = document.getElementById('saveButton');
 
     saveButton.addEventListener('click', function (event) {
 
         event.preventDefault();
-                
-        const selectElement = document.getElementById('actions');
-        const Actions = [];
-
-        for (let i = 0; i < selectElement.options.length; i++) {
-        if (selectElement.options[i].selected) {
-            Actions.push(selectElement.options[i].value);
-        }
-        }
+ 
       
         const saveButton = document.getElementById('saveButton');
         const saving = document.getElementById('saving');
@@ -120,23 +132,39 @@ document.addEventListener('DOMContentLoaded', function() {
         saving.classList.remove('hidden');
         
         let formData = new FormData();
-         
-        let languageID = document.getElementById('language-id').value;
-        let Role = document.getElementById('role').value;
         
+                          
+        const selectElement = document.getElementById('roles');
+        const Actions = [];
+
+        for (let i = 0; i < selectElement.options.length; i++) {
+            if (selectElement.options[i].selected) {
+                Actions.push(selectElement.options[i].value);
+            }
+        }
+
+        let RoleID = selectElement.value;
+        let languageID = document.getElementById('language-id').value;
+        let firstname = document.getElementById('firstname').value;
+        let lastname = document.getElementById('lastname').value;
+        let email = document.getElementById('email').value;
+        let status  = document.querySelector('input[name="status"]:checked').value;
 
         
         // Create a new FormData object
+        formData.append('Firstname', firstname);
+        formData.append('Lastname', lastname);
+        formData.append('Email', email);
+        formData.append('RoleID', RoleID);
+        formData.append('Status', status);
         formData.append('languageID', languageID);
-        formData.append('Role', Role);
-        formData.append('Actions', Actions);
-        
 
         // Create a new XMLHttpRequest object
         let xhr = new XMLHttpRequest();
 
         // Configure the request
-        xhr.open('POST', '/add-role');
+        const requestURL = '/edit-teammate/' + RoleID;
+        xhr.open('POST', requestURL);
         xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission

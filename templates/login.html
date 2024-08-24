@@ -18,7 +18,6 @@
     </form>
     
     <script>
-
         let saveButton = document.getElementById('login');
 
         saveButton.addEventListener('click', function(event) {
@@ -33,9 +32,10 @@
             
             // Create a new XMLHttpRequest object
             let xhr = new XMLHttpRequest();
-
+            
             // Configure the request
             xhr.open('POST', '/login');
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
             // Define what happens on successful data submission
             xhr.onload = function () {

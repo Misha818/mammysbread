@@ -19,6 +19,10 @@
     </title>
 
     <script>
+
+    window.addEventListener('load', () => {
+      document.querySelector('body').classList.add('loaded');
+    });
         
       // Function to get the CSRF token from the meta tag
       function getCsrfToken() {

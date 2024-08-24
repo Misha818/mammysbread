@@ -41,9 +41,9 @@ header div:last-child a:hover {
     </div>
     <div style="position: relative; display: inline-block;">
         <nav>
-            <a href="#home" style="margin: 0 15px; color: #007bff; text-decoration: none;">Home</a>
-            <a href="#about" style="margin: 0 15px; color: #007bff; text-decoration: none;">About</a>
-            <a href="#contact" style="margin: 0 15px; color: #007bff; text-decoration: none;">Contact</a>
+            <a href="{{ url_for('home') }}" style="margin: 0 15px; color: #007bff; text-decoration: none;">Home</a>
+            <a href="{{ url_for('home') }}about" style="margin: 0 15px; color: #007bff; text-decoration: none;">About</a>
+            <a href="{{ url_for('home') }}contact" style="margin: 0 15px; color: #007bff; text-decoration: none;">Contact</a>
             
             {% if supportedLangsData | length > 1 %}     
             <select onchange="location = '/' + this.value;" class="lang-drop-down">
