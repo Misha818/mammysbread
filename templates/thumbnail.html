@@ -171,6 +171,8 @@ slides.forEach(slide => {
 
 <!-- Thumbnail image manipulations -->
 <script>
+
+let csrfToken = "{{ csrf_token() }}"
 const content = {{ content | tojson  }};
 let imgName = '';
 let imgAlt = '';

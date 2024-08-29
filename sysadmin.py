@@ -465,10 +465,15 @@ def permissions(stuffID, Action):
                     FROM `actions` 
                     LEFT JOIN `rol` ON find_in_set(`actions`.`ID`, `rol`.`actionIDs`)
                     LEFT JOIN `stuff` ON `stuff`.`RolID` = `rol`.`ID`
-                WHERE `stuff`.`ID` = %s
+                WHERE `stuff`.`ID` = %s AND `stuff`.`Status` = 1
                 """
     sqlValTuple = (stuffID,)
     result = sqlSelect(sqlQuery, sqlValTuple, False)
+
+    if result['length'] == 0:
+        session.clear()
+        return False
+    
     for actionTuple in result['data']:
         if actionTuple[0] == Action:
             return True

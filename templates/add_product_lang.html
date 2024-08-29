@@ -35,8 +35,8 @@
     <!-- Form for adding a product -->
     <div id="mistakes" style="width: 70%"></div>
     <form id="product-category-form">
-        <input type="text" class="form_input" id="product-name" placeholder="{{ _('Product name') }}" >
-        <input type="text" class="form_input" id="product-link" placeholder="{{ _('Product link') }}  {{ root_url }}{{ _('This-is-Your-Product-Link') }} ">
+        <input type="text" class="form_input" id="product-name" placeholder="{{ _('Article Title') }}" >
+        <input type="text" class="form_input" id="product-link" placeholder="{{ _('Article link') }}  {{ root_url }}{{ _('This-is-Your-Product-Link') }} ">
         <input type="text" id="short-description" class="form_input" placeholder="{{ _('Short description') }}" />
         <textarea id="long-description" class="form_input" placeholder="{{ _('Long description') }}" ></textarea>
 
@@ -69,7 +69,6 @@
             {% endif %}
         {% endfor %}
         
-        <!-- {{ productCategory.article_category.data }}     -->
         {% else %}
         <div>
             <a href="{{ root_url }}/add-article-category">{{ _('Add Article Category') }}</a>
@@ -96,7 +95,7 @@
 
 <!-- Thumbnail image manipulations -->
 <script>
-
+    let csrfToken = "{{ csrf_token() }}"
     // Create a FormData object to hold the files
     let formData = new FormData();
 
@@ -306,6 +305,7 @@ saveButton.addEventListener('click', function (event) {
     // Configure the request
     // xhr.open('POST', '/add_article_lang');
     xhr.open('POST', '/add_article');
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
     // Define what happens on successful data submission
     xhr.onload = function () {

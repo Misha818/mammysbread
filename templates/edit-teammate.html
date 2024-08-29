@@ -63,7 +63,7 @@
 
             
         <input type="hidden" id="language-id" value="{{ languageID }}">
-        <input type="hidden" id="role-id" value="{{ row['ID'] }}">
+        <input type="hidden" id="teammateID" value="{{ row['ID'] }}">
         
         <div id="saveButton" class="pcButtonS" style="width: 100%">{{ _('Submit') }}</div>
         <div id="saving" class="pcButtonS hidden" style="width: 100%">{{ _('Saving...') }}</div>
@@ -76,6 +76,8 @@
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {
+
+    let csrfToken = "{{ csrf_token() }}"
 
     function rolesDropDown() {
 
@@ -144,12 +146,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         let RoleID = selectElement.value;
+        let teammateID = document.getElementById('teammateID').value;
         let languageID = document.getElementById('language-id').value;
         let firstname = document.getElementById('firstname').value;
         let lastname = document.getElementById('lastname').value;
         let email = document.getElementById('email').value;
         let status  = document.querySelector('input[name="status"]:checked').value;
-
         
         // Create a new FormData object
         formData.append('Firstname', firstname);
@@ -163,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let xhr = new XMLHttpRequest();
 
         // Configure the request
-        const requestURL = '/edit-teammate/' + RoleID;
+        const requestURL = '/edit-teammate/' + teammateID;
         xhr.open('POST', requestURL);
         xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
@@ -191,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (response.status === '1') {
                     // Handle success
-                    let prURL = window.location.origin  + '/roles';
+                    let prURL = window.location.origin  + '/team';
                     location.href = prURL;
 
                     // location.reload();

@@ -59,6 +59,7 @@
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {
+    let csrfToken = "{{ csrf_token() }}"
     const row = {{ row | tojson }}
 
     function langDropDown() {
@@ -66,6 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const languages = {{ languages | tojson }}
         const dropdownContainer = document.getElementById('langDropDown');
 
+        console.log(languages);
         if (languages.length > 1) {
 
                 const select = document.createElement('select');
@@ -81,16 +83,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 select.appendChild(defaultOption);
                 
                 languages.forEach(val => {
-                    const optVal = val['Prefix'];
-                    if (optVal !== null) {
+                    const optVal = val['Language'];
                         const option = document.createElement('option');
-                        option.value = val['ID'];
+                        option.value = val['Language_ID'];
                         
                         option.textContent = optVal;
                         
                         // option.selected = true;
                         select.appendChild(option);
-                    }
                 });
                 
                 dropdownContainer.appendChild(select); // Append the select element to the body or any other specific location
@@ -143,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Configure the request
         uniqueUrl  = '/stuff-signup/' + row['Url']
         xhr.open('POST', uniqueUrl);
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission
         xhr.onload = function () {
@@ -157,6 +158,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     mistakesDiv.innerHTML = response.answer;
                     mistakesDiv.style.color = 'red';
                     mistakesDiv.style.display = 'flex';
+
+                    csrfToken = response.newCSRFtoken;
 
                     // Scroll the window to the mistakesDiv with smooth behavior
                     mistakesDiv.scrollIntoView({ behavior: 'smooth' });

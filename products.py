@@ -119,7 +119,7 @@ def submit_reach_text(html_content, productID):
 
 
 # Add product category database action
-def add_p_c_sql(categoryName, file, AltText, currentLanguage):
+def add_p_c_sql(categoryName, file, AltText, currentLanguage, newCSRFtoken):
     
     # Check whether Category Name exists
     sqlQuery = "SELECT `Article_Category_ID` FROM `article_category` WHERE `Article_Category_Name` = %s;"
@@ -128,7 +128,7 @@ def add_p_c_sql(categoryName, file, AltText, currentLanguage):
     
     if result['length'] > 0:
         answer = gettext('Category Exists!')
-        return jsonify({'status': '3', 'answer': answer}) # categoryName Exists 
+        return jsonify({'status': '3', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) # categoryName Exists 
     
     # Save the file
     unique_filename = ''

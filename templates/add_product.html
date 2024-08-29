@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-{{ _('Add Product') }}
+{{ _('Add Article') }}
 {% endblock %}
 
 {% block head %}
@@ -34,7 +34,7 @@
 <div class="overlay" id="overlay"></div>
 {{ sideBar | safe }}
 <div class="containerS" style="width: 80%;">
-    <h1>{{ _('Add New Article') }}</h1>
+    <h1>{{ _('Add Article') }}</h1>
     <!-- Form for adding a product -->
     <div id="mistakes" style="width: 70%"></div>
     <form id="product-category-form">
@@ -73,7 +73,7 @@
             {% endif %}
         {% endfor %}
         
-        <!-- {{ productCategory.article_category.data }}     -->
+     
         {% else %}
             {{ _('You have not entered any article category yet.') }}
             {{ _('Click on the link below to add an article category!') }}
@@ -100,7 +100,7 @@
 
 <!-- Thumbnail image manipulations -->
 <script>
-
+    let csrfToken = "{{ csrf_token() }}"
     // Create a FormData object to hold the files
     let formData = new FormData();
 

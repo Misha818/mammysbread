@@ -44,18 +44,30 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
 
         xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
+
+        newCSRFtoken = generate_csrf()
+        'newCSRFtoken': newCSRFtoken
+
+        FOR JS 
+        let csrfToken = "{{ csrf_token() }}"
+
+    https 
+    edit-teammate
+    Header
 ===========================================================
 
-    edit-teammate
     
     Contacts {style, backend}
 
-    Header
     Footer
     About {style, content}
-    Տեխնիկական բնութագիր
     mobile friendly dashboard header
-    https 
+
+    Տեխնիկական բնութագիր
+
+    block after 3 - 5 unsuccesfull login tries
+
+    Deside what to do whith articles category of which is disabled
 
 - Add user function for superuser (serveri vren es testavorelu, qani vor mutqagrelu es rol, email, ayd mailin gnum a jamanakavor hghum vorov nor employeen mutq a gorcum)
 

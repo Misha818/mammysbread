@@ -176,6 +176,7 @@ slides.forEach(slide => {
 
 <!-- Thumbnail image manipulations -->
 <script>
+let csrfToken = "{{ csrf_token() }}"
 const content = {{ content | tojson  }};
 let imgName = '';
 let imgAlt = '';
@@ -500,7 +501,7 @@ saveButton.addEventListener('click', function (event) {
             
             if (response.status === '1') {
                 // Handle success
-                let prURL = window.location.origin  + '/edit-article-category/' + RefKey;
+                let prURL = window.location.origin  + '/article-categories';
                 location.href = prURL;
             }
         } else {

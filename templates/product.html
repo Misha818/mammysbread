@@ -46,8 +46,6 @@
 
 {% block content %}
 
-
-
 <!-- Top Left Navigation Bar -->
 <nav class="top-left-nav">
     <a class="top-left-nav-a" 
@@ -60,14 +58,17 @@
     <button class="chooseBlock" id="headerButton">{{ _('Header') }}</button>
     <button class="chooseBlock" id="textEditorButton">{{ _('Editor') }}</button>
     <button class="chooseBlock" id="thumbnailButton">{{ _('Thumbnail') }}</button>
-    <a class="top-left-nav-a" 
-        href="{{ url_for('home', _external=True) + prData['Url'] }}" 
-        target="_blank"
-        style="text-decoration: none;"
-        >
-        
-            {{ _('View') }}
-    </a>
+
+    {% if prData.Status == 2 %}
+        <a class="top-left-nav-a" 
+            href="{{ url_for('home', _external=True) + prData['Url'] }}" 
+            target="_blank"
+            style="text-decoration: none;"
+            >
+            
+                {{ _('View') }}
+        </a>
+    {% endif %}
 
     {% if supportedLangsData | length > 1 %}     
       <select onchange="location = '/setlang?lang=' + this.value;" class="styled-select">
@@ -121,8 +122,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <script>
-      
-        // const csrfToken = getCsrfToken();
+        let csrfToken = "{{ csrf_token() }}"
+
             const prData = {{ prData | tojson }};
             const prSaving = prData.prSaving;
             const prUpdate = prData.prUpdate;
@@ -989,7 +990,8 @@ backgroundColorPickr.on('save', (color) => {
 
                 if (response.status === '1') {
                     // Handle success
-                    alert(response.answer)
+                    alert(response.answer);
+                    window.location.reload(); 
                 }
             } else {
                 // Handle error response

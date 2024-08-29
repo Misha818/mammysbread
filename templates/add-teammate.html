@@ -58,6 +58,8 @@
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {
+    
+    let csrfToken = "{{ csrf_token() }}"
 
     function rolesDropDown() {
 
@@ -147,6 +149,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // Scroll the window to the mistakesDiv with smooth behavior
                     mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                    csrfToken = response.newCSRFtoken;
 
                     saveButton.classList.remove('hidden');
                     saving.classList.add('hidden');

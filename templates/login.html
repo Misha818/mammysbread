@@ -18,6 +18,7 @@
     </form>
     
     <script>
+        let csrfToken = "{{ csrf_token() }}"
         let saveButton = document.getElementById('login');
 
         saveButton.addEventListener('click', function(event) {
@@ -49,7 +50,10 @@
                         // Handle empty product name
                         mistakesDiv.innerHTML = response.answer;
                         mistakesDiv.style.color = 'red';
+                        mistakesDiv.style.display = 'flex';
 
+                        csrfToken = response.newCSRFtoken;
+                        
                         // Scroll the window to the mistakesDiv with smooth behavior
                         mistakesDiv.scrollIntoView({ behavior: 'smooth' });
 
@@ -76,34 +80,6 @@
             xhr.send(formData);
         });
 
-
-        // $(document).ready(function() {
-        //     $('#login').click(function(event) {
-
-        //         alert('login')
-                
-        //         event.preventDefault(); // Prevent form submission
-
-        //         var formData = $('form').serialize();
-        //         $.ajax({
-        //             url: '/login',
-        //             type: 'POST',
-        //             data: formData,
-        //             success: function(response) {
-        //                 if (response.status == '0') {
-        //                     $('#response').text(response.message);
-        //                     return;
-        //                 } else {
-        //                     // Redirect to the home directory
-        //                     window.location.href = '/ ';
-        //                 }
-        //             },
-        //             error: function(xhr, status, error) {
-        //                 console.error('AJAX request failed.');
-        //             }
-        //         });
-        //     });
-        // });
     </script>
 
 {% endblock %}

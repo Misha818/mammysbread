@@ -4,7 +4,7 @@ from products import checkCategoryName, get_RefKey_LangID_by_link, get_article_c
 from sysadmin import getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_wtf import CSRFProtect
-from flask_wtf.csrf import CSRFError
+from flask_wtf.csrf import CSRFError, generate_csrf
 from OpenSSL import SSL
 
 import os
@@ -74,6 +74,8 @@ def side_bar_stuff():
 @app.route('/submit_reach_text', methods=['POST'])
 @login_required
 def submit_r_t():
+    newCSRFtoken = generate_csrf()
+        
     # Get the content from the request data
     html_content = request.form.get('content')
     languageID = request.form.get('language-id')
@@ -81,7 +83,7 @@ def submit_r_t():
 
     productID = get_pr_id_by_lang(RefKey, languageID)
     answer = submit_reach_text(html_content, productID)
-    return jsonify({'status': answer['status']})
+    return jsonify({'status': answer['status'], 'newCSRFtoken': newCSRFtoken})
     
 
 def get_locale():
@@ -310,7 +312,8 @@ def pd(RefKey):
 @app.route('/edit_thumbnail', methods=['POST'])
 # @login_required
 def edit_thumbnail():
-
+    newCSRFtoken = generate_csrf()
+        
     languageID = request.form.get('languageID').strip()
     RefKey = request.form.get('RefKey').strip()
     altText = ''
@@ -321,7 +324,7 @@ def edit_thumbnail():
 
     if len(languageID) == 0 or len(RefKey) == 0:
         answer = gettext('Something is wrong!')
-        return jsonify({'status': '0', 'answer': answer}) 
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
 
     sqlQueryID = f"""
@@ -339,7 +342,7 @@ def edit_thumbnail():
         articleID = resultID['data'][0]['A_ID']
     else:
         answer = gettext('Something is wrong!')
-        return jsonify({'status': '0', 'answer': answer}) 
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     state = json.loads(state)
 
@@ -439,16 +442,17 @@ def edit_thumbnail():
 @app.route('/add_article', methods=['POST'])
 @login_required
 def add_pr():
-
+    newCSRFtoken = generate_csrf()
+        
     if not request.form.get('productName'):
         answer = gettext('Title is empty!')
-        return jsonify({'status': '2', 'answer': answer}) 
+        return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     elif not request.form.get('productLink'): 
         answer = gettext('Link is empty!')
-        return jsonify({'status': '4', 'answer': answer}) 
+        return jsonify({'status': '4', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     elif not request.form.get('CategoryID'):
         answer = gettext('Please Choose Article Category!')
-        return jsonify({'status': '6', 'answer': answer}) 
+        return jsonify({'status': '6', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     productName = request.form.get('productName').strip()
     productLink = request.form.get('productLink').strip()
@@ -527,20 +531,20 @@ def add_pr_lang():
 @app.route('/edit_article_headers', methods=['POST'])
 @login_required
 def edit_pr_headers():
-
-
+    newCSRFtoken = generate_csrf()
+        
     if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
         answer = gettext('Something went wrong. Please try again!')
-        return jsonify({'status': '0', 'answer': answer})
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
     elif not request.form.get('productName'):
         answer = gettext('Article name is empty!')
-        return jsonify({'status': '2', 'answer': answer}) 
+        return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     elif not request.form.get('productLink'):
         answer = gettext('Article link is empty!')
-        return jsonify({'status': '4', 'answer': answer}) 
+        return jsonify({'status': '4', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     elif not request.form.get('CategoryID'):
         answer = gettext('Please Choose Article Category!')
-        return jsonify({'status': '6', 'answer': answer}) 
+        return jsonify({'status': '6', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     productName = request.form.get('productName').strip()
     productLink = request.form.get('productLink').strip()
@@ -573,7 +577,7 @@ def addPC():
 @app.route('/add_article_category', methods=['POST'])
 @login_required
 def add_p_c():
-
+    newCSRFtoken = generate_csrf()
     categoryName = request.form.get('categoryName')
     AltText = request.form.get('AltText')
     file = request.files.get('file')
@@ -581,10 +585,10 @@ def add_p_c():
 
     if not categoryName:
         answer = gettext('Category name is empty!')
-        return jsonify({'status': '2', 'answer': answer}) # categoryName is Empty
+        return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) # categoryName is Empty
     
     
-    return add_p_c_sql(categoryName, file, AltText, currentLanguage)
+    return add_p_c_sql(categoryName, file, AltText, currentLanguage, newCSRFtoken)
 
 
 # Render the edit_product_category.html template
@@ -603,6 +607,8 @@ def edit_product_category(RefKey):
 @app.route('/edit_article_category', methods=['POST'])
 @login_required
 def edit_p_c():
+    newCSRFtoken = generate_csrf()
+        
     languageID = request.form.get('languageID').strip()
     RefKey = request.form.get('RefKey').strip()
     altText = ''
@@ -612,18 +618,18 @@ def edit_p_c():
 
     if len(languageID) == 0 or len(RefKey) == 0:
         answer = gettext('Something is wrong!')
-        return jsonify({'status': '0', 'answer': answer}) 
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     if request.form.get('categoryName'):
         categoryName = request.form.get('categoryName').strip()
     else:         
         answer = gettext('Category Name is empty!')
-        return jsonify({'status': '0', 'answer': answer})
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
     
     categoryNameExists = checkCategoryName(RefKey, languageID, categoryName)
     if categoryNameExists == True:
         answer = gettext('Category Name Exists!')
-        return jsonify({'status': '0', 'answer': answer})
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
     
     categoryStatus = request.form.get('categoryStatus')
 
@@ -642,7 +648,7 @@ def edit_p_c():
         articleCategoryID = resultID['data'][0]['AC_ID']
     else:
         answer = gettext('Something is wrong!')
-        return jsonify({'status': '0', 'answer': answer}) 
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     state = json.loads(state)
 
@@ -784,16 +790,32 @@ def team():
 def edit_teammate(teammateID):
     languageID = getLangID()
     if request.method == 'POST':
+        newCSRFtoken = generate_csrf()
+        
         if len(request.form.get('languageID')) == 0:
             answer = gettext('Something wrong!')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
         
         languageID  = request.form.get('languageID')
 
+        # Check if firstname exists
+        if len(request.form.get('Firstname')) == 0:
+            answer = gettext('Please specify the first name')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+        Firstname = request.form.get('Firstname').strip()
+       
+        # Check if lastname exists
+        if len(request.form.get('Lastname')) == 0:
+            answer = gettext('Please specify the last name')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+        Lastname = request.form.get('Lastname').strip()
+        
         # Check if email exists
         if len(request.form.get('Email')) == 0:
             answer = gettext('Please specify email')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Email = request.form.get('Email').strip()
 
@@ -803,22 +825,16 @@ def edit_teammate(teammateID):
         # Check if the email matches the pattern
         if not re.match(emailPattern, Email):
             answer = gettext('Invalid email format')
-            return jsonify({'status': '0', 'answer': answer})
-
-        if len(request.form.get('RoleID')) == 0:
-            answer = gettext('Please specify the role')
-            return jsonify({'status': '0', 'answer': answer})  
-
-        RoleID  = request.form.get('RoleID').strip()
-
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+     
         # Check whether Email exists or not in stuff and buffer tables
-        sqlQuery = "SELECT `Email` FROM `stuff` WHERE `Email` = %s;"
-        sqlValTuple = (Email,)
+        sqlQuery = "SELECT `Email` FROM `stuff` WHERE `Email` = %s AND `ID` != %s;"
+        sqlValTuple = (Email, teammateID)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
 
         if result['length'] > 0:
             answer = f""" Specified email  "{Email}" already exists """
-            return jsonify({'status': '0', 'answer': answer})
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
          
         sqlQuery = "SELECT `Email` FROM `buffer` WHERE `Email` = %s;"
         sqlValTuple = (Email,)
@@ -826,7 +842,41 @@ def edit_teammate(teammateID):
 
         if result['length'] > 0:
             answer = f""" Specified email  "{Email}" already exists """
-            return jsonify({'status': '0', 'answer': answer})
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+        
+        # Check if Role exists
+        if len(request.form.get('RoleID')) == 0:
+            answer = gettext('Please specify the role')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+       
+        RoleID  = request.form.get('RoleID').strip()
+        
+        # Check if Status exists
+        if len(request.form.get('Status')) == 0:
+            answer = gettext('Something is wrong, please try again!')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+        Status  = request.form.get('Status').strip()
+
+        sqlQuery = """
+            UPDATE `stuff` SET
+                `Firstname` = %s,
+                `Lastname` = %s,
+                `Email` = %s,
+                `RolID` = %s,
+                `Status` = %s
+            WHERE `ID` = %s;
+        """
+
+        sqlValTuple = (Firstname, Lastname, Email, RoleID, Status, teammateID)
+        result = sqlUpdate(sqlQuery, sqlValTuple)
+
+        if result['status'] == '1':
+            return jsonify({'status': '1'})
+        else:  
+            return jsonify({'status': '0', 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken})  
+
+    # GET action
     else:
         sqlQuery = """
                     SELECT 
@@ -884,21 +934,22 @@ def roles():
 @login_required
 def add_role():
     if request.method == "POST":
+        newCSRFtoken = generate_csrf()
         if len(request.form.get('languageID')) == 0:
             answer = gettext('Something wrong!')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
         
         languageID  = request.form.get('languageID')
 
         if len(request.form.get('Role')) == 0:
             answer = gettext('Please specify the role')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Role  = request.form.get('Role').strip()
 
         if len(request.form.get('Actions')) == 0:
             answer = gettext('Please choose at least on action')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Actions = request.form.get('Actions').strip()
 
@@ -909,7 +960,7 @@ def add_role():
 
         if result['length'] > 0:
             answer = f""" There is already a role called "{Role}" """
-            return jsonify({'status': '0', 'answer': answer}) 
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
         
 
         sqlQuery = "INSERT INTO `rol` (`Rol`, `ActionIDs`) VALUES (%s, %s);"
@@ -922,7 +973,7 @@ def add_role():
             return jsonify({'status': '1', 'answer': answer}) 
         else:
             answer = " Something is wrong!"
-            return jsonify({'status': '0', 'answer': answer}) 
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     else:
         languageID = getLangID()
         sqlQuery = """
@@ -944,6 +995,7 @@ def add_role():
 @login_required
 def add_teammate():
     if request.method == "POST":
+        newCSRFtoken = generate_csrf()
         if len(request.form.get('languageID')) == 0:
             answer = gettext('Something wrong!')
             return jsonify({'status': '0', 'answer': answer})  
@@ -953,7 +1005,7 @@ def add_teammate():
         # Check if email exists
         if len(request.form.get('Email')) == 0:
             answer = gettext('Please specify email')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Email = request.form.get('Email').strip()
 
@@ -963,11 +1015,11 @@ def add_teammate():
         # Check if the email matches the pattern
         if not re.match(emailPattern, Email):
             answer = gettext('Invalid email format')
-            return jsonify({'status': '0', 'answer': answer})
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
         if len(request.form.get('RoleID')) == 0:
             answer = gettext('Please specify the role')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         RoleID  = request.form.get('RoleID').strip()
 
@@ -978,7 +1030,7 @@ def add_teammate():
 
         if result['length'] > 0:
             answer = f""" Specified email  "{Email}" already exists """
-            return jsonify({'status': '0', 'answer': answer})
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
          
         sqlQuery = "SELECT `Email` FROM `buffer` WHERE `Email` = %s;"
         sqlValTuple = (Email,)
@@ -986,14 +1038,10 @@ def add_teammate():
 
         if result['length'] > 0:
             answer = f""" Specified email  "{Email}" already exists """
-            return jsonify({'status': '0', 'answer': answer})
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
          
         # insert into buffer table
         uniqueURL = generate_random_string()
-
-        # answer = uniqueURL
-        # return jsonify({'status': '0', 'answer': answer})
-
 
         sqlQuery = "INSERT INTO `buffer` (`Email`, `RoleID`, `Url`, `Deadline`, `Status`) VALUES (%s, %s, %s, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 15 MINUTE), 0);"
         sqlValTuple = (Email, RoleID,  uniqueURL)
@@ -1009,10 +1057,10 @@ def add_teammate():
             # Send email to the reciepient, do this on real server
             uniqueURL = get_full_website_name() + '/stuff-signup/' + r['data'][0]['Url']
             answer = r['data'][0]['Url']
-            return jsonify({'status': '0', 'answer': uniqueURL}) 
+            return jsonify({'status': '0', 'answer': uniqueURL, 'newCSRFtoken': newCSRFtoken}) 
         else:
             answer = " Something is wrong!"
-            return jsonify({'status': '0', 'answer': answer}) 
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     else:
         languageID = getLangID()
         sqlQuery = """
@@ -1032,22 +1080,23 @@ def add_teammate():
 @app.route('/stuff-signup/<uniqueURL>', methods=['GET', 'POST'])
 def stuff_signup(uniqueURL):
     if request.method == "POST":
+        newCSRFtoken = generate_csrf()        
         
         if len(request.form.get('Firstname')) == 0:
             answer = gettext('Please specify firstname')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Firstname = request.form.get('Firstname').strip()
 
         if len(request.form.get('Lastname')) == 0:
             answer = gettext('Please specify lastname')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Lastname = request.form.get('Lastname').strip()
         
         if len(request.form.get('Username')) == 0:
             answer = gettext('Please specify username')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Username = request.form.get('Username').strip()
         
@@ -1058,29 +1107,29 @@ def stuff_signup(uniqueURL):
 
         if result['length'] > 0:
             answer = gettext('Username exists')
-            return jsonify({'status': '0', 'answer': answer})
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
           
         
         if len(request.form.get('Password')) == 0:
             answer = gettext('Please specify Password')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
         
         passwordErrors = validate_password(request.form.get('Password'))
 
         if len(passwordErrors) > 0:
-            return jsonify({'status': '2', 'answer': passwordErrors})  
+            return jsonify({'status': '2', 'answer': passwordErrors, 'newCSRFtoken': newCSRFtoken})  
 
         if len(request.form.get('Password2')) == 0:
             answer = gettext('Password confirmation field is empty')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
         
         if request.form.get('Password') != request.form.get('Password2'):
             answer = gettext('Passwords do not match!')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
         
         if len(request.form.get('LanguageID')) == 0:
             answer = gettext('Please specify prefared language')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
         
         LanguageID = request.form.get('LanguageID')
 
@@ -1094,7 +1143,7 @@ def stuff_signup(uniqueURL):
         
         if result['length'] == 0:
             answer = gettext('The URL is expired')
-            return jsonify({'status': '0', 'answer': answer}) 
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
         
         row = result['data'][0]
         Email = row['Email']
@@ -1110,7 +1159,7 @@ def stuff_signup(uniqueURL):
         
         if result['inserted_id'] is None:
             answer = " Something is wrong!"
-            return jsonify({'status': '0', 'answer': answer})
+            return jsonify({'status': '0', 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken})
         
 
         # Change status of buffer
@@ -1125,12 +1174,7 @@ def stuff_signup(uniqueURL):
         sqlQuery = "SELECT * FROM `buffer` WHERE `Url` = %s AND `Status` = 0 AND `Deadline` > CURRENT_TIMESTAMP;"
         sqlValTuple = (uniqueURL,)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
-
-        # print('AAAAAAAAAAAAA')
-        # print(result)
-        # print(uniqueURL)
-        # print('BBBBBBBBBBBBB')
-        
+               
         templateHTML = 'error.html'
         if result['length'] > 0:
             templateHTML = 'teammate-signup.html'
@@ -1150,28 +1194,29 @@ def stuff_signup(uniqueURL):
 @login_required
 def edit_role(RoleID):
     if request.method == "POST":
+        newCSRFtoken = generate_csrf()
               
         if len(request.form.get('RoleID')) == 0:
             answer = gettext('Something wrong!')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
         
         RoleID  = request.form.get('RoleID')
         
         if len(request.form.get('languageID')) == 0:
             answer = gettext('Something wrongdfd!')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
         
         languageID  = request.form.get('languageID')
 
         if len(request.form.get('Role')) == 0:
             answer = gettext('Please specify the role')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Role  = request.form.get('Role').strip()
 
         if len(request.form.get('Actions')) == 0:
             answer = gettext('Please choose at least on action')
-            return jsonify({'status': '0', 'answer': answer})  
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Actions = request.form.get('Actions').strip()
 
@@ -1182,7 +1227,7 @@ def edit_role(RoleID):
 
         if result['length'] > 0:
             answer = f""" There is already a role called "{Role}" """
-            return jsonify({'status': '0', 'answer': answer}) 
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
         
 
         sqlQuery = "UPDATE `rol` SET `Rol` = %s, `ActionIDs` = %s WHERE `ID` = %s;"
@@ -1197,7 +1242,7 @@ def edit_role(RoleID):
         else:
             answer = result['answer']
             # answer = "Something is wrong!"
-            return jsonify({'status': '0', 'answer': answer}) 
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     else:
         languageID = getLangID()
 
@@ -1280,20 +1325,12 @@ def articles():
 def login():
     if request.method == "POST":
         session.clear()
-        # Validate email
-        # email = request.form.get('email').strip()
-        # email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-
-        # # Check if the email matches the pattern
-        # if not re.match(email_pattern, email):
-        #     response = {'status': '0', 'message': 'Invalid email format'}
-        #     return jsonify(response)
-        
+        newCSRFtoken = generate_csrf()
         # Checking username
         username = request.form.get('username') 
         if not username:
             answer = gettext('Please specify username')
-            response = {'status': '0', 'answer': answer}
+            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
             return jsonify(response)
         
 
@@ -1301,10 +1338,10 @@ def login():
         password = request.form.get('password') 
         if not password:
             answer = gettext('Please specify password')
-            response = {'status': '0', 'answer': answer}
+            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
             return jsonify(response)
         
-        sqlQuery = "SELECT * FROM `stuff` WHERE `Username` = %s"
+        sqlQuery = "SELECT * FROM `stuff` WHERE `Username` = %s AND `Status` = 1"
         sqlValTuple  = (username,)
         result = sqlSelect(sqlQuery, sqlValTuple, True)    
         
@@ -1315,7 +1352,7 @@ def login():
             return jsonify(response)
         else:
             answer = gettext('The username or password do not match')
-            response = {'status': '0', 'answer': answer}
+            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
             return jsonify(response)
         
     else:
