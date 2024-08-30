@@ -134,10 +134,10 @@ input[type=submit]:hover {
 
 
 
-<div class="card-container">
+<div class="card-container-user">
 {% if result.length > 0 %}
   {% for row in result.data %}
-  <!-- {{ row }} -->
+  
   <div class="card">
     <img src="{{ url_for('static', filename='images/thumbnails/' + row['Thumbnail']) }}" alt="{{ row['AltText'] }}" class="card-image">
     <div class="card-content">

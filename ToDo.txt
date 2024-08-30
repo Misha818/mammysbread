@@ -54,14 +54,15 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
     https 
     edit-teammate
     Header
+    mobile friendly dashboard header
+    
 ===========================================================
 
     
-    Contacts {style, backend}
+    Contacts { style, backend }
 
     Footer
-    About {style, content}
-    mobile friendly dashboard header
+    About { style, content }
 
     Տեխնիկական բնութագիր
 
