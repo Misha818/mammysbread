@@ -1175,8 +1175,8 @@ h2 {
   footer div {
       flex: 1 1 100%;
       max-width: 100%;
-      padding: 20px 0;
-      text-align: center;
+      /* padding: 20px 0; */
+      text-align: left;
   }
 
   footer ul {
@@ -1194,69 +1194,30 @@ h2 {
   }
 }
 
- /*        
-      .card-container {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-      
-      .card {
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        transition: transform 0.3s ease;
-      }
-      
-      .card:hover {
-        transform: translateY(-5px);
-      }
-      
-      .card-image {
-        width: 100%;
-        height: auto;
-      }
-      
-      .card-content {
-        padding: 20px;
-      }
-      
-      .card-title {
-        font-size: 1.5rem;
-        margin-bottom: 10px;
-      }
-      
-      .card-text {
-        font-size: 1rem;
-        color: #666;
-        line-height: 1.4;
-      }
-      
-      .card-button {
-        display: inline-block;
-        padding: 8px 16px;
-        background-color: #007bff;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 4px;
-        margin-top: 10px;
-        font-weight: bold;
-      }
-      
-      .card-button:hover {
-        background-color: #0056b3;
-      }
-      
-      @media (min-width: 600px) {
-        .card-container {
-          grid-template-columns: repeat(2, 1fr); 
-        }
-      }
-      
-      @media (min-width: 900px) {
-        .card-container {
-          grid-template-columns: repeat(3, 1fr); 
-        }
-      }
-       */
+.fa {
+  padding: 20px;
+  font-size: 30px;
+  width: 50px;
+  text-align: center;
+  text-decoration: none;
+  margin: 5px 2px;
+}
+
+.fa:hover {
+    opacity: 0.7;
+}
+
+.fa-facebook {
+  background: #3B5998;
+  color: white;
+}
+
+.fa-instagram {
+  background: #E1306C;
+  color: white;
+}
+
+.fa-youtube {
+  background: #bb0000;
+  color: white;
+}

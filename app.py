@@ -162,6 +162,22 @@ def about():
     return render_template('index.html', result=result, scrollTo='about', current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
 
+@app.route('/contacts')
+def contacts():
+    languageID = getLangID()
+    sqlQuery =  f"""SELECT * FROM `article` 
+                    LEFT JOIN `article_relatives`
+                      ON  `article_relatives`.`A_ID` = `article`.`ID`
+                    WHERE `article_relatives`.`Language_ID` = %s
+                    AND `Article_Status` = 2
+                """
+    
+    sqlValTuple = (languageID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    return render_template('index.html', result=result, scrollTo='contacts', current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+
+
 # Render the index.html template
 @app.route('/<myLinks>')
 def index(myLinks):

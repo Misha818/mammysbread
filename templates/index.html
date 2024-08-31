@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <title>
         {{ _('Home') }}
@@ -26,13 +27,7 @@
           });
         });
 
-      function headerScroll() {
-          let scrollTo = {{ scrollTo }};  
-          let target_to_navigate = document.getElementById(scrollTo);
-          target_to_navigate.scrollIntoView({ behavior: 'smooth' });
-      };
-
-      headerScroll();
+      
     </script>
     <style>
 body {
@@ -68,7 +63,7 @@ input[type=submit]:hover {
 /* Style the container/contact section */
 .container {
   border-radius: 5px;
-  background-color: #f1f1f1;
+  background-color: #f8f9fa;
   padding: 20px;
   margin-bottom: 2%;
 }
@@ -120,11 +115,11 @@ input[type=submit]:hover {
       <div class="line"></div>
     </div>
     <div class="nav-item">
-      <div class="nav-link nav-to" value="about">{{ _('About') }}</div>
+      <div class="nav-link nav-to about" value="about">{{ _('About') }}</div>
       <div class="line"></div>
     </div>
     <div class="nav-item">
-      <div class="nav-link nav-to" value="contacts">{{ _('Contacts') }}</div>
+      <div class="nav-link nav-to contacts" value="contacts">{{ _('Contacts') }}</div>
       <div class="line"></div>
     </div>
 </div>
@@ -178,30 +173,6 @@ input[type=submit]:hover {
     <h2>Contact Us</h2>
     <p>Swing by for a cup of coffee, or leave us a message:</p>
   </div>
-
-  <!-- <form>
-    <label for="fname">First Name</label>
-    <input type="text" id="fname" name="firstname" placeholder="Your name..">
-    <label for="lname">Last Name</label>
-    <input type="text" id="lname" name="lastname" placeholder="Your last name..">
-    <label for="country">Country</label>
-    <select id="country" name="country">
-      <option value="australia">Australia</option>
-      <option value="canada">Canada</option>
-      <option value="usa">USA</option>
-    </select>
-    <label for="subject">Subject</label>
-    <textarea id="subject" name="subject" placeholder="Write something.." style="height:170px"></textarea>
-    <input type="submit" value="Submit" style="background-color: #b8b8b873;">
-  </form> -->
-  <!-- <div class="row">
-    <div class="column">
-      <img src="https://www.w3schools.com/w3images/map.jpg" style="width:100%">
-    </div>
-    <div class="column">
-      
-    </div>
-  </div> -->
 </div>
   
 <div class="container" style="padding: 0px;
@@ -209,29 +180,34 @@ input[type=submit]:hover {
                               ">
 
   
-  <footer style="background-color: #f8f9fa; padding: 40px 20px; text-align: center; border-top: 1px solid #e0e0e0;">
+  <footer style="background-color: #f8f9fa; padding: 40px 20px; text-align: left; width: 90%; margin-left: 10%;">
     <div style="display: flex; justify-content: space-between; flex-wrap: wrap; max-width: 1720px; margin: 0 auto;">
-      <div style="flex: 1; min-width: 200px; padding: 20px;">
+      <!-- <div style="flex: 1; min-width: 200px; padding: 20px;">
         <h3 style="color: #007bff; margin-bottom: 20px;">Services</h3>
           <ul style="list-style-type: none; padding: 0;">
               <li><a href="#service1" style="color: #007bff; text-decoration: none;">Service 1</a></li>
               <li><a href="#service2" style="color: #007bff; text-decoration: none;">Service 2</a></li>
               <li><a href="#service3" style="color: #007bff; text-decoration: none;">Service 3</a></li>
             </ul>
-          </div>
+          </div> -->
+
           <div style="flex: 1; min-width: 200px; padding: 20px;">
             <h3 style="color: #007bff; margin-bottom: 20px;">Contact</h3>
             <p style="color: #6c757d;">123 Street Name<br>City, State, 12345<br>Email: info@example.com</p>
             <div style="margin-top: 20px;">
-              <a href="https://facebook.com" target="_blank" style="margin-right: 15px;">
-                <img src="path-to-facebook-icon.png" alt="Facebook" style="height: 24px;">
-              </a>
-              <a href="https://twitter.com" target="_blank" style="margin-right: 15px;">
-                <img src="path-to-twitter-icon.png" alt="Twitter" style="height: 24px;">
-              </a>
-              <a href="https://linkedin.com" target="_blank">
-                <img src="path-to-linkedin-icon.png" alt="LinkedIn" style="height: 24px;">
-              </a>
+              <a href="https://facebook.com" class="fa fa-facebook" target="_blank" ></a>
+              <a href="https://instagram.com" class="fa fa-instagram" target="_blank"></a>
+              <a href="https://youtube.com" class="fa fa-youtube" target="_blank"></a>
+              
+            </div>
+          </div>
+
+          <div style="flex: 1; min-width: 200px; padding: 20px;">
+            <h3 style="color: #007bff; margin-bottom: 20px;">Subscribe to us!</h3>
+            <p style="color: #6c757d;">Be the first to know about discounts and promotions.</p>
+            <div>
+              <input type="text" name="email" id="email" style="width: 90%"/>
+              <div class="pcButtonS" id="subscribe" style="margin-top: unset;">Submit</div>
             </div>
           </div>
         </div>
@@ -288,6 +264,29 @@ input[type=submit]:hover {
       document.querySelector('body').classList.add('loaded');
     });
         
+    document.addEventListener('click', function(event) {
+      if (event.target.classList.contains('about')) {
+          let target_to_navigate = document.getElementById('about');
+           // Scroll the window to the target div with smooth behavior
+          target_to_navigate.scrollIntoView({ behavior: 'smooth' });
+             
+      }
+
+      if (event.target.classList.contains('contacts')) {
+        let target_to_navigate = document.getElementById('contacts');
+           // Scroll the window to the target div with smooth behavior
+          target_to_navigate.scrollIntoView({ behavior: 'smooth' });
+      }
+
+    });
+    
+    function headerScroll() {
+          let scrollTo = "{{ scrollTo }}";  
+          let target_to_navigate = document.getElementById(scrollTo);
+          target_to_navigate.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      headerScroll();
 
     });
 </script>
