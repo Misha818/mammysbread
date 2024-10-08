@@ -11,6 +11,6 @@ Add and commit your changes:
     git commit -m "Initial commit for ecommerce store project"
 
 Push your changes to the new repository:
-    git push -u origin master
+    git push -u origin main
 
 
