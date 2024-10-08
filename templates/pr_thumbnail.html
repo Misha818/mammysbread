@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-    {{ _('Edit Product Category') }}
+    {{ _('Product Thumbnail') }}
 {% endblock %}
 
 {% block head %}
@@ -29,9 +29,8 @@
 
 {% block content %}
 
-{{ sideBar | safe }}
-
     <div class="containerS">
+
         <div id="mistakes"></div>
         <div class="overlay" id="overlay"></div>
         
@@ -39,20 +38,20 @@
         <img src="{{ url_for('static', filename='images/error.png' ) }}" >
         <H3> {{ _('Something went wrong.') }} </H3>
         {% else %}
-{% set statusWidth = "width: 120%;" %}      
-{% if pcImages.image == true %}
-    {% set statusWidth = "" %}      
+        
+{% if resultIMG.length > 0 %}
+<!-- <h3 style="text-align: center;">{{ _('Images from other language(s)') }}</h3> -->
 
 <div class="pc_slider">
         
 
         <div class="pc_slides">
 
-    {% for image in pcImages.imageList %}
+    {% for row in resultIMG.data %}
 
         <div class="pc_slide active">
-            <img src="{{ url_for('static', filename='images/pc_uploads/' + image['Product_Category_Images'] ) }}" >
-            <input type="hidden" alt="{{ image['altText'] }}" class="altText" />
+            <img src="{{ url_for('static', filename='images/pr_thumbnails/' + row['thumbnail'] ) }}"  >
+            <input type="hidden" alt="{{ row['AltText'] }}" class="altText" />
         </div>
 
     {% endfor %}
@@ -67,7 +66,8 @@
 <div class="pc_slides"></div>
 {% endif %}
 
-<form id="product-category-form">
+<form id="add-product-form">
+
     <input type="hidden" id="imageState" value="0">
     <input type="hidden" id="img_value" value="">
     
@@ -75,23 +75,18 @@
     <input type="hidden" id="language-id" value="{{ languageID }}">
     <input type="hidden" id="RefKey" value="{{ RefKey }}">
 
-    <input type="text" id="category-name" placeholder="{{ _('Product Category Name') }}" value="{{ content.name }}" style="padding: 15px;">
     <div  class="dropzone" id="myDropzone">
         <div class="dz-message dz-button">{{ _('Image') }}</div>
     </div>
 
-    <div class="status-container" style="{{ statusWidth }}">
-        <label>{{ _('Status') }}</label>
-        <label><input type="radio" name="status" value="1" {% if content.status == 1 %} checked {% endif %}> {{ _('Active') }}</label>
-        <label><input type="radio" name="status" value="0" {% if content.status == 0 %} checked {% endif %}> {{ _('Passive') }}</label>
-    </div>
+    <div id="saveButton" class="pcButtonS" style="width:100%;">{{ _('Submit') }}</div>
+    <div id="saving" class="pcButtonS hidden" style="width:100%;">{{ _('Saving...') }}</div>
 
-
-    <div id="saveButton" class="pcButtonS margin10">{{ _('Submit') }}</div>
-    <div id="saving" class="pcButtonS margin10 hidden">{{ _('Saving...') }}</div>
 </form>
 
-<a href="{{ url_for('home') }}product-categories">{{ _('Back') }}</a>
+
+<a href="{{ url_for('home') }}product/{{ RefKey }}" class="self-left">{{ _('Back') }}</a>
+
 </div>
 
 
@@ -176,6 +171,7 @@ slides.forEach(slide => {
 
 <!-- Thumbnail image manipulations -->
 <script>
+
 let csrfToken = "{{ csrf_token() }}"
 const content = {{ content | tojson  }};
 let imgName = '';
@@ -183,8 +179,8 @@ let imgAlt = '';
 // let altInput = '';
 
 if (content.content === true) {
-    imgName = content.image;
-    imgAlt = content.AltText;
+    imgName = content.data[0].thumbnail;
+    imgAlt = content.data[0].AltText;
 }
 
 let cropperState = 0;
@@ -206,6 +202,7 @@ let myDropzone = new Dropzone("#myDropzone", {
         
 
         dz.on("addedfile", function (file) {
+              
             
             let previewElement = file.previewElement;
             if (previewElement) {       
@@ -303,16 +300,7 @@ let myDropzone = new Dropzone("#myDropzone", {
 function addImageFromUrl(imgName) {
     // cropperState = 0;
     if (imgName.length > 0) {
-
-        
-        let url = window.location.origin +'/static/images/pc_uploads/' + imgName
-        
-        // fetch(url)
-        // .then(response => response.blob())
-        // .then(blob => {
-        //     let file = new File([blob], imgAlt, { type: "image/jpeg" });
-        //     myDropzone.addFile(file);
-        // })
+        let url = window.location.origin + '/static/images/pr_thumbnails/' + imgName;
         let fileType = "image/" + imgName.split('.').pop() 
 
         fetch(url)
@@ -322,10 +310,9 @@ function addImageFromUrl(imgName) {
             myDropzone.addFile(file);
         })
         .catch(error => console.error('Error fetching the image:', error));
-        
     }
-        
 }
+
 
 addImageFromUrl(imgName);
 
@@ -345,7 +332,7 @@ function openImageEditorModal(imageUrl, callback) {
             <img id="imageToEdit" src="${imageUrl}" alt="Image to edit">
             <br>
             <button id="saveEditedImage">{{ _('Crop') }}</button>
-            <button id="cancelEdit">{{ _('Done') }}</button>           
+            <button id="cancelEdit">{{ _('Done') }}</button>
         `;
         document.body.appendChild(imageEditorModal);
 
@@ -427,7 +414,6 @@ saveButton.addEventListener('click', function (event) {
     }
 
     
-    let categoryName = document.getElementById('category-name').value;
     let languageID = document.getElementById('language-id').value;
     let RefKey = document.getElementById('RefKey').value;
 
@@ -447,26 +433,11 @@ saveButton.addEventListener('click', function (event) {
         formData.append('file', file);
     }
 
-     // Get all radio buttons with the name 'status'
-     let categoryStatusRadios = document.getElementsByName('status');
-
-    // Initialize a variable to store the value of the checked radio button
-    let checkedValue = null;
-
-    // Iterate over the NodeList to find the checked radio button
-    for (let radio of categoryStatusRadios) {
-        if (radio.checked) {
-            checkedValue = radio.value;
-            break; // Stop the loop once the checked radio button is found
-        }
-    }
-
+ 
     // Create a new FormData object
-    formData.append('categoryName', categoryName);
     formData.append('languageID', languageID);
     formData.append('RefKey', RefKey);
     formData.append('state', arr);
-    formData.append('categoryStatus', checkedValue);
     formData.append('AltText', altText);
     
 
@@ -474,7 +445,7 @@ saveButton.addEventListener('click', function (event) {
     let xhr = new XMLHttpRequest();
 
     // Configure the request
-    xhr.open('POST', '/edit_product_category');
+    xhr.open('POST', '/edit_pr_thumbnail');
     xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
     // Define what happens on successful data submission
@@ -489,7 +460,6 @@ saveButton.addEventListener('click', function (event) {
                 // Handle empty product name
                 mistakesDiv.innerHTML = response.answer;
                 mistakesDiv.style.color = 'red';
-                mistakesDiv.style.display = 'flex';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -501,7 +471,7 @@ saveButton.addEventListener('click', function (event) {
             
             if (response.status === '1') {
                 // Handle success
-                let prURL = window.location.origin  + '/product-categories';
+                let prURL = window.location.origin  + '/pr-thumbnail/' + RefKey;
                 location.href = prURL;
             }
         } else {

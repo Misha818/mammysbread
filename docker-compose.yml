@@ -1,0 +1,28 @@
+version: '3'
+services:
+  web:
+    build: .
+    container_name: flask_app
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "${PASSWORD}"  # Set root password
+      MYSQL_DATABASE: "${DATABASE}"       # Create a database
+    ports:
+      - "3307:3306"  # Map MySQL container's port 3306 to host port 3307
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./Dump.sql:/docker-entrypoint-initdb.d/Dump.sql
+
+volumes:
+  db_data:

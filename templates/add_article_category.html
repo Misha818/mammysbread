@@ -1,7 +1,4 @@
 {% extends 'base.html' %}
-{% block title %}
-{{ _('Add Product') }}
-{% endblock %}
 
 {% block head %}
 
@@ -26,51 +23,32 @@
     
     </style>
 {% endblock %}
+{% block title %}
+    {{ _('Add Article Category') }}
+{% endblock %}
+
+
 
 {% block content %}
-
-{% if errorMessage == true %}
-    <div class="containerS">
-        <img src="{{ url_for('static', filename='images/error.png' ) }} " />
-        <H3>{{ _('You should add article in this language first!') }}</H3>
-    </div>    
-{% else %}
 <div class="overlay" id="overlay"></div>
+
+{{ sideBar | safe }}
+
 <div class="containerS">
-    <h1>{{ _('Edit Thumbnail Image') }}</h1>
+    <h1>{{ _('Add Article Category') }}</h1>
     <!-- Form for adding a product -->
     <div id="mistakes"></div>
-          
-    {% if thumbnailImages.image == true %}
-    <div class="pc_slider">
-            <h3 style="text-align: center;">{{ _('Images from other language(s)') }}</h3>
 
-            <div class="pc_slides">
-
-        {% for image in thumbnailImages.imageList %}
-
-            <div class="pc_slide active">
-                <img src="{{ url_for('static', filename='images/thumbnails/' + image['thumbnail'] ) }}" >
-                <input type="hidden" alt="{{ image['altText'] }}" class="altText" />
-            </div>
-
-        {% endfor %}
-        
-        </div>
-            <a class="prev" onclick="moveSlide(-1)">&#10094;</a>
-            <a class="next" onclick="moveSlide(1)">&#10095;</a>
-        </div>
-
-    {% else %}    
-    <div class="pc_slides"></div>
-    {% endif %}
-
-    <form id="add-product-form">
+    <form>
         <input type="hidden" id="image" value="1">
         <input type="hidden" id="img_value" value="">
-
         
-        <div  class="dropzone" id="myDropzone">
+        
+        <input type="text" id="category-name" placeholder="{{ _('Article Category Name') }}" style="padding: 15px;">
+        <div  class="dropzone" id="myDropzone" style="
+        width: 141px;
+        margin-left: 15%;
+    ">
             <div class="dz-message dz-button">{{ _('Thumbnail image') }}</div>
         </div>
 
@@ -78,88 +56,13 @@
         <input type="hidden" id="language-id" value="{{ languageID }}">
         <input type="hidden" id="RefKey" value="{{ RefKey }}">
 
-        <div id="saveButton" class="pcButtonS margin10">{{ _('Submit') }}</div>
-        <div id="saving" class="pcButtonS margin10 hidden">{{ _('Saving...') }}</div>
+        <div id="saveButton" class="pcButtonS modifiedB" style="width: 100%;">{{ _('Submit') }}</div>
+        <div id="saving" class="pcButtonS modifiedB hidden" style="width: 100%;">{{ _('Saving...') }}</div>
     </form>
 
 
 </div>
 
-
-<script>
-    let currentSlide = 0;
-    
-    function showSlide(index) {
-    const slides = document.querySelectorAll('.pc_slide');
-    const slidesToShow = 2;
-    const totalSlides = slides.length;
-    
-    // Calculate the max index we can go to
-    const maxIndex = Math.ceil(totalSlides / slidesToShow) - 1;
-    
-    // Wrap around if necessary
-    if (index > maxIndex) {
-        currentSlide = 0;
-    } else if (index < 0) {
-        currentSlide = maxIndex;
-    } else {
-        currentSlide = index;
-    }
-    
-    // Calculate offset
-    const offset = -currentSlide * 100;
-    
-    // Apply transform
-    document.querySelector('.pc_slides').style.transform = `translateX(${offset}%)`;
-    
-    // Update active class
-    slides.forEach((slide, idx) => {
-        slide.classList.toggle('active', Math.floor(idx / slidesToShow) === currentSlide);
-    });
-    }
-    
-    function moveSlide(direction) {
-    showSlide(currentSlide + direction);
-    }
-    
-    document.addEventListener('DOMContentLoaded', () => {
-    showSlide(currentSlide);
-    
-    // Add click event listener to each image
-    const slides = document.querySelectorAll('.pc_slide');
-    slides.forEach(slide => {
-        slide.addEventListener('click', () => {
-            // If the slide is already selected, deselect it
-            if (slide.classList.contains('selected')) {
-                slide.classList.remove('selected');
-                // Clear the hidden input's value
-                document.getElementById('img_value').value = '';
-                document.getElementById('image').value = '1';
-                document.getElementById("myDropzone").style.display = "flex";
-            } else {
-                // Deselect all slides
-                slides.forEach(s => s.classList.remove('selected'));
-                
-                // Select the clicked slide
-                slide.classList.add('selected');
-                
-                // Extract file name and type from img tag
-                const img = slide.querySelector('img');
-                const imgSrc = img.src.split('\\').pop().split('/').pop(); // Extract file name
-                const imgType = imgSrc.split('.').pop(); // Extract file type
-                const imgValue = `${imgSrc} (${imgType})`;
-    
-                let trimmedImageName = imgValue.split(' ')[0].trim();
-                
-                // Update the hidden input's value
-                document.getElementById('img_value').value = trimmedImageName;
-                document.getElementById('image').value = '0';
-                document.getElementById("myDropzone").style.display = "none";
-            }
-        });
-    });
-    });
-    </script>
 <!-- Script for Dropzone (image upload) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -167,17 +70,9 @@
 
 <!-- Thumbnail image manipulations -->
 <script>
-    const prData = {{ result | tojson  }};
-    let imgName = '';
-    let imgAlt = '';
-    // let altInput = '';
-
-    if (prData.length > 0) {
-        imgName = prData.data[0].thumbnail;
-        imgAlt = prData.data[0].AltText;
-    }
+    let csrfToken = "{{ csrf_token() }}"
         
-    let cropperState = 0;
+    let cropperState = 1;
 
     // Create a FormData object to hold the files
     let formData = new FormData();
@@ -193,6 +88,7 @@
         clickable: true,
         init: function () {
             let dz = this;          
+            
 
             dz.on("addedfile", function (file) {
                 
@@ -268,7 +164,6 @@
 
                 // Add a text input for the alt attribute
                 let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='{{ _('Enter alt text') }}'>");
-                altInput.value = imgAlt;
                 file.previewElement.appendChild(altInput);
             });
 
@@ -281,33 +176,7 @@
             });
         }
 
-
-
-
     });
-
-    
-    // Add image from url to dropzone
-    function addImageFromUrl(imgName) {
-        // cropperState = 0;
-        if (imgName.length > 0) {
-
-            
-            let url = window.location.origin +'/static/images/thumbnails/' + imgName
-            
-            fetch(url)
-            .then(response => response.blob())
-            .then(blob => {
-                let file = new File([blob], imgAlt, { type: "image/jpeg" });
-                myDropzone.addFile(file);
-            })
-            .catch(error => console.error('Error fetching the image:', error));
-            
-        }
-            
-    }
-
-    addImageFromUrl(imgName);
 
     // Image Editor Modal Logic
     let cropper;
@@ -383,7 +252,7 @@
     }
 
         // When the form is submitted
-        const saveButton = document.getElementById('saveButton');
+    const saveButton = document.getElementById('saveButton');
 
     saveButton.addEventListener('click', function (event) {
 
@@ -405,26 +274,14 @@
 
         
         let languageID = document.getElementById('language-id').value;
-        let RefKey = document.getElementById('RefKey').value;
+        let categoryName = document.getElementById('category-name').value;
+        
 
-        let mySlider = document.getElementById("image").value;
-        if (mySlider === "0") {      
-            let image_value = document.getElementById("img_value").value;         
-            arr = JSON.stringify({ status: 0, file: image_value }); // if 0 => no file, but we have file name
-        } else {
-            arr = JSON.stringify({ status: 0, file: '' });
-            if (file) {                
-                arr = JSON.stringify({ status: 1 });
-                altText = document.querySelector('.alt-input').value;
-            }
-
-        }
-
+        
         // Create a new FormData object
         formData.append('languageID', languageID);
-        formData.append('RefKey', RefKey);
+        formData.append('categoryName', categoryName);
         formData.append('file', file);
-        formData.append('state', arr);
         formData.append('AltText', altText);
         
 
@@ -432,7 +289,8 @@
         let xhr = new XMLHttpRequest();
 
         // Configure the request
-        xhr.open('POST', '/edit_thumbnail');
+        xhr.open('POST', '/add_article_category');
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission
         xhr.onload = function () {
@@ -442,10 +300,11 @@
                 let mistakesDiv = document.getElementById('mistakes');
                 mistakesDiv.innerHTML = ''; // Clear previous messages
 
-                if (response.status === '0') {
+                if (response.status === '2' || response.status === '3') {
                     // Handle empty product name
                     mistakesDiv.innerHTML = response.answer;
                     mistakesDiv.style.color = 'red';
+                    mistakesDiv.style.display = 'flex';
 
                     // Scroll the window to the mistakesDiv with smooth behavior
                     mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -457,9 +316,11 @@
                 
                 if (response.status === '1') {
                     // Handle success
-                    // alert(response.answer);
-                    let prURL = window.location.origin  + '/thumbnail/' + RefKey;
+                    
+                    let prURL = window.location.origin  + '/article-categories';
                     location.href = prURL;
+                    // location.reload();
+
                 }
             } else {
                 // Handle error response
@@ -476,7 +337,6 @@
 
 
 </script>
-<!-- End of thumbnail image manipulations -->
-{% endif %}
+
 
 {% endblock %}

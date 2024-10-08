@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-    {{ _('Edit Product Category') }}
+    {{ _('Edit Article Category') }}
 {% endblock %}
 
 {% block head %}
@@ -51,7 +51,7 @@
     {% for image in pcImages.imageList %}
 
         <div class="pc_slide active">
-            <img src="{{ url_for('static', filename='images/pc_uploads/' + image['Product_Category_Images'] ) }}" >
+            <img src="{{ url_for('static', filename='images/pc_uploads/' + image['Article_Category_Images'] ) }}" >
             <input type="hidden" alt="{{ image['altText'] }}" class="altText" />
         </div>
 
@@ -75,7 +75,7 @@
     <input type="hidden" id="language-id" value="{{ languageID }}">
     <input type="hidden" id="RefKey" value="{{ RefKey }}">
 
-    <input type="text" id="category-name" placeholder="{{ _('Product Category Name') }}" value="{{ content.name }}" style="padding: 15px;">
+    <input type="text" id="category-name" placeholder="{{ _('Article Category Name') }}" value="{{ content.name }}" style="padding: 15px;">
     <div  class="dropzone" id="myDropzone">
         <div class="dz-message dz-button">{{ _('Image') }}</div>
     </div>
@@ -91,7 +91,7 @@
     <div id="saving" class="pcButtonS margin10 hidden">{{ _('Saving...') }}</div>
 </form>
 
-<a href="{{ url_for('home') }}product-categories">{{ _('Back') }}</a>
+<a href="{{ url_for('home') }}article-categories">{{ _('Back') }}</a>
 </div>
 
 
@@ -474,7 +474,7 @@ saveButton.addEventListener('click', function (event) {
     let xhr = new XMLHttpRequest();
 
     // Configure the request
-    xhr.open('POST', '/edit_product_category');
+    xhr.open('POST', '/edit_article_category');
     xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
     // Define what happens on successful data submission
@@ -501,7 +501,7 @@ saveButton.addEventListener('click', function (event) {
             
             if (response.status === '1') {
                 // Handle success
-                let prURL = window.location.origin  + '/product-categories';
+                let prURL = window.location.origin  + '/article-categories';
                 location.href = prURL;
             }
         } else {

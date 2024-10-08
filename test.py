@@ -1,21 +1,21 @@
-from functools import wraps
-from flask import session, redirect
+import re
 
-def login_required(f):
-    """
-    Decorate routes to require login.
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # if session.get("user_id") is None:
-        #     return redirect("/login")
-        print("Original function name:", f.__name__)
-        return f(*args, **kwargs)
-    return decorated_function
+def replace_spaces_in_text_nodes(html_content):
+    # This regex will match text between HTML tags while ignoring attributes and tags themselves
+    def replace_spaces(match):
+        # Replace spaces in the text node with &nbsp;
+        return match.group(1).replace(' ', '&nbsp;')
+    
+    # Regex explanation:
+    # 1. `>(.*?)<` matches text content between any tags.
+    # 2. `re.DOTALL` allows the `.` to match newlines as well.
+    return re.sub(r'>([^<]+)<', lambda m: f">{replace_spaces(m)}<", html_content, flags=re.DOTALL)
 
-@login_required
-def edit_role():
-    pass
+# Example usage
+html_content = '''
+<div style="color: red; background-color: blue;">This  is   an example.</div>
+<p>This is another    example.</p>
+'''
 
-# Test the decorator
-edit_role()
+converted_html = replace_spaces_in_text_nodes(html_content)
+print(converted_html)

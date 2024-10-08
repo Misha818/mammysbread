@@ -1221,3 +1221,284 @@ h2 {
   background: #bb0000;
   color: white;
 }
+
+
+
+
+
+
+.sidebar {
+  /* width: 0px; */
+  width: 250px;
+  background-color: #f4f5fa;
+  height: 100vh;
+  /* padding: 0px; */
+  padding: 20px;
+  color: #4a4a4a;
+  border-right: 1px solid #ddd;
+  position: fixed;
+  transition: transform 0.5s ease, width 0.5s ease;  
+  white-space: nowrap;
+  left: 0;
+  overflow-x: hidden;
+  top: 60px;
+  border-radius: 8px;
+  /* display: none; */
+}
+
+.sidebar.collapsed {
+  transform: translateX(-200px);
+  width: 50px;
+  padding: 20px 10px;
+}
+
+
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 33px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #4a4a4a;
+  z-index: 1000;
+}
+
+.sidebar-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #4a4a4a;
+  margin-bottom: 10px;
+  padding: 10px 0;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding-left: 0;
+  padding-top: 25px;
+}
+
+.sidebar-menu li {
+  margin-bottom: 15px;
+}
+
+.sidebar-menu li a {
+  text-decoration: none;
+  font-size: 16px;
+  color: #4a4a4a;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background 0.5s;
+}
+
+.sidebar-menu li a:hover {
+  background-color: #e4e5fa;
+}
+
+.sidebar-menu li a i {
+  margin-right: 10px;
+  color: #5856d6;
+  font-size: 18px;
+}
+
+.sidebar.collapsed .sidebar-title,
+.sidebar.collapsed .sidebar-menu li a span,
+.sidebar.collapsed .sidebar-title {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-menu li a i {
+  margin-right: 0;
+}
+
+
+
+
+
+.table-container {
+  position: relative;
+  top: 0px;  
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.table-left {
+  margin-left: 0px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: #333;
+  color: #fff;
+  text-align: left;
+}
+
+th, td {
+  padding: 16px;
+  font-size: 14px;
+}
+
+th {
+  font-weight: bold;
+}
+
+th .sort-icon {
+  color: #fff;
+  font-size: 12px;
+  margin: 2%;
+  /* visibility: hidden; */
+}
+
+th.active .sort-icon {
+  visibility: visible; /* Show on active */
+}
+.sort-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* Adjust space between arrows */
+}
+.sort-icons i {
+  color: #fff;
+  font-size: 12px;
+}
+.sort-icons i:hover {
+  cursor: pointer;
+  /* color: #5856d6; */
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.mydown {
+  margin-top: -2px;
+}
+
+.myup {
+  margin-bottom: -7px;
+}
+.status-label {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.status-on-hold {
+  background-color: #ffcc00;
+}
+
+.status-open {
+  background-color: #6be6b2;
+}
+
+.status-closed {
+  background-color: #f86c6b;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 6px;
+  background-color: #4e73df;
+  border-radius: 3px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.pagination a {
+  margin: 0 4px;
+  padding: 6px 12px;
+  color: #4e73df;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.pagination a.active {
+  background-color: #4e73df;
+  color: #fff;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+}
+
+.menu-icon {
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.edit-user {
+  color: #5856d6;
+  font-size: 18px;
+  text-decoration: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  thead {
+    display: none;
+  }
+
+  tr {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+  }
+
+  tr td {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+
+  tr td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: #333;
+  }
+
+  .progress-bar-container, .pagination {
+    width: 100%;
+  }
+
+  .pagination {
+    font-size: 12px;
+  }
+}

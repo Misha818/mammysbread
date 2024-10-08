@@ -9,7 +9,6 @@
 
 <!-- Include Quill.js stylesheet -->
 <!-- <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet"> -->
-<link rel="stylesheet" href="{{ url_for('static', filename='quill.snow.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css">
@@ -39,6 +38,13 @@
         text-align: center;
     }
 
+    /* #editorContent blockquote {
+        border-left: 4px solid #ccc;
+        margin-bottom: 5px;
+        margin-top: 5px;
+        padding-left: 16px;
+    } */
+
 </style>
 
 
@@ -53,10 +59,9 @@
         href="{{ url_for('home', _external=True) }}stuff" 
         style="text-decoration: none;"
         >
-        {{ _('Dashboard') }}
         
+            {{ _('Dashboard') }}
     </a>
-<button class="chooseBlock" id="sliderButton">{{ _('Slider') }}</button>
     <button class="chooseBlock" id="headerButton">{{ _('Header') }}</button>
     <button class="chooseBlock" id="textEditorButton">{{ _('Editor') }}</button>
     <button class="chooseBlock" id="thumbnailButton">{{ _('Thumbnail') }}</button>
@@ -102,7 +107,8 @@
             <span class="sliderA round {{ checked }}"></span>
         </label>
     </div>
-    <div id="mistakes" style="width: 100%; color: red; display: none; margin-bottom: 5px;"></div>
+        
+    <div id="mistakes"></div>
     <!-- Slide Show and image uploader -->
     <span class="blocks hidden" id="mySlideShow">
 
@@ -111,10 +117,7 @@
             <div class="dz-message dz-button">{{ _('Click here to upload files') }}</div>
         </form>
 
-        <!-- <button id="uploadButton">{{ _('Submit') }}</button> -->
-        <div id="uploadButton" class="" >{{ _('Submit') }}</div>
-        <div id="saveUploads" class="pcButtonS hidden" >{{ _('Saving...') }}</div>
-        <!-- <button id="saving-btn" class=" ">Saving...</button> -->
+        <button id="uploadButton">{{ _('Upload Files') }}</button>
 
     
 
@@ -134,23 +137,23 @@
 
             // Initialize Dropzone
             Dropzone.autoDiscover = false;
-            let myDropzone = new Dropzone("#myDropzone", {
+            var myDropzone = new Dropzone("#myDropzone", {
                 url: "/upload",
                 autoProcessQueue: false,
                 addRemoveLinks: false,  // Disable default remove link
                 previewsContainer: "#myDropzone",
                 clickable: true,
                 init: function () {
-                    let dz = this;
+                    var dz = this;
 
                     dz.on("addedfile", function (file) {
                         // Create a new FileReader instance
-                        let reader = new FileReader();
+                        var reader = new FileReader();
 
                         // Define the onload function for the FileReader
                         reader.onload = function (event) {
                             // Get the image data URL from the FileReader
-                            let imageUrl = event.target.result;
+                            var imageUrl = event.target.result;
 
                             // Open the image editor modal
                             openImageEditorModal(imageUrl, function (editedImageBlob) {
@@ -179,34 +182,8 @@
                         });
 
                         // Add a text input for the alt attribute
-                        let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='{{ _('Enter alt text') }}'>");
+                        var altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='{{ _('Enter alt text') }}'>");
                         file.previewElement.appendChild(altInput);
-                        
-                        // Add a hidden input to detect whether the image is a new upload or not
-                        let uploadStatus = Dropzone.createElement("<input type='hidden' class='uploadStatus' value='0' >");
-                        file.previewElement.appendChild(uploadStatus);
-                    });
-
-                    
-                    let sortable = new Sortable(document.querySelector("#myDropzone"), {
-                        onEnd: function (/**Event*/evt) {
-                            // evt.newIndex contains the new index of the moved item
-                            // evt.oldIndex contains the original index
-
-                            // Reorder myDropzone.files array
-                            let reorderedFiles = [];
-                            document.querySelectorAll("#myDropzone .dz-preview").forEach(function (element, index) {
-                                // Find file in Dropzone based on previewElement
-                                let file = myDropzone.files.find(function (file) {
-                                    return file.previewElement === element;
-                                });
-                                reorderedFiles.push(file);
-                            });
-
-                            // Update Dropzone's files array with the new order
-                            myDropzone.files = reorderedFiles;
-                            // console.log(myDropzone.files); // Now the files array matches the preview order
-                        }
                     });
 
                     dz.on("complete", function (file) {
@@ -218,104 +195,34 @@
                     });
 
                     // Handle the file upload when the button is clicked
-                    let uploadButton = document.getElementById("uploadButton");
-                    let saving = document.getElementById("saveUploads");
-                    
-                    uploadButton.addEventListener("click", function () {
-                        uploadButton.style.display = 'none';
-                        saving.style.display = 'inline-block';
-
+                    document.getElementById("uploadButton").addEventListener("click", function () {
                         // Create a FormData object to hold the files
-                        let formData = new FormData();
-
-                        // console.log(myDropzone.files);
+                        var formData = new FormData();
 
                         // Append each file to the FormData object
-                        let i = 0
-                        myDropzone.files.forEach(function (file) {
-                            
-                            let fileName = "file_" + i;
-                            formData.append(fileName, file);
+                        dz.files.forEach(function (file) {
+                            formData.append("files[]", file);
 
                             // Add the alt text as a separate field
-                            let altText = file.previewElement.querySelector(".alt-input").value;
-                            let altTextName = "alt_text_" + i;
-                            formData.append(altTextName, altText);
-                            
-                            // Add upload status as a separate field
-                            // If upload status is 0 server will add new image
-                            // if upload status is 1 server will get image from repositiry
-                            // Then will check and change the order of image if needed
-                            let uStatus = file.previewElement.querySelector(".uploadStatus").value;
-                            let uploadStatus = "upload_status_" + i;
-                            formData.append(uploadStatus, uStatus);
-
-                            i++;
+                            var altText = file.previewElement.querySelector(".alt-input").value;
+                            formData.append("alt_text[]", altText);
                         });
 
-                        let languageID = prData.LanguageID;
-                        let ProductID = prData.Product_ID;
-
-                        // formData.append("languageID", languageID);
-                        formData.append("ProductID", ProductID);
-                        formData.append("Type", '1');
-
-                        // Create a new XMLHttpRequest object
-                        let xhr = new XMLHttpRequest();
-                        
-                        // Configure the request
-                        xhr.open('POST', '/upload_slides');                   
-                        xhr.setRequestHeader('X-CSRFToken', csrfToken);
-
-                        // Define what happens on successful data submission
-                        xhr.onload = function () {
-                            if (xhr.status === 200) {
-                                var response = JSON.parse(xhr.responseText);
-
-                                var mistakesDiv = document.getElementById('mistakes');
-                                mistakesDiv.innerHTML = ''; // Clear previous messages
-                                
-                                if (response.status === '0') {
-                                    // Handle Unknown Error
-                                    mistakesDiv.textContent = response.answer;
-                                    // mistakesDiv.style.color = 'red';
-                                    mistakesDiv.style.display = 'flex';
-
-                                    saving.style.display = 'none';
-                                    uploadButton.style.display = 'inline-block';
-                                    
-                                    // Scroll the window to the mistakesDiv with smooth behavior
-                                    mistakesDiv.scrollIntoView({ behavior: 'smooth' });                              
-                                    
-                                    
-                                } else if (response.status === '1') {
-                                    mistakesDiv.style.display = 'none';
-                                    saving.style.display = 'none';
-                                    uploadButton.style.display = 'inline-block';
-
-                                    console.log(response.answer)
-                                    // Handle success
-                                    alert(response.answer);
-                                    let currentUrl = window.location.href;
-                                    // location.href = currentUrl;
-                                }
-                            } else {
-                                // Handle error response
-                                uploadButton.classList.remove('hidden');
-                                saving.classList.add('hidden');
-
-                                console.error('Error adding category:', xhr.responseText);
-                            }
-                        };
-
-                        // Send the request with the FormData object
-                        xhr.send(formData);
-
-
+                        // Send the files via POST using the Fetch API
+                        fetch('/upload', {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                // console.log("Upload success:", data);
+                                alert("Files uploaded successfully!");
+                            })
+                            .catch(error => {
+                                console.error("Upload error:", error);
+                                alert("An error occurred while uploading the files.");
+                            });
                     });
-
-
-
                 }
             });
 
@@ -403,7 +310,7 @@
                 const productCategory = {{ productCategory | tojson }}
 
             const dropdownContainer = document.getElementById('pcDropDown');
-            if (productCategory.product_category.length > 0) {
+            if (productCategory.article_category.length > 0) {
                 const select = document.createElement('select');
                 select.name = 'product-category';
                 select.id = 'category-id';
@@ -411,15 +318,15 @@
 
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
-                defaultOption.textContent = '{{ _("Choose product category") }}';
+                defaultOption.textContent = '{{ _("Choose article category") }}';
                 select.appendChild(defaultOption);
 
-                productCategory.product_category.data.forEach(val => {
-                    const optVal = val['Product_Category_Name'];
+                productCategory.article_category.data.forEach(val => {
+                    const optVal = val['Article_Category_Name'];
                     if (optVal !== null) {
                         const option = document.createElement('option');
-                        option.value = val['Product_Category_ID'];
-                        if (prData.Product_Category_ID === val['Product_Category_ID']) {
+                        option.value = val['Article_Category_ID'];
+                        if (prData.Product_Category_ID === val['Article_Category_ID']) {
                             option.selected = true;
                         }
                         option.textContent = optVal;
@@ -460,13 +367,13 @@
         </div>    
         <form id="add-product-form" class="form">
             <div class="form-group row">
-                <label for="product-name" class="col-sm-3 col-form-label">{{ _('Product name') }}</label>
+                <label for="product-name" class="col-sm-3 col-form-label">{{ _('Article name') }}</label>
                 <div class="col-sm-9">
                     <input type="text" class="form-control" value="${ProductName}" id="product-name" >
                 </div>
             </div>
             <div class="form-group row">
-                <label for="product-link" class="col-sm-3 col-form-label">{{ _('Product link') }}</label>
+                <label for="product-link" class="col-sm-3 col-form-label">{{ _('Article link') }}</label>
                 <div class="col-sm-9">
                     <input type="text" class="form-control" value="${ProductLink}" id="product-link" >
                 </div>
@@ -549,7 +456,7 @@
     
     
     // Configure the request
-    xhr.open('POST', '/edit_product_headers');
+    xhr.open('POST', '/edit_article_headers');
     
 
     xhr.setRequestHeader('X-CSRFToken', csrfToken);
@@ -960,7 +867,7 @@ backgroundColorPickr.on('save', (color) => {
         var xhr = new XMLHttpRequest();
 
         // Configure the request
-        xhr.open('POST', '/submit_product_text');
+        xhr.open('POST', '/submit_reach_text');
         xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission
@@ -974,7 +881,7 @@ backgroundColorPickr.on('save', (color) => {
             if (response.status === '1') {
                     // Handle success
                     let RefKey = document.getElementById('RefKey').value;
-                    let prURL = window.location.origin  + '/product/' + RefKey;
+                    let prURL = window.location.origin  + '/article/' + RefKey;
                     location.href = prURL;
                 }
             } else {
@@ -1009,12 +916,12 @@ backgroundColorPickr.on('save', (color) => {
             const clickedId = event.currentTarget.id;
 
             // Conditionally show the correct element based on the clicked id
-            if (clickedId === 'sliderButton') {
+            if (clickedId === 'slideshowButton') {
                 document.getElementById("editorStatus").value = 0; // This is for reach text editor hide-show manipulations
 
                 document.getElementById('mySlideShow').style.display = 'block';
             } else if (clickedId === 'thumbnailButton') {
-                urlTo = window.location.origin + '/pr-thumbnail/' + {{ prData.RefKey }}
+                urlTo = window.location.origin + '/thumbnail/' + {{ prData.RefKey }}
                 window.location = urlTo
                 // alert(urlTo)
             } else if (clickedId === 'textEditorButton') {
@@ -1058,14 +965,14 @@ backgroundColorPickr.on('save', (color) => {
 
     document.getElementById('mySwitch').addEventListener('click', function() {
         const slider = this.querySelector('.sliderA');
-        let product_status = '';
+        let article_status = '';
         slider.classList.toggle('checked');  
         if (slider.classList.contains('checked')) {
             // Action to be performed when switch is on
-            product_status = '2'
+            article_status = '2'
         } else {
             // Action to be performed when switch is off
-            product_status = '1'
+            article_status = '1'
         }
 
         let languageID = document.getElementById('language-id').value;
@@ -1074,13 +981,13 @@ backgroundColorPickr.on('save', (color) => {
         let formData = new FormData();
         formData.append('languageID', languageID);
         formData.append('RefKey', RefKey);
-        formData.append('productStatus', product_status);
+        formData.append('articleStatus', article_status);
 
         // Create a new XMLHttpRequest object
         var xhr = new XMLHttpRequest();
 
         // Configure the request
-        xhr.open('POST', '/publish-product');
+        xhr.open('POST', '/publish');
         xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission

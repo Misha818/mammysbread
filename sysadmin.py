@@ -41,6 +41,14 @@ dbconfig = {
     "host": os.getenv('LOCALHOST')
 }
 
+# dbconfig = {
+#     "database": os.getenv('MYSQL_DATABASE'),
+#     "user": os.getenv('MYSQL_USER'),
+#     "password": os.getenv('MYSQL_PASSWORD'),
+#     "host": os.getenv('MYSQL_HOST', 'db'),
+#     "port": int(os.getenv('MYSQL_PORT', 3306))  # Use the correct port number
+# }
+
 pool = mysql.connector.pooling.MySQLConnectionPool(
     pool_name="mypool",
     pool_size=5,
@@ -171,7 +179,35 @@ def sqlUpdate(sqlQuery, sqlValuesTuple=''):
         answer = f"An error occurred: {e}"
 
     return {'status': status, 'answer': answer, 'rows_affected': rows_affected}
+
+
+def sqlDelete(sqlQuery, sqlValuesTuple):
     
+    try:
+        # Get a connection from the pool
+        conn = pool.get_connection()
+        cursor = conn.cursor()
+        
+        # Execute the DELETE statement
+        cursor.execute(sqlQuery, sqlValuesTuple)
+        
+        # Commit the transaction
+        conn.commit()
+        
+        answer = "Record deleted successfully"
+        status = '1'
+    except mysql.connector.Error as err:
+        answer = f"An error occurred: {err}"
+        status = '-1'
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+    return {'status': status, 'answer': answer}
 
 def getLangID():
 
@@ -206,6 +242,18 @@ def getLangID():
 
 
 def get_pc_ref_key(pc_id):
+    sqlQuery = "SELECT `PC_Ref_Key` FROM `product_c_relatives` WHERE `PC_ID` = %s"
+    sqlValTuple = (pc_id,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] > 0:
+        for val in result['data']:
+            if val['PC_Ref_Key'] > 0:
+                return val['PC_Ref_Key']
+    else:
+        return False
+    
+
+def get_ac_ref_key(pc_id):
     sqlQuery = "SELECT `AC_Ref_Key` FROM `article_c_relatives` WHERE `AC_ID` = %s"
     sqlValTuple = (pc_id,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
@@ -218,6 +266,17 @@ def get_pc_ref_key(pc_id):
 
 
 def  get_pc_id_by_lang(pcRefKey):
+    sqlQuery = "SELECT `PC_ID` FROM `product_c_relatives` WHERE `PC_Ref_Key` = %s AND Language_ID = %s"
+    langID = getLangID()
+    sqlValTuple = (pcRefKey, langID)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] > 0:
+        return result['data'][0]['PC_ID']
+    else:
+        return False
+
+
+def  get_ac_id_by_lang(pcRefKey):
     sqlQuery = "SELECT `AC_ID` FROM `article_c_relatives` WHERE `AC_Ref_Key` = %s AND Language_ID = %s"
     langID = getLangID()
     sqlValTuple = (pcRefKey, langID)
@@ -227,8 +286,18 @@ def  get_pc_id_by_lang(pcRefKey):
     else:
         return False
 
-
+# Get product id by language
 def  get_pr_id_by_lang(RefKey, langID):
+    sqlQuery = "SELECT `P_ID` FROM `product_relatives` WHERE `P_Ref_Key` = %s AND Language_ID = %s"
+    sqlValTuple = (RefKey, langID)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] > 0:
+        return result['data'][0]['P_ID']
+    else:
+        return False
+
+# Get article id by language
+def  get_ar_id_by_lang(RefKey, langID):
     sqlQuery = "SELECT `A_ID` FROM `article_relatives` WHERE `A_Ref_Key` = %s AND Language_ID = %s"
     sqlValTuple = (RefKey, langID)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
@@ -237,8 +306,30 @@ def  get_pr_id_by_lang(RefKey, langID):
     else:
         return False
 
+
 # Check if product name exists
 def pr_name_check(productName, languageID, productID): 
+    myResponse = {'status': '0'}
+    update = ''
+    sqlQueryCheck3Val = (productName, languageID)
+
+    if productID is not None:
+        update = ' AND `ID` != %s'
+        sqlQueryCheck3Val = (productName, languageID, productID)
+    
+    sqlQueryCheck3 = f"""SELECT `ID` FROM `product` WHERE `Title` = %s  AND Language_ID = %s {update}"""
+    result3 = sqlSelect(sqlQueryCheck3, sqlQueryCheck3Val, True)
+
+    if result3['length'] > 0:
+        myResponse['status'] = '1'    
+        myText = f"""'{productName}' Product Exists!"""
+        myResponse['answer'] = gettext(myText)    
+
+    return myResponse
+
+
+# Check if article name exists
+def ar_name_check(productName, languageID, productID): 
     myResponse = {'status': '0'}
     update = ''
     sqlQueryCheck3Val = (productName, languageID)
@@ -259,6 +350,27 @@ def pr_name_check(productName, languageID, productID):
 
 # Check if product link exists
 def pr_url_check(productLink, languageID, productID):
+    myResponse = {'status': '0'}
+    update = ''
+    sqlQueryCheck5Val = (productLink, languageID)
+    
+    if productID is not None:
+        update = ' AND `ID` != %s'
+        sqlQueryCheck5Val = (productLink, languageID, productID)
+
+    sqlQueryCheck5 = f"""SELECT `ID` FROM `product` WHERE `Url` = %s AND Language_ID = %s {update}"""
+    result5 = sqlSelect(sqlQueryCheck5, sqlQueryCheck5Val, True)
+
+    if result5['length'] > 0:
+        myResponse['status'] = '1'   
+        myText = f"""'{productLink}' Link Exists!"""
+        myResponse['answer'] = gettext(myText)  
+    
+    return myResponse
+
+
+# Check if product link exists
+def ar_url_check(productLink, languageID, productID):
     myResponse = {'status': '0'}
     update = ''
     sqlQueryCheck5Val = (productLink, languageID)
@@ -294,10 +406,7 @@ def fileUpload(file, uploadDir):
         file_path = os.path.join(upload_to, filename)
         
         unique_filename = filename
-        print('Upload file function')
-        print(unique_filename)
-        print('End of Upload file function')
-    
+        
        # Check if the filename exists and create a unique filename if it does
         while os.path.exists(file_path):
             name, ext = os.path.splitext(filename)
@@ -333,8 +442,9 @@ def removeRedundantFiles(fileName, fileDir):
 
     if os.path.exists(remove_from):
         os.remove(remove_from)
-
-    return True
+        return True
+    else:
+        return False
 
 
 def checkForRedundantFiles(fileName, colonName, tableName):
@@ -385,9 +495,14 @@ def get_meta_tags(content):
     publisher_name = "Publisher Name"
     logo_url = "https://www.example.com/logo.jpg"
     article_url = "https://www.example.com/article-page.html"
-   
+    date_published = 0 
+    date_modified = 0
 
-    if content['DatePublished'] > content['DateModified']:
+    if content['DatePublished'] is None:
+        content['DatePublished'] = 0   
+    elif content['DateModified'] is None:
+        content['DateModified'] = 0   
+    elif content['DatePublished'] > content['DateModified']:
         date_published = content['DatePublished'] 
         date_modified = content['DatePublished']
     else:
@@ -474,7 +589,9 @@ def permissions(stuffID, Action):
         session.clear()
         return False
     
+    # print(stuffID)
     for actionTuple in result['data']:
+        # print(actionTuple[0] + ' ' + Action + '\n')
         if actionTuple[0] == Action:
             return True
         
@@ -546,11 +663,41 @@ def getLangdatabyID(langID):
     return content
 
     
-
-
-
 def getUserID():
     return session.get('user_id', None)
+
+def replace_spaces_in_text_nodes(html_content):
+    def replace_spaces(match):
+        text = match.group(1)
+        # Replace only sequences of two or more spaces with the corresponding number of non-breaking spaces
+        return re.sub(r' {2,}', lambda m: '&nbsp;' * len(m.group(0)), text)
+    
+    # Regex explanation:
+    # 1. `>([^<]+)<` matches text content between any tags.
+    # 2. `re.DOTALL` allows the `.` to match newlines as well.
+    return re.sub(r'>([^<]+)<', lambda m: f">{replace_spaces(m)}<", html_content, flags=re.DOTALL)
+
+# Dicts inside a list, tuple, set
+def filter_multy_dict(data, filter):
+    arr = set()
+    
+    for val in data:
+        arr.add(val.get(filter, None))
+
+    return arr
+
+
+# def replace_spaces_in_text_nodes(html_content):
+#     # This regex will match text between HTML tags while ignoring attributes and tags themselves
+#     def replace_spaces(match):
+#         # Replace spaces in the text node with &nbsp;
+#         return match.group(1).replace(' ', '&nbsp;')
+    
+#     # Regex explanation:
+#     # 1. `>(.*?)<` matches text content between any tags.
+#     # 2. `re.DOTALL` allows the `.` to match newlines as well.
+#     return re.sub(r'>([^<]+)<', lambda m: f">{replace_spaces(m)}<", html_content, flags=re.DOTALL)
+
 
 # Call the function
 # if __name__ == "__main__":

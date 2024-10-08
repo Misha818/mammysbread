@@ -1,0 +1,35 @@
+<button class="toggle-btn" id="toggle-btn" onclick="toggleSidebar()">
+  <i class="fas fa-bars"></i>
+</button>
+<div id="sidebar" class="sidebar">
+    <!-- <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a> -->
+    
+    <ul class="sidebar-menu">
+      <li><a href="{{ url_for('home') + 'stuff' }}"><i class="fas fa-home"></i><span>{{ _('Dashboards') }}</span></a></li>
+      
+    {% for row in result %}
+      <li><a href="{{ url_for('home') + row['ActionDir']}}"><i class="fas fa-home"></i><span></span>{{ _(row['ActionName']) }}</span></a></li>
+    {% endfor %}
+    
+    </ul>
+
+
+    <a href=""></a>
+    
+  {% if supportedLangsData | length > 1 %}     
+  <!-- <a>   -->
+    <!-- <select onchange="location = '/setlang?lang=' + this.value;" class="styled-select" style="width: 80%;"> -->
+      {% for lang in supportedLangsData %}
+        <!-- <option value="{{ lang['Prefix'] }}" {{ 'selected' if get_locale() ==  lang['Prefix']  else '' }}>{{ lang['Language'] }}</option> -->
+      {% endfor %}
+    <!-- </select> -->
+  <!-- </a> -->
+  {% endif %}
+    
+    <!-- <a href="/logout" id="logoutButton" >{{ _('Logout') }}</a> -->
+</div>
+
+<!-- <span class="stuff-menu" onclick="openNav()">&#9776;</span> -->
+
+
+

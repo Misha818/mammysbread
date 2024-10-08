@@ -55,10 +55,24 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
     edit-teammate
     Header
     mobile friendly dashboard header
+    Filter untranslated product categories and offer to translate, you should do it in
     
-===========================================================
+     /product/<prid> where product is tried to be added in another language 
 
-    
+            get pc from def language
+            get pc from current lang if current lang is not def lang
+            if len(currentLang) < len(defLang)
+                add untranslated values to an arr
+                z = x ^ y   This should be done with ref keys that are common, ids are not common, they are unique
+
+===========================================================
+    Configure GIT
+    SYNC with GIT
+    Docker
+    Add/Edit Sliders for product
+    Add product types
+
+    Crate header for stuff with | Product | Blog sections. Each section opens releated functions on click
     Contacts { style, backend }
 
     Footer
@@ -70,7 +84,117 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
 
     Deside what to do whith articles category of which is disabled
 
+    Quill.JS issues
+        More then one spaces disappear on edit mode
+        </> sign does not work on view mode but shows when turn to view mode 
+        Same issue is with ""
+
 - Add user function for superuser (serveri vren es testavorelu, qani vor mutqagrelu es rol, email, ayd mailin gnum a jamanakavor hghum vorov nor employeen mutq a gorcum)
 
 Style ideas
 https://copyblogger.com/
+
+https://fontawesome.com/v4/icons/
+
+    team            fas fa-users
+    add teammate    fas fa-user-plus
+
+
+-- AI tool for job searching
+https://github.com/feder-cr/Auto_Jobs_Applier_AIHawk
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+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

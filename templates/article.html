@@ -812,9 +812,13 @@ backgroundColorPickr.on('save', (color) => {
                 window.location = urlTo
                 // alert(urlTo)
             } else if (clickedId === 'textEditorButton') {
+
                 let ReachTextEditorSpan = document.getElementById("myReachTextEditor");
                 let editorContent = document.getElementById("editorContent");
                 let editorStatus = document.getElementById("editorStatus").value;
+
+                alert(editorStatus);
+                
                 if (editorStatus == 1) {
                     // ReachTextEditorSpan = document.getElementById("myReachTextEditor");
                     ReachTextEditorSpan.style.display = 'none';
@@ -827,7 +831,6 @@ backgroundColorPickr.on('save', (color) => {
                         // Remove the inserted content
                         quill.deleteText(0, insertedContentLength);
                     }     
-
 
                 } else {
                     let htmlToInsert = prData.Text

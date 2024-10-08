@@ -24,7 +24,7 @@
     </style>
 {% endblock %}
 {% block title %}
-    {{ _('Add Article Category') }}
+    {{ _('Add Product Category') }}
 {% endblock %}
 
 
@@ -35,7 +35,7 @@
 {{ sideBar | safe }}
 
 <div class="containerS">
-    <h1>{{ _('Add Article Category') }}</h1>
+    <h1>{{ _('Add Product Category') }}</h1>
     <!-- Form for adding a product -->
     <div id="mistakes"></div>
 
@@ -44,7 +44,7 @@
         <input type="hidden" id="img_value" value="">
         
         
-        <input type="text" id="category-name" placeholder="{{ _('Article Category Name') }}" style="padding: 15px;">
+        <input type="text" id="category-name" placeholder="{{ _('Product Category Name') }}" style="padding: 15px;">
         <div  class="dropzone" id="myDropzone" style="
         width: 141px;
         margin-left: 15%;
@@ -289,7 +289,7 @@
         let xhr = new XMLHttpRequest();
 
         // Configure the request
-        xhr.open('POST', '/add_article_category');
+        xhr.open('POST', '/add_product_category');
         xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission
@@ -317,7 +317,7 @@
                 if (response.status === '1') {
                     // Handle success
                     
-                    let prURL = window.location.origin  + '/article-categories';
+                    let prURL = window.location.origin  + '/product-categories';
                     location.href = prURL;
                     // location.reload();
 

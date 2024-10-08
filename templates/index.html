@@ -134,7 +134,7 @@ input[type=submit]:hover {
   {% for row in result.data %}
   
   <div class="card">
-    <img src="{{ url_for('static', filename='images/thumbnails/' + row['Thumbnail']) }}" alt="{{ row['AltText'] }}" class="card-image">
+    <img src="{{ url_for('static', filename='images/pr_thumbnails/' + row['Thumbnail']) }}" alt="{{ row['AltText'] }}" class="card-image">
     <div class="card-content">
       <h2 class="card-title">{{ row['Title'] }}</h2>
       <p class="card-text">
@@ -268,13 +268,12 @@ input[type=submit]:hover {
       if (event.target.classList.contains('about')) {
           let target_to_navigate = document.getElementById('about');
            // Scroll the window to the target div with smooth behavior
-          target_to_navigate.scrollIntoView({ behavior: 'smooth' });
-             
+          target_to_navigate.scrollIntoView({ behavior: 'smooth' });             
       }
 
       if (event.target.classList.contains('contacts')) {
         let target_to_navigate = document.getElementById('contacts');
-           // Scroll the window to the target div with smooth behavior
+          // Scroll the window to the target div with smooth behavior
           target_to_navigate.scrollIntoView({ behavior: 'smooth' });
       }
 

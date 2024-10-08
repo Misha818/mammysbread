@@ -1,14 +1,14 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, g, url_for
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
-from products import checkCategoryName, get_RefKey_LangID_by_link, get_article_category_images, edit_p_h, submit_reach_text, add_p_c_sql, edit_p_c_view, edit_p_c_sql, get_product_categories, get_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, get_pc_id_by_lang, get_pc_ref_key, login_required
+from products import checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
+from sysadmin import replace_spaces_in_text_nodes, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
 from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError, generate_csrf
 from OpenSSL import SSL
-
 import os
-from werkzeug.datastructures import FileStorage
 from io import BytesIO
 import json
 import re
@@ -67,10 +67,26 @@ def side_bar_stuff():
 
     supportedLangsData = supported_langs()
 
-    return render_template('side-bar-stuff.html', result=result['data'], supportedLangsData=supportedLangsData, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+    return render_template('side-bar-stuff-1.html', result=result['data'], supportedLangsData=supportedLangsData, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
     # return result
 
-# Handle Ajax request to submit content
+
+@app.route('/submit_product_text', methods=['POST'])
+# @login_required
+def submit_product_t():
+    newCSRFtoken = generate_csrf()
+        
+    # return jsonify({'status': 'I am here', 'newCSRFtoken': newCSRFtoken})
+    # Get the content from the request data
+    html_content = request.form.get('content')
+    languageID = request.form.get('language-id')
+    RefKey = request.form.get('RefKey')
+
+    productID = get_pr_id_by_lang(RefKey, languageID)
+    answer = submit_product_text(html_content, productID)
+    return jsonify({'status': answer['status'], 'newCSRFtoken': newCSRFtoken})
+    
+
 @app.route('/submit_reach_text', methods=['POST'])
 @login_required
 def submit_r_t():
@@ -81,7 +97,9 @@ def submit_r_t():
     languageID = request.form.get('language-id')
     RefKey = request.form.get('RefKey')
 
-    productID = get_pr_id_by_lang(RefKey, languageID)
+    # html_content = replace_spaces_in_text_nodes(html_content)
+
+    productID = get_ar_id_by_lang(RefKey, languageID)
     answer = submit_reach_text(html_content, productID)
     return jsonify({'status': answer['status'], 'newCSRFtoken': newCSRFtoken})
     
@@ -134,11 +152,11 @@ def inject_babel():
 @app.route('/')
 def home():
     languageID = getLangID()
-    sqlQuery =  f"""SELECT * FROM `article` 
-                    LEFT JOIN `article_relatives`
-                      ON  `article_relatives`.`A_ID` = `article`.`ID`
-                    WHERE `article_relatives`.`Language_ID` = %s
-                    AND `Article_Status` = 2
+    sqlQuery =  f"""SELECT * FROM `product` 
+                    LEFT JOIN `product_relatives`
+                      ON  `product_relatives`.`P_ID` = `product`.`ID`
+                    WHERE `product_relatives`.`Language_ID` = %s
+                    AND `Product_Status` = 2
                 """
     
     sqlValTuple = (languageID,)
@@ -183,53 +201,97 @@ def contacts():
 def index(myLinks):
     content = get_RefKey_LangID_by_link(myLinks)
     supportedLangsData = []
-
     metaTags = ''
+
     if content is not None:  
         langData = getLangdatabyID(content['LanguageID'])
         session['lang'] = langData['Prefix']
-        articleStatus = ' AND `article`.`Article_Status` = 2; '
-        prData = constructPrData(content['RefKey'], articleStatus)
-        articleStatusResult = prData.get('Status', 1)
-        if articleStatusResult == 2:
-            myHtml = 'article_client.html'
-                        
-            metaContent = prData
-            metaContent['SiteName'] = request.host
-            metaContent['Url'] = request.host + '/' + prData['Url']
-            imageDir = 'images/thumbnails/' + prData['Thumbnail']
-            metaContent['ImageUrl'] = url_for('static', filename=imageDir)
+        if content['Type'] == 'product':
+            productStatus = ' AND `product`.`Product_Status` = 2; '
+            prData = constructPrData(content['RefKey'], productStatus)
+            productStatusResult = prData.get('Status', 1)
 
-            prData['test'] = metaContent['ImageUrl']
-            metaTags = get_meta_tags(prData)
+            if productStatusResult == 2:
+                myHtml = 'product_client.html'
+                            
+                metaContent = prData
+                metaContent['SiteName'] = request.host
+                metaContent['Url'] = request.host + '/' + prData['Url']
+                imageDir = 'images/pr_thumbnails/' + prData['Thumbnail']
+                metaContent['ImageUrl'] = url_for('static', filename=imageDir)
 
-            # Get active languages
-            RefKey = content['RefKey']
-            # sqlQueryL = "SELECT `Language_ID` FROM `article_relatives` WHERE `A_Ref_Key` = %s;"
-            sqlQueryL = """
-                        SELECT 
-                            `article_relatives`.`Language_ID`,
-                            `Url`
-                        FROM `article_relatives`
-                        LEFT JOIN `article` ON `article`.`ID` = `article_relatives`.`A_ID`
-                        WHERE `A_Ref_Key` = %s AND `article`.`Article_Status` = 2;
-                        """
-            sqlValL = (RefKey,)
-            resultL = sqlSelect(sqlQueryL, sqlValL, False)
-            supportedLangsData = []
-            if resultL['length'] > 1:
-                langueges = supported_langs()
+                prData['test'] = metaContent['ImageUrl']
+                metaTags = get_meta_tags(prData)
 
-                for langdata in resultL['data']:
-                    print('AAAAAAAAA')
-                    print(langdata)
-                    print('NNNNNNNNN')
-                    for lang in langueges:
-                        if lang['Language_ID'] == langdata[0]:
-                            arr = (langdata[1], lang['Language'], lang['Prefix'])
-                            supportedLangsData.append(arr)                        
-        else:
-            myHtml = 'error.html'
+                # Get active languages
+                RefKey = content['RefKey']
+                # sqlQueryL = "SELECT `Language_ID` FROM `article_relatives` WHERE `A_Ref_Key` = %s;"
+                sqlQueryL = """
+                            SELECT 
+                                `product_relatives`.`Language_ID`,
+                                `Url`
+                            FROM `product_relatives`
+                                LEFT JOIN `product` ON `product`.`ID` = `product_relatives`.`P_ID`
+                            WHERE `P_Ref_Key` = %s AND `product`.`Product_Status` = 2;
+                            """
+                sqlValL = (RefKey,)
+                resultL = sqlSelect(sqlQueryL, sqlValL, False)
+                supportedLangsData = []
+                if resultL['length'] > 1:
+                    langueges = supported_langs()
+
+                    for langdata in resultL['data']:                        
+                        for lang in langueges:
+                            if lang['Language_ID'] == langdata[0]:
+                                arr = (langdata[1], lang['Language'], lang['Prefix'])
+                                supportedLangsData.append(arr)
+                                    
+            else:
+                myHtml = 'error.html'
+
+        if content['Type'] == 'article':            
+            articleStatus = ' AND `article`.`Article_Status` = 2; '
+            prData = constructPrData(content['RefKey'], articleStatus)
+            articleStatusResult = prData.get('Status', 1)
+
+            if articleStatusResult == 2:
+                myHtml = 'article_client.html'
+                            
+                metaContent = prData
+                metaContent['SiteName'] = request.host
+                metaContent['Url'] = request.host + '/' + prData['Url']
+                imageDir = 'images/thumbnails/' + prData['Thumbnail']
+                metaContent['ImageUrl'] = url_for('static', filename=imageDir)
+
+                prData['test'] = metaContent['ImageUrl']
+                metaTags = get_meta_tags(prData)
+
+                # Get active languages
+                RefKey = content['RefKey']
+                # sqlQueryL = "SELECT `Language_ID` FROM `article_relatives` WHERE `A_Ref_Key` = %s;"
+                sqlQueryL = """
+                            SELECT 
+                                `article_relatives`.`Language_ID`,
+                                `Url`
+                            FROM `article_relatives`
+                            LEFT JOIN `article` ON `article`.`ID` = `article_relatives`.`A_ID`
+                            WHERE `A_Ref_Key` = %s AND `article`.`Article_Status` = 2;
+                            """
+                sqlValL = (RefKey,)
+                resultL = sqlSelect(sqlQueryL, sqlValL, False)
+
+                supportedLangsData = []
+                if resultL['length'] > 1:
+                    langueges = supported_langs()
+
+                    for langdata in resultL['data']:                        
+                        for lang in langueges:
+                            if lang['Language_ID'] == langdata[0]:
+                                arr = (langdata[1], lang['Language'], lang['Prefix'])
+                                supportedLangsData.append(arr)                        
+            else:
+                myHtml = 'error.html'            
+            
     else:
         myHtml = 'error.html'
         prData = ''
@@ -237,6 +299,44 @@ def index(myLinks):
 
 
 # Edit thumbnail image
+@app.route('/pr-thumbnail/<RefKey>', methods=['GET'])
+# @login_required
+def pr_thumbnail(RefKey):
+    languageID = getLangID()
+    sqlQuery = f"""
+                    SELECT `thumbnail`, `AltText` FROM `product` 
+                    LEFT JOIN `product_relatives`
+                      ON  `product_relatives`.`P_ID` = `product`.`ID`
+                    WHERE `product_relatives`.`P_Ref_Key` = %s
+                    AND  `product_relatives`.`Language_ID` = %s
+                """ 
+    
+    sqlValTuple = (RefKey, languageID)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    result['content'] = True
+    if result['length'] == 0:
+        result['content'] = False   
+   
+    
+    # Get thumbnail images from other languages of the same product
+    sqlQueryIMG = f"""
+                    SELECT `thumbnail`, `AltText` FROM `product` 
+                    LEFT JOIN `product_relatives`
+                      ON  `product_relatives`.`P_ID` = `product`.`ID`
+                    WHERE `product_relatives`.`P_Ref_Key` = %s
+                    AND `product_relatives`.`Language_ID` != %s
+                """ 
+    
+    sqlValTupIMG = (RefKey, languageID)
+    resultIMG = sqlSelect(sqlQueryIMG, sqlValTupIMG, True)
+
+    thumbnailImages = get_pr_thumbnail_images(RefKey)
+
+    return render_template('pr_thumbnail.html', content=result, resultIMG=resultIMG, thumbnailImages=thumbnailImages, languageID=languageID, RefKey=RefKey, errorMessage=False, current_locale=get_locale() ) 
+# End of edit product's thumbnail image
+
+# Edit article's thumbnail image
 @app.route('/thumbnail/<RefKey>', methods=['GET'])
 @login_required
 def thumbnail(RefKey):
@@ -269,27 +369,29 @@ def thumbnail(RefKey):
     sqlValTupIMG = (RefKey, languageID)
     resultIMG = sqlSelect(sqlQueryIMG, sqlValTupIMG, True)
 
-    thumbnailImages = get_thumbnail_images(RefKey)
+    thumbnailImages = get_ar_thumbnail_images(RefKey)
 
     return render_template('thumbnail.html', content=result, resultIMG=resultIMG, thumbnailImages=thumbnailImages, languageID=languageID, RefKey=RefKey, errorMessage=False, current_locale=get_locale() ) 
+# End of eidt article's thumbnail image
 
 
-# Render the article.html template
+# View and Edit article
 @app.route('/article/<RefKey>', methods=['GET'])
 @login_required
-def pd(RefKey):
-    productTemplate = 'product.html'
+def ar(RefKey):
+    articleTemplate = 'articleVE.html'
     root_url = url_for('home', _external=True)
     errorMessage = False
     languageID = getLangID()
     supportedLangsData = supported_langs()
 
-    productCategory = get_product_categories(None, languageID)
+    articleCategory = get_article_categories(None, languageID)
+    # productCategory = get_product_categories(None, languageID)
     prData = ''
     if RefKey is None:
          errorMessage = True
     if 'new' in RefKey.lower():      
-        productTemplate = 'add_product.html'
+        articleTemplate = 'add_article.html'
 
         if len(RefKey) > 3:
             errorMessage = True
@@ -298,7 +400,7 @@ def pd(RefKey):
             prData = constructPrData(RefKey, '')
 
             if prData['content'] == True == prData['headers']: 
-                productTemplate = 'product.html' 
+                articleTemplate = 'articleVE.html' 
                         
             if prData['content'] == True and prData['headers'] == False:
                 
@@ -308,7 +410,7 @@ def pd(RefKey):
                 pcRefKey = get_pc_ref_key(prData['Product_Category_ID']) 
                 pcRefKeyLang = get_pc_id_by_lang(pcRefKey)
                 productCategory['Product_Category_ID'] = pcRefKeyLang
-                productTemplate = 'add_product_lang.html'
+                articleTemplate = 'add_product_lang.html'
                 prData['RefKey'] = RefKey
 
             if prData['content'] == False == prData['headers']: # Product with specified RefKey does not exist
@@ -321,7 +423,259 @@ def pd(RefKey):
         return render_template('error.html')
     else:
         sideBar = side_bar_stuff()
-        return render_template(productTemplate, prData=prData, sideBar=sideBar, productCategory=productCategory, supportedLangsData=supportedLangsData, errorMessage=errorMessage, root_url=root_url, languageID=languageID, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+        return render_template(articleTemplate, prData=prData, sideBar=sideBar, productCategory=productCategory, supportedLangsData=supportedLangsData, errorMessage=errorMessage, root_url=root_url, languageID=languageID, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+
+
+# View and Edit Product 
+@app.route('/product/<RefKey>', methods=['GET'])
+@login_required
+def pd(RefKey):
+    productTemplate = 'product.html'
+    root_url = url_for('home', _external=True)
+    errorMessage = False
+    languageID = getLangID()
+    supportedLangsData = supported_langs()
+    toBeTranslated = {'length': 0}
+    productCategoriesToBeTranslated = []
+
+    productCategory = get_product_categories(None, languageID)
+    defLangProductCategory = {'length': 0}
+    prData = ''
+    if RefKey is None:
+         errorMessage = True
+    if 'new' in RefKey.lower():      
+        productTemplate = 'add_product.html'
+
+        if len(RefKey) > 3:
+            errorMessage = True
+    else: 
+
+        if RefKey.isdigit(): # Check if the variable is numeric
+            prData = constructPrData(RefKey, '')
+
+            if prData['content'] == True == prData['headers']: 
+                productTemplate = 'product.html' 
+                        
+            if prData['content'] == True and prData['headers'] == False:
+                
+                pr_id = prData['ID']
+
+                productCategory = get_product_categories(pr_id, languageID)
+                defaultLangDict = getDefLang()
+                if defaultLangDict['id'] != languageID:
+                    defLangProductCategory = get_product_categories(None, defaultLangDict['id'])
+
+                    if defLangProductCategory['product_category']['length'] > productCategory['product_category']['length']:
+                        productCategoryRefKeys = filter_multy_dict(productCategory['product_category']['data'], 'PC_Ref_Key')
+                        defLangProductCategoryRefKeys = filter_multy_dict(defLangProductCategory['product_category']['data'], 'PC_Ref_Key')
+                        
+                        refKeysToBeTranslated = productCategoryRefKeys ^ defLangProductCategoryRefKeys 
+
+                        for value in defLangProductCategory['product_category']['data']:
+                            for val in refKeysToBeTranslated:
+                                if value['PC_Ref_Key'] == val:
+                                    productCategoriesToBeTranslated.append(value) 
+                                           
+
+                pcRefKey = get_pc_ref_key(prData['Product_Category_ID']) 
+                pcRefKeyLang = get_pc_id_by_lang(pcRefKey)
+                productCategory['Product_Category_ID'] = pcRefKeyLang
+                productTemplate = 'add_product_lang.html'
+                prData['RefKey'] = RefKey
+
+            if prData['content'] == False == prData['headers']: 
+                errorMessage = True       
+                                              
+        else:
+            errorMessage = True
+    
+    if errorMessage == True:
+        return render_template('error.html')
+    else:
+        sideBar = side_bar_stuff()
+        emptyCategory = gettext('To continue, please, add at least one product category.')
+        return render_template(productTemplate, prData=prData, sideBar=sideBar, productCategory=productCategory, productCategoriesToBeTranslated=productCategoriesToBeTranslated, defLangProductCategory=defLangProductCategory, supportedLangsData=supportedLangsData, errorMessage=errorMessage, root_url=root_url, languageID=languageID, emptyCategory=emptyCategory, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+
+
+# Edit product'd thumbnail client-server transaction
+@app.route('/upload_slides', methods=['POST'])
+# @login_required
+def upload_slides():
+        
+    answer = gettext('Something is wrong! 0')
+    newCSRFtoken = generate_csrf()
+    
+    if not request.form.get('ProductID') or not request.form.get('Type'):
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+
+    answer = gettext('Something is wrong! 01')
+    if not request.files.get('file_0') or not request.form.get('upload_status_0'):
+        answer = gettext('Nothing was uploaded!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    ProductID = request.form.get('ProductID')
+    productType = request.form.get('Type')
+     # 1 ==> product, 2 ==> subproduct
+    if productType == '1':
+        imgDir = 'images/product_slider'
+    elif productType == '2':
+        imgDir = 'images/sub_product_slider'
+    else:
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+    sqlQuery = "SELECT `ID`, `Name`, `Order` FROM `slider` WHERE `ProductID` = %s;"
+    sqlValTuple = (ProductID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    shortKeys = {}
+    if result['length'] > 0:
+        for row in result['data']:
+            shortKeys[row['Name']] = [row['ID'], row['Order']]
+
+    dataList = []
+    i = 0
+    fileName = 'file_' + str(i)
+    max_file_size = 5 * 1024 * 1024  # 5MB in bytes
+
+    while request.files.get(fileName):
+        file = request.files.get(fileName)
+
+        # Check image size and return an error if file is too big
+        file_size = len(file.read())  # Get the file size in bytes
+        file.seek(0)  # Reset the file pointer to the beginning after reading
+                
+        filename = secure_filename(file.filename)
+
+        if file_size > max_file_size:
+            answer = '<<' +filename + '>>' + gettext('image size is more than 5MB')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+        
+        # End of checking the image size
+
+
+        uStatus = 'upload_status_' + str(i)
+        uploadStatus = request.form.get(uStatus)
+        
+        alt_text = 'alt_text_' + str(i)
+        altText = request.form.get(alt_text)
+
+        if uploadStatus == '1':
+            sliderID = shortKeys[filename][0]
+            order = shortKeys[filename][1]
+            if order != i:
+                sqlQuery = "UPDATE `slider` SET `Order` = %s WHERE `ID` = %s;"
+                sqlValTuple = (i, sliderID)
+
+            del shortKeys[filename]
+
+        if uploadStatus == '0':
+            sqlQuery = "INSERT INTO `slider`  (`Name`, `AltText`, `Order`, `ProductID`, `Type`) VALUES (%s, %s, %s, %s, %s);"
+            sqlValTuple = (filename, altText, i, ProductID, productType)
+            result = sqlInsert(sqlQuery, sqlValTuple)
+            if result['inserted_id']:
+                dataList.append(result['answer'])
+
+
+        
+        
+        i = i + 1    
+        fileName = 'file_' + str(i)
+    
+    if len(shortKeys) > 0:
+        for key, val in shortKeys:
+            sqlQuery = "DELETE FROM `slider` WHERE `ID` = %s;"
+            sqlValTuple = (val[0],)
+            delResult = sqlDelete(sqlDelete, sqlValTuple)
+            if delResult['status'] == '-1':
+                return jsonify({'status': '0', 'answer': delResult['answer'], 'newCSRFtoken': newCSRFtoken}) 
+
+            # Del from folder
+            removeResult = removeRedundantFiles(key, imgDir)
+            if removeResult == False:
+                answer = gettext('Something is wrong! 1')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    return jsonify({'status': '1', 'answer': dataList, 'newCSRFtoken': newCSRFtoken}) 
+
+
+# Edit product'd thumbnail client-server transaction
+@app.route('/edit_pr_thumbnail', methods=['POST'])
+# @login_required
+def edit_pr_thumbnail():
+    newCSRFtoken = generate_csrf()
+        
+    languageID = request.form.get('languageID').strip()
+    RefKey = request.form.get('RefKey').strip()
+    altText = ''
+    if request.form.get('AltText'):
+        altText = request.form.get('AltText').strip()
+
+    state = request.form.get('state')
+
+    if len(languageID) == 0 or len(RefKey) == 0:
+        answer = gettext('Something is wrong!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+
+    sqlQueryID = f"""
+                    SELECT `P_ID`
+                    FROM `product_relatives`
+                    WHERE `product_relatives`.`P_Ref_Key` = %s
+                        AND `product_relatives`.`Language_ID` = %s
+                  """
+    
+    sqlQueryValId = (RefKey, languageID)
+
+    resultID = sqlSelect(sqlQueryID, sqlQueryValId, True)
+    
+    if resultID['length'] > 0:  
+        productID = resultID['data'][0]['P_ID']
+    else:
+        answer = gettext('Something is wrong!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    state = json.loads(state)
+
+    sqlImage = " `Thumbnail` = %s, "
+    if state['status'] == 0: # Image was not changed
+        sqlImage = ""
+        sqlQueryVal = (altText, productID)
+    if state['status'] == 1: # Image was chosen from another language
+
+        # Get Image name
+        if getFileName('Thumbnail', 'product', 'ID', productID):
+            imageName = getFileName('Thumbnail', 'product', 'ID', productID)
+
+            if checkForRedundantFiles(imageName, 'Thumbnail', 'product'):
+                removeRedundantFiles(imageName, 'images/pr_thumbnails')
+
+        sqlQueryVal = (state['file'], altText, productID)
+
+    if state['status'] == 2: # New image is uploaded   
+        
+        # Get Image name
+        if getFileName('Thumbnail', 'product', 'ID', productID):
+            imageName = getFileName('Thumbnail', 'product', 'ID', productID)
+        
+            if checkForRedundantFiles(imageName, 'Thumbnail', 'product'):
+                removeRedundantFiles(imageName, 'images/pr_thumbnails')
+            
+        file = request.files.get('file')
+        unique_filename = fileUpload(file, 'images/pr_thumbnails')
+
+        sqlQueryVal = (unique_filename, altText,  productID)
+    
+    sqlQuery   = f"""   
+                    UPDATE `product`
+                    SET 
+                        {sqlImage}                       
+                        `DateModified` = CURDATE(),
+                        `AltText` = %s
+                    WHERE `ID` = %s;
+                 """
+
+    result = sqlUpdate(sqlQuery, sqlQueryVal)
+    return result
 
 
 # edit_thumbnail client-server transaction
@@ -404,60 +758,55 @@ def edit_thumbnail():
     return result
 
 
-    # languageID = request.form.get('languageID').strip()
-    # RefKey = request.form.get('RefKey').strip()
-    # altText = ''
-    # if request.form.get('AltText'):
-    #     altText = request.form.get('AltText').strip()
-    # state = request.form.get('state')
-
-    # if len(languageID) == 0 or len(RefKey) == 0:
-    #     answer = gettext('Something is wrong!')
-    #     return jsonify({'status': '0', 'answer': answer}) 
+# add_product client-server transaction
+@app.route('/add_product', methods=['POST'])
+@login_required
+def add_pr():
+    newCSRFtoken = generate_csrf()
+        
+    if not request.form.get('productName'):
+        answer = gettext('Title is empty!')
+        return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    elif not request.form.get('productLink'): 
+        answer = gettext('Link is empty!')
+        return jsonify({'status': '4', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    elif not request.form.get('CategoryID'):
+        answer = gettext('Please Choose Product Category!')
+        return jsonify({'status': '6', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
-    # state = json.loads(state)
+    productName = request.form.get('productName').strip()
+    productLink = request.form.get('productLink').strip()
+    CategoryID = request.form.get('CategoryID').strip()
 
-    # if state['status'] == 0:
-    #     unique_filename = state['file']     
-    # else:
-    #     file = request.files.get('file')
+    if request.form.get('languageID'):
+        languageID = request.form.get('languageID').strip()
 
-    #     unique_filename = fileUpload(file, 'images/thumbnails')
+    altText = ''
+    if request.form.get('altText'):
+        altText = request.form.get('altText').strip()
 
-    # sqlQueryID = f"""
-    #                 SELECT `article`.`ID`
-    #                 FROM `article`
-    #                 LEFT JOIN `article_relatives` ON `article_relatives`.`A_ID` = `article`.`ID`
-    #                 WHERE `article_relatives`.`A_Ref_Key` = %s
-    #                 AND `article_relatives`.`Language_ID` = %s
-    #                 """
-    
-    # sqlQueryValId = (RefKey, languageID)
+    shortDescription = ''
+    if request.form.get('short-description'):
+        shortDescription = request.form.get('short-description').strip()
 
-    # resultID = sqlSelect(sqlQueryID, sqlQueryValId, True)
-    
-    # if resultID['length'] > 0:  
-    #     articleID = resultID['data'][0]['ID']
-    # else:
-    #     answer = gettext('Something is wrong!')
-    #     return jsonify({'status': '0', 'answer': answer}) 
+    longDescription = ''  
+    if request.form.get('long-description'):
+        longDescription = request.form.get('long-description').strip()
 
-    # sqlQuery   = f"""   
-    #                 UPDATE `article`
-    #                 SET `thumbnail` = %s, `AltText` = %s
-    #                 WHERE `ID` = %s;
-    #              """
-    
-    # sqlQueryVal = (unique_filename, altText, articleID)
+    RefKey = ''  
+    if request.form.get('RefKey'):
+        RefKey = request.form.get('RefKey').strip()
 
-    # result = sqlUpdate(sqlQuery, sqlQueryVal)
-    # return result
+
+    file = request.files.get('file')    
+
+    return add_product(productName, productLink, languageID, CategoryID, file, altText, shortDescription, longDescription, RefKey)
 
 
 # add_article client-server transaction
 @app.route('/add_article', methods=['POST'])
 @login_required
-def add_pr():
+def add_ar():
     newCSRFtoken = generate_csrf()
         
     if not request.form.get('productName'):
@@ -496,7 +845,7 @@ def add_pr():
 
     file = request.files.get('file')    
 
-    return add_product(productName, productLink, languageID, CategoryID, file, altText, shortDescription, longDescription, RefKey)
+    return add_article(productName, productLink, languageID, CategoryID, file, altText, shortDescription, longDescription, RefKey)
 
 # add article lang client-server transaction
 @app.route('/add_article_lang', methods=['POST'])
@@ -543,10 +892,47 @@ def add_pr_lang():
     return add_product_lang(productName, productLink, languageID, CategoryID, RefKey, altText, file, shortDescription, longDescription)
 
 
+# edit product headers client-server transaction
+@app.route('/edit_product_headers', methods=['POST'])
+# @login_required
+def edit_pr_headers():
+    newCSRFtoken = generate_csrf()
+        
+    if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
+        answer = gettext('Something went wrong. Please try again!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    elif not request.form.get('productName'):
+        answer = gettext('Product name is empty!')
+        return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    elif not request.form.get('productLink'):
+        answer = gettext('Product link is empty!')
+        return jsonify({'status': '4', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    elif not request.form.get('CategoryID'):
+        answer = gettext('Please Choose Product Category!')
+        return jsonify({'status': '6', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    productName = request.form.get('productName').strip()
+    productLink = request.form.get('productLink').strip()
+    languageID = request.form.get('languageID').strip()
+    CategoryID = request.form.get('CategoryID').strip()
+    RefKey = request.form.get('RefKey').strip()
+   
+    ShortDescription = ''
+    if  request.form.get('short-description'):
+        ShortDescription = request.form.get('short-description').strip()
+    
+    LongDescription = ''
+    if  request.form.get('long-description'):
+        LongDescription = request.form.get('long-description').strip()
+
+    # return jsonify({'status': '0', 'answer': answer}) # Please Choose Product Category
+    return edit_p_h(productName, productLink, languageID, CategoryID, RefKey, ShortDescription, LongDescription)
+
+
 # edit article headers client-server transaction
 @app.route('/edit_article_headers', methods=['POST'])
 @login_required
-def edit_pr_headers():
+def edit_ar_headers():
     newCSRFtoken = generate_csrf()
         
     if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
@@ -577,11 +963,11 @@ def edit_pr_headers():
         LongDescription = request.form.get('long-description').strip()
 
     # return jsonify({'status': '0', 'answer': answer}) # Please Choose Product Category
-    return edit_p_h(productName, productLink, languageID, CategoryID, RefKey, ShortDescription, LongDescription)
+    return edit_a_h(productName, productLink, languageID, CategoryID, RefKey, ShortDescription, LongDescription)
 
 
-# Render the add_article_category.html template
-@app.route('/add-article-category', methods=['GET'])
+# Render the add_product_category.html template
+@app.route('/add-product-category', methods=['GET'])
 @login_required
 def addPC():
     languageID = getLangID()
@@ -590,9 +976,35 @@ def addPC():
 
 
 # add_product_category client-server transaction
-@app.route('/add_article_category', methods=['POST'])
+@app.route('/add_product_category', methods=['POST'])
 @login_required
 def add_p_c():
+    newCSRFtoken = generate_csrf()
+    categoryName = request.form.get('categoryName')
+    AltText = request.form.get('AltText')
+    file = request.files.get('file')
+    currentLanguage = request.form.get('languageID')
+
+    if not categoryName:
+        answer = gettext('Category name is empty!')
+        return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
+    
+    return add_p_c_sql(categoryName, file, AltText, currentLanguage, newCSRFtoken)
+
+# Render the add_article_category.html template
+@app.route('/add-article-category', methods=['GET'])
+@login_required
+def addAC():
+    languageID = getLangID()
+    sideBar = side_bar_stuff()
+    return render_template('add_article_category.html', sideBar=sideBar, languageID=languageID, current_locale=get_locale())
+
+
+# add_product_category client-server transaction
+@app.route('/add_article_category', methods=['POST'])
+@login_required
+def add_a_c():
     newCSRFtoken = generate_csrf()
     categoryName = request.form.get('categoryName')
     AltText = request.form.get('AltText')
@@ -604,14 +1016,116 @@ def add_p_c():
         return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) # categoryName is Empty
     
     
-    return add_p_c_sql(categoryName, file, AltText, currentLanguage, newCSRFtoken)
+    return add_a_c_sql(categoryName, file, AltText, currentLanguage, newCSRFtoken)
+
+
+# Render the edit_product_category.html template
+@app.route('/edit-product-category/<RefKey>', methods=['GET'])
+# @login_required
+def edit_product_category(RefKey):
+    content = edit_p_c_view(RefKey)
+    pcImages = get_product_category_images(RefKey) 
+    languageID = getLangID()
+    sideBar = side_bar_stuff()
+    return render_template('edit_product_category.html', sideBar=sideBar, content=content, pcImages=pcImages, languageID=languageID, RefKey=RefKey, current_locale=get_locale())
+
+
+
+# edit_product_category client-server transaction
+@app.route('/edit_product_category', methods=['POST'])
+# @login_required
+def edit_p_c():
+    newCSRFtoken = generate_csrf()
+        
+    languageID = request.form.get('languageID').strip()
+    RefKey = request.form.get('RefKey').strip()
+    altText = ''
+    if request.form.get('AltText'):
+        altText = request.form.get('AltText').strip()
+    state = request.form.get('state')
+
+    if len(languageID) == 0 or len(RefKey) == 0:
+        answer = gettext('Something is wrong!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    if request.form.get('categoryName'):
+        categoryName = request.form.get('categoryName').strip()
+    else:         
+        answer = gettext('Category Name is empty!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
+    categoryNameExists = checkProductCategoryName(RefKey, languageID, categoryName)
+    if categoryNameExists == True:
+        answer = gettext('Category Name Exists!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
+    categoryStatus = request.form.get('categoryStatus')
+
+    sqlQueryID = f"""
+                    SELECT `PC_ID`
+                    FROM `product_c_relatives`
+                    WHERE `product_c_relatives`.`PC_Ref_Key` = %s
+                    AND `product_c_relatives`.`Language_ID` = %s;
+                  """
+    
+    sqlQueryValId = (RefKey, languageID)
+
+    resultID = sqlSelect(sqlQueryID, sqlQueryValId, True)
+    
+    if resultID['length'] > 0:  
+        productCategoryID = resultID['data'][0]['PC_ID']
+    else:
+        answer = gettext('Something is wrong!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    state = json.loads(state)
+
+    sqlImage = "`Product_Category_Images` = %s,"
+    if state['status'] == 0:
+        sqlImage = ""
+        sqlQueryVal = (altText, categoryName, categoryStatus, productCategoryID)
+    if state['status'] == 1:
+        # Get Image name
+        if getFileName('Product_Category_Images', 'product_category', 'Product_Category_ID', productCategoryID):
+            imageName = getFileName('Product_Category_Images', 'product_category', 'Product_Category_ID', productCategoryID)
+
+            if checkForRedundantFiles(imageName, 'Product_Category_Images', 'product_category'):
+                removeRedundantFiles(imageName, 'images/pc_uploads')
+
+        sqlQueryVal = (state['file'], altText, categoryName, categoryStatus, productCategoryID)
+    if state['status'] == 2:    
+        # Get Image name
+        if getFileName('Product_Category_Images', 'product_category', 'Product_Category_ID', productCategoryID):
+            imageName = getFileName('Product_Category_Images', 'product_category', 'Product_Category_ID', productCategoryID)
+    
+            if checkForRedundantFiles(imageName, 'Product_Category_Images', 'product_category'):
+                removeRedundantFiles(imageName, 'images/pc_uploads')
+            
+        file = request.files.get('file')
+
+        unique_filename = fileUpload(file, 'images/pc_uploads')
+        sqlQueryVal = (unique_filename, altText, categoryName, categoryStatus, productCategoryID)
+    
+    # Stegh es !!!
+    sqlQuery   = f"""   
+                    UPDATE `product_category`
+                    SET 
+                        {sqlImage}                       
+                        `AltText` = %s,
+                        `Product_Category_Name` = %s,
+                        `Product_Category_Status` = %s
+                    WHERE `Product_Category_ID` = %s;
+                 """
+
+    result = sqlUpdate(sqlQuery, sqlQueryVal)
+    return result
 
 
 # Render the edit_product_category.html template
 @app.route('/edit-article-category/<RefKey>', methods=['GET'])
 @login_required
-def edit_product_category(RefKey):
-    content = edit_p_c_view(RefKey)
+def edit_article_category(RefKey):
+    content = edit_a_c_view(RefKey)
     pcImages = get_article_category_images(RefKey)
     languageID = getLangID()
     sideBar = side_bar_stuff()
@@ -622,7 +1136,7 @@ def edit_product_category(RefKey):
 # edit_product_category client-server transaction
 @app.route('/edit_article_category', methods=['POST'])
 @login_required
-def edit_p_c():
+def edit_a_c():
     newCSRFtoken = generate_csrf()
         
     languageID = request.form.get('languageID').strip()
@@ -710,6 +1224,50 @@ def edit_p_c():
 
 
 
+# Publish/Unpublish product
+@app.route('/publish-product', methods=['POST'])
+# @login_required
+def publishP():
+
+    languageID = request.form.get('languageID').strip()
+    RefKey = request.form.get('RefKey').strip()
+    productStatus = request.form.get('productStatus').strip()
+
+    answer = gettext('Something is wrong!')
+
+    if productStatus is None or languageID is None or RefKey is None:
+        return jsonify({'status': '0', 'answer': answer}) 
+    
+    productID = get_pr_id_by_lang(RefKey, languageID)
+
+    if productID == False:
+        return jsonify({'status': '0', 'answer': answer})
+    
+    # Published date
+    sqlQueryPub = "SELECT `DatePublished` FROM `product` WHERE `ID` = %s"
+    sqlQueryPubVal = (productID,)
+    resultPub = sqlSelect(sqlQueryPub, sqlQueryPubVal, True)
+
+    if resultPub['data'][0]['DatePublished'] == None:
+        sqlQuery = "UPDATE `product` SET `Product_Status` = %s, `DatePublished` = CURDATE() WHERE `ID` = %s"
+    else:
+        sqlQuery = "UPDATE `product` SET `Product_Status` = %s WHERE `ID` = %s"
+    
+    sqlValTuple = (productStatus, productID)
+    result = sqlUpdate(sqlQuery, sqlValTuple)
+
+    if result['status'] == '1':
+        if productStatus == '2':
+            answer = gettext('Product is published')
+        if productStatus == '1':
+            answer = gettext('Product is unpublished')
+        return jsonify({'status': '1', 'answer': answer})
+    else:
+        return jsonify({'status': '0', 'answer': answer})
+
+# End of Publish/Unpublish product
+
+
 # Publish/Unpublish article
 @app.route('/publish', methods=['POST'])
 @login_required
@@ -751,6 +1309,30 @@ def publishA():
     else:
         return jsonify({'status': '0', 'answer': answer})
 
+# End of Publish/Unpublish article
+
+# Product categories view
+@app.route('/product-categories', methods=['GET'])
+# @login_required
+def product_categories():
+    languageID = getLangID()
+    sqlQuery = """
+                SELECT 
+                    `Product_Category_ID`,
+                    `Product_Category_Name`,
+                    `Product_Category_Images`,
+                    `Product_Category_Status`,
+                    `PC_Ref_Key`
+                FROM `product_category`
+                LEFT JOIN `product_c_relatives` ON `product_c_relatives`.`PC_ID` = `product_category`.`Product_Category_ID` 
+                WHERE `product_c_relatives`.`Language_ID` = %s
+                ORDER BY `Product_Category_ID` DESC; 
+               """
+    sqlValTuple = (languageID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    sideBar = side_bar_stuff()
+
+    return render_template('product-categories.html', sideBar=sideBar, result=result, current_locale=get_locale())
 
 # Publish/Unpublish article
 @app.route('/article-categories', methods=['GET'])
@@ -1305,9 +1887,9 @@ def stuff():
         `languages`.`Language`,
         `languages`.`Prefix`
     FROM `stuff`
-    LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID`
-    LEFT JOIN `actions` ON find_in_set(`actions`.`ID`, `rol`.`ActionIDs`)
-    LEFT JOIN `languages` ON `languages`.`Language_ID` = `stuff`.`languageID`
+        LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID`
+        LEFT JOIN `actions` ON find_in_set(`actions`.`ID`, `rol`.`ActionIDs`)
+        LEFT JOIN `languages` ON `languages`.`Language_ID` = `stuff`.`languageID`
     WHERE `stuff`.`ID` = %s AND `stuff`.`Status` = 1 AND `ActionType` = 1;    
     """
 
@@ -1317,6 +1899,25 @@ def stuff():
     supportedLangsData = supported_langs()
     
     return render_template('admin_panel.html', result=result, supportedLangsData=supportedLangsData, current_locale=get_locale())
+
+
+@app.route('/products', methods=['GET'])
+# @login_required
+def products():
+    languageID = getLangID()
+    sqlQuery =  f"""SELECT * FROM `product` 
+                    LEFT JOIN `product_relatives`
+                      ON  `product_relatives`.`P_ID` = `product`.`ID`
+                    LEFT JOIN `product_category` 
+                      ON `product_category`.`Product_Category_ID` = `product`.`Product_Category_ID`
+                    WHERE `product_relatives`.`Language_ID` = %s                    
+                """
+    
+    sqlValTuple = (languageID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    sideBar = side_bar_stuff()
+
+    return render_template('products.html', result=result, sideBar=sideBar, current_locale=get_locale()) 
 
 
 @app.route('/articles', methods=['GET'])
@@ -1336,6 +1937,7 @@ def articles():
     sideBar = side_bar_stuff()
 
     return render_template('articles.html', result=result, sideBar=sideBar, current_locale=get_locale()) 
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
