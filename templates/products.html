@@ -1,20 +1,10 @@
-<!doctype html>
-<html lang="{{ current_locale }}">
+{% extends 'base.html' %}
+{% block title %}
+  {{ _('Products') }}
+{% endblock %}
 
-<head>
-    <!-- Required meta tags -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
-    <title>
-        {{ _('Products') }}
-    </title>
-
-    <script>
-
-    </script>
+{% block head %}
     <style>
       table {
   border-spacing: 0;
@@ -35,25 +25,83 @@ tr:nth-child(even) {
   background-color: #f2f2f2
 }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
 
 {{ sideBar | safe }}
+
 <div class="container" >
   
 {% if result.length > 0 %}
 
 
-<table id="myTable" class="toRight">
-  <tr>
-    <!--When a header is clicked, run the sortTable function, with a parameter, 0 for sorting by names, 1 for sorting by country:-->  
-    <th onclick="sortTable(0)">{{ _('Thumbnail') }}</th>
-    <th onclick="sortTable(1)">{{ _('Title') }}</th>
-    <th onclick="sortTable(2)">{{ _('Published Date') }}</th>
-    <th onclick="sortTable(3)">{{ _('Modified Date') }}</th>
-    <th onclick="sortTable(4)">{{ _('Product Category') }}</th>
-    <th onclick="sortTable(5)">{{ _('Status') }}</th>
-  </tr>
+<div class="table-container toRight" id="tableDaddy">
+  <table id="myTable">
+    <thead>
+      <tr>
+        <th>
+          <div style="display: flex; align-items: center;">
+           {{ _('Thumbnail') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+            </div>
+          </div>
+        </th>
+
+        <th>
+          <div style="display: flex; align-items: center;">
+            {{ _('Title') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 1, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 1, 'down')"></i>
+            </div>
+          </div>
+        </th>
+
+        <th>
+          <div style="display: flex; align-items: center;">
+            {{ _('Published Date') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 2, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 2, 'down')"></i>
+            </div>
+          </div>
+        </th>
+
+        <th>
+          <div style="display: flex; align-items: center;">
+            {{ _('Modified Date') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 3, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 3, 'down')"></i>
+            </div>
+          </div>
+        </th>
+
+        <th>
+          <div style="display: flex; align-items: center;">
+            {{ _('Product Category') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 4, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 4, 'down')"></i>
+            </div>
+          </div>
+        </th>
+
+        <th>
+          <div style="display: flex; align-items: center;">
+            {{ _('Status') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 5, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 5, 'down')"></i>
+            </div>
+          </div>
+        </th>
+        <th></th>
+      </tr>
+  </thead>
 {% for row in result.data %}
   {% set status = _('Published') %}
   {% if row['Product_Status'] == 1 %}
@@ -89,8 +137,25 @@ tr:nth-child(even) {
 
 
 <script>
-function sortTable(n) {
-  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+window.addEventListener('load', () => {
+  document.querySelector('body').classList.add('loaded');
+});
+
+let trace;
+
+function sortTable(arrowElement, n, direction) {
+  
+  // console.log(n);
+  if (trace === String(n) + direction) {
+    return;
+  }
+
+  trace = String(n) + direction;
+  
+  document.querySelectorAll('.sort-icons i').forEach(icon => icon.style.color = '#fff');
+  arrowElement.style.color = '#ff0000';
+
+  let table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
   table = document.getElementById("myTable");
   switching = true;
   //Set the sorting direction to ascending:
@@ -144,13 +209,6 @@ function sortTable(n) {
   }
 }
 
-  window.addEventListener('load', () => {
-    document.querySelector('body').classList.add('loaded');
-  });
 </script>
 
-
-
-</body>
-
-</html>
+{% endblock %}

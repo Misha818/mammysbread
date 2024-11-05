@@ -1,0 +1,57 @@
+{% if result.length > 0 %}
+{% set display = '' %}
+{% if result.length < 6 %}
+    {% set display = 'display:none' %}
+{% endif %}
+<div class="product-container blocks" id="slides">
+    <div class="image-gallery">
+        <div class="slider">
+            <button class="prevM" onclick="prevImage()">&#10094;</button>
+            <img id="main-image" src="{{ url_for('static', filename='images/product_slider/'  + result.data[0]['Name'] ) }}" alt="{{ result.data[0]['AltText'] }}" class="fade">
+            <button class="nextM" onclick="nextImage()">&#10095;</button>
+        </div>
+        
+        <div class="thumbnail-container">
+            <button class="thumb-prev" style="{{ display }}" onclick="scrollThumbnails('left', false)">&#10094;</button>
+            <div class="thumbnails-wrapper">
+                <div class="thumbnails">
+               
+                {% set ns = namespace(i=0) %}
+
+                {% for row in result.data %}
+                  {% if row['Type'] == 1 %}    
+                    {% set fileDir = 'images/product_slider/'  + row['Name'] %}
+                  {% else %}
+                    {% set fileDir = 'images/sub_product_slider/'  + row['Name'] %}
+                  {% endif %}   
+                  
+                  {% if ns.i == 0 %}
+                    {% set selectedThumbnail = 'selectedThumbnail'%}
+                  {% else %}
+                    {% set selectedThumbnail = ''%}
+                  {% endif %}
+                <img src="{{ url_for('static', filename='') + fileDir}} " alt='"{{ row["AltText"] }}"' onclick='showImage("{{ns.i}}")' class='"{{ selectedThumbnail }}"'>
+                    {% set ns.i = ns.i + 1 %}
+                {% endfor %}
+                </div>
+            </div>
+            <button class="thumb-next" style="{{ display }}" onclick="scrollThumbnails('right', false)">&#10095;</button>
+        </div>
+                
+        </div>
+        <div class="product-details">
+            <h2>Jordan 3 Retro Mid White Cement Reimagined</h2>
+            <div class="rating">
+                ★★★★☆ (67 reviews)
+            </div>
+            <p><strong>Colorway:</strong> Summit White / Fire Red / Black / Cement Grey</p>
+            <p><strong>Style Code:</strong> DN3707-100</p>
+            <p><strong>Release Date:</strong> March 12, 2023</p>
+            <p><strong>Department:</strong> Men</p>
+            <p><strong>Brand:</strong> Jordan</p>
+            <p><strong>Model:</strong> Air Jordan 3</p>
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="{{ url_for('static', filename='JS/slideshow.js') }}"></script>
+    {% endif %}

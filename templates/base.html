@@ -59,12 +59,18 @@
             // sidebar.style.display = 'flex';  
       
             sidebar.classList.toggle('collapsed');
-            myTable.style.marginLeft = '0%';
+            if (myTable) {
+              myTable.style.marginLeft = '0%';
+            }
+            
             closedNav = false;
           } else {
             
             sidebar.classList.toggle('collapsed');
-            myTable.style.marginLeft = '11%';
+            if (myTable) {
+              myTable.style.marginLeft = '11%';
+            }
+
          
             closedNav = true;
           }

@@ -1,0 +1,176 @@
+<!-- structure = {
+    'rows': [], # [{}, {}, {}, ... ]
+    'header': [], # ['ID', 'Name', 'Status', ... ]
+    'buttons': [], # ['url', 'name']
+    'pagination': [] # True, False
+} -->
+
+<table id="myTable">
+    <thead>
+        <tr>
+        {% if structure.header | length > 0 %}
+            {% set counter = structure.header | length %}
+            {% set headers = structure.header %}
+        {% else %}
+            {% set counter = structure.rows[0] | length %}
+            {% set headers = structure.rows[0] %}
+        {% endif %}
+
+            {% for i in rabge(1, counter + 1) %}
+
+            <th>
+                <div style="display: flex; align-items: center;">
+                    {{ headers[i] }} 
+                    
+                    <div class="sort-icons" style="margin-left: 5px;">
+                        <i class="fas fa-sort-up myup" onclick="sortTable(this, {{ i }}, 'up')"></i>
+                        <i class="fas fa-sort-down mydown" onclick="sortTable(this, {{ i }}, 'down')"></i>
+                    </div>
+                </div>
+            </th>
+        
+            {% endfor %}
+    
+       
+        </tr>    
+     
+    </thead>
+    <tbody>
+       {% set counter = structure.rows | length %}
+       {% set rowCounter = structure.rows[0] | length %}
+       {% for i in range(1, counter + 1) %} 
+        <tr>
+           {% for y in range(1, rowCounter + 1) %} 
+           
+           {% endfor %}
+        </tr>
+       {% endfor %}
+
+      {% for row in result.data %}
+      {% set status = _('Active') %}
+      {% set statusStyle = 'status-open' %}
+      {% if row['Status'] == 0 %}
+        {% set status = _('Disabled') %}
+        {% set statusStyle = 'status-on-hold' %}
+      {% endif %}
+      {% set editUrl = 'edit-teammate/' + row['ID']|string %}
+      <tr>
+        {% if row['Avatar'] %}
+        <td data-label="{{ _('Name') }}" class="flex">
+          <img src="{{ url_for('static', filename='images/stuff/') + row['Avatar'] }}" class="avatar" alt="{{ row['AltText'] }}">
+          {{ row['Firstname'] + ' ' + row['Lastname'] }} &nbsp; <br><small>{{ row['Email'] }}</small>
+        </td>
+        {% else %}
+        {% set initial_1 =  row['Firstname'] %}
+        {% set initial_2 =  row['Lastname'] %}
+        <td data-label="{{ _('Name') }}" class="flex">
+          <div class="avatar" style="background-color: #e3e6f0; color: #333; text-align: center; line-height: 80px; font-weight: bold; font-size: 17pt;">{{ initial_1[0] + initial_2[0] }}</div>
+          {{ row['Firstname'] + ' ' + row['Lastname'] }} &nbsp; <br><small>{{ row['Email'] }}</small>
+        </td>
+
+        {% endif %}
+        <td data-label="{{ _('Position') }}">
+          {{ row['Rol'] }}
+        </td>
+        <td data-label="{{ _('Status') }}"><span class="status-label {{ statusStyle }}">{{ status }}</span></td>
+
+        <td class="edit-user">
+          <a href="{{ url_for('home', _external=True) + editUrl }}">
+            <i class="fas fa-pencil"></i>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+      
+      
+    </tbody>
+  </table>
+  <div class="pagination">
+  {%if page > 1 %}
+  {% set urlPrev = '/' + (page - 1) | string %}
+  <a href="{{ url_for('team', _external=True) + urlPrev }}">&laquo;</a>
+  {% endif %}
+  {% for i in range(1, (numRows // pagination) + 1 + (1 * ( (numRows % pagination) // (numRows % pagination) ) )) %}
+  
+  {% set urlPage = '/' ~ i %}
+  <a {% if i == page %} class="active" {% endif %} href="{{ url_for('team', _external=True) + urlPage }}">{{ i }}</a>
+  {% endfor %}
+  
+  {% if page < (numRows // pagination) + (1 * ( (numRows % pagination) // (numRows % pagination) )) %}
+  {% set urlNext = '/' + (page + 1) | string %}
+  <a href="{{ url_for('team', _external=True) + urlNext }}">&raquo;</a>
+  {% endif %}
+  
+</div>
+
+<script>
+    
+let trace;
+
+function sortTable(arrowElement, n, direction) {
+  
+  // console.log(n);
+  if (trace === String(n) + direction) {
+    return;
+  }
+
+  trace = String(n) + direction;
+  
+  document.querySelectorAll('.sort-icons i').forEach(icon => icon.style.color = '#fff');
+  arrowElement.style.color = '#ff0000';
+
+  let table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById("myTable");
+  switching = true;
+  //Set the sorting direction to ascending:
+  dir = "asc"; 
+  /*Make a loop that will continue until
+  no switching has been done:*/
+  while (switching) {
+    //start by saying: no switching is done:
+    switching = false;
+    rows = table.rows;
+    /*Loop through all table rows (except the
+    first, which contains table headers):*/
+    for (i = 1; i < (rows.length - 1); i++) {
+      //start by saying there should be no switching:
+      shouldSwitch = false;
+      /*Get the two elements you want to compare,
+      one from current row and one from the next:*/
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      /*check if the two rows should switch place,
+      based on the direction, asc or desc:*/
+      if (dir == "asc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          //if so, mark as a switch and break the loop:
+          shouldSwitch= true;
+          break;
+        }
+      } else if (dir == "desc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          //if so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      /*If a switch has been marked, make the switch
+      and mark that a switch has been done:*/
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      //Each time a switch is done, increase this count by 1:
+      switchcount ++;      
+    } else {
+      /*If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again.*/
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+
+</script>

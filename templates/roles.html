@@ -1,20 +1,10 @@
-<!doctype html>
-<html lang="{{ current_locale }}">
+{% extends 'base.html' %}
+{% block title %}
+{{ _('Roles') }}
+{% endblock %}
 
-<head>
-    <!-- Required meta tags -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
-    <title>
-        {{ _('Roles') }}
-    </title>
-
-    <script>
-
-    </script>
+{% block head %}
     <style>
       table {
   border-spacing: 0;
@@ -35,19 +25,41 @@ tr:nth-child(even) {
   background-color: #f2f2f2
 }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
+
 {{ sideBar | safe }}
 <div class="container" >
   
 {% if result.length > 0 %}
+<div class="table-container toRight" id="tableDaddy">
+  <table id="myTable">
+    <thead>
+      <tr>
+        <th>
+          <div style="display: flex; align-items: center;">
+           {{ _('Role') }} 
+  
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+            </div>
+          </div>
+        </th>
 
-<table id="myTable" class="toRight">
-  <tr>
-    <!--When a header is clicked, run the sortTable function, with a parameter, 0 for sorting by names, 1 for sorting by country:-->  
-    <th onclick="sortTable(0)">{{ _('Role') }}</th>
-    <th onclick="sortTable(1)">{{ _('Status') }}</th>
-  </tr>
+        <th>
+          <div style="display: flex; align-items: center;">
+            {{ _('Status') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 1, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 1, 'down')"></i>
+            </div>
+          </div>
+        </th>
+        <th></th>
+      </tr>
+      </thead>
 {% for row in result.data %}
   {% set status = _('Active') %}
   {% if row['Status'] == 0 %}
@@ -66,7 +78,7 @@ tr:nth-child(even) {
 {% endfor %}
 
   </table>
-
+</div>
 
 {% else %}
 <h3>{{ _('No data to show!') }}</h3>
@@ -80,8 +92,22 @@ tr:nth-child(even) {
 window.addEventListener('load', () => {
   document.querySelector('body').classList.add('loaded');
 });
-function sortTable(n) {
-  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+
+let trace;
+
+function sortTable(arrowElement, n, direction) {
+  
+  // console.log(n);
+  if (trace === String(n) + direction) {
+    return;
+  }
+
+  trace = String(n) + direction;
+  
+  document.querySelectorAll('.sort-icons i').forEach(icon => icon.style.color = '#fff');
+  arrowElement.style.color = '#ff0000';
+
+  let table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
   table = document.getElementById("myTable");
   switching = true;
   //Set the sorting direction to ascending:
@@ -134,10 +160,6 @@ function sortTable(n) {
     }
   }
 }
+
 </script>
-
-
-
-</body>
-
-</html>
+{% endblock %}

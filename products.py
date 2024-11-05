@@ -1222,3 +1222,4 @@ def removeRedundantIMG(content):
     
     if checkForRedundantFiles(fileName, colonName, tableName) == True:
         removeRedundantFiles(fileName, fileDir)
+

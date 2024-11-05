@@ -399,8 +399,6 @@ def fileUpload(file, uploadDir):
         # Split the filename into name and extension
         upload_to = os.path.join(static_folder_path, uploadDir)
         filename = secure_filename(file.filename)
-
-
         
         # name, ext = os.path.splitext(filename)
         file_path = os.path.join(upload_to, filename)
@@ -685,6 +683,49 @@ def filter_multy_dict(data, filter):
         arr.add(val.get(filter, None))
 
     return arr
+
+
+def totalNumRows(tableName):
+    sqlQuery = f""" SELECT * FROM {tableName};"""
+    sqlValTuple = ()
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    return result['length']
+
+
+
+
+def generate_pagination_urls(page, numRows, pagination):
+    urls = {
+        "prev": None,
+        "pages": [],
+        "next": None
+    }
+    
+    # Calculate the total number of pages
+    total_pages = (numRows // pagination) + ( (numRows % pagination) // (numRows % pagination) )
+    
+    # Generate the URL for the previous page if page > 1
+    if page > 1:
+        url_prev = f"{url_for('team', _external=True)}/{page - 1}"
+        urls["prev"] = url_prev
+    
+    # Generate URLs for each page
+    for i in range(1, total_pages + 1):
+        url_page = f"{url_for('team', _external=True)}/{i}"
+        urls["pages"].append({
+            "url": url_page,
+            "active": (i == page)
+        })
+    
+    # Generate the URL for the next page if page < total_pages
+    if page < total_pages:
+        url_next = f"{url_for('team', _external=True)}/{page + 1}"
+        urls["next"] = url_next
+    print(urls)
+    return urls
+
+
 
 
 # def replace_spaces_in_text_nodes(html_content):

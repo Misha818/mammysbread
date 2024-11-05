@@ -66,6 +66,12 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
                 z = x ^ y   This should be done with ref keys that are common, ids are not common, they are unique
 
 ===========================================================
+
+    Write table creaing function
+    BUGS
+    ete nkar chka teammatum cropi het miasin done - n el a cuyc talis
+    Password, email change
+
     Configure GIT
     SYNC with GIT
     Docker

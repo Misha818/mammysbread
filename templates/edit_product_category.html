@@ -44,9 +44,8 @@
     {% set statusWidth = "" %}      
 
 <div class="pc_slider">
-        
 
-        <div class="pc_slides">
+    <div class="pc_slides">
 
     {% for image in pcImages.imageList %}
 
@@ -57,11 +56,11 @@
 
     {% endfor %}
     
-            <!-- Add more slides as needed -->
-        </div>
-        <a class="prev" onclick="moveSlide(-1)">&#10094;</a>
-        <a class="next" onclick="moveSlide(1)">&#10095;</a>
     </div>
+    <a class="prev" onclick="moveSlide(-1)">&#10094;</a>
+    <a class="next" onclick="moveSlide(1)">&#10095;</a>
+
+</div>
 
 {% else %}    
 <div class="pc_slides"></div>
@@ -168,6 +167,8 @@ slides.forEach(slide => {
     });
 });
 });
+
+
 </script>
 <!-- Script for Dropzone (image upload) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
@@ -217,25 +218,25 @@ let myDropzone = new Dropzone("#myDropzone", {
                     
                     if (event.target.closest('.dz-preview')) {
                         let file = myDropzone.getAcceptedFiles()[0];  // Get the file object associated with the clicked preview
-                    if (file) {
+                        if (file) {
 
-                        var reader = new FileReader();
+                            let reader = new FileReader();
 
-                        reader.onload = function(event) {
-                            // Get the image data URL from the FileReader
-                            var imageUrl = event.target.result;
+                            reader.onload = function(event) {
+                                // Get the image data URL from the FileReader
+                                let imageUrl = event.target.result;
 
-                            // Open the image editor modal
-                            openImageEditorModal(imageUrl, function(editedImageBlob) {
-                                // Create a new Dropzone file object from the edited image blob
-                                var editedFile = new File([editedImageBlob], file.name, { type: file.type });
-                                myDropzone.removeFile(file);
-                                myDropzone.addFile(editedFile);
-                            });
-                        };
+                                // Open the image editor modal
+                                openImageEditorModal(imageUrl, function(editedImageBlob) {
+                                    // Create a new Dropzone file object from the edited image blob
+                                    var editedFile = new File([editedImageBlob], file.name, { type: file.type });
+                                    myDropzone.removeFile(file);
+                                    myDropzone.addFile(editedFile);
+                                });
+                            };
 
-                            // Read the image file as a data URL
-                            reader.readAsDataURL(file);
+                                // Read the image file as a data URL
+                                reader.readAsDataURL(file);
                         }
                     }
 
@@ -276,15 +277,16 @@ let myDropzone = new Dropzone("#myDropzone", {
             });
             file.previewElement.appendChild(removeButton);
 
+            let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='{{ _('Enter alt text') }}'>");
+            altInput.value = imgAlt;
+            file.previewElement.appendChild(altInput);
+
             let progressBars = file.previewElement.querySelectorAll("[data-dz-uploadprogress], .dz-progress");
             progressBars.forEach(function (progressBar) {
                 progressBar.style.display = "none";
             });
 
-            // Add a text input for the alt attribute
-            let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='{{ _('Enter alt text') }}'>");
-            altInput.value = imgAlt;
-            file.previewElement.appendChild(altInput);
+            
         });
 
         dz.on("complete", function (file) {
@@ -306,13 +308,6 @@ function addImageFromUrl(imgName) {
 
         
         let url = window.location.origin +'/static/images/pc_uploads/' + imgName
-        
-        // fetch(url)
-        // .then(response => response.blob())
-        // .then(blob => {
-        //     let file = new File([blob], imgAlt, { type: "image/jpeg" });
-        //     myDropzone.addFile(file);
-        // })
         let fileType = "image/" + imgName.split('.').pop() 
 
         fetch(url)

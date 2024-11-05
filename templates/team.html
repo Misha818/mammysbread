@@ -5,33 +5,13 @@
 
 
 {% block head %}
-    <style>
-      /* table {
-        border-spacing: 0;
-        width: 100%;
-        border: 1px solid #ddd;
-      }
 
-      th {
-        cursor: pointer;
-      }
-
-      th, td {
-        text-align: left;
-        padding: 16px;
-      }
-
-      tr:nth-child(even) {
-        background-color: #f2f2f2
-} */
-    </style>
 {% endblock %}
 
 {% block content %}
 
 {{ sideBar | safe }}
 <div class="container" >
-
 {% if result.length > 0 %}
 <div class="table-container toRight" id="tableDaddy">
   <table id="myTable">
@@ -47,19 +27,18 @@
             <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
           </div>
         </div>
-
       </th>
 
         <th>
           <div style="display: flex; align-items: center;">
-           {{ _('Position') }} 
-          <div class="sort-icons" style="margin-left: 5px;">
-            <i class="fas fa-sort-up myup" onclick="sortTable(this, 1, 'up')"></i>
-            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 1, 'down')"></i>
+            {{ _('Position') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 1, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 1, 'down')"></i>
+            </div>
           </div>
-        </div>
-
         </th>
+
         <th> 
           <div style="display: flex; align-items: center;">
             {{ _('Status') }}
@@ -84,9 +63,9 @@
       {% endif %}
       {% set editUrl = 'edit-teammate/' + row['ID']|string %}
       <tr>
-        {% if row['Photo'] %}
+        {% if row['Avatar'] %}
         <td data-label="{{ _('Name') }}" class="flex">
-          <img src="{{ url_for('static', filename='images/stuff/') + row['Photo'] }}" class="avatar">
+          <img src="{{ url_for('static', filename='images/stuff/') + row['Avatar'] }}" class="avatar" alt="{{ row['AltText'] }}">
           {{ row['Firstname'] + ' ' + row['Lastname'] }} &nbsp; <br><small>{{ row['Email'] }}</small>
         </td>
         {% else %}
@@ -110,112 +89,34 @@
         </td>
       </tr>
       {% endfor %}
-      <!-- Repeat the same structure for more rows -->
-      <tr>
-        <td data-label="NAME" class="flex">
-          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" class="avatar">
-          Spears Collier Gray <br><small>spearscollier@remold.com</small>
-        </td>
-        <td data-label="COMPANY">
-          Remold <br><small>Hebron</small>
-        </td>
-        <td data-label="STATUS"><span class="status-label status-open">Open</span></td>
-        <td><i class="fas fa-ellipsis-v menu-icon"></i></td>
-      </tr>
-
+      
       
     </tbody>
   </table>
-
   <div class="pagination">
-    <a href="#" class="active">1</a>
-    <a href="#">2</a>
-    <a href="#">&raquo;</a>
-  </div>
+  {%if page > 1 %}
+  {% set urlPrev = '/' + (page - 1) | string %}
+  <a href="{{ url_for('team', _external=True) + urlPrev }}">&laquo;</a>
+  {% endif %}
+  {% for i in range(1, (numRows // pagination) + 1 + (1 * ( (numRows % pagination) // (numRows % pagination) ) )) %}
+  
+  {% set urlPage = '/' ~ i %}
+  <a {% if i == page %} class="active" {% endif %} href="{{ url_for('team', _external=True) + urlPage }}">{{ i }}</a>
+  {% endfor %}
+  
+  {% if page < (numRows // pagination) + (1 * ( (numRows % pagination) // (numRows % pagination) )) %}
+  {% set urlNext = '/' + (page + 1) | string %}
+  <a href="{{ url_for('team', _external=True) + urlNext }}">&raquo;</a>
+  {% endif %}
+  
 </div>
+
+
 
   {% endif %}
 
 <script>
 
-window.addEventListener('load', () => {
-  document.querySelector('body').classList.add('loaded');
-});
-
-// function clickedArrow(arrowElement, n) {
-//   alert(n);
-//   document.querySelectorAll('.sort-icons i').forEach(icon => icon.style.color = '#fff');
-//   arrowElement.style.color = '#ff0000';
-
-// }
-
-let trace;
-
-function sortTable(arrowElement, n, direction) {
-  
-  // console.log(n);
-  if (trace === String(n) + direction) {
-    return;
-  }
-
-  trace = String(n) + direction;
-  
-  document.querySelectorAll('.sort-icons i').forEach(icon => icon.style.color = '#fff');
-  arrowElement.style.color = '#ff0000';
-
-  let table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-  table = document.getElementById("myTable");
-  switching = true;
-  //Set the sorting direction to ascending:
-  dir = "asc"; 
-  /*Make a loop that will continue until
-  no switching has been done:*/
-  while (switching) {
-    //start by saying: no switching is done:
-    switching = false;
-    rows = table.rows;
-    /*Loop through all table rows (except the
-    first, which contains table headers):*/
-    for (i = 1; i < (rows.length - 1); i++) {
-      //start by saying there should be no switching:
-      shouldSwitch = false;
-      /*Get the two elements you want to compare,
-      one from current row and one from the next:*/
-      x = rows[i].getElementsByTagName("TD")[n];
-      y = rows[i + 1].getElementsByTagName("TD")[n];
-      /*check if the two rows should switch place,
-      based on the direction, asc or desc:*/
-      if (dir == "asc") {
-        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-          //if so, mark as a switch and break the loop:
-          shouldSwitch= true;
-          break;
-        }
-      } else if (dir == "desc") {
-        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-          //if so, mark as a switch and break the loop:
-          shouldSwitch = true;
-          break;
-        }
-      }
-    }
-    if (shouldSwitch) {
-      /*If a switch has been marked, make the switch
-      and mark that a switch has been done:*/
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true;
-      //Each time a switch is done, increase this count by 1:
-      switchcount ++;      
-    } else {
-      /*If no switching has been done AND the direction is "asc",
-      set the direction to "desc" and run the while loop again.*/
-      if (switchcount == 0 && dir == "asc") {
-        dir = "desc";
-        switching = true;
-      }
-    }
-  }
-}
 
 // function toggleSort(th) {
 //   // Toggle colors on the clicked header's icons

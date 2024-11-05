@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, g, url_for
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from products import checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import replace_spaces_in_text_nodes, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -26,6 +26,8 @@ app.config['BABEL_SUPPORTED_LOCALES'] = getSupportedLangs()  # Supported languag
 
 csrf = CSRFProtect(app)
 babel = Babel(app)
+PAGINATION = os.getenv('PAGINATION')
+PAGINATION_BUTTONS_COUNT = os.getenv('PAGINATION_BUTTONS_COUNT')
 
 # basedir = os.path.abspath(os.path.dirname(__file__))
 # SSL context creation
@@ -437,6 +439,7 @@ def pd(RefKey):
     supportedLangsData = supported_langs()
     toBeTranslated = {'length': 0}
     productCategoriesToBeTranslated = []
+    slideShow = []
 
     productCategory = get_product_categories(None, languageID)
     defLangProductCategory = {'length': 0}
@@ -455,6 +458,7 @@ def pd(RefKey):
 
             if prData['content'] == True == prData['headers']: 
                 productTemplate = 'product.html' 
+                slideShow = getSlides(prData['Product_ID'])
                         
             if prData['content'] == True and prData['headers'] == False:
                 
@@ -494,7 +498,8 @@ def pd(RefKey):
     else:
         sideBar = side_bar_stuff()
         emptyCategory = gettext('To continue, please, add at least one product category.')
-        return render_template(productTemplate, prData=prData, sideBar=sideBar, productCategory=productCategory, productCategoriesToBeTranslated=productCategoriesToBeTranslated, defLangProductCategory=defLangProductCategory, supportedLangsData=supportedLangsData, errorMessage=errorMessage, root_url=root_url, languageID=languageID, emptyCategory=emptyCategory, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+    
+    return render_template(productTemplate, prData=prData, slideShow=slideShow, sideBar=sideBar, productCategory=productCategory, productCategoriesToBeTranslated=productCategoriesToBeTranslated, defLangProductCategory=defLangProductCategory, supportedLangsData=supportedLangsData, errorMessage=errorMessage, root_url=root_url, languageID=languageID, emptyCategory=emptyCategory, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
 
 # Edit product'd thumbnail client-server transaction
@@ -509,7 +514,7 @@ def upload_slides():
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
 
-    answer = gettext('Something is wrong! 01')
+    answer = gettext('Something is wrong! 01') # Delete after function is completed
     if not request.files.get('file_0') or not request.form.get('upload_status_0'):
         answer = gettext('Nothing was uploaded!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
@@ -569,10 +574,12 @@ def upload_slides():
             del shortKeys[filename]
 
         if uploadStatus == '0':
+            unique_filename = fileUpload(file, imgDir)
             sqlQuery = "INSERT INTO `slider`  (`Name`, `AltText`, `Order`, `ProductID`, `Type`) VALUES (%s, %s, %s, %s, %s);"
-            sqlValTuple = (filename, altText, i, ProductID, productType)
+            sqlValTuple = (unique_filename, altText, i, ProductID, productType)
             result = sqlInsert(sqlQuery, sqlValTuple)
             if result['inserted_id']:
+                # Stegh es grum file uploader
                 dataList.append(result['answer'])
 
 
@@ -580,9 +587,9 @@ def upload_slides():
         
         i = i + 1    
         fileName = 'file_' + str(i)
-    
+    # shortKeys = {'american_girl.png': [9, 0], 'barbie_dreamhouse.png': [10, 0], 'canon_90d.png': [6, 0]}
     if len(shortKeys) > 0:
-        for key, val in shortKeys:
+        for key, val in shortKeys.items():
             sqlQuery = "DELETE FROM `slider` WHERE `ID` = %s;"
             sqlValTuple = (val[0],)
             delResult = sqlDelete(sqlDelete, sqlValTuple)
@@ -1362,24 +1369,59 @@ def article_categories():
 @login_required
 def team():
     languageID = getLangID()
-    sqlQuery = """
+    sqlQuery = f"""
                 SELECT 
                     `stuff`.`ID`,
                     `stuff`.`Firstname`,
                     `stuff`.`Lastname`,
                     `stuff`.`Email`,
                     `stuff`.`Status`,
+                    `stuff`.`Avatar`,
+                    `stuff`.`AltText`,
                     `rol`.`Rol`
                 FROM `stuff`
                 LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID` 
+                LIMIT 0, {PAGINATION}
                 ; 
                """
     sqlValTuple = ()
     result = sqlSelect(sqlQuery, sqlValTuple, True)
-
+    numRows = totalNumRows('stuff')
     sideBar = side_bar_stuff()
 
-    return render_template('team.html', result=result, sideBar=sideBar, current_locale=get_locale())
+    return render_template('team.html', result=result, sideBar=sideBar, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), current_locale=get_locale())
+
+
+
+@app.route('/team/<page>', methods=['Get'])
+# @login_required
+def teampage(page): 
+    languageID = getLangID()
+    newCSRFtoken = generate_csrf()
+    rowsToSelect = (int(page) - 1) * int(PAGINATION)
+    sqlQuery = f"""
+                SELECT 
+                    `stuff`.`ID`,
+                    `stuff`.`Firstname`,
+                    `stuff`.`Lastname`,
+                    `stuff`.`Email`,
+                    `stuff`.`Status`,
+                    `stuff`.`Avatar`,
+                    `stuff`.`AltText`,
+                    `rol`.`Rol`
+                FROM `stuff`
+                LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID` 
+                LIMIT {rowsToSelect}, {PAGINATION}; 
+               """
+    sqlValTuple = ()
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    sideBar = side_bar_stuff()
+    numRows = totalNumRows('stuff')
+
+
+    return render_template('team.html', result=result, sqlQuery=sqlQuery, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, current_locale=get_locale())
+    # return jsonify({'status': '1', 'answer': result['data'], 'newCSRFtoken': newCSRFtoken})
+
 
 
 
@@ -1389,7 +1431,7 @@ def edit_teammate(teammateID):
     languageID = getLangID()
     if request.method == 'POST':
         newCSRFtoken = generate_csrf()
-        
+               
         if len(request.form.get('languageID')) == 0:
             answer = gettext('Something wrong!')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
@@ -1431,10 +1473,10 @@ def edit_teammate(teammateID):
         result = sqlSelect(sqlQuery, sqlValTuple, True)
 
         if result['length'] > 0:
-            answer = f""" Specified email  "{Email}" already exists """
+            answer = f""" Specified email  "{Email}" already exists. """
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
          
-        sqlQuery = "SELECT `Email` FROM `buffer` WHERE `Email` = %s;"
+        sqlQuery = "SELECT `Email` FROM `buffer` WHERE `Email` = %s AND `Status` = 0;"
         sqlValTuple = (Email,)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
 
@@ -1454,19 +1496,53 @@ def edit_teammate(teammateID):
             answer = gettext('Something is wrong, please try again!')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
-        Status  = request.form.get('Status').strip()
+        Status  = request.form.get('Status')
 
-        sqlQuery = """
+        AltText = ''
+        avatar = ''
+        sqlValTuple = (Firstname, Lastname, Email, RoleID, AltText, Status, teammateID)
+        
+        if request.form.get('imageState') == '0': # No image uploaded
+            avatar = " Avatar = '', "
+            sqlQ = "SELECT `Avatar` FROM `stuff` WHERE `ID` = %s;"
+            sqlVT = (teammateID,)
+            res = sqlSelect(sqlQ, sqlVT, True)
+            if res['data'][0]['Avatar']:
+                oldAvatar = res['data'][0]['Avatar']
+                removeRedundantFiles(oldAvatar, 'images/stuff')  
+
+
+        if request.form.get('imageState') == '1': # Same image (it was not changed)
+            
+            AltText  = request.form.get('AltText')
+            sqlValTuple = (Firstname, Lastname, Email, RoleID, AltText, Status, teammateID)
+
+        if request.form.get('imageState') == '2': # New image is uploaded
+            sqlQ = "SELECT `Avatar` FROM `stuff` WHERE `ID` = %s;"
+            sqlVT = (teammateID,)
+            res = sqlSelect(sqlQ, sqlVT, True)
+            if res['data'][0]['Avatar']:
+                oldAvatar = res['data'][0]['Avatar']
+                removeRedundantFiles(oldAvatar, 'images/stuff')  
+
+            AltText  = request.form.get('AltText')     
+            file = request.files.get('file')
+            Avatar = fileUpload(file, 'images/stuff')
+            avatar = "Avatar = %s,"
+            sqlValTuple = (Firstname, Lastname, Email, RoleID, Avatar, AltText, Status, teammateID)
+
+        sqlQuery = f"""
             UPDATE `stuff` SET
                 `Firstname` = %s,
                 `Lastname` = %s,
                 `Email` = %s,
                 `RolID` = %s,
+                {avatar}
+                `AltText` = %s,
                 `Status` = %s
             WHERE `ID` = %s;
         """
 
-        sqlValTuple = (Firstname, Lastname, Email, RoleID, Status, teammateID)
         result = sqlUpdate(sqlQuery, sqlValTuple)
 
         if result['status'] == '1':
@@ -1482,6 +1558,8 @@ def edit_teammate(teammateID):
                         `stuff`.`Firstname`,
                         `stuff`.`Lastname`,
                         `stuff`.`Email`,
+                        `stuff`.`Avatar`,
+                        `stuff`.`AltText`,
                         `stuff`.`Status`,
                         `rol`.`ID` AS `RoleID`,
                         `rol`.`Rol`
@@ -1729,6 +1807,27 @@ def stuff_signup(uniqueURL):
             answer = gettext('Please specify prefared language')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
         
+        AltText = request.form.get('altText')
+        
+        unique_filename = ''
+        if request.files.get('file'):
+            file = request.files.get('file')
+
+            # Check file type
+            valid_types = {'image/jpeg', 'image/png'}
+            if file.mimetype not in valid_types:
+                answer = gettext('File should be in PNG or JPG/JPEG format')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+            
+            # # Check file size (1 MB = 1048576 bytes)
+            file_size = file.tell()
+            if file_size > 1048576:
+                answer = gettext('File size should not exceed 1MB.')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+            
+            file.seek(0)  # Reset the file pointer to the beginning after reading
+            unique_filename = fileUpload(file, 'images/stuff')
+    
         LanguageID = request.form.get('LanguageID')
 
         Hash = generate_password_hash(request.form.get('Password'))
@@ -1748,10 +1847,10 @@ def stuff_signup(uniqueURL):
         RoleID = row['RoleID']
         BufferID = row['ID']
 
-        sqlQuery = """INSERT INTO `stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `RolID`, `LanguageID`, `Status`)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, 1);"""
+        sqlQuery = """INSERT INTO `stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `RolID`, `LanguageID`, `Avatar`, `AltText`, `Status`)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 1);"""
 
-        sqlValTuple = (Username, Hash, Email, Firstname, Lastname, RoleID,  LanguageID)
+        sqlValTuple = (Username, Hash, Email, Firstname, Lastname, RoleID,  LanguageID, unique_filename, AltText)
 
         result = sqlInsert(sqlQuery, sqlValTuple)
         
@@ -2033,6 +2132,34 @@ def validate_password(password):
         errors.append(gettext('The password must contain at least one special character.'))
 
     return errors
+
+
+def table(structure):
+
+    structure = {
+        'rows': [], # [{}, {}, {}, ... ]
+        'header': [], # ['ID', 'Name', 'Status', ... ]
+        'buttons': [], # ['url', 'name']
+        'pagination': [] # True, False
+    }
+    
+    return render_template('table.html', structure=structure, current_locale=get_locale())
+
+
+def getSlides(PrID):
+    sqlQuery = f"""SELECT `ID` AS `sliderID`,
+                         `Name`,
+                         `Order`, 
+                         `Type`
+                    FROM slider
+                    WHERE `ProductID` = %s
+                    ORDER BY `ORDER` ASC
+                """
+    sqlValTuple = (PrID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+   
+    return render_template('slideshow.html', result=result, current_locale=get_locale())
+
 
 
 

@@ -31,7 +31,7 @@ body.loaded {
 }
 
 .containerS {
-    width: 80%;
+    /* width: 80%; */
     max-width: 1200px;
     min-width: 300px;
     background-color: white;
@@ -42,6 +42,13 @@ body.loaded {
     flex-direction: column;
     align-items: center;
     margin-bottom: 10px;
+    margin-top: 60px;
+}
+
+.title {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: x-large;
 }
 
 .modifiedB {
@@ -346,7 +353,7 @@ button[type="submit"]:hover {
 .pcButton {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #5856d6;
     color: white;
     border: none;
     border-radius: 5px;
@@ -359,7 +366,7 @@ button[type="submit"]:hover {
 .pcButtonS {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #5856d6;
     color: white;
     border: none;
     border-radius: 5px;
@@ -1054,7 +1061,8 @@ h2 {
 
 #logoutButton {
   position: absolute;
-  bottom: 5px;
+  bottom: 10%;
+  left: 10%;
 }
 /* Steghic */
 .header-stuff {
@@ -1152,6 +1160,7 @@ h2 {
 
 /* Stegh */
 #mistakes {
+  margin-top: 5%; 
   border: solid 1px red;
   padding: 15px;
   display: none;
@@ -1502,3 +1511,314 @@ tr:nth-child(even) {
     font-size: 12px;
   }
 }
+
+
+/* Slider/SlideShow */
+.product-container {
+  display: flex;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  /* max-width: 80%; */
+  /* max-width: 900px; */
+  width: 90%;
+  flex-wrap: wrap;
+}
+
+/* Image gallery */
+.image-gallery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 20px;
+  flex: 1;
+}
+
+.slider {
+  position: relative;
+  width: 750px;
+  height: 562.2px;
+  /* width: 100%;
+  height: 100%; */
+  border-radius: 10px;
+  margin-bottom: 10px;
+  /* overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); */
+}
+
+#main-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.6s ease;
+}
+
+.fade {
+  opacity: 0;
+  animation: fadeIn 0.8s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.prevM, .nextM {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: white;
+  color: black;
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.prevM {
+  left: 10px;
+  z-index: 100;
+}
+
+.nextM {
+  right: 10px;
+  z-index: 100;
+}
+
+.prevM:hover, .next:hover {
+  /* border: 1px solid rgba(0, 0, 0, 0.9); */
+  font-size: 12pt;
+}
+
+.thumbnail-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.thumbnails-wrapper {
+  overflow: hidden;
+  width: 480px; /* Desktop width for 5 thumbnails */
+}
+
+.thumbnails {
+  display: flex;
+  transition: transform 0.3s ease;
+}
+
+.thumbnails img {
+  width: 120px;
+  height: 60px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.thumb-prev, .thumb-next {
+  background-color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.thumb-prev:hover, .thumb-next:hover {
+  font-size: 12pt;
+}
+
+/* Product details */
+.product-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* max-width: 450px; */
+}
+
+.product-details h2 {
+  /* margin: 0 0 10px; */
+  font-size: 1.8em;
+  color: #333;
+}
+
+.product-details p {
+  margin: 8px 0;
+  font-size: 1em;
+  color: #555;
+}
+
+.rating {
+  font-size: 1.2em;
+  color: #ffa500;
+  margin-bottom: 10px;
+}
+
+.product-details strong {
+  color: #333;
+}
+
+.selectedThumbnail {
+  border: 1px solid black!important;
+  /* padding: 3px;
+  transform: scale(1.1); */
+}
+
+/* Mobile-friendly styling */
+@media (max-width: 1036px) {
+  .product-container {
+      margin-top: 22%;
+  }
+
+  .product-details {
+      align-items: center;
+      text-align: center;
+      margin: auto;
+  }
+
+}
+
+@media (max-width: 768px) {
+  .product-container {
+      flex-direction: column;
+      padding: 15px;
+      margin-top: 0;
+  }
+     
+
+  .image-gallery {
+      margin-right: 0;
+      margin-bottom: 20px;
+  }
+
+  .slider {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+      margin-bottom: 2px;
+  }
+
+  /* .thumbnails {
+      justify-content: center;
+  } */
+
+  .product-details {
+      align-items: center;
+      text-align: center;
+      margin: auto;
+  }
+
+  .product-details h2 {
+      font-size: 1.5em;
+  }
+
+  .product-details p {
+      font-size: 0.9em;
+  }
+
+  .thumbnails-wrapper {
+      width: 392px; 
+  }
+
+  .thumbnails img {
+      width: 100px;
+      height: 50px;
+      margin-right: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .slider {
+      width: 70%;
+  }
+  
+  #main-image {
+      max-width: 300px;
+  }
+  
+  .image-gallery {
+      margin-bottom: -20px;
+  }
+
+  .prevM, .nextM {
+      padding: 8px;
+  }
+  
+  .thumbnail-container {
+      margin-bottom: 15%;
+  }
+  
+  .thumbnails {
+      display: flex;
+  }
+
+  .thumbnails-wrapper {
+      width: 343px; /* Display fewer thumbnails (2) on small phones */
+  }
+
+  .thumbnails img {
+      width: 90px;
+      height: 45px;
+      margin-right: 6px;
+  }
+
+  .thumb-prev, .thumb-next {
+      padding: 8px;
+  }
+  
+  .product-details h2 {
+      font-size: 1.3em;
+  }
+  
+  .product-details p {
+      font-size: 0.85em;
+  }
+  
+  
+}
+
+@media (max-width: 435px) {
+  .slider {
+      width: 80%;
+  }
+  
+  #main-image {
+      max-width: 300px;
+  }
+  
+  .prevM, .nextM {
+      padding: 0px;
+  }
+  
+  .thumbnail-container {
+      margin-bottom: 15%;
+  }
+  
+  .thumbnails {
+      display: flex;
+  }
+
+  .thumbnails-wrapper {
+      width: 260px; /* Display fewer thumbnails (2) on small phones */
+  }
+
+  .thumbnails img {
+      width: 68px;
+      height: 34px;
+      margin-right: 3px;
+  }
+
+  .thumb-prev, .thumb-next {
+      padding: 8px;
+  }
+  
+  .product-details h2 {
+      font-size: 1.3em;
+  }
+  
+  .product-details p {
+      font-size: 0.85em;
+  }
+
+}
+
+/* End of slider/slideShow */

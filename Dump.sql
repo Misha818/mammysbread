@@ -155,33 +155,35 @@ CREATE TABLE `languages` (
 ) ENGINE=InnoDB;
 ALTER TABLE `languages` AUTO_INCREMENT = 1;
 
-DROP TABLE IF EXISTS `Stuff`;
-CREATE TABLE `Stuff` (
+DROP TABLE IF EXISTS `stuff`;
+CREATE TABLE `stuff` (
     `ID` INT AUTO_INCREMENT NOT NULL,
     `Username` VARCHAR(255),
     `Password` VARCHAR(255),
     `Email` VARCHAR(255),
     `Firstname` VARCHAR(255),
     `Lastname` VARCHAR(255),
+    `Avatar` TEXT,
+    `AltText` VARCHAR(255),
     `RolID` INT,
     `LanguageID` INT,
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
-ALTER TABLE `Stuff` AUTO_INCREMENT = 1;
+ALTER TABLE `stuff` AUTO_INCREMENT = 1;
 
-DROP TABLE IF EXISTS `Rol`;
-CREATE TABLE `Rol` (
+DROP TABLE IF EXISTS `rol`;
+CREATE TABLE `rol` (
     `ID` INT AUTO_INCREMENT NOT NULL,
     `Rol` VARCHAR(255),
     `ActionIDs` VARCHAR(255),
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
-ALTER TABLE `Rol` AUTO_INCREMENT = 1;
+ALTER TABLE `rol` AUTO_INCREMENT = 1;
 
-DROP TABLE IF EXISTS `Actions`;
-CREATE TABLE `Actions` (
+DROP TABLE IF EXISTS `actions`;
+CREATE TABLE `actions` (
     `ID` INT AUTO_INCREMENT NOT NULL,
     `Action` VARCHAR(255),
     `ActionDir` VARCHAR(255),
@@ -191,7 +193,7 @@ CREATE TABLE `Actions` (
     `Img` VARCHAR(255),
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
-ALTER TABLE `Actions` AUTO_INCREMENT = 1;
+ALTER TABLE `actions` AUTO_INCREMENT = 1;
 
 DROP TABLE IF EXISTS `buffer`;
 CREATE TABLE `buffer` (
@@ -217,7 +219,7 @@ CREATE TABLE `slider` (
 ) ENGINE=InnoDB;
 ALTER TABLE `slider` AUTO_INCREMENT = 1;
 
-INSERT INTO `Stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `RolID`, `LanguageID`, `Status`)
+INSERT INTO `stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `RolID`, `LanguageID`, `Status`)
 VALUES 
     ('superuser', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'test@test.com', 'John', 'Smith', 1, 2, 1),
     ('user2', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'user2@test.com', 'Second', 'User', 2, 2, 1);
