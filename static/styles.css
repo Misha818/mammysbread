@@ -1519,7 +1519,7 @@ tr:nth-child(even) {
   background-color: #fff;
   padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); */
   /* max-width: 80%; */
   /* max-width: 900px; */
   width: 90%;
@@ -1586,11 +1586,11 @@ tr:nth-child(even) {
   right: 10px;
   z-index: 100;
 }
-
-.prevM:hover, .next:hover {
-  /* border: 1px solid rgba(0, 0, 0, 0.9); */
+/* 
+.prevM:hover, .nextM:hover {
+  border: 1px solid rgba(0, 0, 0, 0.9);
   font-size: 12pt;
-}
+} */
 
 .thumbnail-container {
   display: flex;
@@ -1600,7 +1600,8 @@ tr:nth-child(even) {
 
 .thumbnails-wrapper {
   overflow: hidden;
-  width: 480px; /* Desktop width for 5 thumbnails */
+  /* width: 445px; Desktop width for 5 thumbnails */
+  width: 650px; /* Desktop width for 5 thumbnails */
 }
 
 .thumbnails {
@@ -1610,7 +1611,7 @@ tr:nth-child(even) {
 
 .thumbnails img {
   width: 120px;
-  height: 60px;
+  /* height: 60px; */
   margin-right: 10px;
   cursor: pointer;
 }

@@ -67,6 +67,11 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
 
 ===========================================================
 
+    product Slider
+        AltText does not work
+        Cropping on upload does not work properly
+        Thumbnail imgs style if less then 5
+
     Write table creaing function
     BUGS
     ete nkar chka teammatum cropi het miasin done - n el a cuyc talis

@@ -1223,3 +1223,17 @@ def removeRedundantIMG(content):
     if checkForRedundantFiles(fileName, colonName, tableName) == True:
         removeRedundantFiles(fileName, fileDir)
 
+
+def slidesToEdit(PrID):
+    sqlQuery = f"""SELECT
+                         `Name` AS `imgName`,
+                         `AltText`
+                    FROM slider
+                    WHERE `ProductID` = %s
+                    ORDER BY `ORDER` ASC
+                """
+    sqlValTuple = (PrID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    return result['data']
+

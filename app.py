@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, g, url_for
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
-from products import checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
+from products import slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
 from sysadmin import replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -429,6 +429,20 @@ def ar(RefKey):
 
 
 # View and Edit Product 
+@app.route('/get_slides', methods=['POST'])
+# @login_required
+def get_slides():
+    if not request.form.get('ProductID') or not request.form.get('languageID'):
+        return []
+    
+    PrID = request.form.get('ProductID')
+    LanguageID = request.form.get('languageID')
+    result = slidesToEdit(PrID)
+
+    return result
+
+
+# View and Edit Product 
 @app.route('/product/<RefKey>', methods=['GET'])
 @login_required
 def pd(RefKey):
@@ -440,7 +454,7 @@ def pd(RefKey):
     toBeTranslated = {'length': 0}
     productCategoriesToBeTranslated = []
     slideShow = []
-
+    
     productCategory = get_product_categories(None, languageID)
     defLangProductCategory = {'length': 0}
     prData = ''
@@ -506,7 +520,7 @@ def pd(RefKey):
 @app.route('/upload_slides', methods=['POST'])
 # @login_required
 def upload_slides():
-        
+    
     answer = gettext('Something is wrong! 0')
     newCSRFtoken = generate_csrf()
     
@@ -514,7 +528,7 @@ def upload_slides():
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
 
-    answer = gettext('Something is wrong! 01') # Delete after function is completed
+    answer = gettext('Something is wrong!') # Delete after function is completed
     if not request.files.get('file_0') or not request.form.get('upload_status_0'):
         answer = gettext('Nothing was uploaded!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
@@ -564,14 +578,21 @@ def upload_slides():
         alt_text = 'alt_text_' + str(i)
         altText = request.form.get(alt_text)
 
+        # Checking the order for not edited (cropped) files
         if uploadStatus == '1':
+            textToPrint = f"""shortKeys[filename][1] ==> {shortKeys[filename][1]}; i ==> {i}"""
+            print(textToPrint)
             sliderID = shortKeys[filename][0]
             order = shortKeys[filename][1]
             if order != i:
+                textToPrint = f""" Inside The Condition n/ shortKeys[filename][1] ==> {shortKeys[filename][1]}; i ==> {i}"""
+                print(textToPrint)
                 sqlQuery = "UPDATE `slider` SET `Order` = %s WHERE `ID` = %s;"
                 sqlValTuple = (i, sliderID)
+                sqlUpdate(sqlQuery, sqlValTuple) 
 
             del shortKeys[filename]
+        #  End
 
         if uploadStatus == '0':
             unique_filename = fileUpload(file, imgDir)
@@ -592,7 +613,7 @@ def upload_slides():
         for key, val in shortKeys.items():
             sqlQuery = "DELETE FROM `slider` WHERE `ID` = %s;"
             sqlValTuple = (val[0],)
-            delResult = sqlDelete(sqlDelete, sqlValTuple)
+            delResult = sqlDelete(sqlQuery, sqlValTuple)
             if delResult['status'] == '-1':
                 return jsonify({'status': '0', 'answer': delResult['answer'], 'newCSRFtoken': newCSRFtoken}) 
 

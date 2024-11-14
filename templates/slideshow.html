@@ -30,7 +30,7 @@
                   {% else %}
                     {% set selectedThumbnail = ''%}
                   {% endif %}
-                <img src="{{ url_for('static', filename='') + fileDir}} " alt='"{{ row["AltText"] }}"' onclick='showImage("{{ns.i}}")' class='"{{ selectedThumbnail }}"'>
+                <img src="{{ url_for('static', filename='') + fileDir}} " alt='{{ row["AltText"] }}' onclick='showImage("{{ns.i}}")' class='{{ selectedThumbnail }}'>
                     {% set ns.i = ns.i + 1 %}
                 {% endfor %}
                 </div>

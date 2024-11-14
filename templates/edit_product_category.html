@@ -229,7 +229,7 @@ let myDropzone = new Dropzone("#myDropzone", {
                                 // Open the image editor modal
                                 openImageEditorModal(imageUrl, function(editedImageBlob) {
                                     // Create a new Dropzone file object from the edited image blob
-                                    var editedFile = new File([editedImageBlob], file.name, { type: file.type });
+                                    let editedFile = new File([editedImageBlob], file.name, { type: file.type });
                                     myDropzone.removeFile(file);
                                     myDropzone.addFile(editedFile);
                                 });
