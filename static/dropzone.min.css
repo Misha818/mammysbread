@@ -268,7 +268,8 @@
 
 .dropzone .dz-message {
     text-align: center;
-    margin: 2em 0
+    margin: 2em 0;
+    padding: 50px;
 }
 
 .dropzone .dz-message .dz-button {

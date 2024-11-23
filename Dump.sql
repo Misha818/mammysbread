@@ -79,6 +79,19 @@ CREATE TABLE `product_relatives` (
 ) ENGINE=InnoDB;
 ALTER TABLE `product_relatives` AUTO_INCREMENT = 1;
 
+DROP TABLE IF EXISTS `sub_product`;
+CREATE TABLE `sub_product` (
+    `ID` INT AUTO_INCREMENT,
+    `Price` INT,
+    `Title` VARCHAR(255),
+    `Order` INT,
+    `Product_ID` INT,
+    `User_ID` INT,
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `sub_product` AUTO_INCREMENT = 1;
+
 DROP TABLE IF EXISTS `sp_relatives`;
 CREATE TABLE `sp_relatives` (
     `ID` INT AUTO_INCREMENT,

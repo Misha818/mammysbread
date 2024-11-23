@@ -1,4 +1,3 @@
-
 let currentImageIndex = 0;
 const thumbnails = document.querySelectorAll('.thumbnails img');
 const images = [];
@@ -11,6 +10,10 @@ thumbnails.forEach(thumbnail => {
     images.push(imageName);
 });
 
+
+if (images.length < 5) {
+    document.querySelector('.thumbnails-wrapper').style.width = '100%';
+}
 let returnChecker = false;
 let scrollPosition = 0;
 let scrollCounter = 1
@@ -166,10 +169,10 @@ function scrollThumbnails(direction, stop) {
         }
 
         if (stop === false) { // Thumbnails
-
+            
             if (scrollCounter === scrollNumber) {
-                scrollCounter = 0;
-                scrollTo = thumbnailsWrapperWidth * scrollCounter;       
+                scrollCounter = 1;
+                scrollTo = 0;       
                 
             } else if (scrollCounter === scrollNumber - 1) { 
                 if (images.length % maxShownThumbnails > 0) { // if num of last image group is less then maxShownThumbnails
@@ -184,7 +187,7 @@ function scrollThumbnails(direction, stop) {
                 scrollTo = thumbnailsWrapperWidth * scrollCounter;
                 scrollCounter = scrollCounter + 1;
             }
-
+            
         }    
     }
     

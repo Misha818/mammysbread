@@ -1,0 +1,439 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ _('Add Product Price') }}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">  
+<link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}">  
+<link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}">  
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+
+
+<style>
+    .dz-details:hover {
+        cursor: pointer;
+    }
+
+    .dz-remove-btn:hover {
+        background-color: #c82333;
+        cursor: pointer;
+    }
+
+
+    .alt-input:hover {
+        cursor: auto;
+    }
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="containerS">
+
+        <div id="mistakes" style="width: 93%;"></div>
+        <div class="overlay" id="overlay"></div>
+
+<form id="add-product-form" style="display: flex; flex-direction: column; width: 525px">
+
+    <input type="hidden" id="language-id" value="{{ languageID }}" >
+    <input type="hidden" id="RefKey" value="{{ RefKey }}" >
+
+    <input type="text" name="title" id="title" placeholder="{{ _('Add Product Title') }}" class="imageInput">
+    <div class="input-group">
+        <input type="number" name="price" id="price" placeholder="{{ _('Add Product Price') }}" class="imageInput">
+        <label for="price">{{ mainCurrency }}</label>
+    </div>
+
+    <div class="dropzone" id="myDropzone">
+        <div class="dz-message dz-button">{{ _('Click here to upload files') }}</div>
+    </div>
+
+    <div id="saveButton" class="pcButtonS" style="width:100%;">{{ _('Submit') }}</div>
+    <div id="saving" class="pcButtonS hidden" style="width:100%;">{{ _('Saving...') }}</div>
+
+</form>
+
+
+<a href="{{ url_for('home') }}product/{{ RefKey }}" class="self-left">{{ _('Back') }}</a>
+
+</div>
+
+<!-- Script for Dropzone (image upload) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<script>
+    let csrfToken = "{{ csrf_token() }}";
+    let cropperState = 0;
+    let imgAlt = '';
+    let imageURL = '';
+    let targetedInput;
+    
+    const prData = {{ prData | tojson }};
+    const prSaving = prData.prSaving;
+    const prUpdate = prData.prUpdate;
+    
+    // Initialize Dropzone
+    Dropzone.autoDiscover = false;
+    let myDropzone = new Dropzone("#myDropzone", {
+        url: "/upload",
+        autoProcessQueue: false,
+        addRemoveLinks: false,
+        previewsContainer: "#myDropzone",
+        clickable: true,
+        init: function () {
+            let dz = this;
+    
+    dz.on("addedfile", function (file) {
+        let reader = new FileReader();
+        reader.onload = function (event) {
+            let imageUrl = event.target.result;
+    
+            openImageEditorModal(imageUrl, true, function (editedImageBlob) {
+                // Find the index of the newly added file in myDropzone.files
+                let fileIndex = myDropzone.files.indexOf(file);
+    
+                if (fileIndex === -1) return; // File not found in Dropzone
+    
+                // Create a completely new File object with the edited image data
+                let editedFile = new File([editedImageBlob], file.name, { type: file.type });
+    
+                // Replace the file in Dropzone's file list
+                myDropzone.files[fileIndex] = editedFile;
+    
+                // Preserve Dropzone's references and update the preview
+                editedFile.previewElement = file.previewElement;
+    
+                // Update the preview with the cropped image
+                let updatePreviewReader = new FileReader();
+                updatePreviewReader.onload = function (e) {
+                    editedFile.previewElement.querySelector('img').src = e.target.result;
+                    editedFile.previewElement.querySelector('img').style.width = '100%';
+                    editedFile.previewElement.querySelector('.dz-image').style.width = '120px';
+                    editedFile.previewElement.querySelector('.dz-image').style.height = '120px';
+                };
+                updatePreviewReader.readAsDataURL(editedImageBlob);
+            });
+        };
+        reader.readAsDataURL(file);
+    
+        // Custom elements for alt text and upload status
+        let removeButton = Dropzone.createElement("<button class='dz-remove-btn'>&times;</button>");
+        removeButton.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dz.removeFile(file);
+        });
+        file.previewElement.appendChild(removeButton);
+    
+        let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='Enter alt text'>");
+        altInput.value = imgAlt || '';
+        file.previewElement.appendChild(altInput);
+    
+        let uploadItem = Dropzone.createElement("<input type='hidden' class='uploadStatus' value='1'>");
+        file.previewElement.appendChild(uploadItem);
+    
+        // Hide progress bars
+        file.previewElement.querySelectorAll("[data-dz-uploadprogress], .dz-progress").forEach(function (progressBar) {
+            progressBar.style.display = "none";
+        });
+    
+        targetedInput = file.previewElement;
+    });
+    
+    
+    // Edit existing files on double-click
+    dz.on("addedfile", function (file) {
+        let previewElement = file.previewElement;
+    
+        previewElement.addEventListener('dblclick', function (event) {
+            cropperState = 1;
+    
+            let previewElement = event.target.closest('.dz-preview');
+            targetedInput = previewElement;
+    
+            if (previewElement) {
+                let fileName = previewElement.querySelector('[data-dz-name]').textContent;
+                let fileIndex = myDropzone.files.findIndex(f => f.name === fileName);
+                let existingFile = myDropzone.files[fileIndex];
+    
+                if (existingFile) {
+                    let reader = new FileReader();
+                    reader.onload = function (event) {
+                        let imageUrl = event.target.result;
+    
+                        openImageEditorModal(imageUrl, false, function (editedImageBlob) {
+                            // Create a completely new file object
+                            let editedFile = new File([editedImageBlob], existingFile.name, { type: existingFile.type });
+    
+                            // Replace the file in myDropzone.files to ensure it’s the new cropped version
+                            myDropzone.files[fileIndex] = editedFile;
+    
+                            // Manually set the preview element to the new file, preserving Dropzone's reference
+                            editedFile.previewElement = previewElement;
+    
+                            // Update the preview with the cropped image
+                            let updatePreviewReader = new FileReader();
+                            updatePreviewReader.onload = function (e) {
+                                previewElement.querySelector('img').src = e.target.result;
+                                previewElement.querySelector('img').style.width = '100%';
+                                previewElement.querySelector('.dz-image').style.width = '120px';
+                                previewElement.querySelector('.dz-image').style.height = '120px';
+                            };
+                            updatePreviewReader.readAsDataURL(editedImageBlob);
+                        });
+                    };
+                    reader.readAsDataURL(existingFile);
+                }
+            }
+        });
+    });
+    
+    
+        }
+    });
+    
+    
+    let sortable = new Sortable(document.querySelector("#myDropzone"), {
+        onEnd: function (evt) {
+            let reorderedFiles = [];
+            
+            document.querySelectorAll("#myDropzone .dz-preview").forEach(function (element) {
+                // Find file in Dropzone based on previewElement
+                let file = myDropzone.files.find(function (file) {
+                    return file && file.previewElement === element;
+                });
+    
+                if (file) { // Only push if the file is valid
+                    reorderedFiles.push(file);
+                }
+            });
+    
+            // Update Dropzone's files array with the new order
+            myDropzone.files = reorderedFiles;
+            // console.log(myDropzone.files); // Now the files array matches the preview order
+        }
+    });
+                
+                // Initialize Sortable.js
+                Sortable.create(myDropzone.previewsContainer, {
+                    draggable: ".dz-preview",
+                    onEnd: function (evt) {
+                        // Handle reorder logic if necessary
+                        console.log("Files reordered:", evt);
+                    }
+                });
+    
+    
+    // Image Editor Modal Logic
+    let cropper;
+    
+    function openImageEditorModal(imageUrl, closeBtn, callback) {
+        let btn = `<button id="cancelEdit">{{ _('Close') }}</button>`
+        if (cropperState === 1) {
+            if (closeBtn === true) {
+                btn = ''
+            }
+            document.getElementById('overlay').classList.add('show');
+            let imageEditorModal = document.createElement('div');
+            imageEditorModal.id = 'imageEditorModal';
+            imageEditorModal.className = 'modal open';
+            imageEditorModal.innerHTML = `
+                <img id="imageToEdit" src="${imageUrl}" alt="Image to edit">
+                <br>
+                <button id="saveEditedImage">{{ _('Crop') }}</button>
+                ${btn}
+            `;
+            document.body.appendChild(imageEditorModal);
+    
+            let imageToEdit = document.getElementById('imageToEdit');
+            cropper = new Cropper(imageToEdit, {
+                aspectRatio: 2 / 1.5,
+                viewMode: 1,
+                ready: function () {
+                    let cropperInstance = this.cropper;
+                    let naturalWidth = cropperInstance.imageData.naturalWidth;
+                    let naturalHeight = cropperInstance.imageData.naturalHeight;
+                    cropperInstance.setCropBoxData({
+                        width: naturalWidth,
+                        height: naturalHeight / (2 / 1.5),
+                        left: (naturalWidth - naturalWidth) / 2,
+                        top: (naturalHeight - naturalHeight / (2 / 1.5)) / 2
+                    });
+                }
+            });
+    
+            document.getElementById('saveEditedImage').onclick = function () {
+                cropper.getCroppedCanvas().toBlob(function (blob) {
+                    closeImageEditorModal(imageEditorModal);
+                    callback(blob);
+                });
+                
+                    // Find a child element with the 'uploadStatus' class
+                let childWithUploadStatus = targetedInput.querySelector('.uploadStatus');
+    
+                if (childWithUploadStatus) {
+                    targetedInput.querySelector('.uploadStatus').value = 0;
+                    stVal = targetedInput.querySelector('.uploadStatus').value;
+                    console.log(`A child element has the "uploadStatus" class with val ${stVal}`);
+                } else {
+                    console.log('No child element has the "uploadStatus" class');
+                }
+    
+                targetedInput = '';
+    
+                // console.log(targetedInput);
+                // let myTarget = document.getElementsByClassName(`${targetedInput} .uploadStatus`);
+                // console.log(myTarget);
+            };
+            
+            
+            document.getElementById('cancelEdit').onclick = function () {
+                closeImageEditorModal(imageEditorModal);
+            };
+        }
+    }
+    
+    
+    function closeImageEditorModal(modal) {
+        cropper.destroy();
+        modal.remove();
+        document.getElementById('overlay').classList.remove('show');
+    }
+    
+</script>
+<!-- End of script for Dropzone (image upload) -->
+    
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('myDropzone').addEventListener('click', function() {
+            cropperState = 1;    
+        })
+
+        // Handle the file upload when the button is clicked
+        let uploadButton = document.getElementById("saveButton");
+        let saving = document.getElementById("saving");
+        
+        uploadButton.addEventListener("click", function () {
+            uploadButton.style.display = 'none';
+            saving.style.display = 'inline-block';
+            const mistakes = document.getElementById('mistakes');
+
+            let title = document.getElementById('title').value;
+            if (title.length === 0) {
+                mistakes.innerHTML = "{{ _('Please specify Title') }}"
+                mistakes.style.display = 'flex';
+                uploadButton.style.display = 'inline-block';
+                saving.style.display = 'none'
+                return;
+            }
+            let price = document.getElementById('price').value;
+            if (price.length === 0) {
+                mistakes.innerHTML = "{{ _('Please specify Price') }}"
+                mistakes.style.display = 'flex';
+                uploadButton.style.display = 'inline-block';
+                saving.style.display = 'none'
+                return;
+            }
+
+            // Create a FormData object to hold the files
+            let formData = new FormData();
+            formData.append('title', title);
+            formData.append('price', price);
+
+            // console.log(myDropzone.files)
+
+            let i = 0
+            myDropzone.files.forEach(function (file) {
+                let fileName = "file_" + i;
+                formData.append(fileName, file);
+
+                // Add the alt text as a separate field if available
+                let altInput = file.previewElement.querySelector(".alt-input");
+                let altText = altInput ? altInput.value : ''; // Use empty string if altInput is missing
+                let altTextName = "alt_text_" + i;
+                formData.append(altTextName, altText);
+
+                // Add upload status as a separate field if available
+                // If upload status is 0 server will upload new image
+                // if upload status is 1 server will get image from repositiry
+                // Then will check and change the order of image if needed
+                let uploadStatusInput = file.previewElement.querySelector(".uploadStatus");
+                let uploadStatusValue = uploadStatusInput ? uploadStatusInput.value : '0'; // Default to '0' if missing
+                let uploadStatus = "upload_status_" + i;
+                formData.append(uploadStatus, uploadStatusValue);
+                i++;
+
+        
+            });
+
+            let languageID = prData.LanguageID;
+            let ProductID = prData.Product_ID;
+
+            // formData.append("languageID", languageID);
+            formData.append("ProductID", ProductID);
+            formData.append("Type", '2');
+
+            // Create a new XMLHttpRequest object
+            let xhr = new XMLHttpRequest();
+            
+            // Configure the request
+            xhr.open('POST', '/upload_slides');                   
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+            // Define what happens on successful data submission
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+
+                    var mistakesDiv = document.getElementById('mistakes');
+                    mistakesDiv.innerHTML = ''; // Clear previous messages
+                    
+                    if (response.status === '0') {
+                        // Handle Unknown Error
+                        mistakesDiv.textContent = response.answer;
+                        // mistakesDiv.style.color = 'red';
+                        mistakesDiv.style.display = 'flex';
+
+                        saving.style.display = 'none';
+                        uploadButton.style.display = 'inline-block';
+                        
+                        // Scroll the window to the mistakesDiv with smooth behavior
+                        mistakesDiv.scrollIntoView({ behavior: 'smooth' });                              
+                        
+                        
+                    } else if (response.status === '1') {
+                        mistakesDiv.style.display = 'none';
+                        saving.style.display = 'none';
+                        uploadButton.style.display = 'inline-block';
+
+                        console.log(response.answer)
+                        // Handle success
+                        alert(response.answer);
+                        let currentUrl = window.location.href;
+                        // location.href = currentUrl;
+                    }
+                } else {
+                    // Handle error response
+                    uploadButton.classList.remove('hidden');
+                    saving.classList.add('hidden');
+
+                    console.error('Error adding category:', xhr.responseText);
+                }
+            };
+
+            // Send the request with the FormData object
+            xhr.send(formData);
+
+
+    });
+});
+</script>
+
+{% endblock %}

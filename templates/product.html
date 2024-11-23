@@ -13,13 +13,14 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">
 
 <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css"> -->
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css"> -->
 <link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}"> 
 
-    <!-- Pickr themes -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"/>
+<!-- Pickr themes (Color picker for reach text editor) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"/>
 
 <style>
     .dz-details:hover {
@@ -57,10 +58,19 @@
         {{ _('Dashboard') }}
         
     </a>
-<button class="chooseBlock" id="sliderButton">{{ _('Slider') }}</button>
+    <button class="chooseBlock" id="sliderButton">{{ _('Slider') }}</button>
     <button class="chooseBlock" id="headerButton">{{ _('Header') }}</button>
     <button class="chooseBlock" id="textEditorButton">{{ _('Editor') }}</button>
     <button class="chooseBlock" id="thumbnailButton">{{ _('Thumbnail') }}</button>
+    <a class="top-left-nav-a" 
+    href="{{ url_for('add_price', prID=prData['Product_ID'], _external=True) }}"  
+        target="_blank"
+        style="text-decoration: none;"
+        >
+        
+            {{ _('Add Price') }}
+    </a>
+
 
     {% if prData.Status == 2 %}
         <a class="top-left-nav-a" 
@@ -156,63 +166,11 @@ let myDropzone = new Dropzone("#myDropzone", {
     init: function () {
         let dz = this;
         
-        // Adjust `myDropzone.files` on new file added
-        // dz.on("addedfile", function (file) {
-        //     // Trigger cropping immediately when a new file is added
-        //     let reader = new FileReader();
-        //     reader.onload = function (event) {
-        //         let imageUrl = event.target.result;
-
-        //         // Open the cropping modal
-        //         openImageEditorModal(imageUrl, true, function (editedImageBlob) {
-        //             let fileIndex = myDropzone.files.findIndex(f => f.name === file.name);
-        //             let editedFile = new File([editedImageBlob], file.name, { type: file.type });
-        //             myDropzone.files[fileIndex] = editedFile;
-
-        //             // Update the preview with the cropped image
-        //             let previewElement = file.previewElement;
-        //             let reader = new FileReader();
-        //             reader.onload = function (e) {
-        //                 previewElement.querySelector('img').src = e.target.result;
-        //                 previewElement.querySelector('img').style.width = '100%';
-        //                 previewElement.querySelector('.dz-image').style.width = '120px';
-        //                 previewElement.querySelector('.dz-image').style.height = '100px';
-        //             };
-        //             reader.readAsDataURL(editedFile);
-        //         });
-        //     };
-        //     reader.readAsDataURL(file);
-
-        //     // Add a custom remove button
-        //     let removeButton = Dropzone.createElement("<button class='dz-remove-btn'>&times;</button>");
-        //     removeButton.addEventListener("click", function (e) {
-        //         e.preventDefault();
-        //         e.stopPropagation();
-        //         dz.removeFile(file);
-        //     });
-        //     file.previewElement.appendChild(removeButton);
-
-        //     // Add a text input for alt text
-        //     let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='{{ _('Enter alt text') }}'>");
-        //     altInput.value = imgAlt;
-        //     file.previewElement.appendChild(altInput);
-
-        //     // Add a hidden input to detect whether the image is a new upload or not
-        //     uploadItem = Dropzone.createElement(`<input type='hidden' class='uploadStatus' value='1' >`);
 
 
-        //     file.previewElement.appendChild(uploadItem);
+        
 
-        //     // Hide progress bars
-        //     let progressBars = file.previewElement.querySelectorAll("[data-dz-uploadprogress], .dz-progress");
-        //     progressBars.forEach(function (progressBar) {
-        //         progressBar.style.display = "none";
-        //     });
-
-        //     targetedInput = file.previewElement;
-        // });
-
-        dz.on("addedfile", function (file) {
+dz.on("addedfile", function (file) {
     let reader = new FileReader();
     reader.onload = function (event) {
         let imageUrl = event.target.result;
@@ -221,29 +179,26 @@ let myDropzone = new Dropzone("#myDropzone", {
             // Find the index of the newly added file in myDropzone.files
             let fileIndex = myDropzone.files.indexOf(file);
 
-            // Create a new File object with the edited image data
+            if (fileIndex === -1) return; // File not found in Dropzone
+
+            // Create a completely new File object with the edited image data
             let editedFile = new File([editedImageBlob], file.name, { type: file.type });
 
-            // Copy properties to retain the structure
-            file.upload = file.upload || {}; // Ensures upload property exists
-            file.status = 'queued';
-            file.previewElement = file.previewElement;
-            file.previewTemplate = file.previewTemplate;
-            file.accepted = true;
+            // Replace the file in Dropzone's file list
+            myDropzone.files[fileIndex] = editedFile;
 
-            // Update file's Blob data while keeping original structure
-            Object.assign(file, editedFile);
+            // Preserve Dropzone's references and update the preview
+            editedFile.previewElement = file.previewElement;
 
             // Update the preview with the cropped image
-            let previewElement = file.previewElement;
-            let imageReader = new FileReader();
-            imageReader.onload = function (e) {
-                previewElement.querySelector('img').src = e.target.result;
-                previewElement.querySelector('img').style.width = '100%';
-                previewElement.querySelector('.dz-image').style.width = '120px';
-                previewElement.querySelector('.dz-image').style.height = '120px';
+            let updatePreviewReader = new FileReader();
+            updatePreviewReader.onload = function (e) {
+                editedFile.previewElement.querySelector('img').src = e.target.result;
+                editedFile.previewElement.querySelector('img').style.width = '100%';
+                editedFile.previewElement.querySelector('.dz-image').style.width = '120px';
+                editedFile.previewElement.querySelector('.dz-image').style.height = '120px';
             };
-            imageReader.readAsDataURL(editedFile);
+            updatePreviewReader.readAsDataURL(editedImageBlob);
         });
     };
     reader.readAsDataURL(file);
@@ -257,11 +212,11 @@ let myDropzone = new Dropzone("#myDropzone", {
     });
     file.previewElement.appendChild(removeButton);
 
-    let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='{{ _('Enter alt text') }}'>");
-    altInput.value = imgAlt;
+    let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='Enter alt text'>");
+    altInput.value = imgAlt || '';
     file.previewElement.appendChild(altInput);
 
-    let uploadItem = Dropzone.createElement(`<input type='hidden' class='uploadStatus' value='1'>`);
+    let uploadItem = Dropzone.createElement("<input type='hidden' class='uploadStatus' value='1'>");
     file.previewElement.appendChild(uploadItem);
 
     // Hide progress bars
@@ -272,104 +227,6 @@ let myDropzone = new Dropzone("#myDropzone", {
     targetedInput = file.previewElement;
 });
 
-        // // Edit existing files on double-click
-        // dz.on("addedfile", function (file) {
-        //     let previewElement = file.previewElement;
-
-        //     previewElement.addEventListener('dblclick', function (event) {
-        //         cropperState = 1;
-                
-        //         let previewElement = event.target.closest('.dz-preview');
-        //         targetedInput = previewElement;
-
-                
-        //         if (previewElement) {
-        //             let fileName = previewElement.querySelector('[data-dz-name]').textContent;
-        //             let fileIndex = myDropzone.files.findIndex(f => f.name === fileName);
-        //             let file = myDropzone.files[fileIndex];
-
-        //             if (file) {
-        //                 let reader = new FileReader();
-        //                 reader.onload = function (event) {
-        //                     let imageUrl = event.target.result;
-
-        //                     openImageEditorModal(imageUrl, false, function (editedImageBlob) {
-        //                         let editedFile = new File([editedImageBlob], file.name, { type: file.type });
-        //                         myDropzone.files[fileIndex] = editedFile;
-
-        //                         // Update the preview
-        //                         let reader = new FileReader();
-        //                         reader.onload = function (e) {
-        //                             previewElement.querySelector('img').src = e.target.result;
-        //                             previewElement.querySelector('img').style.width = '100%';
-        //                             previewElement.querySelector('.dz-image').style.width = '120px';
-        //                             previewElement.querySelector('.dz-image').style.height = '100px';
-        //                         };
-        //                         reader.readAsDataURL(editedFile);
-        //                     });
-        //                 };
-        //                 reader.readAsDataURL(file);
-                       
-        //             }
-        //         }
-
-        //     });
-
-            
-
-        // });
-
-
-        // Edit existing files on double-click
-// dz.on("addedfile", function (file) {
-//     let previewElement = file.previewElement;
-
-//     previewElement.addEventListener('dblclick', function (event) {
-//         cropperState = 1;
-
-//         let previewElement = event.target.closest('.dz-preview');
-//         targetedInput = previewElement;
-
-//         if (previewElement) {
-//             let fileName = previewElement.querySelector('[data-dz-name]').textContent;
-//             let fileIndex = myDropzone.files.findIndex(f => f.name === fileName);
-//             let existingFile = myDropzone.files[fileIndex];
-
-//             if (existingFile) {
-//                 let reader = new FileReader();
-//                 reader.onload = function (event) {
-//                     let imageUrl = event.target.result;
-
-//                     openImageEditorModal(imageUrl, false, function (editedImageBlob) {
-//                         // Create a new file object with the edited image data
-//                         let editedFile = new File([editedImageBlob], existingFile.name, { type: existingFile.type });
-
-//                         // Retain properties from the original file to preserve structure
-//                         existingFile.upload = existingFile.upload || {}; // Ensure upload property exists
-//                         existingFile.status = 'queued';
-//                         existingFile.previewElement = existingFile.previewElement;
-//                         existingFile.previewTemplate = existingFile.previewTemplate;
-//                         existingFile.accepted = true;
-
-//                         // Update the file's Blob data while keeping its original structure
-//                         Object.assign(existingFile, editedFile);
-
-//                         // Update the preview with the cropped image
-//                         let updatePreviewReader = new FileReader();
-//                         updatePreviewReader.onload = function (e) {
-//                             previewElement.querySelector('img').src = e.target.result;
-//                             previewElement.querySelector('img').style.width = '100%';
-//                             previewElement.querySelector('.dz-image').style.width = '120px';
-//                             previewElement.querySelector('.dz-image').style.height = '100px';
-//                         };
-//                         updatePreviewReader.readAsDataURL(editedFile);
-//                     });
-//                 };
-//                 reader.readAsDataURL(existingFile);
-//             }
-//         }
-//     });
-// });
 // Edit existing files on double-click
 dz.on("addedfile", function (file) {
     let previewElement = file.previewElement;
@@ -442,29 +299,6 @@ let sortable = new Sortable(document.querySelector("#myDropzone"), {
         // console.log(myDropzone.files); // Now the files array matches the preview order
     }
 });
-
-     
-// let sortable = new Sortable(document.querySelector("#myDropzone"), {
-//     onEnd: function (/**Event*/evt) {
-//         // evt.newIndex contains the new index of the moved item
-//         // evt.oldIndex contains the original index
-
-//         // Reorder myDropzone.files array
-//         let reorderedFiles = [];
-//         document.querySelectorAll("#myDropzone .dz-preview").forEach(function (element, index) {
-//             // Find file in Dropzone based on previewElement
-//             let file = myDropzone.files.find(function (file) {
-//                 return file.previewElement === element;
-//             });
-//             reorderedFiles.push(file);
-//         });
-
-//         // Update Dropzone's files array with the new order
-//         myDropzone.files = reorderedFiles;
-//         // console.log(myDropzone.files); // Now the files array matches the preview order
-//     }
-// });
-
             
             // Initialize Sortable.js
             Sortable.create(myDropzone.previewsContainer, {
@@ -533,11 +367,7 @@ function openImageEditorModal(imageUrl, closeBtn, callback) {
 
             targetedInput = '';
 
-            // console.log(targetedInput);
-            // let myTarget = document.getElementsByClassName(`${targetedInput} .uploadStatus`);
-            // console.log(myTarget);
-        };
-        
+        };        
         
         document.getElementById('cancelEdit').onclick = function () {
             closeImageEditorModal(imageEditorModal);
@@ -1230,11 +1060,11 @@ backgroundColorPickr.on('save', (color) => {
                                 fetchedImages.forEach(({ file, altText }) => {
                                     imgAlt = altText;
                                     myDropzone.addFile(file);
+                                    imgAlt = '';
                                 });
                             })
                             .catch(error => console.error('Error adding images:', error));
                         
-                       
                         // End of Add image from url to dropzone
 
 
@@ -1367,33 +1197,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Create a FormData object to hold the files
                 let formData = new FormData();
 
-                // console.log(myDropzone.files);
-
-                // Append each file to the FormData object
-
-
-                // let i = 0
-                // myDropzone.files.forEach(function (file) {
-                    
-                //     let fileName = "file_" + i;
-                //     formData.append(fileName, file);
-
-                //     // Add the alt text as a separate field
-                //     let altText = file.previewElement.querySelector(".alt-input").value;
-                //     let altTextName = "alt_text_" + i;
-                //     formData.append(altTextName, altText);
-                    
-                //     // Add upload status as a separate field
-                //     // If upload status is 0 server will add new image
-                //     // if upload status is 1 server will get image from repositiry
-                //     // Then will check and change the order of image if needed
-                //     let uploadStatusValue = file.previewElement.querySelector(".uploadStatus").value;
-                //     let uploadStatus = "upload_status_" + i;
-                //     formData.append(uploadStatus, uploadStatusValue);
-
-                //     i++;
-                // });
-
                 console.log(myDropzone.files)
 
         let i = 0
@@ -1480,6 +1283,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
             });
+
+    // Adjusts uploadStatus to 0 if any change was made to nearest input element with alt-input class
+    document.addEventListener('input', function (event) {
+    // Check if the changed element has the 'alt-input' class
+    if (event.target.classList.contains('alt-input')) {
+        // Find the nearest uploadStatus input
+        const uploadStatusInput = event.target.closest('div')?.querySelector('.uploadStatus');
+        
+        if (uploadStatusInput) {
+            // Set its value to 0
+            uploadStatusInput.value = 0;
+        }
+    }
+});
+
+
 });
    
 </script>

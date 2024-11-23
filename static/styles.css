@@ -51,6 +51,30 @@ body.loaded {
   font-size: x-large;
 }
 
+.imageInput {
+  padding: 15px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Adjust spacing as needed */
+}
+
+.input-group label {
+  font-weight: bold;
+}
+
+.input-group input {
+  flex: 1; /* Allows the input to take up remaining space if needed */
+  padding: 15px;
+}
+
+
 .modifiedB {
   width: 100%;
   padding: 15px;
@@ -1162,6 +1186,7 @@ h2 {
 #mistakes {
   margin-top: 5%; 
   border: solid 1px red;
+  color: red;
   padding: 15px;
   display: none;
  }
@@ -1614,6 +1639,7 @@ tr:nth-child(even) {
   /* height: 60px; */
   margin-right: 10px;
   cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .thumb-prev, .thumb-next {
@@ -1659,9 +1685,10 @@ tr:nth-child(even) {
 }
 
 .selectedThumbnail {
-  border: 1px solid black!important;
-  /* padding: 3px;
-  transform: scale(1.1); */
+ 
+  transform: scale(1.2);
+  opacity: 0.93;
+
 }
 
 /* Mobile-friendly styling */

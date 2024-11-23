@@ -28,6 +28,7 @@ csrf = CSRFProtect(app)
 babel = Babel(app)
 PAGINATION = os.getenv('PAGINATION')
 PAGINATION_BUTTONS_COUNT = os.getenv('PAGINATION_BUTTONS_COUNT')
+MAIN_CURRENCY = os.getenv('MAIN_CURRENCY')
 
 # basedir = os.path.abspath(os.path.dirname(__file__))
 # SSL context creation
@@ -441,6 +442,16 @@ def get_slides():
 
     return result
 
+@app.route('/add-price/<prID>')
+def add_price(prID):
+
+    answer = gettext('Something is wrong! 0')
+    # newCSRFtoken = generate_csrf()
+    prData = {'Product_ID': prID, 'prUpdate': gettext('Update'), 'prSaving': gettext('Saving...')}
+    mainCurrency = MAIN_CURRENCY
+
+    return render_template('add-price.html', prData=prData, mainCurrency=mainCurrency, current_locale=get_locale())
+
 
 # View and Edit Product 
 @app.route('/product/<RefKey>', methods=['GET'])
@@ -529,7 +540,7 @@ def upload_slides():
     
 
     answer = gettext('Something is wrong!') # Delete after function is completed
-    if not request.files.get('file_0') or not request.form.get('upload_status_0'):
+    if not request.files.get('file_0') or not request.form.get('upload_status_0') and request.form.get('Type') == 1:
         answer = gettext('Nothing was uploaded!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
@@ -540,6 +551,37 @@ def upload_slides():
         imgDir = 'images/product_slider'
     elif productType == '2':
         imgDir = 'images/sub_product_slider'
+
+        if not request.form.get('title'):
+            answer = gettext('Please specify title!')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})     
+
+        if not request.form.get('price'):
+            answer = gettext('Please specify price!')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+        title = request.form.get('title')
+        price = request.form.get('price')
+
+        sqlQuery = "SELECT `Order` FROM `sub_product` WHERE `Product_ID` = %s AND `Status` = 1 ORDER BY `Order` DESC"
+        sqlValueTuple = (ProductID,)
+        result = sqlSelect(sqlQuery, sqlValueTuple, True)
+
+        if result['length'] > 0:
+            order = result['data'][0]['Order'] + 1
+        else:
+            order = 0
+
+        sqlInsertQuery = "INSERT INTO `sub_product` (`Price`, `Title`, `Order`, `Product_ID`, `User_Id`, `Status`) VALUES (%s, %s, %s, %s, %s, %s)"
+        sqlInsertVals = (int(price), title, order, int(ProductID), session['user_id'], 1)
+        insertedResult = sqlInsert(sqlInsertQuery, sqlInsertVals)
+
+        if insertedResult['inserted_id']:
+            ProductID = insertedResult['inserted_id']
+        else: 
+            answer = gettext('Something is wrong, please try again!')
+            return jsonify({'status': '0', 'answer': insertedResult['answer'], 'newCSRFtoken': newCSRFtoken})
+
     else:
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
@@ -2178,6 +2220,18 @@ def getSlides(PrID):
                 """
     sqlValTuple = (PrID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    # sqlQuerySubProduct = f"""SELECT `ID` AS `sliderID`,
+    #                      `Name`,
+    #                      `Order`, 
+    #                      `Type`
+    #                 FROM slider
+    #                 WHERE `ProductID` = %s 
+    #                 AND `Type` = 2
+    #                 ORDER BY `ORDER` ASC
+    #             """
+    # sqlValTuple = (PrID,)
+    # result = sqlSelect(sqlQuery, sqlValTuple, True)
    
     return render_template('slideshow.html', result=result, current_locale=get_locale())
 
