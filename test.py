@@ -1,6 +1,4 @@
-page = int(input('Page '))
-PAGINATION = 3
-selectFrom = (page - 1) * PAGINATION
-selectTo = selectFrom + PAGINATION
+subProducts = []
 
-print(f"From {selectFrom} To {selectTo}")
+print(len(subProducts))
+print(type(subProducts))

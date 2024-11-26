@@ -232,6 +232,37 @@ CREATE TABLE `slider` (
 ) ENGINE=InnoDB;
 ALTER TABLE `slider` AUTO_INCREMENT = 1;
 
+DROP TABLE IF EXISTS `sub_product_specification`;
+CREATE TABLE `sub_product_specification` (
+    `ID` INT AUTO_INCREMENT,
+    `Name` VARCHAR(255),
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `sub_product_specification` AUTO_INCREMENT = 1;
+
+DROP TABLE IF EXISTS `sub_product_specifications`;
+CREATE TABLE `sub_product_specifications` (
+    `ID` INT AUTO_INCREMENT,
+    `Name` VARCHAR(255),
+    `spsID` INT,
+    `Order` INT,
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `sub_product_specifications` AUTO_INCREMENT = 1;
+
+DROP TABLE IF EXISTS `sub_product_details`;
+CREATE TABLE `sub_product_details` (
+    `ID` INT AUTO_INCREMENT,
+    `Text` VARCHAR(255),
+    `spssID` INT,
+    `subProductID` INT,
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `sub_product_details` AUTO_INCREMENT = 1;
+
 INSERT INTO `stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `RolID`, `LanguageID`, `Status`)
 VALUES 
     ('superuser', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'test@test.com', 'John', 'Smith', 1, 2, 1),

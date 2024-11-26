@@ -181,12 +181,66 @@ button[type="submit"]:hover {
     font-size: 16px;
 }
 
-/* #fileInput {
-    display: none;
-    margin-top: 10px;
-    margin-bottom: 10px;
-} */
+.containerSPS.parent {
+  display: flex; /* Use flexbox for alignment */
+  align-items: center; /* Align items vertically center */
+  gap: 8px; /* Add spacing between input and remove button */
+}
 
+.containerSPS.parent input[type="text"] {
+  flex: 1; /* Allow the input to take up available space */
+}
+
+.containerSPS.parent .remove {
+  cursor: pointer; /* Change cursor to pointer for better UX */
+  color: red; /* Style the remove button (optional) */
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  font-size: 30px;
+}
+
+.containerSPS.parent .remove:hover {
+  /* background-color: red;
+  color: #fff; */
+}
+
+
+.parent, .pr-name {
+  border: 1px solid #ccc;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  cursor: grab; /* Set initial cursor style to indicate draggable */
+}
+
+.pr-name input{
+  width: 100%;
+}
+
+.parent:active {
+  cursor: grabbing; /* Change cursor to closed fist when clicked and held */
+}
+
+.plusDiv {
+  /* width: 60px;
+  height: 60px;
+  border: 1px solid #008000;
+  color: #008000;
+  padding: 15px;
+  cursor: pointer;
+  font-size: 25px;
+  text-align: center; */
+  width: 40px;
+  height: 40px;
+  border: 1px solid #008000;
+  color: #008000;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  text-align: center;
+}
 
 @media (max-width: 600px) {
     .container {
@@ -1183,12 +1237,16 @@ h2 {
 
 
 /* Stegh */
-#mistakes {
+#mistakes, #response {
   margin-top: 5%; 
   border: solid 1px red;
   color: red;
   padding: 15px;
   display: none;
+ }
+
+ #response {
+  margin-bottom: 20px;
  }
 
  .lang-drop-down {
@@ -1629,7 +1687,7 @@ tr:nth-child(even) {
   width: 650px; /* Desktop width for 5 thumbnails */
 }
 
-.thumbnails {
+.thumbnails, .price-thumbnails{
   display: flex;
   transition: transform 0.3s ease;
 }
@@ -1656,7 +1714,7 @@ tr:nth-child(even) {
 /* Product details */
 .product-details {
   flex: 1;
-  display: flex;
+  /* display: flex; */
   flex-direction: column;
   justify-content: center;
   /* max-width: 450px; */
@@ -1689,6 +1747,19 @@ tr:nth-child(even) {
   transform: scale(1.2);
   opacity: 0.93;
 
+}
+
+.price-thumbnails-wrapper {
+  overflow: hidden;
+  width: 250px; /* Desktop width for 5 thumbnails */
+}
+
+.price-thumbnails img {
+  width: auto;
+  height: 60px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 /* Mobile-friendly styling */

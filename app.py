@@ -2101,6 +2101,12 @@ def articles():
     return render_template('articles.html', result=result, sideBar=sideBar, current_locale=get_locale()) 
 
 
+@app.route("/add-sps", methods=['GET'])
+# @login_required
+def add_sps():
+    return render_template('sp-specifications.html', current_locale=get_locale())
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -2210,32 +2216,74 @@ def table(structure):
 
 
 def getSlides(PrID):
-    sqlQuery = f"""SELECT `ID` AS `sliderID`,
-                         `Name`,
-                         `Order`, 
-                         `Type`
-                    FROM slider
+    sqlQuery = f"""SELECT `slider`.`ID` AS `sliderID`,
+                          `slider`.`Name`,
+                          `slider`.`Order`, 
+                          `slider`.`Type`,
+                          `product`.`Title`
+                    FROM `slider`
+                    LEFT JOIN `product` ON `product`.`ID` = `slider`.`ProductID`
                     WHERE `ProductID` = %s
                     ORDER BY `ORDER` ASC
                 """
     sqlValTuple = (PrID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
-    # sqlQuerySubProduct = f"""SELECT `ID` AS `sliderID`,
-    #                      `Name`,
-    #                      `Order`, 
-    #                      `Type`
-    #                 FROM slider
-    #                 WHERE `ProductID` = %s 
-    #                 AND `Type` = 2
-    #                 ORDER BY `ORDER` ASC
-    #             """
-    # sqlValTuple = (PrID,)
-    # result = sqlSelect(sqlQuery, sqlValTuple, True)
+    sqlQuerySubProduct = f"""SELECT `sub_product`.`ID`,
+                                    `sub_product`.`Price`,
+                                    `sub_product`.`Title`,
+                                    `sub_product`.`Order` AS `SubPrOrder`,
+                                    `slider`.`ID` AS `sliderID`,
+                                    `slider`.`AltText`,
+                                    `slider`.`Name`,
+                                    `slider`.`Order` AS `SliderOrder` 
+                            FROM `sub_product`
+                            LEFT JOIN `slider` ON `slider`.`ProductID` = `sub_product`.`ID`
+                            WHERE `sub_product`.`Product_ID` = %s 
+                            AND `slider`.`Type` = 2
+                            ORDER BY `sub_product`.`ORDER` ASC, `slider`.`Order` ASC;
+                          """
+    sqlSubPRValTuple = (PrID,)
+    resultSubPr = sqlSelect(sqlQuerySubProduct, sqlSubPRValTuple, True)
+    
+    subProducts = []
+    
+    if resultSubPr['length'] > 0:
+        subProducts = [{
+                    'ID': resultSubPr['data'][0]['ID'],
+                    'Price': resultSubPr['data'][0]['Price'],
+                    'Title': resultSubPr['data'][0]['Title'],
+                    'Name': resultSubPr['data'][0]['Name'],
+                    'AltText': resultSubPr['data'][0]['AltText'],
+                    'i': result['length']
+                    }]
+        
+        if resultSubPr['length'] > 1:
+            checker = resultSubPr['data'][0]['ID']
+            myDict = {}
+            i = result['length']
+            for row in resultSubPr['data']:
+
+                if checker != row['ID']:
+                    myDict = {
+                        'ID': row['ID'],
+                        'Price': row['Price'],
+                        'Title': row['Title'],
+                        'Name': row['Name'],
+                        'AltText': row['AltText'],
+                        'i': i
+                    }
+                    subProducts.append(myDict)
+                    checker = row['ID']
+                
+                i = i + 1
+
+    # print('-------------------------------')
+    # print(f"This is subProducts {subProducts}")
+    # print('-------------------------------')
+    
    
-    return render_template('slideshow.html', result=result, current_locale=get_locale())
-
-
+    return render_template('slideshow.html', result=result, resultSubPr=resultSubPr, subProducts=subProducts, current_locale=get_locale())
 
 
 
