@@ -43,6 +43,8 @@ cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 def handle_csrf_error(e):
     return render_template('csrf_error.html', reason=e.description), 400
 
+smthWrong = 'Something went wrong. Please try again!'
+
 def side_bar_stuff():
     stuffID = session.get("user_id")
 
@@ -923,7 +925,7 @@ def add_ar():
 def add_pr_lang():
 
     if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
-        answer = gettext('Something went wrong. Please try again!')
+        answer = gettext(smthWrong)
         return jsonify({'status': '0', 'answer': answer}) # productName is Empty
     
     RefKey = request.form.get('RefKey').strip()
@@ -969,7 +971,7 @@ def edit_pr_headers():
     newCSRFtoken = generate_csrf()
         
     if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
-        answer = gettext('Something went wrong. Please try again!')
+        answer = gettext(smthWrong)
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
     elif not request.form.get('productName'):
         answer = gettext('Product name is empty!')
@@ -1006,7 +1008,7 @@ def edit_ar_headers():
     newCSRFtoken = generate_csrf()
         
     if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
-        answer = gettext('Something went wrong. Please try again!')
+        answer = gettext(smthWrong)
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
     elif not request.form.get('productName'):
         answer = gettext('Article name is empty!')
@@ -2103,8 +2105,65 @@ def articles():
 
 @app.route("/add-sps", methods=['GET'])
 # @login_required
-def add_sps():
+def add_sps_view():
     return render_template('sp-specifications.html', current_locale=get_locale())
+
+# Subproduct situation and situations adding function
+@app.route("/add_sps", methods=['POST'])
+# @login_required
+def add_sps():
+    newCSRFtoken = generate_csrf()
+    # Checking spsTitle
+    spsName = request.form.get('spsName') 
+    if not spsName:
+        answer = gettext('Please specify subproduct situation name!')
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+    # Check if the spsName already exists 
+    sqlQuery = "SELECT `ID` FROM `sub_product_specification` WHERE `Name` = %s;"
+    sqlValTuple = (spsName,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] > 0:
+        answer = gettext('Subproduct situation name exists!') + ' "' + spsName + '"'
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+
+    sqlQuery = "INSERT INTO `sub_product_specification` (`Name`, `Status`) VALUES (%s, %s)"
+    sqlValTuple = (spsName, 1)
+    result = sqlInsert(sqlQuery, sqlValTuple)
+
+    if not result['inserted_id']:
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response) 
+
+    spsID = result['inserted_id']
+    
+    i = 0
+    sqlValues = []
+    sqlSyntax = ''
+    spsText = request.form.get('text_' + str(i))
+    while spsText:
+        sqlValues.append(spsText)
+        sqlValues.append(i)
+        sqlValues.append(spsID)
+        sqlValues.append(1)
+        sqlSyntax += f'(%s, %s, %s, %s),'
+        i = i + 1
+        spsText = request.form.get('text_' + str(i))
+
+    sqlSyntax = sqlSyntax[:-1]
+
+    sqlQuery = "INSERT INTO `sub_product_specifications` (`Name`, `Order`, `spsID`, `Status`) VALUES " + sqlSyntax
+    sqlValTuple = tuple(sqlValues)
+    result = sqlInsert(sqlQuery, sqlValTuple)
+
+    # return result['status']
+    response = {'status': '1', 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken}
+    return response
+
 
 
 @app.route("/login", methods=["GET", "POST"])

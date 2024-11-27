@@ -390,9 +390,9 @@
             // Define what happens on successful data submission
             xhr.onload = function () {
                 if (xhr.status === 200) {
-                    var response = JSON.parse(xhr.responseText);
+                    let response = JSON.parse(xhr.responseText);
 
-                    var mistakesDiv = document.getElementById('mistakes');
+                    let mistakesDiv = document.getElementById('mistakes');
                     mistakesDiv.innerHTML = ''; // Clear previous messages
                     
                     if (response.status === '0') {

@@ -122,6 +122,7 @@ def sqlInsert(sqlQuery, sqlValuesTuple):
     # Insert the content into the MySQL database
     inserted_id = None
     rows_affected = None
+    status = 0
     try:
         cursor = db_connection.cursor()
         cursor.execute(sqlQuery, sqlValuesTuple)
@@ -138,14 +139,16 @@ def sqlInsert(sqlQuery, sqlValuesTuple):
         
         # Check if rows were affected
         if rows_affected > 0:
+            status = 1
             answer = f"Query executed successfully, {rows_affected} rows affected."
         else:
+            status = 1
             answer = "Query executed successfully, but no rows were affected."
 
     except Exception as e:
         answer = f"An error occurred: {e}"
 
-    return {'answer': answer, 'inserted_id': inserted_id, 'rows_affected': rows_affected}
+    return {'answer': answer, 'inserted_id': inserted_id, 'rows_affected': rows_affected, 'status': status}
 
 
 

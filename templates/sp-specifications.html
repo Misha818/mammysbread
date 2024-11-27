@@ -9,7 +9,7 @@
 <div class="container">
 <div id="response"></div>
 <div class="mb-3 containerSPS pr-name">
-    <input autocomplete="off" autofocus class="" id="name" name="name" placeholder="{{ _('Subproduct Situation title') }}" type="text">
+    <input autocomplete="off" autofocus class="" id="name" name="name" placeholder="{{ _('Subproduct Situation name') }}" type="text">
 </div>
 
 <form id="myForm" >
@@ -82,7 +82,7 @@
     </script>
 
     <script>
-
+        let csrfToken = "{{ csrf_token() }}";
             document.getElementById('submit').onclick = function() {
                 event.preventDefault(); // Prevent form submission
                 let response = document.querySelector("#response");
@@ -91,11 +91,11 @@
 
                 let answer;
                 let flag = false;
-                const formData = new FormData(document.getElementById("myForm"));
+                const docFormData = new FormData(document.getElementById("myForm"));
 
                 let project_name = document.getElementById("name").value;
                 if (!project_name) {
-                    response.innerHTML = "{{ _('Please specify subproduct situation title!') }}";
+                    response.innerHTML = "{{ _('Please specify subproduct situation name!') }}";
                     response.style.display = 'flex';
                     document.getElementById("name").style.borderColor = "red";
                     return;
@@ -103,8 +103,10 @@
 
                 document.getElementById("name").style.borderColor = "black";
 
-                const formDataObject = {};
-                formData.forEach((value, key) => {
+                let formData = new FormData();
+            
+                let i = 0;
+                docFormData.forEach((value, key) => {
                     const inputElement = document.querySelector(`[name="${key}"]`);
                     const elementType = inputElement.type;
 
@@ -118,7 +120,6 @@
                     }
 
                     let emptyInput = document.querySelector(`#${parentElementId} input`);
-                    let colorFrame = document.querySelector(`#${parentElementId} select`);
 
                     if (value === "") {
                         flag = true;
@@ -146,7 +147,8 @@
 
                     let check = key.split('_');
                     if (check[0] !== "type") {
-                        formDataObject[key] = value;
+                        formData.append('text_' + i.toString(), value)
+                        i++;
                     }
                 });
 
@@ -157,9 +159,7 @@
                     return;
                 }
 
-                   
-        formDataObject["spsTitle"] = project_name;
-        let formDataJson = JSON.stringify(formDataObject);
+        formData.append('spsName', project_name)     
         document.querySelector("#response").textContent = answer;
 
         // Create a new XMLHttpRequest object
@@ -167,18 +167,24 @@
         
         // Configure the request
         xhr.open('POST', '/add_sps');
-        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission
         xhr.onload = function () {
             if (xhr.status === 200) {
                 const response = JSON.parse(xhr.responseText);
-                if (response.status == '1') {
+                if (response.status === '1') {
+                    alert(response.answer)
                     // let website_url = "{{ website_url|e }}/";
                     // window.location.href = website_url;
-                } else if (response.status == '0') {
-                    document.querySelector('#response').textContent = response.message;
-                } else if (response.status == 'test') {
+                } 
+                
+                if (response.status === '0') {
+                    document.querySelector("#response").textContent = response.answer;
+                    document.querySelector("#response").style.display = 'flex';
+                } 
+                
+                if (response.status === 'test') {
                     const jsonString = JSON.stringify(response.message);
                     document.querySelector('#response').textContent = jsonString;
                 }
@@ -193,7 +199,7 @@
         };
 
         // Send the request with the JSON data
-        xhr.send(formDataJson);
+        xhr.send(formData);
     };
 
 
