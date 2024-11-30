@@ -1,27 +1,31 @@
 {% extends "base.html" %}
 
 {% block title %}
-    {{ _('Create Specifications for Product Type') }}
+    {{ _('Edit Product Type Specifications') }}
 {% endblock %}
 
 
 {% block content %}
+
+{{ sideBar | safe }}
 <div class="container">
 <div id="response"></div>
 <div class="mb-3 containerSPS pr-name">
-    <input autocomplete="off" autofocus class="" id="name" name="name" placeholder="{{ _('Product Type Situation name') }}" type="text">
+    <input type="hidden" id="ptsID" value="{{ result[0]['ID'] }}">
+    <input autocomplete="off" autofocus value="{{ result[0]['Name']}}" id="name" name="name" placeholder="{{ _('Product Type Situation name') }}" type="text">
 </div>
 
 <form id="myForm" >
-    <!-- Dynamic fields -->           
-    <div class="containerSPS parent" id="parent_1" draggable="true">
+    <!-- Dynamic fields -->
+    {% for row in result %}       
+    <div class="containerSPS parent" id="parent_{{ loop.index }}" draggable="true">
         
-        
-            <input type="text" name="text_1">
-            <div class="remove" onclick="handleRemoveClick(this)">-</div>
-            
-            
+        <input type="text" name="text_{{ loop.index }}" value="{{ row['Text']}}">
+        <input type="hidden" name="spssID" value="{{ row['spssID'] }}">
+        <div class="remove" onclick="handleRemoveClick(this)">-</div>
+                   
     </div>
+    {% endfor %}
     <!-- End of dynamic fields -->
     
 </form>
@@ -112,7 +116,7 @@
 
                     let stringToSplit = key;
                     let checker = stringToSplit.indexOf("_");
-                    let parentElementId = "";
+                    let parentElementId = "parent_";
                     if (checker !== -1) {
                         let splitArray = stringToSplit.split('_');
                         let secondIndex = splitArray[1];
@@ -121,7 +125,7 @@
 
                     let emptyInput = document.querySelector(`#${parentElementId} input`);
 
-                    if (value === "") {
+                    if (value === "" && elementType === 'text') {
                         flag = true;
 
                         if (elementType === "select-one") {
@@ -147,8 +151,13 @@
 
                     let check = key.split('_');
                     if (check[0] !== "type") {
-                        formData.append('text_' + i.toString(), value)
-                        i++;
+                        if (elementType === 'hidden') {
+                            formData.append('spssID_' + i.toString(), value)
+                            i++;
+                        } else {
+                            formData.append('text_' + i.toString(), value)
+                        }
+
                     }
                 });
 
@@ -159,14 +168,22 @@
                     return;
                 }
 
-        formData.append('spsName', project_name)     
+        formData.append('spsName', project_name); 
+        
+        let spsID = "{{ result[0].ID }}";
+        formData.append('spsID', spsID) ;
+
         document.querySelector("#response").textContent = answer;
+
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+        }
 
         // Create a new XMLHttpRequest object
         let xhr = new XMLHttpRequest();
         
         // Configure the request
-        xhr.open('POST', '/add_sps');
+        xhr.open('POST', '/edit-pts');
         xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission
@@ -174,7 +191,8 @@
             if (xhr.status === 200) {
                 const response = JSON.parse(xhr.responseText);
                 if (response.status === '1') {
-                    alert(response.answer)
+                    alert(response.answer);
+                    location.reload();
                     // let website_url = "{{ website_url|e }}/";
                     // window.location.href = website_url;
                 } 
@@ -202,8 +220,9 @@
         xhr.send(formData);
     };
 
+        
+        let num = parseInt("{{ num }}", 10); // total count of mobile elements.
 
-        let num = 1; // total count of mobile elements. Starts from one
         // + buttun manipulation
         function handlePlusClick(plus) { 
 
@@ -236,8 +255,12 @@
             strNum = (maxNumber + 1).toString()
             
             let inputElement = clonedParent.querySelector("input");
-            inputElement.value = '';
+            inputElement.removeAttribute('value');
             inputElement.name = 'text_' + strNum;
+            
+            let hiddenInputElement = clonedParent.querySelector("input[name='spssID']");
+            hiddenInputElement.value = '';
+            
             // Change the parent div's id
             let newParentId = "parent_" + strNum
             clonedParent.setAttribute("id", newParentId);
@@ -257,7 +280,6 @@
 
         // - buttun manipulations
         function handleRemoveClick(plus) { 
-            
             if (num === 1) {
                 return;
             }

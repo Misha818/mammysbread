@@ -207,8 +207,15 @@ button[type="submit"]:hover {
 }
 
 
-.parent, .pr-name {
+.parent {
   border: 1px solid #ccc;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  cursor: grab; /* Set initial cursor style to indicate draggable */
+}
+.pr-name {
+  border: 2px solid black;
   margin-bottom: 15px;
   padding: 10px;
   background-color: #f9f9f9;
@@ -1190,6 +1197,13 @@ h2 {
 
 .header-stuff-right {
   float: right;
+}
+
+.specifications {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
 }
 
 @media screen and (max-width: 1200px) {

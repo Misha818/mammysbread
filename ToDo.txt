@@ -83,6 +83,7 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
         Add
         Remove 
         Prosede to checkout
+    Fix scrolling in team.view
 
     Write table creaing function
     BUGS
@@ -128,8 +129,13 @@ rgba(10, 161, 221, 0.92)
 
 
 
-
-
+=========================================
+Functions to add to PERMISSIONS
+add_sps_view
+add_sps
+pt_specifications
+edit_pts_view
+edit_pts
 
 
 

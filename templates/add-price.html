@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-    {{ _('Add Product Price') }}
+    {{ _('Add Product Type') }}
 {% endblock %}
 
 {% block head %}
@@ -42,19 +42,72 @@
     <input type="hidden" id="language-id" value="{{ languageID }}" >
     <input type="hidden" id="RefKey" value="{{ RefKey }}" >
 
-    <input type="text" name="title" id="title" placeholder="{{ _('Add Product Title') }}" class="imageInput">
+    <input type="text" name="title" id="title" placeholder="{{ _('Add Product Type Title') }}" class="imageInput">
     <div class="input-group">
-        <input type="number" name="price" id="price" placeholder="{{ _('Add Product Price') }}" class="imageInput">
+        <input type="number" name="price" id="price" placeholder="{{ _('Add Product Type Price') }}" class="imageInput">
         <label for="price">{{ mainCurrency }}</label>
     </div>
 
     <div class="dropzone" id="myDropzone">
         <div class="dz-message dz-button">{{ _('Click here to upload files') }}</div>
     </div>
+    
+    <!-- I am Here Stegh em -->
+    {% if sps.length > 0 %}
+    <select name="sps" id="spsID" class="styled-select" style="margin-top: 10px;">
+        <option value="">{{ _('Choose product type specification') }}</option>
+        {% for val in sps.data %}
+            {% set optVal = val['Name'] %}
+            {% if optVal is not none %}
+                {% set selected = '' %}
 
+                {% if spesifications.length > 0 %}
+                    {% if spesifications.data[0].ID == val['ID'] %}
+                        {% set selected = 'selected' %}
+                    {% endif %}
+                {% endif %}
+                <option value="{{ val['ID'] }}" {{ selected }}>
+                    {{ optVal }}
+                </option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <div class="specifications">
+    {% if spesifications.length > 0 %}
+        {% for val in spesifications.data %}
+            <label for="{{ val['SPSS_ID'] }}">{{ val['Text'] }}</label>
+            <input type="text" id="{{ val['SPSS_ID'] }}" name="{{ val['SPSS_ID'] }}">
+        {% endfor %}
+
+    {% endif %}
+    
+    </div>
+            
+
+    
+    <!-- Provide a link to translate categories -->
+    {% for val in sps.data %}
+        {% set optVal = val['Name'] %}
+        {% if optVal is none %}
+            <p>
+                <a target="_blank" href="{{ url_for('home') }}/edit-sps/{{ val['P_Ref_Key'] }}">
+                    {{ _('Translate Product Type Specification Name') }}
+                </a>
+            </p>
+        {% endif %}
+    {% endfor %}
+    
+ 
+    {% else %}
+        {{ _('You have not entered any product type specification yet.') }}
+        {{ _('Click on the link below to add a product category!') }}
+        <a href="{{ url_for('home') }}add-sps">{{ _('Add Product Type Specifications') }}</a>
+
+    {% endif %}     
+    <!-- Sarqum em spasificationneri fielder@ -->
     <div id="saveButton" class="pcButtonS" style="width:100%;">{{ _('Submit') }}</div>
     <div id="saving" class="pcButtonS hidden" style="width:100%;">{{ _('Saving...') }}</div>
-
+    
 </form>
 
 
@@ -315,7 +368,7 @@
         document.getElementById('myDropzone').addEventListener('click', function() {
             cropperState = 1;    
         })
-
+    });
         // Handle the file upload when the button is clicked
         let uploadButton = document.getElementById("saveButton");
         let saving = document.getElementById("saving");
@@ -375,16 +428,24 @@
 
             let languageID = prData.LanguageID;
             let ProductID = prData.Product_ID;
+            let spsName = document.getElementById('spsID').value;
 
             // formData.append("languageID", languageID);
             formData.append("ProductID", ProductID);
             formData.append("Type", '2');
+            formData.append("spsID", spsName);
+            
+            // Get all input elements inside the .specifications div
+            const inputs = document.querySelectorAll(".specifications input");
+            inputs.forEach(input => {
+                formData.append(input.id, input.value);
+            });
 
             // Create a new XMLHttpRequest object
             let xhr = new XMLHttpRequest();
             
             // Configure the request
-            xhr.open('POST', '/upload_slides');                   
+            xhr.open('POST', '/add_price_action');                   
             xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
             // Define what happens on successful data submission
@@ -433,7 +494,7 @@
 
 
     });
-});
+
 </script>
 
 {% endblock %}

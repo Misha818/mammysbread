@@ -36,7 +36,7 @@ CREATE TABLE `product_type` (
     `ID` INT AUTO_INCREMENT,
     `User_ID` INT,
     `Price` INT,
-    `Descriptiom` VARCHAR(255),
+    `Description` VARCHAR(255),
     `Slides` TEXT,
     `Product_ID` INT,
     `Language_ID` INT,
@@ -52,6 +52,7 @@ CREATE TABLE `product_category` (
     `Product_Category_Images` TEXT,
     `AltText` VARCHAR(255),
     `User_ID` INT,
+    `spsID` INT,
     `Product_Category_Status` INT,
     PRIMARY KEY (`Product_Category_ID`)
 ) ENGINE=InnoDB;
@@ -232,10 +233,12 @@ CREATE TABLE `slider` (
 ) ENGINE=InnoDB;
 ALTER TABLE `slider` AUTO_INCREMENT = 1;
 
+
 DROP TABLE IF EXISTS `sub_product_specification`;
 CREATE TABLE `sub_product_specification` (
     `ID` INT AUTO_INCREMENT,
     `Name` VARCHAR(255),
+    `User_ID` INT,
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
@@ -251,6 +254,34 @@ CREATE TABLE `sub_product_specifications` (
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `sub_product_specifications` AUTO_INCREMENT = 1;
+
+
+
+DROP TABLE IF EXISTS `sps_relatives`;
+CREATE TABLE `sps_relatives` (
+    `ID` INT AUTO_INCREMENT,
+    `Ref_Key` INT,
+    `User_ID` INT,
+    `SPS_ID` INT,
+    `Language_ID` INT,
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `sps_relatives` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `spss_relatives`;
+CREATE TABLE `spss_relatives` (
+    `ID` INT AUTO_INCREMENT,
+    `Ref_Key` INT,
+    `SPSS_ID` INT,
+    `User_ID` INT,
+    `Language_ID` INT,
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `spss_relatives` AUTO_INCREMENT = 1;
+
 
 DROP TABLE IF EXISTS `sub_product_details`;
 CREATE TABLE `sub_product_details` (

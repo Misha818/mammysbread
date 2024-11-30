@@ -209,7 +209,7 @@ def submit_reach_text(html_content, productID):
 
 
 # Add product category database action
-def add_p_c_sql(categoryName, file, AltText, currentLanguage, newCSRFtoken):
+def add_p_c_sql(categoryName, file, AltText, currentLanguage, spsID, newCSRFtoken):
     
     # Check whether Category Name exists
     sqlQuery = "SELECT `Product_Category_ID` FROM `product_category` WHERE `Product_Category_Name` = %s;"
@@ -226,9 +226,9 @@ def add_p_c_sql(categoryName, file, AltText, currentLanguage, newCSRFtoken):
         unique_filename = fileUpload(file, 'images/pc_uploads')
 
     # Insert the content into the MySQL database
-    sqlQuery = "INSERT INTO `product_category` (`Product_Category_Name`, `Product_Category_Images`, `AltText`, `User_ID`, `Product_Category_Status`) VALUES (%s, %s, %s, %s, '1')"
+    sqlQuery = "INSERT INTO `product_category` (`Product_Category_Name`, `Product_Category_Images`, `AltText`, `User_ID`, `Product_Category_Status`, `spsID`) VALUES (%s, %s, %s, %s, %s,%s)"
     userID = getUserID()
-    sqlValuesTuple =  (categoryName, unique_filename, AltText, userID)
+    sqlValuesTuple =  (categoryName, unique_filename, AltText, userID, 1, spsID)
     result = sqlInsert(sqlQuery, sqlValuesTuple)
     insertedID = result['inserted_id']
         

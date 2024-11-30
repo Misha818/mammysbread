@@ -12,6 +12,7 @@ import os
 from io import BytesIO
 import json
 import re
+import copy
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -451,8 +452,60 @@ def add_price(prID):
     # newCSRFtoken = generate_csrf()
     prData = {'Product_ID': prID, 'prUpdate': gettext('Update'), 'prSaving': gettext('Saving...')}
     mainCurrency = MAIN_CURRENCY
+    languageID = getLangID()
 
-    return render_template('add-price.html', prData=prData, mainCurrency=mainCurrency, current_locale=get_locale())
+    sqlQuery = f"""SELECT 
+                        `sub_product_specification`.`ID`,
+                        `sub_product_specification`.`Name`
+                    FROM `sub_product_specification`
+                    LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                    WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`Status` = %s;
+
+                """
+    sqlValTuple = (languageID, 1)
+    resultSPS = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    # sqlQuery = f"""
+    #             SELECT 
+    #                 `product_category`.`spsID`
+    #             FROM `product_category`
+    #             LEFT JOIN `product_c_relatives` ON `product_c_relatives`.`PC_ID` = `product_category`.`Product_Category_ID` 
+    #             LEFT JOIN `product` ON `product`.`Product_Category_ID` = `product_category`.`Product_Category_ID`
+    #             WHERE `product_c_relatives`.`Language_ID` = %s 
+    #             AND `product`.`ID` = %s;
+    #             """
+
+    sqlQuery = f"""
+                    SELECT 
+                        `sub_product_specification`.`ID`,
+                        `sub_product_specification`.`Name` AS `SPS_NAME`,
+                        `sub_product_specification`.`Status`,
+                        `sub_product_specifications`.`ID` AS `SPSS_ID`,
+                        `sub_product_specifications`.`Name` AS `Text`,
+                        `sub_product_specifications`.`Order` AS `spsOrder`
+                    FROM `sub_product_specifications`
+                    LEFT JOIN `sub_product_specification` 
+                        ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
+                    WHERE `sub_product_specification`.`ID` = (
+                        SELECT 
+                            `product_category`.`spsID`
+                        FROM `product_category`
+                        LEFT JOIN `product_c_relatives` 
+                            ON `product_c_relatives`.`PC_ID` = `product_category`.`Product_Category_ID`
+                        LEFT JOIN `product` 
+                            ON `product`.`Product_Category_ID` = `product_category`.`Product_Category_ID`
+                        WHERE `product_c_relatives`.`Language_ID` = %s 
+                        AND `product`.`ID` = %s 
+                        LIMIT 1
+                    )
+                    ORDER BY `spsOrder` ASC;
+
+                """
+    sqlValTuple = (languageID, prID)
+    resultSpesifications = sqlSelect(sqlQuery, sqlValTuple, True)
+    
+
+    return render_template('add-price.html', prData=prData, sps=resultSPS, spesifications=resultSpesifications, mainCurrency=mainCurrency, current_locale=get_locale())
 
 
 # View and Edit Product 
@@ -565,7 +618,7 @@ def upload_slides():
         title = request.form.get('title')
         price = request.form.get('price')
 
-        sqlQuery = "SELECT `Order` FROM `sub_product` WHERE `Product_ID` = %s AND `Status` = 1 ORDER BY `Order` DESC"
+        sqlQuery = "SELECT `Order` FROM `product_type` WHERE `Product_ID` = %s AND `Status` = 1 ORDER BY `Order` DESC"
         sqlValueTuple = (ProductID,)
         result = sqlSelect(sqlQuery, sqlValueTuple, True)
 
@@ -574,7 +627,7 @@ def upload_slides():
         else:
             order = 0
 
-        sqlInsertQuery = "INSERT INTO `sub_product` (`Price`, `Title`, `Order`, `Product_ID`, `User_Id`, `Status`) VALUES (%s, %s, %s, %s, %s, %s)"
+        sqlInsertQuery = "INSERT INTO `product_type` (`Price`, `Title`, `Order`, `Product_ID`, `User_Id`, `Status`) VALUES (%s, %s, %s, %s, %s, %s)"
         sqlInsertVals = (int(price), title, order, int(ProductID), session['user_id'], 1)
         insertedResult = sqlInsert(sqlInsertQuery, sqlInsertVals)
 
@@ -1042,9 +1095,22 @@ def edit_ar_headers():
 @app.route('/add-product-category', methods=['GET'])
 @login_required
 def addPC():
+    # Vortegh em Stegh em
+    # sps - ov dropdown es steghcum!
     languageID = getLangID()
+    sqlQuery = f"""SELECT 
+                        `sub_product_specification`.`ID`,
+                        `sub_product_specification`.`Name`
+                    FROM `sub_product_specification`
+                    LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                    WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`Status` = %s;
+
+                """
+    sqlValTuple = (languageID, 1)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    
     sideBar = side_bar_stuff()
-    return render_template('add_product_category.html', sideBar=sideBar, languageID=languageID, current_locale=get_locale())
+    return render_template('add_product_category.html', sideBar=sideBar, sps=result, languageID=languageID, current_locale=get_locale())
 
 
 # add_product_category client-server transaction
@@ -1053,6 +1119,7 @@ def addPC():
 def add_p_c():
     newCSRFtoken = generate_csrf()
     categoryName = request.form.get('categoryName')
+    spsID = request.form.get('spsID')
     AltText = request.form.get('AltText')
     file = request.files.get('file')
     currentLanguage = request.form.get('languageID')
@@ -1060,9 +1127,13 @@ def add_p_c():
     if not categoryName:
         answer = gettext('Category name is empty!')
         return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+    if spsID:
+        spsID = int(spsID)
+    else:
+        spsID = None
     
-    
-    return add_p_c_sql(categoryName, file, AltText, currentLanguage, newCSRFtoken)
+    return add_p_c_sql(categoryName, file, AltText, currentLanguage, spsID, newCSRFtoken)
 
 # Render the add_article_category.html template
 @app.route('/add-article-category', methods=['GET'])
@@ -2103,6 +2174,180 @@ def articles():
     return render_template('articles.html', result=result, sideBar=sideBar, current_locale=get_locale()) 
 
 
+@app.route("/pt-specifications", methods=['GET'])
+# @login_required
+def pt_specifications():
+    languageID = getLangID()
+    sqlQuery = """
+                SELECT 
+                    `sub_product_specification`.`ID`,
+                    `sub_product_specification`.`Name`,
+                    `sub_product_specification`.`Status`
+                FROM `sub_product_specification`
+                LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                WHERE `sps_relatives`.`Language_ID` = %s;
+                """
+    sqlValTuple = (languageID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    numRows = totalNumRows('sub_product_specification')
+    sideBar = side_bar_stuff()
+
+    return render_template('product-type-specifications.html', result=result, sideBar=sideBar, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), current_locale=get_locale())
+
+@app.route("/edit-pts/<ptsID>", methods=['GET'])
+# @login_required
+def edit_pts_view(ptsID):
+    languageID = getLangID()
+    sqlQuery = """
+                SELECT 
+                    `sub_product_specification`.`ID`,
+                    `sub_product_specification`.`Name`,
+                    `sub_product_specifications`.`Name` AS `Text`,
+                    `sub_product_specifications`.`ID` AS `spssID`,
+                    `sub_product_specifications`.`Status` AS `spssStatus`
+                FROM `sub_product_specification`
+                LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                LEFT JOIN `sub_product_specifications` ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
+                WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`ID` = %s
+                ORDER BY `sub_product_specifications`.`Order`;
+                """
+    sqlValTuple = (languageID, ptsID)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    sideBar = side_bar_stuff()
+    if result['length'] == 0:
+        return render_template('error.html', current_locale=get_locale())
+
+    return render_template('edit-pts.html', result=result['data'], num=result['length'], sideBar=sideBar, current_locale=get_locale())
+
+
+@app.route("/edit-pts", methods=['POST'])
+# @login_required
+def edit_pts():
+    newCSRFtoken = generate_csrf()
+    spsName = request.form.get('spsName') 
+    if not spsName:
+        answer = gettext('Please specify subproduct situation name!')
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+    spsID = request.form.get('spsID') 
+    if not spsID:
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+
+    languageID = getLangID()
+    # Check if the spsName already exists 
+    sqlQuery = f"""SELECT `sub_product_specification`.`ID`
+                    FROM `sub_product_specification`
+                    LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID`
+                    WHERE `sub_product_specification`.`Name` = %s AND `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`ID` != %;"""
+    
+    sqlValTuple = (spsName, languageID, spsID)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    if result['length'] > 0:
+        answer = gettext('Subproduct situation name exists!') + ' "' + spsName + '"'
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+    userID = session['user_id']
+
+    sqlQueryPtss = """
+                SELECT 
+                    `sub_product_specification`.`ID`,
+                    `sub_product_specification`.`Name`,
+                    `sub_product_specifications`.`Name` AS `Text`,
+                    `sub_product_specifications`.`ID` AS `spssID`,
+                    `sub_product_specifications`.`Status` AS `spssStatus`,
+                    `spss_relatives`.`Ref_Key` AS `spssRefKey`
+                FROM `sub_product_specification`
+                    LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                    LEFT JOIN `sub_product_specifications` ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
+                    LEFT JOIN `spss_relatives` ON `spss_relatives`.`SPSS_ID` = `sub_product_specifications`.`ID` 
+                WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`ID` = %s
+                ORDER BY `sub_product_specifications`.`Order`;
+                """
+    sqlValTuple = (languageID, spsID)
+    result = sqlSelect(sqlQueryPtss, sqlValTuple, True)
+
+    if spsName != result['data'][0]['Name']:
+        sqlQueryUpdate = "UPDATE `sub_product_specification` SET `Name` = %s WHERE `ID` = %s;"
+        sqlValTupleUpdate = (spsName, spsID)
+        updateResult = sqlUpdate(sqlQueryUpdate, sqlValTupleUpdate)
+        if updateResult['status'] == '-1':
+            answer = gettext(smthWrong)
+            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+            return jsonify(response)
+        
+
+    sqlQuerySpssUpdate = "UPDATE `sub_product_specifications` SET `Name` = %s WHERE `ID` = %s "    
+    sqlQuerySpssInsert = "INSERT INTO `sub_product_specifications` (`Name`, `Order`, `spsID`, `Status`) VALUES (%s, %s, %s, %s)" 
+    sqlQuerySPSSRelativeInsert = "INSERT INTO `spss_relatives` (`SPSS_ID`, `Ref_Key`, `Language_ID`, `User_ID`, `Status`) VALUES (%s, %s, %s, %s, %s)"
+    
+    RefKey = result['data'][-1:][0]['spssRefKey']
+    dataChecker = copy.deepcopy(result['data'])  
+    i = 0
+    
+    while True:
+        spsText = request.form.get('text_' + str(i))
+        if not spsText: 
+            break
+        # print('AAAAAAAAAAAAAAAAAAAAAAa')
+        # print(i)
+        # print(f"result['data'] Length {len(result['data'])}")
+        # print('BBBBBBBBBBBBBBBBBBBBBBB')
+        
+        if len(result['data']) > i:
+            if spsText != result['data'][i]['Text']:
+                # print(f"{spsText} -- {result['data'][i]['Text']} ")
+                sqlValTuple = (spsText, result['data'][i]['spssID'])
+                updateResult = sqlUpdate(sqlQuerySpssUpdate, sqlValTuple)
+                if updateResult['status'] == '-1':
+                    answer = gettext(smthWrong)
+                    response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+                    return jsonify(response)
+        else:
+            sqlValTuple = (spsText, i, spsID, 1)
+            resultInsert = sqlInsert(sqlQuerySpssInsert, sqlValTuple)
+            if resultInsert['status'] == 0:
+                answer = gettext(smthWrong)
+                response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+                return jsonify(response)
+
+            spssID = resultInsert['inserted_id']
+
+            sqlValTupleSPSRel = (spssID, RefKey, languageID, userID, 1)
+            insertResult = sqlInsert(sqlQuerySPSSRelativeInsert, sqlValTupleSPSRel)
+            if insertResult['status'] == 0:
+                answer = gettext(smthWrong)
+                response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+                return jsonify(response)
+            
+            RefKey = RefKey + 1
+    
+        if len(dataChecker):
+            dataChecker.pop(0)
+
+        i = i + 1
+
+    if len(dataChecker) > 0:
+        for row in dataChecker:
+            sqlQueryDel = "DELETE FROM `sub_product_specifications` WHERE `ID` = %s;"
+            sqlValTuple = (row['spssID'],)
+            resultDel = sqlDelete(sqlQueryDel, sqlValTuple)
+            if resultDel['status'] == '-1':
+                answer = gettext(smthWrong)
+                response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+                return jsonify(response)
+            
+    response = {'status': '1', 'answer': gettext('Done!'), 'newCSRFtoken': newCSRFtoken}
+    return jsonify(response)
+
+
+    
+
+
 @app.route("/add-sps", methods=['GET'])
 # @login_required
 def add_sps_view():
@@ -2113,25 +2358,31 @@ def add_sps_view():
 # @login_required
 def add_sps():
     newCSRFtoken = generate_csrf()
-    # Checking spsTitle
+    # Checking spsName
     spsName = request.form.get('spsName') 
     if not spsName:
         answer = gettext('Please specify subproduct situation name!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
+    languageID = getLangID()
     # Check if the spsName already exists 
-    sqlQuery = "SELECT `ID` FROM `sub_product_specification` WHERE `Name` = %s;"
-    sqlValTuple = (spsName,)
+    sqlQuery = f"""SELECT `sub_product_specification`.`ID`
+                    FROM `sub_product_specification`
+                    LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID`
+                    WHERE `sub_product_specification`.`Name` = %s AND `sps_relatives`.`Language_ID` = %s;"""
+    sqlValTuple = (spsName, languageID)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
+
     if result['length'] > 0:
         answer = gettext('Subproduct situation name exists!') + ' "' + spsName + '"'
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
+    userID = session['user_id']
 
-    sqlQuery = "INSERT INTO `sub_product_specification` (`Name`, `Status`) VALUES (%s, %s)"
-    sqlValTuple = (spsName, 1)
+    sqlQuery = "INSERT INTO `sub_product_specification` (`Name`, `User_ID`, `Status`) VALUES (%s, %s, %s)"
+    sqlValTuple = (spsName, userID, 1)
     result = sqlInsert(sqlQuery, sqlValTuple)
 
     if not result['inserted_id']:
@@ -2139,31 +2390,55 @@ def add_sps():
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response) 
 
+    # Get refkey
+    sqlQueryRefKey = "SELECT `Ref_Key` FROM `sps_relatives` WHERE `Language_ID` = %s AND `Status` = %s ORDER BY `Ref_Key` DESC LIMIT 1;"
+    sqlValTupleRK = (languageID, 1)
+    resultRK = sqlSelect(sqlQueryRefKey, sqlValTupleRK, True)
+    if resultRK['length'] > 0:
+        spsRefKey = resultRK['data'][0]['Ref_Key'] + 1
+    else:
+        spsRefKey = 1
+
     spsID = result['inserted_id']
+    sqlQuerySPSRel = "INSERT INTO `sps_relatives` (`SPS_ID`, `Ref_Key`, `Language_ID`, `User_ID`, `Status`) VALUES (%s, %s, %s, %s, %s)"
+    sqlValTupleSPSRel = (spsID, spsRefKey, languageID, userID, 1)
+    sqlInsert(sqlQuerySPSRel, sqlValTupleSPSRel)
     
     i = 0
     sqlValues = []
     sqlSyntax = ''
-    spsText = request.form.get('text_' + str(i))
-    while spsText:
-        sqlValues.append(spsText)
-        sqlValues.append(i)
-        sqlValues.append(spsID)
-        sqlValues.append(1)
-        sqlSyntax += f'(%s, %s, %s, %s),'
-        i = i + 1
+    sqlQuerySPSS = "INSERT INTO `sub_product_specifications` (`Name`, `Order`, `spsID`, `Status`) VALUES (%s, %s, %s, %s)" 
+    sqlQuerySPSSRel = "INSERT INTO `spss_relatives` (`SPSS_ID`, `Ref_Key`, `Language_ID`, `User_ID`, `Status`) VALUES (%s, %s, %s, %s, %s)"
+    
+    # Get refkey
+    sqlQueryRefKey = "SELECT `Ref_Key` FROM `spss_relatives` WHERE `Language_ID` = %s AND `Status` = %s ORDER BY `Ref_Key` DESC LIMIT 1;"
+    sqlValTupleRK = (languageID, 1)
+    resultRK = sqlSelect(sqlQueryRefKey, sqlValTupleRK, True)
+    if resultRK['length'] > 0:
+        spssRefKey = resultRK['data'][0]['Ref_Key'] + 1
+    else:
+        spssRefKey = 1
+
+
+    while True:
         spsText = request.form.get('text_' + str(i))
+        if not spsText: 
+            break
 
-    sqlSyntax = sqlSyntax[:-1]
+        sqlValTuple = (spsText, i, spsID, 1)
+        result = sqlInsert(sqlQuerySPSS, sqlValTuple)
 
-    sqlQuery = "INSERT INTO `sub_product_specifications` (`Name`, `Order`, `spsID`, `Status`) VALUES " + sqlSyntax
-    sqlValTuple = tuple(sqlValues)
-    result = sqlInsert(sqlQuery, sqlValTuple)
+        spssID = result['inserted_id']
+        spssRefKey = int(spssRefKey) + i
+
+        sqlValTupleSPSRel = (spssID, spssRefKey, languageID, userID, 1)
+        sqlInsert(sqlQuerySPSSRel, sqlValTupleSPSRel)
+        
+        i = i + 1
 
     # return result['status']
     response = {'status': '1', 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken}
     return response
-
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -2288,19 +2563,19 @@ def getSlides(PrID):
     sqlValTuple = (PrID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
-    sqlQuerySubProduct = f"""SELECT `sub_product`.`ID`,
-                                    `sub_product`.`Price`,
-                                    `sub_product`.`Title`,
-                                    `sub_product`.`Order` AS `SubPrOrder`,
+    sqlQuerySubProduct = f"""SELECT `product_type`.`ID`,
+                                    `product_type`.`Price`,
+                                    `product_type`.`Title`,
+                                    `product_type`.`Order` AS `SubPrOrder`,
                                     `slider`.`ID` AS `sliderID`,
                                     `slider`.`AltText`,
                                     `slider`.`Name`,
                                     `slider`.`Order` AS `SliderOrder` 
-                            FROM `sub_product`
-                            LEFT JOIN `slider` ON `slider`.`ProductID` = `sub_product`.`ID`
-                            WHERE `sub_product`.`Product_ID` = %s 
+                            FROM `product_type`
+                            LEFT JOIN `slider` ON `slider`.`ProductID` = `product_type`.`ID`
+                            WHERE `product_type`.`Product_ID` = %s 
                             AND `slider`.`Type` = 2
-                            ORDER BY `sub_product`.`ORDER` ASC, `slider`.`Order` ASC;
+                            ORDER BY `product_type`.`ORDER` ASC, `slider`.`Order` ASC;
                           """
     sqlSubPRValTuple = (PrID,)
     resultSubPr = sqlSelect(sqlQuerySubProduct, sqlSubPRValTuple, True)

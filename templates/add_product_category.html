@@ -21,6 +21,9 @@
             cursor: auto;
         }
     
+        .dropzone .dz-preview {
+            margin: -2px;
+        }
     </style>
 {% endblock %}
 {% block title %}
@@ -45,6 +48,42 @@
         
         
         <input type="text" id="category-name" placeholder="{{ _('Product Category Name') }}" style="padding: 15px;">
+        {% if sps.length > 0 %}
+        <select name="smsName" id="spsName" class="styled-select">
+            <option value="">{{ _('Choose subproduct situation name') }}</option>
+            {% for val in sps.data %}
+                {% set optVal = val['Name'] %}
+                {% if optVal is not none %}
+                    {% set selected = '' %}
+                    <option value="{{ val['ID'] }}" {{ selected }}>
+                        {{ optVal }}
+                    </option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        
+        
+        <!-- Provide a link to translate categories -->
+        {% for val in sps.data %}
+            {% set optVal = val['Product_Category_Name'] %}
+            {% if optVal is none %}
+                <p>
+                    <a target="_blank" href="{{ root_url }}/edit-product-category/{{ val['PC_Ref_Key'] }}">
+                        {{ _('Translate subproduct situation name') }}
+                    </a>
+                </p>
+            {% endif %}
+        {% endfor %}
+        
+     
+        {% else %}
+            <p>{{ _('You have not entered any product type situation name yet.') }}</p>
+            <p>{{ _('Click on the link below to add a product type situation!') }}</p>
+            <a href="{{ root_url }}add-sps">{{ _('Add subproduct situation name') }}</a>
+
+        {% endif %}    
+        
+        
         <div  class="dropzone" id="myDropzone" style="
         width: 141px;
         margin-left: 15%;
@@ -275,12 +314,13 @@
         
         let languageID = document.getElementById('language-id').value;
         let categoryName = document.getElementById('category-name').value;
+        let spsID = document.getElementById('spsName').value;
         
-
         
         // Create a new FormData object
         formData.append('languageID', languageID);
         formData.append('categoryName', categoryName);
+        formData.append('spsID', spsID);
         formData.append('file', file);
         formData.append('AltText', altText);
         
