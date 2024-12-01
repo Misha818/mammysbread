@@ -136,6 +136,7 @@ add_sps
 pt_specifications
 edit_pts_view
 edit_pts
+get_specifications
 
 
 

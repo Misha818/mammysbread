@@ -61,8 +61,8 @@
             {% if optVal is not none %}
                 {% set selected = '' %}
 
-                {% if spesifications.length > 0 %}
-                    {% if spesifications.data[0].ID == val['ID'] %}
+                {% if specifications.length > 0 %}
+                    {% if specifications.data[0].ID == val['ID'] %}
                         {% set selected = 'selected' %}
                     {% endif %}
                 {% endif %}
@@ -73,8 +73,8 @@
         {% endfor %}
     </select>
     <div class="specifications">
-    {% if spesifications.length > 0 %}
-        {% for val in spesifications.data %}
+    {% if specifications.length > 0 %}
+        {% for val in specifications.data %}
             <label for="{{ val['SPSS_ID'] }}">{{ val['Text'] }}</label>
             <input type="text" id="{{ val['SPSS_ID'] }}" name="{{ val['SPSS_ID'] }}">
         {% endfor %}
@@ -111,7 +111,7 @@
 </form>
 
 
-<a href="{{ url_for('home') }}product/{{ RefKey }}" class="self-left">{{ _('Back') }}</a>
+<a href="{{ url_for('home') }}product/{{ sps.data[0].P_Ref_Key }}" class="self-left">{{ _('Back') }}</a>
 
 </div>
 
@@ -491,9 +491,105 @@
 
             // Send the request with the FormData object
             xhr.send(formData);
-
+    
 
     });
+
+    const dropdown = document.getElementById("spsID");
+    if (dropdown) {
+
+        let previousValue = dropdown.value; // Keep track of the previously selected value
+        
+        dropdown.addEventListener("change", function () {
+            const confirmChange = confirm("{{ _('All changes in specifications fields will be lost, would you like to continue?') }}");
+            if (!confirmChange) {
+                dropdown.value = previousValue; // Revert to the previously selected value
+            } else {
+                previousValue = dropdown.value; // Update the previous value
+
+                let formData = new FormData();
+                formData.append('spsID', previousValue)
+                formData.append('LanguageID', prData.LanguageID)
+                
+                // Create a new XMLHttpRequest object
+                let xhr = new XMLHttpRequest();
+                
+                // Configure the request
+                xhr.open('POST', '/get-spacifications');                   
+                xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+                // Define what happens on successful data submission
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        let response = JSON.parse(xhr.responseText);
+
+                        let mistakesDiv = document.getElementById('mistakes');
+                        mistakesDiv.innerHTML = ''; // Clear previous messages
+                        
+                        if (response.status === '0') {
+                            // Handle Unknown Error
+                            mistakesDiv.textContent = response.answer;
+                            // mistakesDiv.style.color = 'red';
+                            mistakesDiv.style.display = 'flex';
+
+                            saving.style.display = 'none';
+                            uploadButton.style.display = 'inline-block';
+                            
+                            // Scroll the window to the mistakesDiv with smooth behavior
+                            mistakesDiv.scrollIntoView({ behavior: 'smooth' });                              
+                            
+                            
+                        } 
+                        
+                        if (response.status === '1') {
+                            mistakesDiv.style.display = 'none';
+                            saving.style.display = 'none';
+                            uploadButton.style.display = 'inline-block';
+
+                            let dataArray = Object.entries(response.data);
+                            let parentDiv = document.querySelector('.specifications');
+                            parentDiv.innerHTML = '';
+                            console.log(dataArray);
+                            console.log('-----------------------');
+
+
+                            dataArray.forEach(function(list) {
+                                console.log(list[1]['ID']);
+                                console.log(list[1]['Text']);
+
+                                // Create the label element
+                                const label = document.createElement('label');
+                                label.setAttribute('for', list[1]['ID']);
+                                label.textContent = list[1]['Text'];
+
+                                // Create the input element
+                                const input = document.createElement('input');
+                                input.setAttribute('type', 'text');
+                                input.setAttribute('id', list[1]['ID']);
+                                input.setAttribute('name', list[1]['ID']);
+
+                                // Append the label and input to the document body or any other container
+                                parentDiv.appendChild(label);
+                                parentDiv.appendChild(input);
+
+                            });
+                        }
+                    } else {
+                        // Handle error response
+                        uploadButton.classList.remove('hidden');
+                        saving.classList.add('hidden');
+
+                        console.error('Error adding category:', xhr.responseText);
+                    }
+                };
+
+                // Send the request with the FormData object
+                xhr.send(formData);
+    
+            }
+        });
+    
+    }
 
 </script>
 

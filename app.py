@@ -450,62 +450,58 @@ def add_price(prID):
 
     answer = gettext('Something is wrong! 0')
     # newCSRFtoken = generate_csrf()
-    prData = {'Product_ID': prID, 'prUpdate': gettext('Update'), 'prSaving': gettext('Saving...')}
     mainCurrency = MAIN_CURRENCY
     languageID = getLangID()
+    prData = {'Product_ID': prID, 'LanguageID': languageID, 'prUpdate': gettext('Update'), 'prSaving': gettext('Saving...')}
 
     sqlQuery = f"""SELECT 
                         `sub_product_specification`.`ID`,
-                        `sub_product_specification`.`Name`
+                        `sub_product_specification`.`Name`,
+                        `product_relatives`.`P_Ref_Key`
                     FROM `sub_product_specification`
-                    LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
-                    WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`Status` = %s;
+                        LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                        LEFT JOIN `product_relatives` ON `product_relatives`.`P_ID` = %s 
+                    WHERE `sps_relatives`.`Language_ID` = %s 
+                        AND `product_relatives`.`Language_ID` = %s 
+                        AND `sub_product_specification`.`Status` = %s
+                    ORDER BY `sub_product_specification`.`ID`;
 
                 """
-    sqlValTuple = (languageID, 1)
+    sqlValTuple = (prID, languageID, languageID, 1)
     resultSPS = sqlSelect(sqlQuery, sqlValTuple, True)
 
-    # sqlQuery = f"""
-    #             SELECT 
-    #                 `product_category`.`spsID`
-    #             FROM `product_category`
-    #             LEFT JOIN `product_c_relatives` ON `product_c_relatives`.`PC_ID` = `product_category`.`Product_Category_ID` 
-    #             LEFT JOIN `product` ON `product`.`Product_Category_ID` = `product_category`.`Product_Category_ID`
-    #             WHERE `product_c_relatives`.`Language_ID` = %s 
-    #             AND `product`.`ID` = %s;
-    #             """
-
     sqlQuery = f"""
+                SELECT 
+                    `sub_product_specification`.`ID`,
+                    `sub_product_specification`.`Name` AS `SPS_NAME`,
+                    `sub_product_specification`.`Status`,
+                    `sub_product_specifications`.`ID` AS `SPSS_ID`,
+                    `sub_product_specifications`.`Name` AS `Text`,
+                    `sub_product_specifications`.`Order` AS `spsOrder`
+                FROM `sub_product_specifications`
+                LEFT JOIN `sub_product_specification` 
+                    ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
+                WHERE `sub_product_specification`.`ID` = (
                     SELECT 
-                        `sub_product_specification`.`ID`,
-                        `sub_product_specification`.`Name` AS `SPS_NAME`,
-                        `sub_product_specification`.`Status`,
-                        `sub_product_specifications`.`ID` AS `SPSS_ID`,
-                        `sub_product_specifications`.`Name` AS `Text`,
-                        `sub_product_specifications`.`Order` AS `spsOrder`
-                    FROM `sub_product_specifications`
-                    LEFT JOIN `sub_product_specification` 
-                        ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
-                    WHERE `sub_product_specification`.`ID` = (
-                        SELECT 
-                            `product_category`.`spsID`
-                        FROM `product_category`
-                        LEFT JOIN `product_c_relatives` 
-                            ON `product_c_relatives`.`PC_ID` = `product_category`.`Product_Category_ID`
-                        LEFT JOIN `product` 
-                            ON `product`.`Product_Category_ID` = `product_category`.`Product_Category_ID`
-                        WHERE `product_c_relatives`.`Language_ID` = %s 
-                        AND `product`.`ID` = %s 
-                        LIMIT 1
-                    )
-                    ORDER BY `spsOrder` ASC;
+                        `product_category`.`spsID`
+                    FROM `product_category`
+                    LEFT JOIN `product_c_relatives` 
+                        ON `product_c_relatives`.`PC_ID` = `product_category`.`Product_Category_ID`
+                    LEFT JOIN `product` 
+                        ON `product`.`Product_Category_ID` = `product_category`.`Product_Category_ID`
+                    WHERE `product_c_relatives`.`Language_ID` = %s 
+                    AND `product`.`ID` = %s 
+                    LIMIT 1
+                )
+                ORDER BY `spsOrder`
+                ;
 
-                """
+            """
     sqlValTuple = (languageID, prID)
-    resultSpesifications = sqlSelect(sqlQuery, sqlValTuple, True)
+    resultSpecifications = sqlSelect(sqlQuery, sqlValTuple, True)
     
 
-    return render_template('add-price.html', prData=prData, sps=resultSPS, spesifications=resultSpesifications, mainCurrency=mainCurrency, current_locale=get_locale())
+    return render_template('add-price.html', prData=prData, sps=resultSPS, specifications=resultSpecifications, mainCurrency=mainCurrency, current_locale=get_locale())
 
 
 # View and Edit Product 
@@ -2612,13 +2608,41 @@ def getSlides(PrID):
                 
                 i = i + 1
 
-    # print('-------------------------------')
-    # print(f"This is subProducts {subProducts}")
-    # print('-------------------------------')
-    
    
     return render_template('slideshow.html', result=result, resultSubPr=resultSubPr, subProducts=subProducts, current_locale=get_locale())
 
+
+@app.route("/get-spacifications", methods=["POST"])
+# @login_required
+def get_specifications():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('LanguageID') or not request.form.get('spsID'):
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+    languageID = request.form.get('LanguageID')
+    spsID = request.form.get('spsID')
+
+    sqlQuery = f"""
+                    SELECT 
+                        `sub_product_specifications`.`ID`,
+                        `sub_product_specifications`.`Name` AS `Text`
+                    FROM `sub_product_specification`
+                    LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                    LEFT JOIN `sub_product_specifications` ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
+                    WHERE `sps_relatives`.`Language_ID` = %s 
+                        AND `sub_product_specification`.`ID` = %s 
+                        AND `sub_product_specifications`.`Status` = %s
+                    ORDER BY `sub_product_specifications`.`Order`;
+                    ;
+
+                """
+    sqlValTuple = (languageID, spsID, 1)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    
+    return jsonify({'data': result['data'], 'status': '1'})
+    
 
 
 if __name__ == '__main__':
