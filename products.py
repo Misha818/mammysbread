@@ -1228,8 +1228,8 @@ def slidesToEdit(PrID):
     sqlQuery = f"""SELECT
                          `Name` AS `imgName`,
                          `AltText`
-                    FROM slider
-                    WHERE `ProductID` = %s
+                    FROM `slider`
+                    WHERE `ProductID` = %s AND `Type` = 1
                     ORDER BY `ORDER` ASC
                 """
     sqlValTuple = (PrID,)

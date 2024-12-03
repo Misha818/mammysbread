@@ -194,3 +194,12 @@ function scrollThumbnails(direction, stop) {
     thumbnailContainer.style.transform = `translateX(-${scrollTo}px)`; // Adjust based on thumbnail size and gap
 }
 
+function changeType(typeID) {
+    let spss = document.querySelectorAll('.productType');
+    if (spss) {
+        spss.forEach(function(span) {
+            span.style.display = 'none';
+        });
+        document.getElementById('type_' + typeID).style.display = 'block';
+    }
+}

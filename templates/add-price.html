@@ -445,7 +445,7 @@
             let xhr = new XMLHttpRequest();
             
             // Configure the request
-            xhr.open('POST', '/add_price_action');                   
+            xhr.open('POST', '/upload_slides');                   
             xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
             // Define what happens on successful data submission
@@ -506,7 +506,13 @@
                 dropdown.value = previousValue; // Revert to the previously selected value
             } else {
                 previousValue = dropdown.value; // Update the previous value
+                let parentDiv = document.querySelector('.specifications');
 
+                if (previousValue.length === 0) {
+                    parentDiv.innerHTML = '';
+                    return;
+                }
+                
                 let formData = new FormData();
                 formData.append('spsID', previousValue)
                 formData.append('LanguageID', prData.LanguageID)
@@ -547,11 +553,9 @@
                             uploadButton.style.display = 'inline-block';
 
                             let dataArray = Object.entries(response.data);
-                            let parentDiv = document.querySelector('.specifications');
+                            
                             parentDiv.innerHTML = '';
-                            console.log(dataArray);
-                            console.log('-----------------------');
-
+                            
 
                             dataArray.forEach(function(list) {
                                 console.log(list[1]['ID']);

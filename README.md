@@ -37,5 +37,5 @@ from flask_babel import Babel, _,lazy_gettext as _l, gettext
 DATABASE INSTALATION
 
 Restore the database from the dump. Open the CMD in current folder and run the following command
-mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS blog_db"
-mysql -u root -p blog_db < Dump.sql
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS db"
+mysql -u root -p db < Dump.sql

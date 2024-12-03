@@ -585,6 +585,7 @@ def upload_slides():
     
     answer = gettext('Something is wrong! 0')
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
     
     if not request.form.get('ProductID') or not request.form.get('Type'):
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
@@ -629,9 +630,40 @@ def upload_slides():
 
         if insertedResult['inserted_id']:
             ProductID = insertedResult['inserted_id']
+            if request.form.get('spsID'):
+                spsID = request.form.get('spsID')
+               
+                sqlQuerySPS = """
+                SELECT 
+                    `sub_product_specification`.`ID`,
+                    `sub_product_specification`.`Name`,
+                    `sub_product_specifications`.`Name` AS `Text`,
+                    `sub_product_specifications`.`ID` AS `spssID`,
+                    `sub_product_specifications`.`Status` AS `spssStatus`
+                FROM `sub_product_specification`
+                LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                LEFT JOIN `sub_product_specifications` ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
+                WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`ID` = %s
+                ORDER BY `sub_product_specifications`.`Order`;
+                """
+                sqlValTupleSPS = (languageID, spsID)
+                resultSPS = sqlSelect(sqlQuerySPS, sqlValTupleSPS, True)
+
+                sqlP_T_DetailsInsert = "INSERT INTO `product_type_details` (`productTypeID`, `spssID`, `Text`) VALUES (%s, %s, %s)"
+                for row in resultSPS['data']:
+                    if request.form.get(str(row['spssID'])):
+                        Text = request.form.get(str(row['spssID']))
+                        sqlValTuplePTD = (ProductID, row['spssID'], Text)
+                        resultInsertPTD = sqlInsert(sqlP_T_DetailsInsert, sqlValTuplePTD)
+                        if resultInsertPTD['status'] == 0:
+                            answer = gettext(smthWrong)
+                            return jsonify({'status': '0', 'answer': insertedResult['answer'], 'newCSRFtoken': newCSRFtoken})
+
+
         else: 
-            answer = gettext('Something is wrong, please try again!')
+            answer = gettext(smthWrong)
             return jsonify({'status': '0', 'answer': insertedResult['answer'], 'newCSRFtoken': newCSRFtoken})
+            
 
     else:
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
@@ -702,7 +734,7 @@ def upload_slides():
         i = i + 1    
         fileName = 'file_' + str(i)
     # shortKeys = {'american_girl.png': [9, 0], 'barbie_dreamhouse.png': [10, 0], 'canon_90d.png': [6, 0]}
-    if len(shortKeys) > 0:
+    if len(shortKeys) > 0 and productType == 1:
         for key, val in shortKeys.items():
             sqlQuery = "DELETE FROM `slider` WHERE `ID` = %s;"
             sqlValTuple = (val[0],)
@@ -2553,15 +2585,15 @@ def getSlides(PrID):
                           `product`.`Title`
                     FROM `slider`
                     LEFT JOIN `product` ON `product`.`ID` = `slider`.`ProductID`
-                    WHERE `ProductID` = %s
+                    WHERE `ProductID` = %s AND `slider`.`Type` = 1
                     ORDER BY `ORDER` ASC
                 """
     sqlValTuple = (PrID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
     sqlQuerySubProduct = f"""SELECT `product_type`.`ID`,
-                                    `product_type`.`Price`,
-                                    `product_type`.`Title`,
+                                    -- `product_type`.`Price`,
+                                    -- `product_type`.`Title`,
                                     `product_type`.`Order` AS `SubPrOrder`,
                                     `slider`.`ID` AS `sliderID`,
                                     `slider`.`AltText`,
@@ -2581,8 +2613,8 @@ def getSlides(PrID):
     if resultSubPr['length'] > 0:
         subProducts = [{
                     'ID': resultSubPr['data'][0]['ID'],
-                    'Price': resultSubPr['data'][0]['Price'],
-                    'Title': resultSubPr['data'][0]['Title'],
+                    # 'Price': resultSubPr['data'][0]['Price'],
+                    # 'Title': resultSubPr['data'][0]['Title'],
                     'Name': resultSubPr['data'][0]['Name'],
                     'AltText': resultSubPr['data'][0]['AltText'],
                     'i': result['length']
@@ -2597,8 +2629,8 @@ def getSlides(PrID):
                 if checker != row['ID']:
                     myDict = {
                         'ID': row['ID'],
-                        'Price': row['Price'],
-                        'Title': row['Title'],
+                        # 'Price': row['Price'],
+                        # 'Title': row['Title'],
                         'Name': row['Name'],
                         'AltText': row['AltText'],
                         'i': i
@@ -2607,9 +2639,24 @@ def getSlides(PrID):
                     checker = row['ID']
                 
                 i = i + 1
-
-   
-    return render_template('slideshow.html', result=result, resultSubPr=resultSubPr, subProducts=subProducts, current_locale=get_locale())
+    sqlQuerySpss = f"""
+                    SELECT 
+                        `sub_product_specifications`.`ID` AS `spssID`,
+                        `sub_product_specifications`.`Name` AS `Title`,
+                        `product_type_details`.`Text`,
+                        `product_type`.`Title` AS `ptTitle`,
+                        `product_type`.`Price`,
+                        `product_type`.`ID` AS `ptID`,
+                        (SELECT SUM(`Quantity`) FROM `quantity` WHERE `productTypeID` = `ptID`) AS `Quantity`
+                    FROM `sub_product_specifications`
+                        LEFT JOIN `product_type_details` ON `product_type_details`.`spssID` = `sub_product_specifications`.`ID`
+                        LEFT JOIN `product_type` ON `Product_Type`.`ID` = `product_type_details`.`ProductTypeID`
+                    WHERE `product_type`.`Product_ID` = %s
+                    ;
+                    """
+    sqlValTupleSpss = (PrID,)
+    resultSpss = sqlSelect(sqlQuerySpss, sqlValTupleSpss, True)
+    return render_template('slideshow.html', result=result, resultSubPr=resultSubPr, resultSpss=resultSpss, subProducts=subProducts, current_locale=get_locale())
 
 
 @app.route("/get-spacifications", methods=["POST"])

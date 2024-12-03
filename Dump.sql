@@ -34,12 +34,14 @@ ALTER TABLE `product` AUTO_INCREMENT = 1;
 DROP TABLE IF EXISTS `product_type`;
 CREATE TABLE `product_type` (
     `ID` INT AUTO_INCREMENT,
-    `User_ID` INT,
     `Price` INT,
-    `Description` VARCHAR(255),
-    `Slides` TEXT,
+    `Title` VARCHAR(255),
+    `Description` TEXT,
+    `Order` INT,
+    `User_ID` INT,
     `Product_ID` INT,
-    `Language_ID` INT,
+    -- `Slides` TEXT,
+    -- `Language_ID` INT,
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
@@ -283,16 +285,43 @@ CREATE TABLE `spss_relatives` (
 ALTER TABLE `spss_relatives` AUTO_INCREMENT = 1;
 
 
-DROP TABLE IF EXISTS `sub_product_details`;
-CREATE TABLE `sub_product_details` (
+DROP TABLE IF EXISTS `product_type_details`;
+CREATE TABLE `product_type_details` (
     `ID` INT AUTO_INCREMENT,
     `Text` VARCHAR(255),
     `spssID` INT,
-    `subProductID` INT,
+    `productTypeID` INT,
+    -- `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `product_type_details` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `quantity`;
+CREATE TABLE `quantity` (
+    `ID` INT AUTO_INCREMENT,
+    `productTypeID` INT,
+    `storeID` INT,
+    `userID` INT,
+    `Quantity` INT,
+    `addDate` DATE,
+    `expDate` DATE,
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
-ALTER TABLE `sub_product_details` AUTO_INCREMENT = 1;
+ALTER TABLE `quantity` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `store`;
+CREATE TABLE `store` (
+    `ID` INT AUTO_INCREMENT,
+    `Name` VARCHAR(255),
+    `Address` VARCHAR(255),
+    `userID` INT,
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `store` AUTO_INCREMENT = 1;
 
 INSERT INTO `stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `RolID`, `LanguageID`, `Status`)
 VALUES 
@@ -359,4 +388,8 @@ INSERT INTO `languages` (`Language`, `Prefix`) VALUES
 ('客家话', 'hak'),
 ('晋语', 'cjy'),
 ('Hausa', 'ha')
+;
+
+INSERT INTO `store` (`Name`, `Address`, `userID`, `Status`) Values('Main', 'Main str.', 1, 1);
+
 

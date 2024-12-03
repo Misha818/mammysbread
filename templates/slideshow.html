@@ -1,6 +1,6 @@
 {% if result.length > 0 %}
 {% set display = '' %}
-{% if result.length < 6 %} {% set display='display:none' %} {% endif %} <div class="product-container blocks"
+{% if result.length + resultSubPr.length < 6 %} {% set display='display:none' %} {% endif %} <div class="product-container blocks"
   id="slides">
   <div class="image-gallery">
     <div class="slider">
@@ -53,26 +53,24 @@
   </div>
   <div class="product-details">
     <h1>{{ result.data[0].Title }}</h1>
+    
     <div class="rating">
       ★★★★☆ (67 reviews)
     </div>
-
-    {% if subProducts | length > 0 %}
-    <h2 class="subproduct">{{ subProducts[0].Title }}</h2>
-    {% endif %}
 
     {% if subProducts | length > 1 %}
     <div class="thumbnail-container" style="border: solid 1px black;">
       <button class="thumb-prev" style="display:none" onclick="scrollThumbnails('left', false)">❮</button>
       <div class="price-thumbnails-wrapper">
         <div class="price-thumbnails">
-
+          {% set ns = namespace(i=0) %}
           {% for row in subProducts %}
 
           {% set fileDir = 'images/sub_product_slider/' + row['Name'] %}
 
           <img src="{{ url_for('static', filename='') + fileDir}} " alt='{{ row["AltText"] }}'
-            onclick='showImage({{row["i"]}})'>
+            onclick='showImage({{row["i"]}}), changeType({{ ns.i }})'>
+          {% set ns.i = ns.i + 1 %}
           {% endfor %}
 <!-- 
           <img src="/static/images/product_slider/acer_predator_1.png " alt="" onclick="showImage('0')"
@@ -94,12 +92,46 @@
       <button class="thumb-next" style="display:none" onclick="scrollThumbnails('right', false)">❯</button>
     </div>
     {% endif %}
-    <p><strong>Colorway:</strong> Summit White / Fire Red / Black / Cement Grey</p>
-    <p><strong>Style Code:</strong> DN3707-100</p>
-    <p><strong>Release Date:</strong> March 12, 2023</p>
-    <p><strong>Department:</strong> Men</p>
-    <p><strong>Brand:</strong> Jordan</p>
-    <p><strong>Model:</strong> Air Jordan 3</p>
+
+    
+    {% if resultSpss | length > 0 %}
+      <span style="display: block;" class="productType" id="type_0">
+        <h2 class="subproduct">{{ resultSpss.data[0].ptTitle }}</h2>
+        {% set ns = namespace(flag = resultSpss.data[0].ptID) %}
+        {% set spanID = namespace(i=0) %}
+
+        {% for row in resultSpss.data %}
+          {% if ns.flag != row['ptID'] %}
+            {% set ns.flag = row['ptID'] %}
+            {% set spanID.i = spanID.i + 1 %}
+            {% if loop.index == 1 %}
+              {% set loopIndex = 0 %}
+            {% else %}
+              {% set loopIndex = loop.index - 2 %}
+            {% endif %}
+              <p>Price {{ resultSpss.data[loopIndex].Price }}</p>
+            <p>Quantity {{ resultSpss.data[loopIndex].Quantity }}</p>
+            </span>
+            <span id="type_{{ spanID.i }}" class="productType" style="display: none;">
+              <h2 class="subproduct">{{ row['ptTitle'] }}</h2>
+              <p><strong>{{ row['Title'] }}:</strong> {{ row['Text'] }}</p>
+            
+          
+            {% else %}
+            
+              <p><strong>{{ row['Title'] }}:</strong> {{ row['Text'] }}</p>
+          
+          {% endif %}
+          
+        
+        {% endfor %}
+      {% set lastIndex = resultSpss.data | length - 1 %}
+      <p>Price {{ resultSpss.data[lastIndex].Price }}</p>
+      <p>Quantity {{ resultSpss.data[lastIndex].Quantity }}</p>  
+      </span>  
+        
+    {% endif %}
+
   </div>
   </div>
 
