@@ -71,28 +71,33 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
         AltText does not work
         Cropping on upload does not work properly
         thubnail slider bug
+        Thumbnail imgs style if less then 5
         
+    Add prices (add product type)
 ===========================================================
 
+    Edit prices (edit product type)
+    Store
+        Add 
+        Edit
+        View
 
-        Thumbnail imgs style if less then 5
-        Mobile friendly styling
 
-    Add prices
     Shopping Card
         Add
         Remove 
         Prosede to checkout
+    
     Fix scrolling in team.view
 
-    Write table creaing function
+    Mobile friendly styling
     BUGS
     ete nkar chka teammatum cropi het miasin done - n el a cuyc talis
     Password, email change
+    Write table creaing function
 
     Docker
     Add/Edit Sliders for product
-    Add product types
 
     Crate header for stuff with | Product | Blog sections. Each section opens releated functions on click
     Contacts { style, backend }
@@ -125,6 +130,22 @@ https://fontawesome.com/v4/icons/
 -- AI tool for job searching
 https://github.com/feder-cr/Auto_Jobs_Applier_AIHawk
 
+
+Secure Headers:
+You’re using a custom header (X-CSRFToken), which adds an additional layer of security by explicitly sending authentication data.
+Consider adding CORS (Cross-Origin Resource Sharing) policies on the server to restrict where XHR requests can originate.
+
+
+Vulnerabilities to Watch For:
+CORS Misconfigurations: Allowing unrestricted origins in CORS can expose sensitive data to malicious domains.
+Exposing Sensitive Data: Avoid including sensitive information (like passwords) in the request payload or URL.
+Unvalidated Inputs: Ensure server-side validation to protect against injection attacks.
+
+Use Content-Security-Policy, X-Content-Type-Options, and Strict-Transport-Security.
+Restrict CORS: Only allow trusted domains to access your resources
+
+
+
 rgba(10, 161, 221, 0.92)
 
 
@@ -137,6 +158,8 @@ pt_specifications
 edit_pts_view
 edit_pts
 get_specifications
+get_product_types
+change_type_order
 
 
 

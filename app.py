@@ -2180,7 +2180,7 @@ def products():
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     sideBar = side_bar_stuff()
 
-    return render_template('products.html', result=result, sideBar=sideBar, current_locale=get_locale()) 
+    return render_template('products.html', result=result, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
 
 
 @app.route('/articles', methods=['GET'])
@@ -2247,6 +2247,52 @@ def edit_pts_view(ptsID):
 
     return render_template('edit-pts.html', result=result['data'], num=result['length'], sideBar=sideBar, current_locale=get_locale())
 
+# Change order of product types of a product
+@app.route("/change-type-order", methods=['POST'])
+# @login_required
+def change_type_order():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('prID'):
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+    prID = request.form.get('prID')
+    sqlQuery = """
+                    SELECT `product_type`.`ID`,
+                            `product_type`.`Order`
+                    FROM `product_type`
+                    WHERE `product_type`.`Product_ID` = %s 
+                    ORDER BY `product_type`.`ORDER` 
+                    ;"""
+    sqlValTuple = (prID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] == 0:
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+
+    i = 0
+    sqlQuery = "UPDATE `product_type` SET `Order` = %s WHERE `ID` = %s;"
+    while True:
+        if not request.form.get(str(i)):
+            break
+        print(f"result['data'][i]['ID'] Type is {type(result['data'][i]['ID'])} Value is {result['data'][i]['ID']}  ===== request.form.get(i) Type is {type(request.form.get(str(i)))} Value is {request.form.get(str(i))}")    
+        if result['data'][i]['ID'] != int(request.form.get(str(i))):
+            sqlValTuple = (i, request.form.get(str(i)))
+            updateResult = sqlUpdate(sqlQuery, sqlValTuple)
+            if updateResult['status'] == '-1':
+                answer = gettext(smthWrong)
+                response = {'status': '0', 'answer': updateResult['answer'], 'newCSRFtoken': newCSRFtoken}
+                return jsonify(response)   
+             
+        i += 1
+
+
+    answer = gettext('Order Changed Successfully!')
+    response = {'status': '1', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+    return jsonify(response)
+    
 
 @app.route("/edit-pts", methods=['POST'])
 # @login_required
@@ -2689,7 +2735,35 @@ def get_specifications():
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     
     return jsonify({'data': result['data'], 'status': '1'})
+
+
+@app.route("/get-product-types", methods=["POST"])
+# @login_required
+def get_product_types():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('prID'):
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
     
+    prID = request.form.get('prID')
+    sqlQuery = """
+                    SELECT `product_type`.`ID`,
+                            `product_type`.`Price`,
+                            `product_type`.`Title`,
+                            `product_type`.`Order` AS `SubPrOrder`,
+                            (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `imgName`,
+                            (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+                            `product_type`.`Status`
+                    FROM `product_type`
+                    WHERE `product_type`.`Product_ID` = %s 
+                    ORDER BY `SubPrOrder` 
+                    ;"""
+    sqlValTuple = (prID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    response = {'status': '1', 'data': result['data'], 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
+    return jsonify(response)
 
 
 if __name__ == '__main__':

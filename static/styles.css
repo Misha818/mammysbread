@@ -249,6 +249,39 @@ button[type="submit"]:hover {
   text-align: center;
 }
 
+.view-types-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3px 15px;
+  font-size: 16px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.view-types-btn .chevron {
+  margin-top: 5px;
+  font-size: 12px;}
+
+.trBorderTop {
+  border-top: 1px solid black;
+}
+
+#answerID {
+  display: none;
+  text-align: center;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-out;
+}
+
+#answerID.active {
+  display: revert;
+  max-height: 200px;
+}
+
+
 @media (max-width: 600px) {
     .container {
         width: 90%;
