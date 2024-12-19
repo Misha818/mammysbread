@@ -504,6 +504,215 @@ def add_price(prID):
     return render_template('add-price.html', prData=prData, sps=resultSPS, specifications=resultSpecifications, mainCurrency=mainCurrency, current_locale=get_locale())
 
 
+# Edit price view
+@app.route('/edit-price/<ptID>', methods=['GET'])
+# @login_required
+def edit_price(ptID):
+    languageID = getLangID()
+
+    sqlQueryMain = f"""
+                    SELECT `product_type`.`ID`,
+                            `product_type`.`Title`,
+                            `product_type`.`Price`,
+                            `product_type`.`spsID`,
+                            `product_type`.`Order` AS `SubPrOrder`,
+                            `slider`.`ID` AS `sliderID`,
+                            `slider`.`Name`,
+                            `slider`.`AltText`,
+                            `slider`.`Order` AS `SliderOrder` 
+                    FROM `product_type`
+                    LEFT JOIN `slider` ON `slider`.`ProductID` = `product_type`.`ID`
+                        AND `slider`.`Type` = 2
+                    WHERE `product_type`.`ID` = %s 
+                    ORDER BY `SubPrOrder`  ASC, `slider`.`Order` ASC;
+                    """
+    sqlValTupleMain = (ptID,)
+    mainResult = sqlSelect(sqlQueryMain, sqlValTupleMain, True)
+    if mainResult['length'] == 0:
+        return render_template('error.html')
+    
+    sqlQuerySpss = f"""
+                        SELECT 
+                            `sub_product_specifications`.`ID` AS `spssID`,
+                            `sub_product_specifications`.`Name` AS `Key`,
+                            `sub_product_specifications`.`spsID` AS `spsID`,
+                            `sub_product_specifications`.`Order` AS `spssOrder`,
+                            `product_type_details`.`ID` AS `ptdID`,
+                            `product_type_details`.`Text` AS `Value`,
+                            `product_type_details`.`spssID` AS `product_type_details_spssID`,
+                            `product_type_details`.`productTypeID`
+                        FROM 
+                            `sub_product_specifications`
+                        LEFT JOIN `product_type_details` ON `sub_product_specifications`.`ID` = `product_type_details`.`spssID` 
+                            AND `product_type_details`.`productTypeID` = %s
+                        WHERE `sub_product_specifications`.`spsID` = %s; 
+                        """
+    sqlValTupleSPSS = (ptID, mainResult['data'][0]['spsID'])
+    resultSPSS = sqlSelect(sqlQuerySpss, sqlValTupleSPSS, True)
+    
+
+    sqlQuery = f"""SELECT 
+                        `sub_product_specification`.`ID`,
+                        `sub_product_specification`.`Name`
+                    FROM `sub_product_specification`
+                    LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                    WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`Status` = %s;
+
+                """
+    sqlValTuple = (languageID, 1)
+    spsResult = sqlSelect(sqlQuery, sqlValTuple, True)
+    
+    sideBar = side_bar_stuff()
+    return render_template('edit-price.html', sideBar=sideBar, mainResult=mainResult, sps=spsResult, resultSPSS=resultSPSS, languageID=languageID, current_locale=get_locale())
+
+
+# Edit price action
+@app.route('/editprice', methods=['POST'])
+# @login_required
+def editprice():
+    newCSRFtoken = generate_csrf()
+    # languageID = request.form.get('LanguageID')
+    ptID = request.form.get('PtID')
+
+    if not ptID:
+        answer = gettext(smthWrong)
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    if not request.form.get('title'):
+        answer = gettext('Please specify the title!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+
+    if not request.form.get('price'):
+        answer = gettext('Please specify the price!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+  
+    # Handle image upload
+    sqlQueryMain = f"""
+                    SELECT 
+                            `slider`.`ID` AS `sliderID`,
+                            `slider`.`Name`,
+                            `slider`.`AltText`,
+                            `slider`.`Order` AS `SliderOrder` 
+                    FROM `product_type`
+                    LEFT JOIN `slider` ON `slider`.`ProductID` = `product_type`.`ID`
+                        AND `slider`.`Type` = 2
+                    WHERE `product_type`.`ID` = %s 
+                    ORDER BY `SliderOrder`;
+                    """
+    sqlValTupleMain = (ptID,)
+    mainResult = sqlSelect(sqlQueryMain, sqlValTupleMain, True)
+    if mainResult['length'] == 0:
+        return render_template('error.html')
+
+    # dataChecker = copy.deepcopy(mainResult['data'])  
+    shortKeys = {}
+    for row in mainResult['data']:
+        shortKeys[row['sliderID']] = [row['Name'], row['SliderOrder'], row['AltText']]
+
+    i = 0
+    imgDir = 'images/sub_product_slider'
+    sqlUpdateSlide = "UPDATE `slider` SET `AltText` = %s, `Order` = %s WHERE `ID` = %s"  
+    sqlInsertSlide = "INSERT INTO `slider`  (`Name`, `AltText`, `Order`, `ProductID`, `Type`) VALUES (%s, %s, %s, %s, %s);"
+
+    while True:
+        if not request.form.get('upload_status_' + str(i)):
+            break
+
+        altText = request.form.get('alt_text_' + str(i))
+
+        if request.form.get('upload_status_' + str(i)) == '1':
+            if not request.form.get('slideID_' + str(i)):
+                answer = gettext(smthWrong)
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+            
+            slideID = request.form.get('slideID_' + str(i))
+            if i != shortKeys[int(slideID)][1] or altText != shortKeys[int(slideID)][2]:
+
+                sqlValTupleSlide = (request.form.get('alt_text_' + str(i)), i,  slideID)      
+                resultUpdate = sqlUpdate(sqlUpdateSlide, sqlValTupleSlide)
+                if resultUpdate['status'] == '-1':
+                    answer = gettext(smthWrong)
+                    return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+            del shortKeys[int(slideID)]  
+
+        # insert new image
+        if request.form.get('upload_status_' + str(i)) == '0':
+            file = request.files.get('file_' + str(i))
+            unique_filename = fileUpload(file, imgDir)
+            sqlValTuple = (unique_filename, altText, i, ptID, 2)
+            result = sqlInsert(sqlInsertSlide, sqlValTuple)
+            if result['status'] == 0:
+                answer = gettext(smthWrong)
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+        i = i + 1
+    
+    sqlQueryDelete = "DELETE FROM `slider` WHERE `ID` = %s;"
+    if len(shortKeys) > 0:
+        for key, val in shortKeys.items():
+            sqlValTuple = (key,)
+            delResult = sqlDelete(sqlQueryDelete, sqlValTuple)
+            if delResult['status'] == '-1':
+                return jsonify({'status': '0', 'answer': delResult['answer'], 'newCSRFtoken': newCSRFtoken}) 
+
+            # Del from folder
+            removeResult = removeRedundantFiles(val[0], imgDir)
+            if removeResult == False:
+                answer = gettext(smthWrong)
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    # End of image upload
+
+    sqlQueryPT = "SELECT `spsID` FROM `product_type` WHERE `ID` = %s;"
+    sqlValTuplePT = (ptID,)
+    resultPT = sqlSelect(sqlQueryPT, sqlValTuplePT, True)
+    # print(resultPT['data'])
+    title = request.form.get('title')
+    price = request.form.get('price')
+    if not request.form.get('spsID'):
+        spsID = 0
+    else:
+        spsID = int(request.form.get('spsID'))
+
+
+    sqlUpdatePriceTitle = "UPDATE `product_type` SET `title` = %s, `price` = %s, `spsID` = %s WHERE `ID` = %s;"
+    sqlValTuple = (title, price, spsID, ptID)
+    updateResult = sqlUpdate(sqlUpdatePriceTitle, sqlValTuple) 
+    if updateResult['status'] == '-1':
+        answer = gettext(smthWrong)
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    spsChecker = request.form.get('spsChecker')
+    if spsChecker == '1':
+        sqlQueryDel = "DELETE FROM `product_type_details` WHERE `productTypeID` = %s;"
+        sqlValTuple = (ptID,)
+        resultDelete = sqlDelete(sqlQueryDel, sqlValTuple)
+        if resultDelete['status'] == '-1':
+            answer = gettext(smthWrong)
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+        
+
+        sqlInsertPtDetails = "INSERT INTO `product_type_details` (`productTypeID`, `spssID`, `Text`) VALUES(%s, %s, %s)"
+        i = 0
+        while True:
+            if not request.form.get('spss_' + str(i)):
+                break
+            spss = request.form.get('spss_' + str(i))        
+            arr = spss.split(',', 1)
+            if len(arr[1]) > 0:
+                sqlValTupleSpss = (ptID, int(arr[0]), arr[1])
+                resultInsert = sqlInsert(sqlInsertPtDetails, sqlValTupleSpss)
+                if resultInsert['status'] == 0:
+                    answer = gettext(smthWrong)
+                    return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+
+            i += 1
+        
+
+    answer = gettext('Done!')
+    return jsonify({'status': '1', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+
 # View and Edit Product 
 @app.route('/product/<RefKey>', methods=['GET'])
 @login_required
@@ -583,7 +792,7 @@ def pd(RefKey):
 # @login_required
 def upload_slides():
     
-    answer = gettext('Something is wrong! 0')
+    answer = gettext(smthWrong)
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
     
@@ -591,8 +800,10 @@ def upload_slides():
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
 
-    answer = gettext('Something is wrong!') # Delete after function is completed
-    if not request.files.get('file_0') or not request.form.get('upload_status_0') and request.form.get('Type') == 1:
+    answer = gettext(smthWrong) # Delete after function is completed
+
+
+    if not request.form.get('upload_status_0') and request.form.get('Type') == 1:
         answer = gettext('Nothing was uploaded!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
@@ -614,7 +825,12 @@ def upload_slides():
 
         title = request.form.get('title')
         price = request.form.get('price')
+        spsID = 0
+        if request.form.get('spsID'):
+            spsID = int(request.form.get('spsID'))
 
+        # print('Type AAAAAAA', type(spsID))
+        # return
         sqlQuery = "SELECT `Order` FROM `product_type` WHERE `Product_ID` = %s AND `Status` = 1 ORDER BY `Order` DESC"
         sqlValueTuple = (ProductID,)
         result = sqlSelect(sqlQuery, sqlValueTuple, True)
@@ -624,14 +840,13 @@ def upload_slides():
         else:
             order = 0
 
-        sqlInsertQuery = "INSERT INTO `product_type` (`Price`, `Title`, `Order`, `Product_ID`, `User_Id`, `Status`) VALUES (%s, %s, %s, %s, %s, %s)"
-        sqlInsertVals = (int(price), title, order, int(ProductID), session['user_id'], 1)
+        sqlInsertQuery = "INSERT INTO `product_type` (`Price`, `Title`, `Order`, `Product_ID`, `User_Id`, `spsID`, `Status`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        sqlInsertVals = (int(price), title, order, int(ProductID), session['user_id'], spsID, 1)
         insertedResult = sqlInsert(sqlInsertQuery, sqlInsertVals)
 
         if insertedResult['inserted_id']:
             ProductID = insertedResult['inserted_id']
             if request.form.get('spsID'):
-                spsID = request.form.get('spsID')
                
                 sqlQuerySPS = """
                 SELECT 
@@ -668,7 +883,7 @@ def upload_slides():
     else:
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
-    sqlQuery = "SELECT `ID`, `Name`, `Order` FROM `slider` WHERE `ProductID` = %s;"
+    sqlQuery = "SELECT `ID`, `Name`, `Order` FROM `slider` WHERE `ProductID` = %s;" # Ba type@?
     sqlValTuple = (ProductID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     shortKeys = {}
@@ -677,76 +892,77 @@ def upload_slides():
             shortKeys[row['Name']] = [row['ID'], row['Order']]
 
     dataList = []
-    i = 0
-    fileName = 'file_' + str(i)
-    max_file_size = 5 * 1024 * 1024  # 5MB in bytes
-
-    while request.files.get(fileName):
-        file = request.files.get(fileName)
-
-        # Check image size and return an error if file is too big
-        file_size = len(file.read())  # Get the file size in bytes
-        file.seek(0)  # Reset the file pointer to the beginning after reading
-                
-        filename = secure_filename(file.filename)
-
-        if file_size > max_file_size:
-            answer = '<<' +filename + '>>' + gettext('image size is more than 5MB')
-            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
-        
-        # End of checking the image size
-
-
-        uStatus = 'upload_status_' + str(i)
-        uploadStatus = request.form.get(uStatus)
-        
-        alt_text = 'alt_text_' + str(i)
-        altText = request.form.get(alt_text)
-
-        # Checking the order for not edited (cropped) files
-        if uploadStatus == '1':
-            textToPrint = f"""shortKeys[filename][1] ==> {shortKeys[filename][1]}; i ==> {i}"""
-            print(textToPrint)
-            sliderID = shortKeys[filename][0]
-            order = shortKeys[filename][1]
-            if order != i:
-                textToPrint = f""" Inside The Condition n/ shortKeys[filename][1] ==> {shortKeys[filename][1]}; i ==> {i}"""
-                print(textToPrint)
-                sqlQuery = "UPDATE `slider` SET `Order` = %s WHERE `ID` = %s;"
-                sqlValTuple = (i, sliderID)
-                sqlUpdate(sqlQuery, sqlValTuple) 
-
-            del shortKeys[filename]
-        #  End
-
-        if uploadStatus == '0':
-            unique_filename = fileUpload(file, imgDir)
-            sqlQuery = "INSERT INTO `slider`  (`Name`, `AltText`, `Order`, `ProductID`, `Type`) VALUES (%s, %s, %s, %s, %s);"
-            sqlValTuple = (unique_filename, altText, i, ProductID, productType)
-            result = sqlInsert(sqlQuery, sqlValTuple)
-            if result['inserted_id']:
-                # Stegh es grum file uploader
-                dataList.append(result['answer'])
-
-
-        
-        
-        i = i + 1    
+    if request.form.get('fileStatus') is not None:
+        i = 0
         fileName = 'file_' + str(i)
-    # shortKeys = {'american_girl.png': [9, 0], 'barbie_dreamhouse.png': [10, 0], 'canon_90d.png': [6, 0]}
-    if len(shortKeys) > 0 and productType == 1:
-        for key, val in shortKeys.items():
-            sqlQuery = "DELETE FROM `slider` WHERE `ID` = %s;"
-            sqlValTuple = (val[0],)
-            delResult = sqlDelete(sqlQuery, sqlValTuple)
-            if delResult['status'] == '-1':
-                return jsonify({'status': '0', 'answer': delResult['answer'], 'newCSRFtoken': newCSRFtoken}) 
+        max_file_size = 5 * 1024 * 1024  # 5MB in bytes
 
-            # Del from folder
-            removeResult = removeRedundantFiles(key, imgDir)
-            if removeResult == False:
-                answer = gettext('Something is wrong! 1')
+        while request.files.get(fileName):
+            file = request.files.get(fileName)
+
+            # Check image size and return an error if file is too big
+            file_size = len(file.read())  # Get the file size in bytes
+            file.seek(0)  # Reset the file pointer to the beginning after reading
+                    
+            filename = secure_filename(file.filename)
+
+            if file_size > max_file_size:
+                answer = '<<' +filename + '>>' + gettext('image size is more than 5MB')
                 return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+            
+            # End of checking the image size
+
+
+            uStatus = 'upload_status_' + str(i)
+            uploadStatus = request.form.get(uStatus)
+            
+            alt_text = 'alt_text_' + str(i)
+            altText = request.form.get(alt_text)
+
+            # Checking the order for not edited (cropped) files
+            if uploadStatus == '1':
+                # textToPrint = f"""shortKeys[filename][1] ==> {shortKeys[filename][1]}; i ==> {i}"""
+                # print(textToPrint)
+                sliderID = shortKeys[filename][0]
+                order = shortKeys[filename][1]
+                if order != i:
+                    # textToPrint = f""" Inside The Condition n/ shortKeys[filename][1] ==> {shortKeys[filename][1]}; i ==> {i}"""
+                    # print(textToPrint)
+                    sqlQuery = "UPDATE `slider` SET `Order` = %s WHERE `ID` = %s;"
+                    sqlValTuple = (i, sliderID)
+                    sqlUpdate(sqlQuery, sqlValTuple) 
+
+                del shortKeys[filename]
+            #  End
+
+            if uploadStatus == '0':
+                unique_filename = fileUpload(file, imgDir)
+                sqlQuery = "INSERT INTO `slider`  (`Name`, `AltText`, `Order`, `ProductID`, `Type`) VALUES (%s, %s, %s, %s, %s);"
+                sqlValTuple = (unique_filename, altText, i, ProductID, productType)
+                result = sqlInsert(sqlQuery, sqlValTuple)
+                if result['inserted_id']:
+                    # Stegh es grum file uploader
+                    dataList.append(result['answer'])
+
+
+            
+            
+            i = i + 1    
+            fileName = 'file_' + str(i)
+        # shortKeys = {'american_girl.png': [9, 0], 'barbie_dreamhouse.png': [10, 0], 'canon_90d.png': [6, 0]}
+        if len(shortKeys) > 0 and productType == 1:
+            for key, val in shortKeys.items():
+                sqlQuery = "DELETE FROM `slider` WHERE `ID` = %s;"
+                sqlValTuple = (val[0],)
+                delResult = sqlDelete(sqlQuery, sqlValTuple)
+                if delResult['status'] == '-1':
+                    return jsonify({'status': '0', 'answer': delResult['answer'], 'newCSRFtoken': newCSRFtoken}) 
+
+                # Del from folder
+                removeResult = removeRedundantFiles(key, imgDir)
+                if removeResult == False:
+                    answer = gettext('Something is wrong! 1')
+                    return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     return jsonify({'status': '1', 'answer': dataList, 'newCSRFtoken': newCSRFtoken}) 
 
@@ -2263,7 +2479,7 @@ def change_type_order():
                             `product_type`.`Order`
                     FROM `product_type`
                     WHERE `product_type`.`Product_ID` = %s 
-                    ORDER BY `product_type`.`ORDER` 
+                    ORDER BY `product_type`.`Order` 
                     ;"""
     sqlValTuple = (prID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
@@ -2293,6 +2509,31 @@ def change_type_order():
     response = {'status': '1', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
     return jsonify(response)
     
+
+@app.route("/chaneg-pt-status", methods=['POST'])
+# @login_required
+def chaneg_pt_status():
+    newCSRFtoken = generate_csrf()
+    ptID = request.form.get('ptID') 
+    status = request.form.get('status') 
+    if not ptID or not status:
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+    sqlQuery = "UPDATE `product_type` SET `status` = %s WHERE `ID` = %s;"
+    sqlValTuple = (status, ptID)
+    result = sqlUpdate(sqlQuery, sqlValTuple)
+
+    if result['status'] == '-1':
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+    answer = gettext('Status changed successfully!')
+    response = {'status': '1', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+    return jsonify(response)
+
 
 @app.route("/edit-pts", methods=['POST'])
 # @login_required
@@ -2647,9 +2888,9 @@ def getSlides(PrID):
                                     `slider`.`Order` AS `SliderOrder` 
                             FROM `product_type`
                             LEFT JOIN `slider` ON `slider`.`ProductID` = `product_type`.`ID`
-                            WHERE `product_type`.`Product_ID` = %s 
+                            WHERE `product_type`.`Product_ID` = %s AND `product_type`.`Status` = 1
                             AND `slider`.`Type` = 2
-                            ORDER BY `product_type`.`ORDER` ASC, `slider`.`Order` ASC;
+                            ORDER BY `SubPrOrder` ASC, `slider`.`Order` ASC;
                           """
     sqlSubPRValTuple = (PrID,)
     resultSubPr = sqlSelect(sqlQuerySubProduct, sqlSubPRValTuple, True)
@@ -2694,14 +2935,18 @@ def getSlides(PrID):
                         `product_type`.`Price`,
                         `product_type`.`ID` AS `ptID`,
                         (SELECT SUM(`Quantity`) FROM `quantity` WHERE `productTypeID` = `ptID`) AS `Quantity`
-                    FROM `sub_product_specifications`
-                        LEFT JOIN `product_type_details` ON `product_type_details`.`spssID` = `sub_product_specifications`.`ID`
-                        LEFT JOIN `product_type` ON `Product_Type`.`ID` = `product_type_details`.`ProductTypeID`
+                    FROM `product_type`
+                        LEFT JOIN `product_type_details` ON `Product_Type`.`ID` = `product_type_details`.`ProductTypeID`
+                        LEFT JOIN `sub_product_specifications` ON `product_type_details`.`spssID` = `sub_product_specifications`.`ID`
                     WHERE `product_type`.`Product_ID` = %s
+                        AND `product_type`.`Status` = 1
+                    ORDER BY `product_type`.`Order`
                     ;
                     """
     sqlValTupleSpss = (PrID,)
     resultSpss = sqlSelect(sqlQuerySpss, sqlValTupleSpss, True)
+
+    print('aaaaaaaaaaaaaaaaaa', resultSpss)
     return render_template('slideshow.html', result=result, resultSubPr=resultSubPr, resultSpss=resultSpss, subProducts=subProducts, current_locale=get_locale())
 
 
@@ -2764,6 +3009,11 @@ def get_product_types():
 
     response = {'status': '1', 'data': result['data'], 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
     return jsonify(response)
+
+
+@app.route("/timer", methods=["GET"])
+def random_reminder():
+    return render_template('random-reminder.html')
 
 
 if __name__ == '__main__':

@@ -1,12 +1,22 @@
-{% if result.length > 0 %}
+{% if result.length > 0 or resultSubPr.length > 0 %}
 {% set display = '' %}
-{% if result.length + resultSubPr.length < 6 %} {% set display='display:none' %} {% endif %} <div class="product-container blocks"
-  id="slides">
+{% if result.length + resultSubPr.length < 6 %} {% set display='display:none' %} {% endif %} 
+{% if result.length > 0 %}
+  {% set mainImgUrl = 'images/product_slider/' + result.data[0]['Name'] %}
+  {% set mainImgAlt = result.data[0]['AltText'] %}
+  {% set Title = result.data[0].Title %}
+{% else %}
+  {% set mainImgUrl = 'images/sub_product_slider/' + resultSubPr.data[0]['Name'] %}
+  {% set mainImgAlt = resultSubPr.data[0]['AltText'] %}
+  {% set Title = resultSubPr.data[0].Title %}
+{% endif %}
+
+<div class="product-container blocks" id="slides">
   <div class="image-gallery">
     <div class="slider">
       <button class="prevM" onclick="prevImage()">&#10094;</button>
-      <img id="main-image" src="{{ url_for('static', filename='images/product_slider/'  + result.data[0]['Name'] ) }}"
-        alt="{{ result.data[0]['AltText'] }}" class="fade">
+      <img id="main-image" src="{{ url_for('static', filename=mainImgUrl ) }}"
+        alt="{{ mainImgAlt }}" class="fade">
       <button class="nextM" onclick="nextImage()">&#10095;</button>
     </div>
 
@@ -52,7 +62,7 @@
 
   </div>
   <div class="product-details">
-    <h1>{{ result.data[0].Title }}</h1>
+    <h1>{{ Title }}</h1>
     
     <div class="rating">
       ★★★★☆ (67 reviews)
@@ -93,8 +103,7 @@
     </div>
     {% endif %}
 
-    
-    {% if resultSpss | length > 0 %}
+    {% if resultSpss.length > 0 %}
       <span style="display: block;" class="productType" id="type_0">
         <h2 class="subproduct">{{ resultSpss.data[0].ptTitle }}</h2>
         {% set ns = namespace(flag = resultSpss.data[0].ptID) %}
@@ -118,8 +127,9 @@
             
           
             {% else %}
-            
-              <p><strong>{{ row['Title'] }}:</strong> {{ row['Text'] }}</p>
+              {% if row['Title'] != None %}
+                <p><strong>{{ row['Title'] }}:</strong> {{ row['Text'] }}</p>
+              {% endif %}
           
           {% endif %}
           

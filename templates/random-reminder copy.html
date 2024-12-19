@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Alarm Reminder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f4f4f9;
+        }
+        .container {
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .log {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Random Alarm Reminder</h1>
+        <label for="startHour">Start Hour (HH:mm)</label>
+        <input type="time" id="startHour" required>
+
+        <label for="endHour">End Hour (HH:mm)</label>
+        <input type="time" id="endHour" required>
+
+        <label for="alarmCount">Number of Alarms</label>
+        <input type="number" id="alarmCount" min="1" required>
+
+        <button onclick="setAlarms()">Set Random Alarms</button>
+
+        <div class="log" id="log"></div>
+
+        <!-- <audio id="alarmSound" src="{{ url_for('static', filename='audio/lofi-alarm-clock-243766.mp3') }}"></audio> -->
+        <audio id="alarmSound" src="{{ url_for('static', filename='audio/lofi-alarm-clock-243766.mp3') }}"></audio>
+        
+    </div>
+
+    <script>
+        // Global variable to store timeout references
+        let alarmTimeouts = [];
+    
+        function setAlarms() {
+            // Clear previously scheduled alarms
+            alarmTimeouts.forEach(timeout => clearTimeout(timeout));
+            alarmTimeouts = []; // Reset the array
+    
+            const startHour = document.getElementById('startHour').value;
+            const endHour = document.getElementById('endHour').value;
+            const alarmCount = parseInt(document.getElementById('alarmCount').value);
+    
+            if (!startHour || !endHour || isNaN(alarmCount) || alarmCount <= 0) {
+                alert('Please fill in all fields correctly.');
+                return;
+            }
+    
+            const now = new Date();
+            const currentDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
+            const startTime = `${currentDate}T${startHour}`;
+            const endTime = `${currentDate}T${endHour}`;
+    
+            createRandomAlarms(startTime, endTime, alarmCount);
+        }
+        
+        function createRandomAlarms(startTime, endTime, x) {
+            
+            const start = new Date(startTime).getTime();
+            const end = new Date(endTime).getTime();
+            const alarms = [];
+            const alarmSound = new Audio("{{ url_for('static', filename='audio/lofi-alarm-clock-243766.mp3') }}");
+    
+            if (end <= start) {
+                alert("End time must be greater than start time.");
+                return;
+            }
+    
+            for (let i = 0; i < x; i++) {
+                const randomTimestamp = Math.floor(Math.random() * (end - start)) + start;
+                alarms.push(new Date(randomTimestamp));
+            }
+    
+            alarms.sort((a, b) => a - b);
+
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML = "<strong>Scheduled Alarms:</strong><br>" + alarms.map(alarm => alarm.toLocaleTimeString()).join('<br>');
+            
+            console.log(`Initial status value = ${status}`)
+            runRandomAlarms(alarms)
+        }
+        
+        let status = 0;
+        function runRandomAlarms(alarms) {
+            alarms.forEach(alarmTime => {
+                
+                
+                console.log(`Status value in For Loop = ${status}`)
+                
+                const delay = alarmTime.getTime() - Date.now();
+                if (delay > 0 && status === 0) {
+                    // if (status === 0) {
+                        status = 1;
+
+                        const timeout = setTimeout(() => {
+                            console.log(`Status value if statement befor = ${status}`)
+                            
+                            console.log(`Status value if statement after = ${status}`)
+
+                            const timerDialog = document.createElement('div');
+                            timerDialog.style.position = 'fixed';
+                            timerDialog.style.top = '10%';
+                            timerDialog.style.left = '50%';
+                            timerDialog.style.transform = 'translate(-50%, -50%)';
+                            timerDialog.style.padding = '20px';
+                            timerDialog.style.backgroundColor = 'white';
+                            timerDialog.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                            timerDialog.style.borderRadius = '8px';
+                            timerDialog.style.zIndex = '1000';
+                            timerDialog.style.textAlign = 'center';
+                            timerDialog.style.fontFamily = 'Arial, sans-serif';
+
+                            timerDialog.innerHTML = `
+                                <p style="margin-bottom: 20px; font-size: 16px;">Start Timer?</p>
+                                <div style="display: flex; justify-content: center; gap: 10px;">
+                                    <button id="timerStartButton" style="padding: 8px 16px; font-size: 14px; border: none; background-color: #007BFF; color: white; border-radius: 4px; cursor: pointer;">OK</button>
+                                    <button id="timerCancelButton" style="padding: 8px 16px; font-size: 14px; border: none; background-color: #d9534f; color: white; border-radius: 4px; cursor: pointer;">Cancel</button>
+                                </div>
+                            `;
+
+                            document.body.appendChild(timerDialog);
+                            const alarmSound = document.getElementById('alarmSound');
+                            alarmSound.play();
+
+                            document.getElementById('timerStartButton').addEventListener('click', () => {
+                                alarmSound.pause();
+                                alarmSound.currentTime = 0;
+                                timerDialog.remove();
+                                setTimeout(() => {
+                                    alarmSound.play();
+                                    const finishDialog = document.createElement('div');
+                                    finishDialog.style.position = 'fixed';
+                                    finishDialog.style.top = '10%';
+                                    finishDialog.style.left = '50%';
+                                    finishDialog.style.transform = 'translate(-50%, -50%)';
+                                    finishDialog.style.padding = '20px';
+                                    finishDialog.style.backgroundColor = 'white';
+                                    finishDialog.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                                    finishDialog.style.borderRadius = '8px';
+                                    finishDialog.style.zIndex = '1000';
+                                    finishDialog.style.textAlign = 'center';
+                                    finishDialog.style.fontFamily = 'Arial, sans-serif';
+                                    finishDialog.innerHTML = `
+                                        <p style="margin-bottom: 20px; font-size: 16px;">Timer finished! OK to stop music.</p>
+                                        <button id="finishOkButton" style="padding: 8px 16px; font-size: 14px; border: none; background-color: #007BFF; color: white; border-radius: 4px; cursor: pointer;">OK</button>
+                                    `;
+
+                                    document.body.appendChild(finishDialog);
+
+                                    document.getElementById('finishOkButton').addEventListener('click', () => {
+                                        alarmSound.pause();
+                                        alarmSound.currentTime = 0;
+                                        finishDialog.remove();
+                                        status = 0;
+                                    });
+                                }, 12000); // 12 seconds
+                            });
+
+                            document.getElementById('timerCancelButton').addEventListener('click', () => {
+                                alarmSound.pause();
+                                alarmSound.currentTime = 0;
+                                timerDialog.remove();
+                                status = 0;
+                            });
+
+                        }, delay);
+                        alarmTimeouts.push(timeout); // Store the timeout reference
+                    // }
+                } else {
+                    // runRandomAlarms(alarms)
+                }
+            });
+        }
+    </script>
+    
+</body>
+</html>

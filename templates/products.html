@@ -200,7 +200,6 @@ let trace;
 
 function sortTable(arrowElement, n, direction) {
   
-  // console.log(n);
   if (trace === String(n) + direction) {
     return;
   }
@@ -264,13 +263,23 @@ function sortTable(arrowElement, n, direction) {
   }
 }
 
+let prIdChecker = undefined; 
 let mode = 0;
 function getProductTypes(prID) {
-  if (mode === 1) {
-    return;
-  }
-  mode = 1;
   let answerTr = document.getElementById('answerID');
+  if (mode === 1) {
+    if (answerTr) {
+      setTimeout(() => (answerTr.style.display = 'none'), 750);
+      answerTr.remove();
+    }
+    mode = 0;
+    if (prIdChecker === prID) {
+      return;
+    }
+
+  }
+  prIdChecker = prID;
+  mode = 1;
   if (answerTr) {
     setTimeout(() => (answerTr.style.display = 'none'), 750);
     answerTr.remove();
@@ -350,13 +359,28 @@ function getProductTypes(prID) {
                   dataArray.forEach(function(list) {
                     let imgUrl = mainUrl + '/static/images/sub_product_slider/' + list[1]['imgName']
                     let editUrl = mainUrl + '/edit-price/' + list[1]['ID']
+                    let checked = '';
+
+                    if (list[1]['Status'] === 1) {
+                      checked = 'checked'
+                    }
+
+                    let title = "{{ _('Disable') }}"; 
+                    if (checked == '') {
+                      title = "{{ _('Enable') }}"; 
+                    }
 
                     let perRow = `<div class="child" draggable="true">
                                     <input type="hidden" name="TypeID" value="${list[1]['ID']}">
                                     <img src="${imgUrl}" alt="${list[1]['AltText']}" class="" style="width: 150px;">
-                                    <p style="justify-content: left;">${list[1]['Title']}</p>
-                                    <p>${list[1]['Price']} {{mainCurrency}}</p>
-                                    <p>Active</p>
+                                    <div><p style="justify-content: left;">${list[1]['Title']}</p></div>
+                                    <div><p>${list[1]['Price']} {{mainCurrency}}</p></div>
+                                    <div title="${title}" onclick="changeStatus(${list[1]['ID']})">
+                                        <label class="switch" id="switch_${list[1]['ID']}">
+                                            <span class="sliderA round ${checked}"></span>
+                                        </label>
+                                    </div>
+                                    
                                     <a href="${editUrl}" target="_BLANK"><p>{{ _('Edit') }}</p></a>
                                 </div>`;
 
@@ -429,7 +453,6 @@ parentTr.insertAdjacentHTML('afterend', content);
                 let answerTr = document.getElementById('answerID');
                 answerTr.style.display = 'revert'; // Make it visible
                 setTimeout(() => (answerTr.classList.add('active')), 750); 
-                mode = 0;
         } else {
             // Handle error response
             uploadButton.classList.remove('hidden');
@@ -511,6 +534,59 @@ function saveChanges(prID) {
   saveChangesFlag = 0;
 }
 
+
+function changeStatus(ptID) {
+    const slideParent = document.getElementById('switch_' + ptID)
+    const slider = slideParent.querySelector('.sliderA');
+    let status = '';
+    slider.classList.toggle('checked');  
+    if (slider.classList.contains('checked')) {
+        // Action to be performed when switch is on
+        status = '1'
+    } else {
+        // Action to be performed when switch is off
+        status = '0'
+    }
+
+
+    let formData = new FormData();
+    formData.append('ptID', ptID);
+    formData.append('status', status);
+
+    // Create a new XMLHttpRequest object
+    var xhr = new XMLHttpRequest();
+
+    // Configure the request
+    xhr.open('POST', '/chaneg-pt-status');
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+    // Define what happens on successful data submission
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            var response = JSON.parse(xhr.responseText);
+
+            if (response.status === '1') {
+                // Handle success
+                alert(response.answer);
+            }
+            
+            if (response.status === '0') {
+                // Handle success
+                slider.classList.toggle('checked'); 
+                alert(response.answer);
+            }
+        } else {
+            // Handle error response
+            console.error('Error adding category:', xhr.responseText);
+        }
+    };
+
+    // Send the request with the FormData object
+    xhr.send(formData);
+  }
+
+
+
 function rotate(gearElement) {
   let angle = 0;
     setInterval(() => {
@@ -524,7 +600,6 @@ function myLoader(color) {
   if (color === undefined) {
     color = 'crimson'
   }
-  console.log(color);
   let loader = document.createElement('div'); // Create a div element for the loader
     loader.id = 'gear';
     loader.style.color = color;

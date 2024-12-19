@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-    {{ _('Add Price') }}
+    {{ _('Edit Price') }}
 {% endblock %}
 
 {% block head %}
@@ -32,6 +32,8 @@
 
 {% block content %}
 
+
+
     <div class="containerS">
 
         <div id="mistakes" style="width: 93%;"></div>
@@ -40,11 +42,12 @@
 <form id="add-product-form" style="display: flex; flex-direction: column; width: 525px">
 
     <input type="hidden" id="language-id" value="{{ languageID }}" >
-    <input type="hidden" id="RefKey" value="{{ RefKey }}" >
+    <input type="hidden" id="ptID" value="{{ mainResult.data[0].ID }}" >
+    <!-- <input type="hidden" id="RefKey" value="{{ RefKey }}" > -->
 
-    <input type="text" name="title" id="title" placeholder="{{ _('Add Product Type Title') }}" class="imageInput">
+    <input type="text" name="title" id="title" placeholder="{{ _('Edit Product Type Title') }}" class="imageInput" value="{{ mainResult['data'][0]['Title'] }}">
     <div class="input-group">
-        <input type="number" name="price" id="price" placeholder="{{ _('Add Product Type Price') }}" class="imageInput">
+        <input type="number" name="price" id="price" placeholder="{{ _('Edit Product Type Price') }}" class="imageInput" value="{{ mainResult['data'][0]['Price']|int }}">
         <label for="price">{{ mainCurrency }}</label>
     </div>
 
@@ -52,7 +55,6 @@
         <div class="dz-message dz-button">{{ _('Click here to upload files') }}</div>
     </div>
     
-    <!-- I am Here Stegh em -->
     {% if sps.length > 0 %}
     <select name="sps" id="spsID" class="styled-select" style="margin-top: 10px;">
         <option value="">{{ _('Choose product type specification') }}</option>
@@ -61,8 +63,8 @@
             {% if optVal is not none %}
                 {% set selected = '' %}
 
-                {% if specifications.length > 0 %}
-                    {% if specifications.data[0].ID == val['ID'] %}
+                {% if resultSPSS.length > 0 %}
+                    {% if resultSPSS.data[0].spsID == val['ID'] %}
                         {% set selected = 'selected' %}
                     {% endif %}
                 {% endif %}
@@ -73,10 +75,14 @@
         {% endfor %}
     </select>
     <div class="specifications">
-    {% if specifications.length > 0 %}
-        {% for val in specifications.data %}
-            <label for="{{ val['SPSS_ID'] }}">{{ val['Text'] }}</label>
-            <input type="text" id="{{ val['SPSS_ID'] }}" name="{{ val['SPSS_ID'] }}">
+    {% if resultSPSS.length > 0 %}
+        {% for val in resultSPSS.data %}
+            {% set Value = val['Value'] %}
+            {% if Value is none %}
+                {% set Value = ' ' %}
+            {% endif %}
+            <label for="{{ val['spssID'] }}">{{ val['Key'] }}</label>
+            <input type="text" id="{{ val['spssID'] }}" name="{{ val['spssID'] }}" value="{{ Value }}">
         {% endfor %}
 
     {% endif %}
@@ -123,12 +129,11 @@
     let csrfToken = "{{ csrf_token() }}";
     let cropperState = 0;
     let imgAlt = '';
+    let slider_id = '';
     let imageURL = '';
     let targetedInput;
     
-    const prData = {{ prData | tojson }};
-    const prSaving = prData.prSaving;
-    const prUpdate = prData.prUpdate;
+
     
     // Initialize Dropzone
     Dropzone.autoDiscover = false;
@@ -189,6 +194,10 @@
     
         let uploadItem = Dropzone.createElement("<input type='hidden' class='uploadStatus' value='1'>");
         file.previewElement.appendChild(uploadItem);
+    
+        let slideID = Dropzone.createElement("<input type='hidden' class='slideID' value='1'>");
+        slideID.value = slider_id || '';
+        file.previewElement.appendChild(slideID);
     
         // Hide progress bars
         file.previewElement.querySelectorAll("[data-dz-uploadprogress], .dz-progress").forEach(function (progressBar) {
@@ -362,12 +371,89 @@
 <!-- End of script for Dropzone (image upload) -->
     
 
-
 <script>
+    let spsChecker = 0;
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('myDropzone').addEventListener('click', function() {
             cropperState = 1;    
         })
+
+        // Add image from url to dropzone
+        // Helper function to fetch images and maintain order
+        function fetchImage(imgName, AltText, src, sliderID) {
+            return new Promise((resolve, reject) => {
+                if (imgName !== null) {   
+                    if (imgName.length > 0) {
+                        let url = window.location.origin + '/static/images/' + src + '/' + imgName;
+                        let fileType = "image/" + imgName.split('.').pop();
+
+                        fetch(url)
+                            .then(response => response.blob())
+                            .then(blob => {
+                                let file = new File([blob], imgName, { type: fileType });
+                                resolve({ file: file, altText: AltText, sliderId: sliderID });
+                            })
+                            .catch(error => {
+                                console.error('Error fetching the image:', error);
+                                reject(error);
+                            });
+                    }
+                }
+
+            });
+        }
+
+        
+        // Function to decode HTML entities
+        function decodeHTMLEntities(text) {
+            const textArea = document.createElement('textarea');
+            textArea.innerHTML = text;
+            return textArea.value;
+        }
+        
+        // Decode HTML entities
+        const decodedJSON = decodeHTMLEntities("{{ mainResult.data }}")
+        .replace(/'/g, '"') // Replace single quotes with double quotes
+        .replace(/\bNone\b/g, 'null'); // Replace `None` with `null`
+        
+
+        // Array to keep the images and alt texts in the desired order
+        const imagesToAdd = JSON.parse(decodedJSON);
+
+        let src = 'sub_product_slider';
+        
+        // Clear all images from Dropzone before fetching and adding new images
+        myDropzone.removeAllFiles(true); // 'true' will ensure even files marked as 'uploaded' are removed
+        
+
+        // imagesToAdd = [{'ID': 6, 'Title': 'Buxanka puchur', 'Price': 450, 'SubPrOrder': 1, 'sliderID': 13, 'Name': 'New-Project-79-7.jpg', 'AltText': 'յսդհսյդհսյ', 'SliderOrder': 0}]
+        // Fetch all images and add them to Dropzone in the correct order
+        Promise.all(imagesToAdd.map(img => fetchImage(img.Name, img.AltText, src, img.sliderID)))
+            .then(fetchedImages => {
+                fetchedImages.forEach(({ file, altText, sliderId }) => {
+                    imgAlt = altText;
+                    slider_id = sliderId;
+                    myDropzone.addFile(file);
+                    imgAlt = '';
+                    slider_id = '';
+                });
+            })
+            .catch(error => console.error('Error adding images:', error));
+        
+        // End of Add image from url to dropzone
+
+        document.getElementById('spsID').addEventListener('change', function() {
+            console.log('Dropdown changed to: ' + this.value);
+            spsChecker = 1;  // Assuming spsChecker is a global variable you use to check changes
+        });
+
+        const specificationsDiv = document.querySelector('.specifications');
+        specificationsDiv.addEventListener('input', function(event) {
+            console.log('Input changed in specifications: ' + event.target.name + ' new value: ' + event.target.value);
+            spsChecker = 1;  // Update the checker on any input change
+        });
+
+
     });
         // Handle the file upload when the button is clicked
         let uploadButton = document.getElementById("saveButton");
@@ -384,7 +470,6 @@
                 mistakes.style.display = 'flex';
                 uploadButton.style.display = 'inline-block';
                 saving.style.display = 'none'
-                mistakes.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 return;
             }
             let price = document.getElementById('price').value;
@@ -393,7 +478,6 @@
                 mistakes.style.display = 'flex';
                 uploadButton.style.display = 'inline-block';
                 saving.style.display = 'none'
-                mistakes.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 return;
             }
 
@@ -415,6 +499,12 @@
                 let altTextName = "alt_text_" + i;
                 formData.append(altTextName, altText);
 
+                // Add the id of slider as a separate field if available
+                let slideIDInput = file.previewElement.querySelector(".slideID");
+                let slideID = slideIDInput ? slideIDInput.value : ''; // Use empty string if altInput is missing
+                let slideIDName = "slideID_" + i;
+                formData.append(slideIDName, slideID);
+
                 // Add upload status as a separate field if available
                 // If upload status is 0 server will upload new image
                 // if upload status is 1 server will get image from repositiry
@@ -428,8 +518,6 @@
         
             });
 
-            console.log('This is my IIIIIIII');
-            console.log(i);
             let fileStatus = true;
             if (i === 0) {
                 fileStatus = false;
@@ -437,26 +525,30 @@
             formData.append('fileStatus', fileStatus); 
 
 
-            let languageID = prData.LanguageID;
-            let ProductID = prData.Product_ID;
+            let PtID = document.getElementById('ptID').value;
             let spsName = document.getElementById('spsID').value;
+            let languageID = document.getElementById('language-id').value;
 
             // formData.append("languageID", languageID);
-            formData.append("ProductID", ProductID);
+            // formData.append("ProductID", ProductID);
+            formData.append("PtID", PtID);
             formData.append("Type", '2');
             formData.append("spsID", spsName);
+            formData.append("spsChecker", spsChecker);
             
             // Get all input elements inside the .specifications div
             const inputs = document.querySelectorAll(".specifications input");
+            let numspss = 0;
             inputs.forEach(input => {
-                formData.append(input.id, input.value);
+                formData.append('spss_' + numspss.toString(), [input.id, input.value]);
+                numspss++;
             });
 
             // Create a new XMLHttpRequest object
             let xhr = new XMLHttpRequest();
             
             // Configure the request
-            xhr.open('POST', '/upload_slides');                   
+            xhr.open('POST', '/editprice');                   
             xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
             // Define what happens on successful data submission
@@ -477,9 +569,7 @@
                         uploadButton.style.display = 'inline-block';
                         
                         // Scroll the window to the mistakesDiv with smooth behavior
-                        mistakesDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });                              
-
-
+                        mistakesDiv.scrollIntoView({ behavior: 'smooth' });                              
                         
                         
                     } else if (response.status === '1') {
@@ -512,7 +602,9 @@
     if (dropdown) {
 
         let previousValue = dropdown.value; // Keep track of the previously selected value
-        
+        let LanguageID = document.getElementById('language-id').value;
+
+        // console.log(`LanguageID from DD ${LanguageID}`)
         dropdown.addEventListener("change", function () {
             const confirmChange = confirm("{{ _('All changes in specifications fields will be lost, would you like to continue?') }}");
             if (!confirmChange) {
@@ -528,7 +620,7 @@
                 
                 let formData = new FormData();
                 formData.append('spsID', previousValue)
-                formData.append('LanguageID', prData.LanguageID)
+                formData.append('LanguageID', LanguageID)
                 
                 // Create a new XMLHttpRequest object
                 let xhr = new XMLHttpRequest();
@@ -571,8 +663,6 @@
                             
 
                             dataArray.forEach(function(list) {
-                                console.log(list[1]['ID']);
-                                console.log(list[1]['Text']);
 
                                 // Create the label element
                                 const label = document.createElement('label');
@@ -607,6 +697,8 @@
         });
     
     }
+
+
 
 </script>
 

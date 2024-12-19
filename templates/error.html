@@ -4,7 +4,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-        <img src="{{ url_for('static', filename='images/error.png' ) }}" >
-        <H3> {{ _('Something went wrong.') }} </H3>
+    <div class="container" style="display: contents;">
+        <img src="{{ url_for('static', filename='images/error.png' ) }}" style="margin-top: 110px;">
+        <h1 style="color:brown; font-size: 40pt;"> {{ _('Something went wrong!') }} </H1>
 {% endblock %}

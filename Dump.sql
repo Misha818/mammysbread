@@ -40,6 +40,7 @@ CREATE TABLE `product_type` (
     `Order` INT,
     `User_ID` INT,
     `Product_ID` INT,
+    `spsID` INT,
     -- `Slides` TEXT,
     -- `Language_ID` INT,
     `Status` INT,

@@ -68,7 +68,8 @@
         style="text-decoration: none;"
         >
         
-            {{ _('Add Product Type') }}
+            <!-- {{ _('Add Product Type') }} -->
+            {{ _('Add Price') }}
     </a>
 
 
@@ -1049,6 +1050,7 @@ backgroundColorPickr.on('save', (color) => {
                         // Array to keep the images and alt texts in the desired order
                         const imagesToAdd = response;
 
+
                         let src = 'product_slider';
                         
                         // Clear all images from Dropzone before fetching and adding new images
@@ -1223,6 +1225,12 @@ document.addEventListener('DOMContentLoaded', () => {
       
     });
 
+                let fileStatus = true;  
+                if (i === 0) {
+                    fileStatus = false;
+                } 
+                formData.append('fileStatus', fileStatus); 
+                
                 let languageID = prData.LanguageID;
                 let ProductID = prData.Product_ID;
 

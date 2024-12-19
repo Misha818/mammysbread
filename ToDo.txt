@@ -160,6 +160,9 @@ edit_pts
 get_specifications
 get_product_types
 change_type_order
+chaneg_pt_status
+edit_price
+editprice
 
 
 
