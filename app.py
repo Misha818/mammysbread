@@ -206,6 +206,7 @@ def contacts():
 @app.route('/<myLinks>')
 def index(myLinks):
     content = get_RefKey_LangID_by_link(myLinks)
+    slideShow = []
     supportedLangsData = []
     metaTags = ''
 
@@ -216,6 +217,7 @@ def index(myLinks):
             productStatus = ' AND `product`.`Product_Status` = 2; '
             prData = constructPrData(content['RefKey'], productStatus)
             productStatusResult = prData.get('Status', 1)
+            slideShow = getSlides(prData['Product_ID'])
 
             if productStatusResult == 2:
                 myHtml = 'product_client.html'
@@ -243,7 +245,7 @@ def index(myLinks):
                 sqlValL = (RefKey,)
                 resultL = sqlSelect(sqlQueryL, sqlValL, False)
                 supportedLangsData = []
-                if resultL['length'] > 1:
+                if resultL['length'] > 1:                    
                     langueges = supported_langs()
 
                     for langdata in resultL['data']:                        
@@ -301,7 +303,7 @@ def index(myLinks):
     else:
         myHtml = 'error.html'
         prData = ''
-    return render_template(myHtml, prData=prData, supportedLangsData=supportedLangsData, metaTags=metaTags, current_locale=get_locale())
+    return render_template(myHtml, prData=prData, slideShow=slideShow, supportedLangsData=supportedLangsData, metaTags=metaTags, current_locale=get_locale())
 
 
 # Edit thumbnail image
@@ -613,10 +615,23 @@ def editprice():
     imgDir = 'images/sub_product_slider'
     sqlUpdateSlide = "UPDATE `slider` SET `AltText` = %s, `Order` = %s WHERE `ID` = %s"  
     sqlInsertSlide = "INSERT INTO `slider`  (`Name`, `AltText`, `Order`, `ProductID`, `Type`) VALUES (%s, %s, %s, %s, %s);"
+    max_file_size = 5 * 1024 * 1024  # 5MB in bytes
 
     while True:
         if not request.form.get('upload_status_' + str(i)):
             break
+
+        # Check image size and return an error if file is too big
+        file_size = len(file.read())  # Get the file size in bytes
+        file.seek(0)  # Reset the file pointer to the beginning after reading
+                
+        filename = secure_filename(file.filename)
+
+        if file_size > max_file_size:
+            answer = '<<' +filename + '>>' + gettext('image size is more than 5MB')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+        
+        # End of checking the image size
 
         altText = request.form.get('alt_text_' + str(i))
 
@@ -883,19 +898,22 @@ def upload_slides():
     else:
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
-    sqlQuery = "SELECT `ID`, `Name`, `Order` FROM `slider` WHERE `ProductID` = %s;" # Ba type@?
-    sqlValTuple = (ProductID,)
+    sqlQuery = "SELECT `ID`, `Name`, `Order`, `AltText` FROM `slider` WHERE `ProductID` = %s AND `Type` = %s;" # Ba type@?
+    sqlValTuple = (ProductID, int(productType))
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     shortKeys = {}
     if result['length'] > 0:
         for row in result['data']:
-            shortKeys[row['Name']] = [row['ID'], row['Order']]
+            # shortKeys[row['Name']] = [row['ID'], row['Order']]
+            shortKeys[row['ID']] = [row['Name'], row['Order'], row['AltText']]
 
     dataList = []
     if request.form.get('fileStatus') is not None:
         i = 0
         fileName = 'file_' + str(i)
         max_file_size = 5 * 1024 * 1024  # 5MB in bytes
+        sqlUpdateSlide = "UPDATE `slider` SET `AltText` = %s, `Order` = %s WHERE `ID` = %s"  
+        sqlInsertSlide = "INSERT INTO `slider`  (`Name`, `AltText`, `Order`, `ProductID`, `Type`) VALUES (%s, %s, %s, %s, %s);"
 
         while request.files.get(fileName):
             file = request.files.get(fileName)
@@ -921,49 +939,67 @@ def upload_slides():
 
             # Checking the order for not edited (cropped) files
             if uploadStatus == '1':
-                # textToPrint = f"""shortKeys[filename][1] ==> {shortKeys[filename][1]}; i ==> {i}"""
-                # print(textToPrint)
-                sliderID = shortKeys[filename][0]
-                order = shortKeys[filename][1]
-                if order != i:
-                    # textToPrint = f""" Inside The Condition n/ shortKeys[filename][1] ==> {shortKeys[filename][1]}; i ==> {i}"""
-                    # print(textToPrint)
-                    sqlQuery = "UPDATE `slider` SET `Order` = %s WHERE `ID` = %s;"
-                    sqlValTuple = (i, sliderID)
-                    sqlUpdate(sqlQuery, sqlValTuple) 
+                
+                slideID = request.form.get('slideID_' + str(i))
+                if i != shortKeys[int(slideID)][1] or altText != shortKeys[int(slideID)][2]:
 
-                del shortKeys[filename]
+                    sqlValTupleSlide = (request.form.get('alt_text_' + str(i)), i,  slideID)      
+                    resultUpdate = sqlUpdate(sqlUpdateSlide, sqlValTupleSlide)
+                    if resultUpdate['status'] == '-1':
+                        answer = gettext(smthWrong)
+                        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+                del shortKeys[int(slideID)]  
+                # sliderID = shortKeys[filename][0]
+                # order = shortKeys[filename][1]
+                # if order != i:
+                   
+                #     sqlQuery = "UPDATE `slider` SET `Order` = %s WHERE `ID` = %s;"
+                #     sqlValTuple = (i, sliderID)
+                #     sqlUpdate(sqlQuery, sqlValTuple) 
+
+                # del shortKeys[filename]
             #  End
 
             if uploadStatus == '0':
                 unique_filename = fileUpload(file, imgDir)
-                sqlQuery = "INSERT INTO `slider`  (`Name`, `AltText`, `Order`, `ProductID`, `Type`) VALUES (%s, %s, %s, %s, %s);"
                 sqlValTuple = (unique_filename, altText, i, ProductID, productType)
-                result = sqlInsert(sqlQuery, sqlValTuple)
+                result = sqlInsert(sqlInsertSlide, sqlValTuple)
                 if result['inserted_id']:
                     # Stegh es grum file uploader
                     dataList.append(result['answer'])
-
+                else:
+                    answer = gettext(smthWrong)
+                    return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+         
 
             
             
             i = i + 1    
             fileName = 'file_' + str(i)
-        # shortKeys = {'american_girl.png': [9, 0], 'barbie_dreamhouse.png': [10, 0], 'canon_90d.png': [6, 0]}
-        if len(shortKeys) > 0 and productType == 1:
-            for key, val in shortKeys.items():
-                sqlQuery = "DELETE FROM `slider` WHERE `ID` = %s;"
-                sqlValTuple = (val[0],)
-                delResult = sqlDelete(sqlQuery, sqlValTuple)
-                if delResult['status'] == '-1':
-                    return jsonify({'status': '0', 'answer': delResult['answer'], 'newCSRFtoken': newCSRFtoken}) 
 
+        print('SSSSSSSSSSSSSSSSSSSSS', shortKeys)
+        lenShortkeys = len(shortKeys)
+        if lenShortkeys > 0 and productType == '1':
+            sqlValList = []
+            for key, val in shortKeys.items():
+                sqlValList.append(key)
+                
                 # Del from folder
-                removeResult = removeRedundantFiles(key, imgDir)
+                removeResult = removeRedundantFiles(val[0], imgDir)
                 if removeResult == False:
-                    answer = gettext('Something is wrong! 1')
+                    answer = gettext(smthWrong)
                     return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
-    
+            
+            idCount = lenShortkeys * "%s, "
+            idCount = idCount[:-2]
+            sqlDeleteQuery = f"DELETE FROM `slider` WHERE `ID` IN ({idCount});" 
+            sqlValTuple = tuple(sqlValList)
+            print(f"Query {sqlDeleteQuery} AND sqlValTuple {sqlValTuple}")
+            delResult = sqlDelete(sqlDeleteQuery, sqlValTuple)
+            if delResult['status'] == '-1':
+                return jsonify({'status': '0', 'answer': delResult['answer'], 'newCSRFtoken': newCSRFtoken}) 
+   
+
     return jsonify({'status': '1', 'answer': dataList, 'newCSRFtoken': newCSRFtoken}) 
 
 

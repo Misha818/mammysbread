@@ -1226,6 +1226,7 @@ def removeRedundantIMG(content):
 
 def slidesToEdit(PrID):
     sqlQuery = f"""SELECT
+                         `ID` AS `sliderID`,   
                          `Name` AS `imgName`,
                          `AltText`
                     FROM `slider`

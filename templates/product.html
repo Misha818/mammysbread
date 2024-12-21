@@ -148,8 +148,7 @@
     <script>
 let csrfToken = "{{ csrf_token() }}";
 let cropperState = 0;
-let imgAlt = '';
-let imageURL = '';
+let imgAlt = '', slider_id = '', imageURL = '';
 let targetedInput;
 
 const prData = {{ prData | tojson }};
@@ -216,7 +215,11 @@ dz.on("addedfile", function (file) {
     let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='Enter alt text'>");
     altInput.value = imgAlt || '';
     file.previewElement.appendChild(altInput);
-
+    
+    let slideID = Dropzone.createElement("<input type='hidden' class='slideID' value='1'>");
+    slideID.value = slider_id || '';
+    file.previewElement.appendChild(slideID);
+    
     let uploadItem = Dropzone.createElement("<input type='hidden' class='uploadStatus' value='1'>");
     file.previewElement.appendChild(uploadItem);
 
@@ -1027,7 +1030,7 @@ backgroundColorPickr.on('save', (color) => {
                         // Add image from url to dropzone
 
                         // Helper function to fetch images and maintain order
-                        function fetchImage(imgName, AltText, src) {
+                        function fetchImage(imgName, AltText, src, sliderID) {
                             return new Promise((resolve, reject) => {
                                 if (imgName.length > 0) {
                                     let url = window.location.origin + '/static/images/' + src + '/' + imgName;
@@ -1037,7 +1040,7 @@ backgroundColorPickr.on('save', (color) => {
                                         .then(response => response.blob())
                                         .then(blob => {
                                             let file = new File([blob], imgName, { type: fileType });
-                                            resolve({ file: file, altText: AltText });
+                                            resolve({ file: file, altText: AltText, sliderId: sliderID });
                                         })
                                         .catch(error => {
                                             console.error('Error fetching the image:', error);
@@ -1050,19 +1053,20 @@ backgroundColorPickr.on('save', (color) => {
                         // Array to keep the images and alt texts in the desired order
                         const imagesToAdd = response;
 
-
                         let src = 'product_slider';
                         
                         // Clear all images from Dropzone before fetching and adding new images
                         myDropzone.removeAllFiles(true); // 'true' will ensure even files marked as 'uploaded' are removed
                         
                         // Fetch all images and add them to Dropzone in the correct order
-                        Promise.all(imagesToAdd.map(img => fetchImage(img.imgName, img.AltText, src)))
+                        Promise.all(imagesToAdd.map(img => fetchImage(img.imgName, img.AltText, src, img.sliderID)))
                             .then(fetchedImages => {
-                                fetchedImages.forEach(({ file, altText }) => {
+                                fetchedImages.forEach(({ file, altText, sliderId }) => {
                                     imgAlt = altText;
+                                    slider_id = sliderId;
                                     myDropzone.addFile(file);
                                     imgAlt = '';
+                                    slider_id = '';
                                 });
                             })
                             .catch(error => console.error('Error adding images:', error));
@@ -1211,6 +1215,12 @@ document.addEventListener('DOMContentLoaded', () => {
             let altText = altInput ? altInput.value : ''; // Use empty string if altInput is missing
             let altTextName = "alt_text_" + i;
             formData.append(altTextName, altText);
+
+            // Add the id of slider as a separate field if available
+            let slideIDInput = file.previewElement.querySelector(".slideID");
+            let slideID = slideIDInput ? slideIDInput.value : ''; // Use empty string if altInput is missing
+            let slideIDName = "slideID_" + i;
+            formData.append(slideIDName, slideID);
 
             // Add upload status as a separate field if available
             // If upload status is 0 server will upload new image
