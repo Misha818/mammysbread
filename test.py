@@ -1,3 +1,2 @@
-idCount = 3 * "%s, "
-
-print(idCount[:-2])
+myText = ' '
+print(len(myText), len(myText.strip()))

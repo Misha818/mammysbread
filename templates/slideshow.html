@@ -123,12 +123,14 @@
             </span>
             <span id="type_{{ spanID.i }}" class="productType" style="display: none;">
               <h2 class="subproduct">{{ row['ptTitle'] }}</h2>
-              <p><strong>{{ row['Title'] }}:</strong> {{ row['Text'] }}</p>
+              {% if row['Text'] is not none %}
+                <p><strong> {{ row['Title'] }}:</strong> {{ row['Text'] }} </p>
+              {% endif %}
             
           
             {% else %}
-              {% if row['Title'] != None %}
-                <p><strong>{{ row['Title'] }}:</strong> {{ row['Text'] }}</p>
+              {% if row['Text'] is not none %}
+                <p><strong> {{ row['Title'] }}:</strong> {{ row['Text'] }} </p>
               {% endif %}
           
           {% endif %}

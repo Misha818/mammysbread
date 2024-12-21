@@ -580,12 +580,16 @@ def editprice():
         answer = gettext(smthWrong)
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
-    if not request.form.get('title'):
+    if not request.form.get('title') or len(request.form.get('title').strip())  == 0:
         answer = gettext('Please specify the title!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
 
-    if not request.form.get('price'):
+    if not request.form.get('price') or len(request.form.get('price').strip())  == 0:
         answer = gettext('Please specify the price!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+  
+    if int(request.form.get('price')) <= 0:
+        answer = gettext('The price should be higher then 0!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
   
     # Handle image upload
@@ -622,14 +626,16 @@ def editprice():
             break
 
         # Check image size and return an error if file is too big
-        file_size = len(file.read())  # Get the file size in bytes
-        file.seek(0)  # Reset the file pointer to the beginning after reading
-                
-        filename = secure_filename(file.filename)
+        if request.files.get('file_' + str(i)):
+            file = request.files.get('file_' + str(i))
+            file_size = len(file.read())  # Get the file size in bytes
+            file.seek(0)  # Reset the file pointer to the beginning after reading
+                    
+            filename = secure_filename(file.filename)
 
-        if file_size > max_file_size:
-            answer = '<<' +filename + '>>' + gettext('image size is more than 5MB')
-            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+            if file_size > max_file_size:
+                answer = '<<' +filename + '>>' + gettext('image size is more than 5MB')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
         
         # End of checking the image size
 
@@ -678,6 +684,7 @@ def editprice():
     
     # End of image upload
 
+    # Sup product specifications
     sqlQueryPT = "SELECT `spsID` FROM `product_type` WHERE `ID` = %s;"
     sqlValTuplePT = (ptID,)
     resultPT = sqlSelect(sqlQueryPT, sqlValTuplePT, True)
@@ -714,7 +721,7 @@ def editprice():
                 break
             spss = request.form.get('spss_' + str(i))        
             arr = spss.split(',', 1)
-            if len(arr[1]) > 0:
+            if len(arr[1].strip()) > 0:
                 sqlValTupleSpss = (ptID, int(arr[0]), arr[1])
                 resultInsert = sqlInsert(sqlInsertPtDetails, sqlValTupleSpss)
                 if resultInsert['status'] == 0:
@@ -3045,6 +3052,11 @@ def get_product_types():
 
     response = {'status': '1', 'data': result['data'], 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
     return jsonify(response)
+
+
+@app.template_filter('typeof')
+def typeof(var):
+    return str(type(var).__name__)
 
 
 @app.route("/timer", methods=["GET"])
