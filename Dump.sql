@@ -329,7 +329,7 @@ VALUES
     ('superuser', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'test@test.com', 'John', 'Smith', 1, 2, 1),
     ('user2', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'user2@test.com', 'Second', 'User', 2, 2, 1);
 
-INSERT INTO `Rol` (`Rol`, `ActionIDs`, `Status`)
+INSERT INTO `rol` (`Rol`, `ActionIDs`, `Status`)
 VALUES ('superuser', '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60', 1);
 
 -- If ActionType = 1 show on dushboard, 2 => actions with POST requests

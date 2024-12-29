@@ -1,3 +1,8 @@
+Installs all you need to run your flask app
+pip install -r requirements.txt
+
+==========================================
+
 MULTILINGUAL SITE WITH FLASK BABEL
 https://python-babel.github.io/flask-babel/
 
