@@ -6,4 +6,9 @@
 # Datasource local storage ignored files
 /dataSources/
 env/
+env~/
+env~\
+env~/lib64/
+venv/
+.venv/
 /dataSources.local.xml

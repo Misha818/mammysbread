@@ -24,7 +24,7 @@ static_folder_path = os.path.join(current_dir, 'static')
 # Create a connection to the MySQL database
 db_connection = mysql.connector.connect(
     host=os.getenv('LOCALHOST'),
-    user=os.getenv('USER'),
+    user=os.getenv('MYSQL_USER'),
     password=os.getenv('PASSWORD'),
     database=os.getenv('DATABASE')
 )

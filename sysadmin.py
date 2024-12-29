@@ -36,7 +36,7 @@ os.makedirs(target_directory, exist_ok=True)
 
 dbconfig = {
     "database": os.getenv('DATABASE'),
-    "user": os.getenv('USER'),
+    "user": os.getenv('MYSQL_USER'),
     "password": os.getenv('PASSWORD'),
     "host": os.getenv('LOCALHOST')
 }
@@ -64,7 +64,7 @@ def get_db_connection(use_dict_cursor=False):
     for i in range(retries):
         try:
             db_connection = mysql.connector.connect(
-                user=os.getenv('USER'),
+                user=os.getenv('MYSQL_USER'),
                 password=os.getenv('PASSWORD'),
                 host=os.getenv('LOCALHOST'),
                 database=os.getenv('DATABASE'),
