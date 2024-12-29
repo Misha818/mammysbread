@@ -44,3 +44,5 @@ DATABASE INSTALATION
 Restore the database from the dump. Open the CMD in current folder and run the following command
 mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS db"
 mysql -u root -p db < Dump.sql
+
+=======================================================
