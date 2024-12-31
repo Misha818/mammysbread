@@ -142,6 +142,7 @@
             document.getElementById('mySlideShow').style.display = 'none';
             if (document.getElementById('slides') !== 'undefined') {
                 document.getElementById('slides').style.display = 'flex';
+                document.getElementById('editorContent').style.display = 'block';
             }
         });
     </script>
@@ -679,7 +680,7 @@ function closeImageEditorModal(modal) {
     
     
 
-<div style="width: 80% !important;">
+<div id="editorContentParent">
     <span id="editorContent" class="ql-editor" style="{{ editorStyle }}"> 
         {% if prData.Text is not none %}
             <!-- {{ prData.Text | safe }} -->
@@ -995,14 +996,25 @@ backgroundColorPickr.on('save', (color) => {
 
     document.querySelectorAll('.chooseBlock').forEach(item => {
         item.addEventListener('click', function (event) {
-            // Hide all elements with the class 'blocks'
-            document.querySelectorAll('.blocks').forEach(block => {
-                block.style.display = 'none'; 
-            });
-            
-            // Get the id of the clicked element
             const clickedId = event.currentTarget.id;
 
+            // Hide all elements with the class 'blocks'
+            // if (clickedId === "textEditorButton") {
+                document.querySelectorAll('.blocks').forEach(block => {
+                    if (!block.id === 'mySlideShow') {
+                    }                        
+                        block.style.display = 'none'; 
+                });
+
+            // } else {
+            //     document.querySelectorAll('.blocks').forEach(block => {
+            //         block.style.display = 'none'; 
+            //     });
+            // }
+
+            
+            // Get the id of the clicked element
+            
             // Conditionally show the correct element based on the clicked id
             if (clickedId === 'sliderButton') {
                 document.getElementById("editorStatus").value = 0; // This is for reach text editor hide-show manipulations
@@ -1285,7 +1297,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Handle success
                             alert(response.answer);
                             let currentUrl = window.location.href;
-                            // location.href = currentUrl;
+                            location.href = currentUrl;
                         }
                     } else {
                         // Handle error response

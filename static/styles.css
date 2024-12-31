@@ -281,6 +281,9 @@ button[type="submit"]:hover {
   max-height: 200px;
 }
 
+#editorContentParent {
+  width: 65%!important;
+}
 
 @media (max-width: 600px) {
     .container {
@@ -313,7 +316,7 @@ button[type="submit"]:hover {
 }
 
 #editor-container {
-    width: 80%;
+    width: 65%;
     /* height: 60vh; */
 }
 
@@ -588,10 +591,10 @@ button[type="submit"]:hover {
 
 .customToolbar {
     position: fixed;
-    width: 64%;
+    width: 52%;
     z-index: 1500;
     background-color: #ffffff;
-    padding: 13pt !important;
+    padding: 5pt!important;
     top: 0;
 }
 
@@ -613,7 +616,7 @@ body, html {
 }
 
 .image-container {
-    max-width: 100%;
+    max-width: 60%;
     margin-bottom: 20px;
 }
 
@@ -1811,8 +1814,12 @@ tr:nth-child(even) {
 
 /* Mobile-friendly styling */
 @media (max-width: 1036px) {
-  .product-container {
+  /* .product-container {
       margin-top: 22%;
+  } */
+
+  #editorContentParent {
+    width: 105%!important;
   }
 
   .product-details {

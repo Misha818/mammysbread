@@ -984,7 +984,7 @@ def upload_slides():
             i = i + 1    
             fileName = 'file_' + str(i)
 
-        print('SSSSSSSSSSSSSSSSSSSSS', shortKeys)
+        # print('SSSSSSSSSSSSSSSSSSSSS', shortKeys)
         lenShortkeys = len(shortKeys)
         if lenShortkeys > 0 and productType == '1':
             sqlValList = []
@@ -1001,13 +1001,13 @@ def upload_slides():
             idCount = idCount[:-2]
             sqlDeleteQuery = f"DELETE FROM `slider` WHERE `ID` IN ({idCount});" 
             sqlValTuple = tuple(sqlValList)
-            print(f"Query {sqlDeleteQuery} AND sqlValTuple {sqlValTuple}")
+            # print(f"Query {sqlDeleteQuery} AND sqlValTuple {sqlValTuple}")
             delResult = sqlDelete(sqlDeleteQuery, sqlValTuple)
             if delResult['status'] == '-1':
                 return jsonify({'status': '0', 'answer': delResult['answer'], 'newCSRFtoken': newCSRFtoken}) 
    
-
-    return jsonify({'status': '1', 'answer': dataList, 'newCSRFtoken': newCSRFtoken}) 
+    answer = gettext('Done!')
+    return jsonify({'status': '1', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
 
 
 # Edit product'd thumbnail client-server transaction
