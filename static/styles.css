@@ -282,8 +282,20 @@ button[type="submit"]:hover {
 }
 
 #editorContentParent {
-  width: 65%!important;
+  width: 80%!important;
 }
+
+.containerZ {
+  max-width: 100%;
+  min-width: 300px;
+  background-color: white;
+  /* padding: 20px; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 
 @media (max-width: 600px) {
     .container {
@@ -556,10 +568,10 @@ button[type="submit"]:hover {
     background-color: darkred;
 }
 
-/* 
+ 
 #editorContent {
-    width: 80%!important;
-} */
+    width: 70%!important;
+} 
 
 #editorContent img {
     max-width: 100%;
@@ -1660,7 +1672,7 @@ tr:nth-child(even) {
 }
 
 /* Image gallery */
-.image-gallery {
+.image-gallery  {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1725,29 +1737,30 @@ tr:nth-child(even) {
   font-size: 12pt;
 } */
 
+
 .thumbnail-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  /* margin-right: 20px; */
+  flex: 1;
+  max-width: 10%;
 }
 
 .thumbnails-wrapper {
-  overflow: hidden;
-  /* width: 445px; Desktop width for 5 thumbnails */
-  width: 650px; /* Desktop width for 5 thumbnails */
+    width: auto; /* Adjust as necessary */
+    overflow-y: auto; /* Allows vertical scrolling if many thumbnails */
 }
 
-.thumbnails, .price-thumbnails{
-  display: flex;
-  transition: transform 0.3s ease;
+.thumbnails {
+    display: flex;
+    flex-direction: column; /* Makes thumbnails stack vertically */
+    align-items: flex-start; /* Align thumbnails to the left */
 }
 
 .thumbnails img {
-  width: 120px;
-  /* height: 60px; */
-  margin-right: 10px;
-  cursor: pointer;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+    width: 90%; /* Adjust thumbnail width to fill the container */
+    margin-bottom: 10px; /* Space between thumbnails */
 }
 
 .thumb-prev, .thumb-next {
@@ -1794,8 +1807,11 @@ tr:nth-child(even) {
 
 .selectedThumbnail {
  
-  transform: scale(1.2);
-  opacity: 0.93;
+  /* transform: scale(1.2); */
+  opacity: 0.8;
+
+  border: 1px solid black;
+  padding: 2px;
 
 }
 
@@ -1818,9 +1834,9 @@ tr:nth-child(even) {
       margin-top: 22%;
   } */
 
-  #editorContentParent {
-    width: 105%!important;
-  }
+  /* #editorContentParent {
+    width: 80%!important;
+  } */
 
   .product-details {
       align-items: center;

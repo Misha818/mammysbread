@@ -106,8 +106,8 @@
 {% if prData.Status == 2 %}
     {% set checked='checked' %}
 {% endif %}
-
-<div class="container">
+<!-- Client -->
+<div class="containerZ"> 
 
     <div class="publish">
         <label class="switch" id="mySwitch">
@@ -667,7 +667,8 @@ function closeImageEditorModal(modal) {
 {{ slideShow | safe }}
     <!-- End of Slide Show and image uploader -->
 
-
+<!-- </div>
+<div class="con"> -->
 <!-- Reach Text Editor -->
     {% set editorStatus = 0 %}
     {% set prStyle = "display: none" %}
@@ -680,6 +681,7 @@ function closeImageEditorModal(modal) {
     
     
 
+<!-- <div id="editorContentParent"> -->
 <div id="editorContentParent">
     <span id="editorContent" class="ql-editor" style="{{ editorStyle }}"> 
         {% if prData.Text is not none %}
