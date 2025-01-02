@@ -10,11 +10,12 @@
   {% set mainImgAlt = resultSubPr.data[0]['AltText'] %}
   {% set Title = resultSubPr.data[0].Title %}
 {% endif %}
-
+<!-- Left Errow &#10094 -->
+<!-- Right Errow &#10095 -->
 <div class="product-container blocks" id="slides">
 
   <div class="thumbnail-container">
-    <button class="thumb-prev" style="{{ display }}" onclick="scrollThumbnails('left', false)">&#10094;</button>
+    <button class="thumb-prev" style="{{ display }}" onclick="scrollThumbnails('left', false)">&#11165;</button>
     <div class="thumbnails-wrapper">
       <div class="thumbnails">
 
@@ -50,7 +51,7 @@
         {% endfor %}
       </div>
     </div>
-    <button class="thumb-next" style="{{ display }}" onclick="scrollThumbnails('right', false)">&#10095;</button>
+    <button class="thumb-next" style="{{ display }}" onclick="scrollThumbnails('right', false)">&#11167;</button>
   </div>
 
   <div class="image-gallery">
@@ -64,7 +65,7 @@
 
     
   <div class="product-details">
-    <h1>{{ Title }}</h1>
+    <div class="prTitle">{{ Title }}</div>
     
     <div class="rating">
       ★★★★☆ (67 reviews)

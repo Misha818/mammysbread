@@ -21,14 +21,30 @@ let maxShownThumbnails = 5;
 let scrollNumber = Math.floor(images.length / maxShownThumbnails) +  (images.length % maxShownThumbnails === 0 ? 0 : 1);
 
 let thumbnailImage = document.querySelector('.thumbnails img');
-let imgWidth = thumbnailImage ? thumbnailImage.offsetWidth : 0;
+let imgHeight = thumbnailImage ? thumbnailImage.offsetHeight : 0;
 let imgStyle = window.getComputedStyle(thumbnailImage);
-let marginRight = imgStyle.marginRight;
-marginRight = parseInt(marginRight.replace("px", ""), 10);
+let marginBottom = imgStyle.marginBottom;
+marginBottom = parseInt(marginBottom.replace("px", ""), 10);
 
-let itemWidth = imgWidth + marginRight;
+let itemHeight = imgHeight + marginBottom;
 let scrollTo = 0;
-let thumbnailsWrapperWidth = itemWidth * maxShownThumbnails;
+// let thumbnailsWrapperHeight = itemHeight * maxShownThumbnails;
+let thumbnailsWrapperHeight = document.querySelector('.thumbnails-wrapper').offsetHeight;
+
+// function displaySize() {
+//     const width = window.innerWidth;
+//     const height = window.innerHeight;
+//     thumbnailsWrapperHeight = document.querySelector('.thumbnails-wrapper').offsetHeight;
+//     console.log(`Current thumbnailsWrapperHeight: ${thumbnailsWrapperHeight}px`);
+//   }
+
+//   // Initial size display
+// //   displaySize();
+
+//   // Event listener for resize events
+//   window.addEventListener('resize', displaySize);
+
+
 
 
 function showImage(num) {
@@ -108,14 +124,14 @@ function scrollThumbnails(direction, stop) {
                 if (scrollChecker === scrollNumber) { // shows last group of images
                     scrollCounter = scrollChecker;
                     if (images.length % maxShownThumbnails > 0) { // if num of last image group is less then maxShownThumbnails
-                        scrollTo = thumbnailsWrapperWidth * (scrollCounter - 2) + itemWidth * (images.length % maxShownThumbnails) + marginRight * (scrollCounter - 1);
+                        scrollTo = thumbnailsWrapperHeight * (scrollCounter - 2) + itemHeight * (images.length % maxShownThumbnails) + marginBottom * (scrollCounter - 1);
                     } else {
-                        scrollTo = thumbnailsWrapperWidth * (scrollCounter - 1);
+                        scrollTo = thumbnailsWrapperHeight * (scrollCounter - 1);
                     }
                 } else {
                     if (scrollChecker * maxShownThumbnails === scrollPosition + 1) {
                         scrollCounter = scrollChecker;
-                        scrollTo = thumbnailsWrapperWidth * (scrollCounter - 1);
+                        scrollTo = thumbnailsWrapperHeight * (scrollCounter - 1);
                     }
                 }
             }
@@ -132,12 +148,12 @@ function scrollThumbnails(direction, stop) {
             if (scrollCounter === scrollNumber) {
 
                 if (images.length % maxShownThumbnails > 0) { // if num of last image group is less then maxShownThumbnails
-                    scrollTo = thumbnailsWrapperWidth * (scrollCounter - 2) + itemWidth * (images.length % maxShownThumbnails) + marginRight * (scrollCounter - 1);
+                    scrollTo = thumbnailsWrapperHeight * (scrollCounter - 2) + itemHeight * (images.length % maxShownThumbnails) + marginBottom * (scrollCounter - 1);
                 } else {
-                    scrollTo = thumbnailsWrapperWidth * (scrollCounter - 1);
+                    scrollTo = thumbnailsWrapperHeight * (scrollCounter - 1);
                 }
             } else {
-                scrollTo = thumbnailsWrapperWidth * (scrollCounter - 1);
+                scrollTo = thumbnailsWrapperHeight * (scrollCounter - 1);
             }
 
         }
@@ -151,18 +167,18 @@ function scrollThumbnails(direction, stop) {
             if (scrollChecker !== scrollCounter) {
                 if (scrollChecker === scrollNumber) { // shows last group of images
                     if (images.length % maxShownThumbnails > 0) { // if num of last image group is less then maxShownThumbnails
-                        scrollTo = thumbnailsWrapperWidth * (scrollCounter - 1) + itemWidth * (images.length % maxShownThumbnails) + marginRight * (scrollCounter - 1);
+                        scrollTo = thumbnailsWrapperHeight * (scrollCounter - 1) + itemHeight * (images.length % maxShownThumbnails) + marginBottom * (scrollCounter - 1);
                     } else {
-                        scrollTo = thumbnailsWrapperWidth * scrollCounter;
+                        scrollTo = thumbnailsWrapperHeight * scrollCounter;
                     }
                     scrollCounter = scrollChecker;
                 } else {
                     if (scrollChecker * maxShownThumbnails === scrollPosition + 1) {
                         scrollCounter = scrollChecker;
-                        scrollTo = thumbnailsWrapperWidth * (scrollCounter - 1);
+                        scrollTo = thumbnailsWrapperHeight * (scrollCounter - 1);
                     }
                     scrollCounter = scrollChecker;
-                    scrollTo = thumbnailsWrapperWidth * (scrollCounter - 1);
+                    scrollTo = thumbnailsWrapperHeight * (scrollCounter - 1);
                 }
             }
 
@@ -177,21 +193,21 @@ function scrollThumbnails(direction, stop) {
             } else if (scrollCounter === scrollNumber - 1) { 
                 if (images.length % maxShownThumbnails > 0) { // if num of last image group is less then maxShownThumbnails
                     
-                    scrollTo = thumbnailsWrapperWidth * (scrollCounter - 1) + itemWidth * (images.length % maxShownThumbnails) + marginRight * (scrollCounter - 1);
+                    scrollTo = thumbnailsWrapperHeight * (scrollCounter - 1) + itemHeight * (images.length % maxShownThumbnails) + marginBottom * (scrollCounter - 1);
                     scrollCounter = scrollCounter + 1;
                 } else {
-                    scrollTo = thumbnailsWrapperWidth * scrollCounter;
+                    scrollTo = thumbnailsWrapperHeight * scrollCounter;
                     scrollCounter = scrollCounter + 1;
                 }
             } else {
-                scrollTo = thumbnailsWrapperWidth * scrollCounter;
+                scrollTo = thumbnailsWrapperHeight * scrollCounter;
                 scrollCounter = scrollCounter + 1;
             }
             
         }    
     }
     
-    thumbnailContainer.style.transform = `translateX(-${scrollTo}px)`; // Adjust based on thumbnail size and gap
+    thumbnailContainer.style.transform = `translateY(-${scrollTo}px)`; // Adjust based on thumbnail size and gap
 }
 
 function changeType(typeID) {
