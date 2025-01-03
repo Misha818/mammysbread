@@ -487,11 +487,10 @@
                         saving.style.display = 'none';
                         uploadButton.style.display = 'inline-block';
 
-                        console.log(response.answer)
                         // Handle success
                         alert(response.answer);
                         let currentUrl = window.location.href;
-                        // location.href = currentUrl;
+                        location.href = currentUrl;
                     }
                 } else {
                     // Handle error response

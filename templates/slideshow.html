@@ -20,7 +20,7 @@
       <div class="thumbnails">
 
         {% set ns = namespace(i=0) %}
-
+        
         {% for row in result.data %}
 
         {% set fileDir = 'images/product_slider/' + row['Name'] %}
@@ -72,22 +72,27 @@
     </div>
 
     {% if subProducts | length > 1 %}
-    <div class="thumbnail-container" style="border: solid 1px black;">
-      <button class="thumb-prev" style="display:none" onclick="scrollThumbnails('left', false)">❮</button>
+    <div class="thumbnail-containerX">
+      <button class="thumb-prevX" onclick="scrollThumbnailsPrice('left', false)">❮</button>
       <div class="price-thumbnails-wrapper">
         <div class="price-thumbnails">
           {% set ns = namespace(i=0) %}
           {% for row in subProducts %}
-
+          {% if ns.i == 0 %}
+          {% set selectedThumbnail = 'selectedThumbnail'%}
+          {% else %}
+          {% set selectedThumbnail = ''%}
+          {% endif %}
           {% set fileDir = 'images/sub_product_slider/' + row['Name'] %}
 
-          <img src="{{ url_for('static', filename='') + fileDir}} " alt='{{ row["AltText"] }}'
-            onclick='showImage({{row["i"]}}), changeType({{ ns.i }})'>
+          <img src="{{ url_for('static', filename='') + fileDir}} " alt='{{ row["AltText"] }}' class='{{ selectedThumbnail }}'
+            onclick='showImage({{row["i"]}}), changeType({{ ns.i }}, this), scrollThumbnailsFromPrice({{ row["i"] }})'
+            />
           {% set ns.i = ns.i + 1 %}
           {% endfor %}
         </div>
       </div>
-      <button class="thumb-next" style="display:none" onclick="scrollThumbnails('right', false)">❯</button>
+      <button class="thumb-nextX" onclick="scrollThumbnailsPrice('right', false)">❯</button>
     </div>
     {% endif %}
 

@@ -1261,6 +1261,60 @@ h2 {
   align-items: center;
 }
 
+
+
+/* Horizontal Thumbnails For Prices */
+.thumbnail-containerX {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+.price-thumbnails{
+  display: flex;
+  /* transition: transform 0.3s ease; */
+  transition: transform 0.5s ease-in-out;
+}
+
+.thumb-prevX, .thumb-nextX {
+  background-color: white;
+  border: none;
+  /* border: solid 1px black; */
+  padding: 20px 6px;
+  cursor: pointer;
+}
+
+/*
+.thumb-prevX:hover, .thumb-nextX:hover {
+  font-size: 12pt;
+}
+*/
+
+
+.price-thumbnails-wrapper {
+  overflow: hidden;
+  width: 405px; /* Desktop width for 5 thumbnails */
+}
+
+.price-thumbnails img {
+  width: 80px;
+  height: auto;
+  margin-right: 1px;
+  cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* End of Horizontal Thumbnails For Prices */
+
+
+
+
+
+
+
+
+
 @media screen and (max-width: 1200px) {
   .header-stuff a {
     float: none;
@@ -1975,15 +2029,18 @@ tr:nth-child(even) {
 }
 
 .thumbnails-wrapper {
+    height: 495px;
     width: auto; /* Adjust as necessary */
     overflow: hidden; /* Allows vertical scrolling if many thumbnails */
     direction: ltr;
+    
 }
 
 .thumbnails {
     display: flex;
     flex-direction: column; /* Makes thumbnails stack vertically */
     align-items: flex-start; /* Align thumbnails to the left */
+    transition: transform 0.5s ease-in-out;
 }
 
 .thumbnails img {
@@ -2042,19 +2099,6 @@ tr:nth-child(even) {
   border: 1px solid black;
   padding: 2px;
 
-}
-
-.price-thumbnails-wrapper {
-  overflow: hidden;
-  width: 250px; /* Desktop width for 5 thumbnails */
-}
-
-.price-thumbnails img {
-  width: auto;
-  height: 60px;
-  margin-right: 10px;
-  cursor: pointer;
-  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 /* Mobile-friendly styling */

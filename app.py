@@ -3040,7 +3040,7 @@ def get_product_types():
                             `product_type`.`Price`,
                             `product_type`.`Title`,
                             `product_type`.`Order` AS `SubPrOrder`,
-                            (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `imgName`,
+                            (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
                             (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
                             `product_type`.`Status`
                     FROM `product_type`
