@@ -12,14 +12,15 @@
         images.push(imageName);
     });
 
+    let maxShownThumbnails = 5;
 
     if (images.length < 5) {
         document.querySelector('.thumbnails-wrapper').style.width = '100%';
+        maxShownThumbnails = images.length;
     }
     let returnChecker = false;
     let scrollPosition = 0;
     let scrollCounter = 1
-    let maxShownThumbnails = 5;
     let scrollNumber = Math.floor(images.length / maxShownThumbnails) +  (images.length % maxShownThumbnails === 0 ? 0 : 1);
 
     let thumbnailImage = document.querySelector('.thumbnails img');

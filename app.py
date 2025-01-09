@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, g, url_for
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from products import slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -592,6 +592,50 @@ def editprice():
         answer = gettext('The price should be higher then 0!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
   
+    if request.form.get('fileStatus') == '0':
+        answer = gettext('At least one image should be uploaded')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+    if request.form.get('spsID'):
+        spsID = int(request.form.get('spsID'))
+        languageID = getLangID()
+
+        longData = 0
+        spssAnswer = ""
+        sqlQuerySPS = """
+        SELECT 
+            `sub_product_specification`.`ID`,
+            `sub_product_specification`.`Name`,
+            `sub_product_specifications`.`Name` AS `Text`,
+            `sub_product_specifications`.`ID` AS `spssID`,
+            `sub_product_specifications`.`Status` AS `spssStatus`
+        FROM `sub_product_specification`
+            LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+            LEFT JOIN `sub_product_specifications` ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
+        WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`ID` = %s
+        ORDER BY `sub_product_specifications`.`Order`;
+        """
+        sqlValTupleSPS = (languageID, spsID)
+        resultSPS = sqlSelect(sqlQuerySPS, sqlValTupleSPS, True)
+
+        i = 0
+        while True:
+            if not request.form.get('spss_' + str(i)):
+                break
+            spss = request.form.get('spss_' + str(i))
+            arr = spss.split(',', 1)
+            Text = arr[1]
+            print(Text)
+
+            if len(Text) > 255:
+                longData = 1
+                spssAnswer = spssAnswer + gettext('Text is too long for field ') + resultSPS['data'][i]['Text'] + '.<br/>'
+            i += 1
+        
+        if longData == 1:
+            spssAnswer += gettext('Max allowed characters are 255.')
+            return jsonify({'status': '0', 'answer': spssAnswer, 'newCSRFtoken': newCSRFtoken})
+    
     # Handle image upload
     sqlQueryMain = f"""
                     SELECT 
@@ -605,6 +649,7 @@ def editprice():
                     WHERE `product_type`.`ID` = %s 
                     ORDER BY `SliderOrder`;
                     """
+    
     sqlValTupleMain = (ptID,)
     mainResult = sqlSelect(sqlQueryMain, sqlValTupleMain, True)
     if mainResult['length'] == 0:
@@ -835,6 +880,7 @@ def upload_slides():
     if productType == '1':
         imgDir = 'images/product_slider'
     elif productType == '2':
+
         imgDir = 'images/sub_product_slider'
 
         if not request.form.get('title'):
@@ -844,15 +890,52 @@ def upload_slides():
         if not request.form.get('price'):
             answer = gettext('Please specify price!')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+        
+        if request.form.get('fileStatus') == '0':
+            answer = gettext('At least one image should be uploaded')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
+        if int(request.form.get('price')) <= 0:
+            answer = gettext('The price should be higher then 0!')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+        
         title = request.form.get('title')
         price = request.form.get('price')
         spsID = 0
         if request.form.get('spsID'):
             spsID = int(request.form.get('spsID'))
 
-        # print('Type AAAAAAA', type(spsID))
-        # return
+        if request.form.get('spsID'):
+            longData = 0
+            spssAnswer = ""
+            sqlQuerySPS = """
+            SELECT 
+                `sub_product_specification`.`ID`,
+                `sub_product_specification`.`Name`,
+                `sub_product_specifications`.`Name` AS `Text`,
+                `sub_product_specifications`.`ID` AS `spssID`,
+                `sub_product_specifications`.`Status` AS `spssStatus`
+            FROM `sub_product_specification`
+                LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                LEFT JOIN `sub_product_specifications` ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
+            WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`ID` = %s
+            ORDER BY `sub_product_specifications`.`Order`;
+            """
+            sqlValTupleSPS = (languageID, spsID)
+            resultSPS = sqlSelect(sqlQuerySPS, sqlValTupleSPS, True)
+
+            for row in resultSPS['data']:
+                if request.form.get(str(row['spssID'])):
+                    Text = request.form.get(str(row['spssID']))
+                    
+                    if len(Text) > 255:
+                        longData = 1
+                        spssAnswer = spssAnswer + gettext('Text is too long for field ') + row['Text'] + '.<br/>'
+            
+            if longData == 1:
+                spssAnswer += gettext('Max allowed characters are 255.')
+                return jsonify({'status': '0', 'answer': spssAnswer, 'newCSRFtoken': newCSRFtoken})
+
         sqlQuery = "SELECT `Order` FROM `product_type` WHERE `Product_ID` = %s AND `Status` = 1 ORDER BY `Order` DESC"
         sqlValueTuple = (ProductID,)
         result = sqlSelect(sqlQuery, sqlValueTuple, True)
@@ -869,23 +952,6 @@ def upload_slides():
         if insertedResult['inserted_id']:
             ProductID = insertedResult['inserted_id']
             if request.form.get('spsID'):
-               
-                sqlQuerySPS = """
-                SELECT 
-                    `sub_product_specification`.`ID`,
-                    `sub_product_specification`.`Name`,
-                    `sub_product_specifications`.`Name` AS `Text`,
-                    `sub_product_specifications`.`ID` AS `spssID`,
-                    `sub_product_specifications`.`Status` AS `spssStatus`
-                FROM `sub_product_specification`
-                LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
-                LEFT JOIN `sub_product_specifications` ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
-                WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`ID` = %s
-                ORDER BY `sub_product_specifications`.`Order`;
-                """
-                sqlValTupleSPS = (languageID, spsID)
-                resultSPS = sqlSelect(sqlQuerySPS, sqlValTupleSPS, True)
-
                 sqlP_T_DetailsInsert = "INSERT INTO `product_type_details` (`productTypeID`, `spssID`, `Text`) VALUES (%s, %s, %s)"
                 for row in resultSPS['data']:
                     if request.form.get(str(row['spssID'])):
@@ -894,7 +960,7 @@ def upload_slides():
                         resultInsertPTD = sqlInsert(sqlP_T_DetailsInsert, sqlValTuplePTD)
                         if resultInsertPTD['status'] == 0:
                             answer = gettext(smthWrong)
-                            return jsonify({'status': '0', 'answer': insertedResult['answer'], 'newCSRFtoken': newCSRFtoken})
+                            return jsonify({'status': '0', 'answer': resultInsertPTD['answer'], 'newCSRFtoken': newCSRFtoken})
 
 
         else: 
@@ -2481,6 +2547,7 @@ def pt_specifications():
 
     return render_template('product-type-specifications.html', result=result, sideBar=sideBar, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), current_locale=get_locale())
 
+
 @app.route("/edit-pts/<ptsID>", methods=['GET'])
 # @login_required
 def edit_pts_view(ptsID):
@@ -2505,6 +2572,7 @@ def edit_pts_view(ptsID):
         return render_template('error.html', current_locale=get_locale())
 
     return render_template('edit-pts.html', result=result['data'], num=result['length'], sideBar=sideBar, current_locale=get_locale())
+
 
 # Change order of product types of a product
 @app.route("/change-type-order", methods=['POST'])
@@ -2911,10 +2979,9 @@ def getSlides(PrID):
     sqlQuery = f"""SELECT `slider`.`ID` AS `sliderID`,
                           `slider`.`Name`,
                           `slider`.`Order`, 
-                          `slider`.`Type`,
-                          `product`.`Title`
+                          `slider`.`Type`                          
                     FROM `slider`
-                    LEFT JOIN `product` ON `product`.`ID` = `slider`.`ProductID`
+                    -- LEFT JOIN `product` ON `product`.`ID` = `slider`.`ProductID`
                     WHERE `ProductID` = %s AND `slider`.`Type` = 1
                     ORDER BY `ORDER` ASC
                 """
@@ -2977,20 +3044,22 @@ def getSlides(PrID):
                         `product_type`.`Title` AS `ptTitle`,
                         `product_type`.`Price`,
                         `product_type`.`ID` AS `ptID`,
+                        `product`.`Title` AS `prTitle`,
                         (SELECT SUM(`Quantity`) FROM `quantity` WHERE `productTypeID` = `ptID`) AS `Quantity`
                     FROM `product_type`
                         LEFT JOIN `product_type_details` ON `Product_Type`.`ID` = `product_type_details`.`ProductTypeID`
                         LEFT JOIN `sub_product_specifications` ON `product_type_details`.`spssID` = `sub_product_specifications`.`ID`
+                        LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
                     WHERE `product_type`.`Product_ID` = %s
                         AND `product_type`.`Status` = 1
-                    ORDER BY `product_type`.`Order`
+                    ORDER BY `product_type`.`Order`, `sub_product_specifications`.`Order`
                     ;
                     """
     sqlValTupleSpss = (PrID,)
     resultSpss = sqlSelect(sqlQuerySpss, sqlValTupleSpss, True)
 
-    print('aaaaaaaaaaaaaaaaaa', resultSpss)
-    return render_template('slideshow.html', result=result, resultSubPr=resultSubPr, resultSpss=resultSpss, subProducts=subProducts, current_locale=get_locale())
+    # print('aaaaaaaaaaaaaaaaaa', resultSpss)
+    return render_template('slideshow.html', result=result, resultSubPr=resultSubPr, resultSpss=resultSpss, subProducts=subProducts, mainCurrency=MAIN_CURRENCY, current_locale=get_locale())
 
 
 @app.route("/get-spacifications", methods=["POST"])

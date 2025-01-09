@@ -729,6 +729,36 @@ def generate_pagination_urls(page, numRows, pagination):
     return urls
 
 
+def checkSPSSDataLen(spsID, languageID):
+    if request.form.get('spsID'):
+        longData = 0
+        spssAnswer = ""
+        sqlQuerySPS = """
+        SELECT 
+            `sub_product_specification`.`ID`,
+            `sub_product_specification`.`Name`,
+            `sub_product_specifications`.`Name` AS `Text`,
+            `sub_product_specifications`.`ID` AS `spssID`,
+            `sub_product_specifications`.`Status` AS `spssStatus`
+        FROM `sub_product_specification`
+            LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+            LEFT JOIN `sub_product_specifications` ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
+        WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`ID` = %s
+        ORDER BY `sub_product_specifications`.`Order`;
+        """
+        sqlValTupleSPS = (languageID, spsID)
+        resultSPS = sqlSelect(sqlQuerySPS, sqlValTupleSPS, True)
+
+        for row in resultSPS['data']:
+            if request.form.get(str(row['spssID'])):
+                Text = request.form.get(str(row['spssID']))
+                
+                if len(Text) > 255:
+                    longData = 1
+                    spssAnswer = spssAnswer + gettext('Text is too long for field ') + row['Text'] + '.<br/>'
+        return [longData, spssAnswer]
+
+
 
 
 # def replace_spaces_in_text_nodes(html_content):

@@ -128,6 +128,7 @@
 <script>
     let csrfToken = "{{ csrf_token() }}";
     let cropperState = 0;
+    let fileCount = parseInt("{{ mainResult.length }}");
     let imgAlt = '';
     let slider_id = '';
     let imageURL = '';
@@ -175,6 +176,7 @@
                     editedFile.previewElement.querySelector('.dz-image').style.height = '120px';
                 };
                 updatePreviewReader.readAsDataURL(editedImageBlob);
+                fileCount = fileCount + 1;
             });
         };
         reader.readAsDataURL(file);
@@ -185,6 +187,7 @@
             e.preventDefault();
             e.stopPropagation();
             dz.removeFile(file);
+            fileCount = fileCount - 1;
         });
         file.previewElement.appendChild(removeButton);
     
@@ -411,6 +414,7 @@
             return textArea.value;
         }
         
+
         // Decode HTML entities
         const decodedJSON = decodeHTMLEntities("{{ mainResult.data }}")
         .replace(/'/g, '"') // Replace single quotes with double quotes
@@ -449,7 +453,7 @@
 
         const specificationsDiv = document.querySelector('.specifications');
         specificationsDiv.addEventListener('input', function(event) {
-            console.log('Input changed in specifications: ' + event.target.name + ' new value: ' + event.target.value);
+            // console.log('Input changed in specifications: ' + event.target.name + ' new value: ' + event.target.value);
             spsChecker = 1;  // Update the checker on any input change
         });
 
@@ -518,9 +522,9 @@
         
             });
 
-            let fileStatus = true;
-            if (i === 0) {
-                fileStatus = false;
+            let fileStatus = 1;
+            if (fileCount === 0) {
+                fileStatus = 0;
             } 
             formData.append('fileStatus', fileStatus); 
 
@@ -561,7 +565,7 @@
                     
                     if (response.status === '0') {
                         // Handle Unknown Error
-                        mistakesDiv.textContent = response.answer;
+                        mistakesDiv.innerHTML = response.answer;
                         // mistakesDiv.style.color = 'red';
                         mistakesDiv.style.display = 'flex';
 

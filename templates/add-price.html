@@ -122,6 +122,7 @@
 <script>
     let csrfToken = "{{ csrf_token() }}";
     let cropperState = 0;
+    let fileCount = 0;
     let imgAlt = '';
     let imageURL = '';
     let targetedInput;
@@ -170,7 +171,9 @@
                     editedFile.previewElement.querySelector('.dz-image').style.height = '120px';
                 };
                 updatePreviewReader.readAsDataURL(editedImageBlob);
+                fileCount = fileCount + 1;
             });
+            
         };
         reader.readAsDataURL(file);
     
@@ -180,7 +183,8 @@
             e.preventDefault();
             e.stopPropagation();
             dz.removeFile(file);
-        });
+            fileCount = fileCount - 1;
+        }); // Stegh es, removeic heto myDropzone - um file kam filei mnacord ka
         file.previewElement.appendChild(removeButton);
     
         let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='Enter alt text'>");
@@ -427,13 +431,11 @@
 
         
             });
-
-            console.log('This is my IIIIIIII');
-            console.log(i);
-            let fileStatus = true;
-            if (i === 0) {
-                fileStatus = false;
+            let fileStatus = 1;
+            if (fileCount === 0) {
+                fileStatus = 0;
             } 
+
             formData.append('fileStatus', fileStatus); 
 
 
@@ -469,7 +471,7 @@
                     
                     if (response.status === '0') {
                         // Handle Unknown Error
-                        mistakesDiv.textContent = response.answer;
+                        mistakesDiv.innerHTML = response.answer;
                         // mistakesDiv.style.color = 'red';
                         mistakesDiv.style.display = 'flex';
 
