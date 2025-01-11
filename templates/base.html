@@ -40,24 +40,25 @@
     {% endblock %}
     
     <script>
+      if (document.getElementById("sidebar")) {
 
-      let closedNav = true;
-      const openWith = "11%";
-      const closeWith = "0";
-      
-      let sidebar = document.getElementById("sidebar");
-      let myTable = document.getElementById("tableDaddy");
-      
-      toggleSidebar();
-      
-      function toggleSidebar() {
+        let closedNav = true;
+        const openWith = "11%";
+        const closeWith = "0";
+        
+        let myTable = document.getElementById("tableDaddy");
+        let sidebar = document.getElementById("sidebar");
+        
+        toggleSidebar();
+        
+        function toggleSidebar() {
           // const sidebar = document.getElementById('sidebar');
           
           if (closedNav == true) {
             // sidebar.style.width = '250px';  
             // sidebar.style.padding = '20px';  
             // sidebar.style.display = 'flex';  
-      
+            
             sidebar.classList.toggle('collapsed');
             if (myTable) {
               myTable.style.marginLeft = '0%';
@@ -70,12 +71,13 @@
             if (myTable) {
               myTable.style.marginLeft = '11%';
             }
-
-         
+            
+            
             closedNav = true;
           }
+        }
+        
       }
-      
       
       </script>
        

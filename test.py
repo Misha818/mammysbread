@@ -1,2 +1,2 @@
-myText = ' '
-print(len(myText), len(myText.strip()))
+myText = 'Ex causae vocent eligendi usu, ex quis sale splendide his. Pri tempor doctus omittam ne, usu et facer libris corrumpit. Vix ut exerci option concludaturque. Cum ei nobis audiam, nec in ipsum assum omnes. Ei quo utinam tempor, purto facete duo ea 5455. ds'
+print(len(myText))

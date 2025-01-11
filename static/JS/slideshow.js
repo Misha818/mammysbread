@@ -1,5 +1,3 @@
-// document.addEventListener('DOMContentLoaded', function() {
-
     let currentImageIndex = 0;
     const thumbnails = document.querySelectorAll('.thumbnails img');
     const images = [];
@@ -252,7 +250,6 @@
     }
 
 
-
     // let currentImageIndexP = 0;
     const thumbnailsP = document.querySelectorAll('.price-thumbnails img');
     const imagesP = [];
@@ -272,9 +269,18 @@
         // let returnChecker = false; // Maybe I delete you
         // let scrollPosition = 0; // Maybe I delete you
         
-        
-        let scrollCounterP = 1
         let maxShownThumbnailsP = 5;
+        window.addEventListener('resize', function() {
+            if (screen.width < 475) {
+                maxShownThumbnailsP = 3;
+            } else {
+                maxShownThumbnailsP = 5;
+            }
+
+            
+        });
+        let scrollCounterP = 1
+    
         let scrollNumberP = Math.floor(imagesP.length / maxShownThumbnailsP) +  (imagesP.length % maxShownThumbnailsP === 0 ? 0 : 1);
         
         let thumbnailImageP = document.querySelector('.price-thumbnails img');
@@ -350,4 +356,41 @@
         imgElement.classList.add('selectedThumbnail');
     }
 
-// });
+
+document.addEventListener("DOMContentLoaded", function() {
+    var popoverTriggers = document.querySelectorAll('.popoverImage');
+    
+    popoverTriggers.forEach(function(popoverTrigger) {
+        var timeoutId;
+        var hideTimeoutId;  // Variable to hold the hide timeout
+    
+        popoverTrigger.addEventListener('mouseenter', function() {
+        clearTimeout(hideTimeoutId); // Clear any existing hide timeout
+        timeoutId = setTimeout(function() {
+            var popover = new bootstrap.Popover(popoverTrigger, {
+            container: 'body',
+            html: true,
+            placement: 'top',
+            trigger: 'manual',
+            content: function() {
+                return popoverTrigger.getAttribute("data-bs-content");
+            }
+            });
+            popover.show();
+        }, 2000); // Delay time in milliseconds for showing the popover
+        });
+    
+        popoverTrigger.addEventListener('mouseleave', function() {
+        clearTimeout(timeoutId); // Clear the show timeout if the mouse leaves before the popover is shown
+        var popoverInstance = bootstrap.Popover.getInstance(popoverTrigger);
+        if (popoverInstance) {
+            hideTimeoutId = setTimeout(function() {  // Delay the hide action
+            popoverInstance.hide();
+            }, 2000);  // 2000 milliseconds delay before hiding the popover
+        }
+        });
+    });
+});
+      
+      
+      

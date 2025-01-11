@@ -217,7 +217,8 @@ def index(myLinks):
             productStatus = ' AND `product`.`Product_Status` = 2; '
             prData = constructPrData(content['RefKey'], productStatus)
             productStatusResult = prData.get('Status', 1)
-            slideShow = getSlides(prData['Product_ID'])
+            if prData.get('Product_ID') is not None: 
+                slideShow = getSlides(prData['Product_ID'])
 
             if productStatusResult == 2:
                 myHtml = 'product_client.html'
@@ -516,6 +517,7 @@ def edit_price(ptID):
                     SELECT `product_type`.`ID`,
                             `product_type`.`Title`,
                             `product_type`.`Price`,
+                            `product_relatives`.`P_Ref_Key`,        
                             `product_type`.`spsID`,
                             `product_type`.`Order` AS `SubPrOrder`,
                             `slider`.`ID` AS `sliderID`,
@@ -525,6 +527,7 @@ def edit_price(ptID):
                     FROM `product_type`
                     LEFT JOIN `slider` ON `slider`.`ProductID` = `product_type`.`ID`
                         AND `slider`.`Type` = 2
+                    LEFT JOIN `product_relatives` ON `product_relatives`.`P_ID` = `product_type`.`Product_ID` 
                     WHERE `product_type`.`ID` = %s 
                     ORDER BY `SubPrOrder`  ASC, `slider`.`Order` ASC;
                     """
@@ -625,7 +628,7 @@ def editprice():
             spss = request.form.get('spss_' + str(i))
             arr = spss.split(',', 1)
             Text = arr[1]
-            print(Text)
+            
 
             if len(Text) > 255:
                 longData = 1
@@ -2976,6 +2979,10 @@ def table(structure):
 
 
 def getSlides(PrID):
+    sqlQueryTitle = "SELECT `Title` FROM `product` WHERE `ID` = %s;"
+    sqlValTuple = (PrID,)
+    resultTitle = sqlSelect(sqlQueryTitle, sqlValTuple, True)
+
     sqlQuery = f"""SELECT `slider`.`ID` AS `sliderID`,
                           `slider`.`Name`,
                           `slider`.`Order`, 
@@ -3045,6 +3052,7 @@ def getSlides(PrID):
                         `product_type`.`Price`,
                         `product_type`.`ID` AS `ptID`,
                         `product`.`Title` AS `prTitle`,
+                        (SELECT COUNT(`ID`) FROM `product_type` WHERE `product_type`.`Product_ID` = %s) AS `ptCount`,
                         (SELECT SUM(`Quantity`) FROM `quantity` WHERE `productTypeID` = `ptID`) AS `Quantity`
                     FROM `product_type`
                         LEFT JOIN `product_type_details` ON `Product_Type`.`ID` = `product_type_details`.`ProductTypeID`
@@ -3055,11 +3063,11 @@ def getSlides(PrID):
                     ORDER BY `product_type`.`Order`, `sub_product_specifications`.`Order`
                     ;
                     """
-    sqlValTupleSpss = (PrID,)
+    sqlValTupleSpss = (PrID, PrID)
     resultSpss = sqlSelect(sqlQuerySpss, sqlValTupleSpss, True)
 
     # print('aaaaaaaaaaaaaaaaaa', resultSpss)
-    return render_template('slideshow.html', result=result, resultSubPr=resultSubPr, resultSpss=resultSpss, subProducts=subProducts, mainCurrency=MAIN_CURRENCY, current_locale=get_locale())
+    return render_template('slideshow.html', result=result, resultSubPr=resultSubPr, resultSpss=resultSpss, subProducts=subProducts, Title = resultTitle['data'][0]['Title'], mainCurrency=MAIN_CURRENCY, current_locale=get_locale())
 
 
 @app.route("/get-spacifications", methods=["POST"])

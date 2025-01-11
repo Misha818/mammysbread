@@ -117,7 +117,7 @@
 </form>
 
 
-<a href="{{ url_for('home') }}product/{{ sps.data[0].P_Ref_Key }}" class="self-left">{{ _('Back') }}</a>
+<a href="{{ url_for('pd', RefKey=mainResult.data[0].P_Ref_Key) }}" class="self-left">{{ _('Back') }}</a>
 
 </div>
 
