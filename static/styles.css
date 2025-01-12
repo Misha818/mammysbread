@@ -1298,11 +1298,32 @@ h2 {
 .header-stuff img {
   width: 80px; 
   height: auto;
-  
+  border-radius: 40px;
 }
 
 .header-stuff-right {
   float: right;
+}
+
+.client-header {
+  background-color: #f8f9fa; 
+  padding: 20px; 
+  border-bottom: 1px solid #e0e0e0; 
+  display: flex; 
+  justify-content: space-between;
+  align-items: center; 
+  width: 100%;
+}
+
+.client-logo-parent {
+  display: flex; 
+  align-items: center;
+}
+
+.client-logo {
+  width: 60px;
+  height: auto;
+  border-radius: 40px;
 }
 
 .specifications {
@@ -1312,7 +1333,9 @@ h2 {
   align-items: center;
 }
 
-
+.productType strong {
+  color: #ff7f50!important;
+}
 
 /* Horizontal Thumbnails For Prices */
 .thumbnail-containerX {
@@ -1380,8 +1403,114 @@ h2 {
   align-items: center;
 }
 
+.header-bar {
+  position: relative;
+  display: inline-block; 
+  margin-right: 50px;
+}
+
+.header-bar nav {
+  display: flex;
+  align-items: center; 
+  justify-content: space-between;
+}
+
+.header-bar nav > div {
+  display: inline-block;
+  vertical-align: top; /* Ensures elements are aligned to the top if they have different heights */
+}
+/* .header-bar i {
+  font-size: 1.2em;
+  color: #fe7166;
+}
+
+.icon-wrapper {
+  position: relative;
+  display: inline-block;
+  font-size: 1.2em; 
+} 
+*/
+
+.header-bar nav a, .icon-wrapper {
+  display: inline-block; 
+  vertical-align: middle; 
+  margin: 10px 20px 10px 13px; 
+  color: #fe7166; 
+  text-decoration: none; 
+}
+
+.header-bar nav a {
+  font-size: 1.2em;
+}
+
+.header-bar nav i {
+  font-size: 1.4em;
+}
+
+.header-bar select {
+  color: #fe7166;
+}
+
+.header-bar select:hover {
+  cursor: pointer;
+}
+
+.header-bar nav a:hover {
+  color: #fe7166;
+} 
+
+.animated-underline {
+  position: relative;
+  text-decoration: none;
+  color: #fe7166;
+  overflow: hidden; /* Ensures the pseudo-element does not extend outside the link */
+  display: inline-block; /* Necessary for the overflow property to work */
+}
+
+.animated-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: 0;
+  background: #fe7166;
+  height: 2px; /* Thickness of the underline */
+  transition: right 0.3s ease-out; /* Controls the animation speed and effect */
+}
+
+.animated-underline:hover::after {
+  right: 0; /* Moves the underline from left to right on hover */
+}
+
+
+.icon-wrapper {
+  position: relative;
+}
+
+.header-bar nav i {
+  transition: transform 0.5s ease; /* Smooth transition for the scaling */
+}
+
+.header-bar nav i:hover {
+  cursor: pointer;
+  transform: scale(1.4); /* Scales up the icon by 20% on hover */
+}
+
+.notification {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #fe7166;
+  color: white;
+  border-radius: 50%;
+  padding: 3px 6px;
+  font-weight: bold;
+  font-size: 0.7em;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
 #quantity {
-  width: 33px;
+  width: 50px;
   padding: 8px;
   margin-right: 10px;
   border: 1px solid #ccc;
@@ -1414,7 +1543,7 @@ h2 {
 }
 
 .add-to-cart-btn:hover, .add-to-cart-btn:hover * , .buy-btn:hover, .buy-btn:hover *  {
-  background-color: coral;
+  background-color: #ff7f50;
   color: whitesmoke;
 }
 
