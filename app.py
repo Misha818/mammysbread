@@ -3136,6 +3136,13 @@ def typeof(var):
     return str(type(var).__name__)
 
 
+
+@app.route("/cart", methods=["Get"])
+def cart(): 
+    result = {'length': 0}
+    return render_template('cart.html', result=result, current_locale=get_locale())
+
+
 @app.route("/timer", methods=["GET"])
 def random_reminder():
     return render_template('random-reminder.html')

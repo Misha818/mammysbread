@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="{{ current_locale }}">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <title>
+        {% block title %}
+
+        {% endblock %}
+    </title>
+
+    <script>
+
+      window.addEventListener('load', () => {
+        document.querySelector('body').classList.add('loaded');
+      });
+          
+      // Function to get the CSRF token from the meta tag
+      function getCsrfToken() {
+          return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      }
+      
+    </script>
+    
+    {% block head %}
+    
+    {% endblock %}
+  </head>
+  <body>    
+      <!-- Header -->
+      <header class="client-header">
+        <div class="client-logo-parent">
+            <img src="{{ url_for('static', filename='images/logo.png')}}" alt="Logo" class="client-logo">
+        </div>
+        <div class="header-bar">
+            <nav>
+                <div><a href="{{ url_for('home') }}" class="animated-underline">{{ _('Home') }}</a></div>
+                <div><a href="{{ url_for('home') }}about" class="animated-underline">{{ _('About') }}</a></div>
+                <div><a href="{{ url_for('home') }}contacts" class="animated-underline">{{ _('Contact') }}</a></div>
+                
+                {% if supportedLangsData | length > 1 %}     
+                <select onchange="location = '/' + this.value;" class="lang-drop-down">
+                    {% for lang in supportedLangsData %}
+                    <option value="{{ lang[0] }}" {{ 'selected' if get_locale() ==  lang[2]  else '' }}>{{ lang[1] }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+    
+                <!-- <i class="fa-solid fa-cart-arrow-down"></i> -->
+                <a href="{{ url_for('cart') }}" > 
+                  <div class="icon-wrapper">
+                      <i class="fa-solid fa-cart-arrow-down"></i>
+                      <span class="notification">5</span>
+                  </div>
+                </a>  
+            </nav>
+        </div>
+      </header>
+      <script type="text/javascript" src="{{ url_for('static', filename='JS/cookie.umd.min.js') }}"></script>
+      <script type="text/javascript" src="{{ url_for('static', filename='JS/header.js') }}"></script>
+      <!-- End of Header -->
+      
+    {% block content %}
+
+    {% endblock %}
+
+
+      <footer style="background-color: #f8f9fa; padding: 40px 60px; text-align: left; width: 100%; margin-top: 40px;">
+      <div style="display: flex; justify-content: space-between; flex-wrap: wrap; max-width: 1720px; margin: 0 auto;">
+      <!-- <div style="flex: 1; min-width: 200px; padding: 20px;">
+      <h3 style="color: #007bff; margin-bottom: 20px;">Services</h3>
+      <ul style="list-style-type: none; padding: 0;">
+      <li><a href="#service1" style="color: #007bff; text-decoration: none;">Service 1</a></li>
+      <li><a href="#service2" style="color: #007bff; text-decoration: none;">Service 2</a></li>
+      <li><a href="#service3" style="color: #007bff; text-decoration: none;">Service 3</a></li>
+      </ul>
+      </div> -->
+
+      <div style="flex: 1; min-width: 200px; padding: 20px;">
+      <h3 style="color: #007bff; margin-bottom: 20px;">Contact</h3>
+      <p style="color: #6c757d;">123 Street Name<br>City, State, 12345<br>Email: info@example.com</p>
+      <div style="margin-top: 20px;">
+      <a href="https://facebook.com" class="fa fa-facebook" target="_blank" ></a>
+      <a href="https://instagram.com" class="fa fa-instagram" target="_blank"></a>
+      <a href="https://youtube.com" class="fa fa-youtube" target="_blank"></a>
+
+      </div>
+      </div>
+
+      <div style="flex: 1; min-width: 200px; padding: 20px;">
+      <h3 style="color: #007bff; margin-bottom: 20px;">Subscribe to us!</h3>
+      <p style="color: #6c757d;">Be the first to know about discounts and promotions.</p>
+      <div>
+      <input type="text" name="email" id="email" style="width: 90%"/>
+      <div class="pcButtonS" id="subscribe" style="margin-top: unset;">Submit</div>
+      </div>
+      </div>
+      </div>
+      <p style="color: #6c757d; margin-top: 40px;">&copy; 2024 Your Company. All rights reserved.</p>
+      </footer>
+
+    
+  </body>
+
+</html>

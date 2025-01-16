@@ -265,24 +265,35 @@ function sortTable(arrowElement, n, direction) {
 
 let prIdChecker = undefined; 
 let mode = 0;
+let clickedState = false
 function getProductTypes(prID) {
+  console.log(`clickedState is ${clickedState}`);
+  if (clickedState) {
+    return;
+  }
+  clickedState = true;
+
   let answerTr = document.getElementById('answerID');
   if (mode === 1) {
     if (answerTr) {
       setTimeout(() => (answerTr.style.display = 'none'), 750);
       answerTr.remove();
     }
+      
     mode = 0;
     if (prIdChecker === prID) {
+      clickedState = false;
       return;
     }
-
+   
   }
+
   prIdChecker = prID;
   mode = 1;
   if (answerTr) {
     setTimeout(() => (answerTr.style.display = 'none'), 750);
     answerTr.remove();
+    clickedState = false;
   }
   let clickedBtn = document.getElementById('btn_' + prID);
   if (clickedBtn) {
@@ -327,10 +338,12 @@ function getProductTypes(prID) {
                       </tr>
                   `);   
                 
+                clickedState = false;
                 
             } 
             
             if (response.status === '1') {
+              
               const mainUrl = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}`;
                 if (response.length === 0) {
                   // Construct the main URL including the port, if present
@@ -349,7 +362,7 @@ function getProductTypes(prID) {
                   let answerTr = document.getElementById('answerID');
                   answerTr.style.display = 'revert'; // Make it visible
                   setTimeout(() => (answerTr.classList.add('active')), 750); 
-                    
+                  clickedState = false;  
                 } else {
 
 
@@ -446,6 +459,7 @@ parentTr.insertAdjacentHTML('afterend', content);
                               { offset: Number.NEGATIVE_INFINITY }
                           ).element;
                       }
+                    
                   }
 
                 }
@@ -453,12 +467,14 @@ parentTr.insertAdjacentHTML('afterend', content);
                 let answerTr = document.getElementById('answerID');
                 answerTr.style.display = 'revert'; // Make it visible
                 setTimeout(() => (answerTr.classList.add('active')), 750); 
+                clickedState = false;
         } else {
             // Handle error response
             uploadButton.classList.remove('hidden');
             saving.classList.add('hidden');
 
             console.error('Error adding category:', xhr.responseText);
+            clickedState = false;
         }
     };
 
@@ -467,7 +483,7 @@ parentTr.insertAdjacentHTML('afterend', content);
 
 
   }
-
+  
 }
 
 let saveChangesFlag = 0;

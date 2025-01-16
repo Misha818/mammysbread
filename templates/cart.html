@@ -1,0 +1,244 @@
+{% extends 'public.html' %}
+{% block title %}
+  {{ _('Shopping Cart') }}
+{% endblock %}
+
+
+{% block head %}
+    
+{% endblock %}
+
+{% block content %}
+
+
+<div class="containerCart" >
+  
+{% if result.length == 0 %}
+
+<div class="shopping-cart">
+  <div class="cart-header-conteiner">
+    <div class="cart-header">Shopping Cart</div>
+    <div class="price-header">Price</div>
+  </div>
+
+
+  <div class="cart-item">
+    <div class="item-details">
+      <div class="item-image">
+        <a href="https://www.google.com">
+          <img src="https://picsum.photos/300/225" alt="Item 1">
+        </a>
+        
+      </div>
+      <div class="item-info">
+        <!-- <span class="item-label">#1 Best Seller</span> -->
+        <div class="item-title">
+          <a href="https://www.google.com">
+            50 Pcs Bread Bags for Homemade Bread, Sourdough Paper Bread Bags
+          </a>
+        </div>
+        <div class="item-controls">
+          <button class="delete-button"><i class="fa-solid fa-trash-can"></i></button>
+          <div class="quantity-controls">
+            <button>-</button>
+            <span>1</span>
+            <button>+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="item-price">$11.89</div>
+  </div>
+  
+  <div class="cart-item">
+    <div class="item-details">
+      <div class="item-image">
+        <a href="https://www.google.com" >
+          <img src="https://picsum.photos/300/225" alt="Item 2">
+        </a>
+      </div>
+      <div class="item-info">
+        <div class="item-title">
+          <a href="https://www.google.com">
+            Cozy Bread&reg; Thermal Insulation Box
+          </a>
+        </div>
+        <div class="item-controls">
+          <button class="delete-button"><i class="fa-solid fa-trash-can"></i></i></button>
+          <div class="quantity-controls">
+            <button>-</button>
+            <span>1</span>
+            <button>+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="item-price">$30.00</div>
+  </div>
+
+  <div class="subtotal">Subtotal (2 items): $41.89</div>
+  <button class="checkout-button">Proceed to Checkout</button>
+</div>
+
+</div>
+
+{% endif %}
+
+
+<script>
+    let csrfToken = "{{ csrf_token() }}";
+    window.addEventListener('load', () => {
+      document.querySelector('body').classList.add('loaded');
+    });
+
+    let trace;
+
+    function sortTable(arrowElement, n, direction) {
+      
+      if (trace === String(n) + direction) {
+        return;
+      }
+
+      trace = String(n) + direction;
+      
+      document.querySelectorAll('.sort-icons i').forEach(icon => icon.style.color = '#fff');
+      arrowElement.style.color = '#ff0000';
+
+      let table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+      table = document.getElementById("myTable");
+      switching = true;
+      //Set the sorting direction to ascending:
+      dir = "asc"; 
+      /*Make a loop that will continue until
+      no switching has been done:*/
+      while (switching) {
+        //start by saying: no switching is done:
+        switching = false;
+        rows = table.rows;
+        /*Loop through all table rows (except the
+        first, which contains table headers):*/
+        for (i = 1; i < (rows.length - 1); i++) {
+          //start by saying there should be no switching:
+          shouldSwitch = false;
+          /*Get the two elements you want to compare,
+          one from current row and one from the next:*/
+          x = rows[i].getElementsByTagName("TD")[n];
+          y = rows[i + 1].getElementsByTagName("TD")[n];
+          /*check if the two rows should switch place,
+          based on the direction, asc or desc:*/
+          if (dir == "asc") {
+            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+              //if so, mark as a switch and break the loop:
+              shouldSwitch= true;
+              break;
+            }
+          } else if (dir == "desc") {
+            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+              //if so, mark as a switch and break the loop:
+              shouldSwitch = true;
+              break;
+            }
+          }
+        }
+        if (shouldSwitch) {
+          /*If a switch has been marked, make the switch
+          and mark that a switch has been done:*/
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          //Each time a switch is done, increase this count by 1:
+          switchcount ++;      
+        } else {
+          /*If no switching has been done AND the direction is "asc",
+          set the direction to "desc" and run the while loop again.*/
+          if (switchcount == 0 && dir == "asc") {
+            dir = "desc";
+            switching = true;
+          }
+        }
+      }
+    }
+
+    function get_cart_content(newCookies) {
+
+        let formData = new FormData();
+        formData.append('newCookies', newCookies);
+
+        // Create a new XMLHttpRequest object
+        let xhr = new XMLHttpRequest();
+        
+        // Configure the request
+        xhr.open('POST', '/cart');
+        
+
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+        // Define what happens on successful data submission
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText);
+
+                // let mistakesDiv = document.getElementById('mistakes_modal');
+                // mistakesDiv.innerHTML = ''; // Clear previous messages
+                
+                if (response.status === '0') {
+                    // Handle Unknown Error
+                    // mistakesDiv.textContent = response.answer;
+                    // mistakesDiv.style.color = 'red';
+
+                    // Scroll the window to the mistakesDiv with smooth behavior
+                    // mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+
+                } 
+                
+                if (response.status === '1') {
+                    // Handle success
+                    // alert(response.answer);
+                    // document.getElementById('').
+                    alert('Success')
+                }
+
+            } else {
+                // Handle error response
+                console.error('Error:', xhr.responseText);
+            }
+        };
+
+        // Send the request with the FormData object
+        xhr.send(formData);
+
+    }
+
+    
+    let newCookies = cookie.get('Cart', false)
+    if (newCookies) {
+      get_cart_content(newCookies)
+    }
+
+
+
+    function rotate(gearElement) {
+      let angle = 0;
+        setInterval(() => {
+          angle = (angle + 5) % 360; 
+          gearElement.style.transform = `rotate(${angle}deg)`;
+        }, 50); 
+
+    }
+
+    function myLoader(color) {
+      if (color === undefined) {
+        color = 'crimson'
+      }
+      let loader = document.createElement('div'); // Create a div element for the loader
+        loader.id = 'gear';
+        loader.style.color = color;
+        loader.style.fontSize = '20px';
+        loader.style.display = 'inline-block';
+        loader.textContent = '⚙';
+        return loader;
+    }
+
+</script>
+
+{% endblock %}

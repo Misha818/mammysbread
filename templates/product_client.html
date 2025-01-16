@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'public.html' %}
 {% block title %}
 {{ prData.Title }}
 {% endblock %}
@@ -7,7 +7,7 @@
 {% block head %}
 
     {{ metaTags | safe }}
-    <!-- <script src="{{ url_for('static', filename='JS/cookie.umd.min.js') }}"></script> -->
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='quill.snow.css') }}">
     
     
@@ -27,33 +27,6 @@
 
 
 {% block content %}
-
-<header class="client-header">
-    <div class="client-logo-parent">
-        <img src="{{ url_for('static', filename='images/logo.png')}}" alt="Logo" class="client-logo">
-    </div>
-    <div class="header-bar">
-        <nav>
-            <div><a href="{{ url_for('home') }}" class="animated-underline">{{ _('Home') }}</a></div>
-            <div><a href="{{ url_for('home') }}about" class="animated-underline">{{ _('About') }}</a></div>
-            <div><a href="{{ url_for('home') }}contacts" class="animated-underline">{{ _('Contact') }}</a></div>
-            
-            {% if supportedLangsData | length > 1 %}     
-            <select onchange="location = '/' + this.value;" class="lang-drop-down">
-                {% for lang in supportedLangsData %}
-                <option value="{{ lang[0] }}" {{ 'selected' if get_locale() ==  lang[2]  else '' }}>{{ lang[1] }}</option>
-                {% endfor %}
-            </select>
-            {% endif %}
-
-            <!-- <i class="fa-solid fa-cart-arrow-down"></i> -->
-            <div class="icon-wrapper">
-                <i class="fa-solid fa-cart-arrow-down"></i>
-                <span class="notification">5</span>
-            </div>
-        </nav>
-    </div>
-</header>
 
 
 <!-- Middle part -->

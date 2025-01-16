@@ -285,9 +285,14 @@
         
         let thumbnailImageP = document.querySelector('.price-thumbnails img');
         let imgWidthP = thumbnailImageP ? thumbnailImageP.offsetWidth : 0;
-        let imgStyleP = window.getComputedStyle(thumbnailImageP);
-        let marginRightP = imgStyleP.marginRight;
-        marginRightP = parseInt(marginRightP.replace("px", ""), 10);
+        let imgStyleP;
+        let marginRightP;
+        if (thumbnailImageP) {
+            imgStyleP = window.getComputedStyle(thumbnailImageP);
+            marginRightP = imgStyleP.marginRight;
+            marginRightP = parseInt(marginRightP.replace("px", ""), 10);
+        }
+
         let itemWidthP = imgWidthP + marginRightP;
         let scrollToP = 0;
         
@@ -357,36 +362,15 @@
     }
 
 
+// Prevent numbers less then 1 in .quantity input
 document.addEventListener("DOMContentLoaded", function() {
-    var popoverTriggers = document.querySelectorAll('.popoverImage');
     
-    popoverTriggers.forEach(function(popoverTrigger) {
-        var timeoutId;
-        var hideTimeoutId;  // Variable to hold the hide timeout
-    
-        popoverTrigger.addEventListener('mouseenter', function() {
-        clearTimeout(hideTimeoutId); // Clear any existing hide timeout
-        timeoutId = setTimeout(function() {
-            var popover = new bootstrap.Popover(popoverTrigger, {
-            container: 'body',
-            html: true,
-            placement: 'top',
-            trigger: 'manual',
-            content: function() {
-                return popoverTrigger.getAttribute("data-bs-content");
-            }
-            });
-            popover.show();
-        }, 2000); // Delay time in milliseconds for showing the popover
-        });
-    
-        popoverTrigger.addEventListener('mouseleave', function() {
-        clearTimeout(timeoutId); // Clear the show timeout if the mouse leaves before the popover is shown
-        var popoverInstance = bootstrap.Popover.getInstance(popoverTrigger);
-        if (popoverInstance) {
-            hideTimeoutId = setTimeout(function() {  // Delay the hide action
-            popoverInstance.hide();
-            }, 2000);  // 2000 milliseconds delay before hiding the popover
+    const inputs = document.querySelectorAll(".quantity");
+
+    inputs.forEach(input => {
+        input.addEventListener("input", () => {
+        if (input.value !== "" && input.value < 1) {
+            input.value = 1;
         }
         });
     });

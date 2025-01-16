@@ -56,6 +56,41 @@ document.addEventListener('DOMContentLoaded', function(){
     
     };
 
+
+    let popoverTriggers = document.querySelectorAll('.popoverImage');
+    
+    popoverTriggers.forEach(function(popoverTrigger) {
+        let timeoutId;
+        let hideTimeoutId;  // Variable to hold the hide timeout
+    
+        popoverTrigger.addEventListener('mouseenter', function() {
+        clearTimeout(hideTimeoutId); // Clear any existing hide timeout
+        timeoutId = setTimeout(function() {
+            let popover = new bootstrap.Popover(popoverTrigger, {
+            container: 'body',
+            html: true,
+            placement: 'top',
+            trigger: 'manual',
+            content: function() {
+                return popoverTrigger.getAttribute("data-bs-content");
+            }
+            });
+            popover.show();
+        }, 2000); // Delay time in milliseconds for showing the popover
+        });
+    
+        popoverTrigger.addEventListener('mouseleave', function() {
+        clearTimeout(timeoutId); // Clear the show timeout if the mouse leaves before the popover is shown
+        var popoverInstance = bootstrap.Popover.getInstance(popoverTrigger);
+        if (popoverInstance) {
+            hideTimeoutId = setTimeout(function() {  // Delay the hide action
+            popoverInstance.hide();
+            }, 2000);  // 2000 milliseconds delay before hiding the popover
+        }
+        });
+    });
+    
+
 });    
 
 </script>
@@ -585,9 +620,9 @@ function closeImageEditorModal(modal) {
     // Define what happens on successful data submission
     xhr.onload = function () {
         if (xhr.status === 200) {
-            var response = JSON.parse(xhr.responseText);
+            let response = JSON.parse(xhr.responseText);
 
-            var mistakesDiv = document.getElementById('mistakes_modal');
+            let mistakesDiv = document.getElementById('mistakes_modal');
             mistakesDiv.innerHTML = ''; // Clear previous messages
 
             if (response.status === '2') {
