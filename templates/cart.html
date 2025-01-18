@@ -37,17 +37,21 @@
             50 Pcs Bread Bags for Homemade Bread, Sourdough Paper Bread Bags
           </a>
         </div>
-        <div class="item-controls">
+        <div class="item-controls" data-value="13">
           <button class="delete-button"><i class="fa-solid fa-trash-can"></i></button>
           <div class="quantity-controls">
-            <button>-</button>
-            <span>1</span>
-            <button>+</button>
+            <button class="minus-btn">-</button>
+            <input type="number" class="quantity" name="quantity" value="1" min="1" 
+                style=" margin-right: 0px;
+                        width: 40px;
+                        height: 40px;"
+            >
+            <button class="plus-btn">+</button>
           </div>
         </div>
       </div>
     </div>
-    <div class="item-price">$11.89</div>
+    <div class="item-price">$<span>11.89</span></div>
   </div>
   
   <div class="cart-item">
@@ -63,17 +67,21 @@
             Cozy Bread&reg; Thermal Insulation Box
           </a>
         </div>
-        <div class="item-controls">
+        <div class="item-controls" data-value="14">
           <button class="delete-button"><i class="fa-solid fa-trash-can"></i></i></button>
           <div class="quantity-controls">
-            <button>-</button>
-            <span>1</span>
-            <button>+</button>
+            <button class="minus-btn">-</button>
+            <input type="number" class="quantity" name="quantity" value="15" min="1" 
+                style=" margin-right: 0px;
+                        width: 40px;
+                        height: 40px;"
+            >
+            <button class="plus-btn">+</button>
           </div>
         </div>
       </div>
     </div>
-    <div class="item-price">$30.00</div>
+    <div class="item-price">$<span>30.00</span></div>
   </div>
 
   <div class="subtotal">Subtotal (2 items): $41.89</div>
@@ -239,6 +247,103 @@
         return loader;
     }
 
+document.addEventListener("DOMContentLoaded", function() {
+   
+    const deleteButtons = document.querySelectorAll('.delete-button');
+
+    deleteButtons.forEach(deleteBtn => {
+      deleteBtn.addEventListener('click', () => {
+        const parent = deleteBtn.parentNode; 
+        ptID = parent.dataset.value;
+        deleteBtn.closest('.cart-item').remove();
+        // ************* IMPORTANT **************
+        // Also make sure to delete from cookies
+        // Than add "Shopping cart is empty" if cookies are completly deleted 
+        // ************* IMPORTANT **************
+
+        quantities = document.querySelectorAll('.quantity');
+        let num = 0;
+        let subtotal = 0;
+        quantities.forEach(quantity => {
+          num = num + parseInt(quantity.value);
+
+          let bigDaddy = quantity.parentNode.parentNode.parentNode.parentNode.parentNode;
+          // console.log(bigDaddy)
+          let itemPrice = bigDaddy.querySelector('.item-price span').textContent;
+          // console.log(`itemPrice is ${itemPrice}`)
+          // console.log(`subtotal = ${subtotal} + ${parseInt(quantity.value)} * ${parseInt(itemPrice)}`)
+          subtotal = subtotal + parseFloat(quantity.value) * parseFloat(itemPrice);
+        });
+
+        if (num == 0) {
+          document.querySelector('.subtotal').remove();
+          document.querySelector('.checkout-button').remove();
+          document.querySelector('.price-header').style.display = 'none';
+          
+          const emptyCart = document.createElement('div');
+          emptyCart.textContent = "{{ _('You don’t have any items in your cart.') }}";
+          emptyCart.className = "empty-cart";
+          
+          const startShopping = document.createElement('a');
+          startShopping.textContent = "{{ _('Start shopping') }}";
+          startShopping.className = "start-shopping";
+          startShopping.href = window.location.origin;
+          
+          const target = document.querySelector('.cart-header-conteiner');
+          
+          target.parentNode.appendChild(emptyCart);
+          target.parentNode.appendChild(startShopping);
+          document.querySelector('.cart-header').style.margin = "0 auto";
+          document.querySelector('.shopping-cart').style.boxShadow = "none";
+          
+        } else {
+
+          console.log(`num is ${num}`)
+          console.log(`subtotal is ${subtotal}`)
+          let subtotalText = "{{ _('Subtotal') }} " + "(" + num + " {{ _('items') }}" + "): $" + subtotal.toString()
+          document.querySelector('.subtotal').textContent = subtotalText;
+          
+        }
+
+
+        
+      });
+    }); 
+
+    
+    const minusButtons = document.querySelectorAll('.minus-btn');
+    minusButtons.forEach(minusBtn => {
+      minusBtn.addEventListener('click', () => {
+        const grandPa = minusBtn.parentNode.parentNode; 
+        ptID = grandPa.dataset.value;
+        alert(ptID)
+      });
+    }); 
+
+    
+    const plusButtons = document.querySelectorAll('.plus-btn');
+    plusButtons.forEach(plusBtn => {
+      plusBtn.addEventListener('click', () => {
+        const grandPa = plusBtn.parentNode.parentNode; 
+        ptID = grandPa.dataset.value;
+        alert(ptID)
+      });
+    }); 
+
+        
+      
+      
+      
+    // Prevent numbers less then 1 in .quantity input
+    const inputs = document.querySelectorAll(".quantity");
+    inputs.forEach(input => {
+        input.addEventListener("input", () => {
+        if (input.value !== "" && input.value < 1) {
+            input.value = 1;
+        }
+        });
+    });
+});
 </script>
 
 {% endblock %}

@@ -3137,11 +3137,13 @@ def typeof(var):
 
 
 
-@app.route("/cart", methods=["Get"])
+@app.route("/cart", methods=["GET", "POST"])
 def cart(): 
-    result = {'length': 0}
-    return render_template('cart.html', result=result, current_locale=get_locale())
-
+    if request.method == "GET":
+        result = {'length': 0}
+        return render_template('cart.html', result=result, current_locale=get_locale())
+    else:
+        pass
 
 @app.route("/timer", methods=["GET"])
 def random_reminder():
