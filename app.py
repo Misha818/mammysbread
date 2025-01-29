@@ -448,7 +448,7 @@ def get_slides():
 
     return result
 
-@app.route('/add-price/<prID>')
+@app.route('/add-price/<prID>', methods=["GET"])
 def add_price(prID):
 
     answer = gettext('Something is wrong! 0')
@@ -576,7 +576,6 @@ def edit_price(ptID):
 # @login_required
 def editprice():
     newCSRFtoken = generate_csrf()
-    # languageID = request.form.get('LanguageID')
     ptID = request.form.get('PtID')
 
     if not ptID:
@@ -586,6 +585,21 @@ def editprice():
     if not request.form.get('title') or len(request.form.get('title').strip())  == 0:
         answer = gettext('Please specify the title!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+
+    # Check weather Product Type Title exists for current product
+    sqlQuery = """SELECT `Title` FROM `product_type` 
+                    WHERE `Product_ID` = (SELECT `Product_ID` FROM `product_type` WHERE `ID` = %s LIMIT 1) 
+                        AND `ID` != %s
+                        AND `Title` = %s;
+                    """
+    sqlValTuple = (ptID, ptID, request.form.get('title'))
+    resultCheck = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    if resultCheck['length'] > 0:
+        answer = '"' + resultCheck['data'][0]['Title'] + '" ' +gettext('Product Type Title Already Exists!') 
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
+
+
 
     if not request.form.get('price') or len(request.form.get('price').strip())  == 0:
         answer = gettext('Please specify the price!')
@@ -879,7 +893,7 @@ def upload_slides():
     
     ProductID = request.form.get('ProductID')
     productType = request.form.get('Type')
-     # 1 ==> product, 2 ==> subproduct
+     # 1 ==> product, 2 ==> subproduct e.g. product type
     if productType == '1':
         imgDir = 'images/product_slider'
     elif productType == '2':
@@ -888,8 +902,17 @@ def upload_slides():
 
         if not request.form.get('title'):
             answer = gettext('Please specify title!')
-            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})     
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
 
+        # Check weather Product Type Title exists for current product
+        sqlQuery = """SELECT `Title` FROM `product_type` WHERE `Product_ID` = %s AND `Title` = %s;"""
+        sqlValTuple = (ProductID, request.form.get('title'))
+        resultCheck = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        if resultCheck['length'] > 0:
+            answer = '"' + resultCheck['data'][0]['Title'] + '" ' +gettext('Product Type Title Already Exists!') 
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
+    
         if not request.form.get('price'):
             answer = gettext('Please specify price!')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
@@ -2511,6 +2534,42 @@ def products():
     return render_template('products.html', result=result, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
 
 
+@app.route('/store', methods=['GET', 'POST'])
+# @login_required
+def store():
+    if request.method == 'GET':
+        languageID = getLangID()
+        # Main query that gets all active products in all stores
+        sqlQuery =  f"""
+                        SELECT 
+                            `product`.`Title` AS `prTitle`,
+                            `product`.`Thumbnail`,
+                            SUM(`quantity`.`Quantity`) AS `TotalQuantity`
+                        FROM `quantity`
+                            LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                        WHERE `quantity`.`Status` = 1
+                        GROUP BY `product`.`Title`, `product`.`Thumbnail`
+                    ;               
+                    """
+        
+        sqlValTuple = ()
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        sqlQueryStore = "SELECT `ID`, `Name` FROM `store` WHERE `Status` = 1;"
+        resultStore = sqlSelect(sqlQueryStore, (), False)
+        storeData = json.dumps(resultStore['data'])
+
+        sqlQueryProducts = "SELECT `ID`, `Title` FROM `product` WHERE `Language_ID` = %s;"
+        resultStore = sqlSelect(sqlQueryProducts, (languageID,), False)
+        productsData = json.dumps(resultStore['data'])
+
+        sideBar = side_bar_stuff()
+        return render_template('store.html', result=result, storeData=storeData, productsData=productsData, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
+    else:
+        pass
+
+
 @app.route('/articles', methods=['GET'])
 @login_required
 def articles():
@@ -3053,7 +3112,7 @@ def getSlides(PrID):
                         `product_type`.`ID` AS `ptID`,
                         `product`.`Title` AS `prTitle`,
                         (SELECT COUNT(`ID`) FROM `product_type` WHERE `product_type`.`Product_ID` = %s) AS `ptCount`,
-                        (SELECT SUM(`Quantity`) FROM `quantity` WHERE `productTypeID` = `ptID`) AS `Quantity`
+                        (SELECT SUM(`Quantity`) FROM `quantity` WHERE `productTypeID` = `ptID` AND `expDate` >= CURDATE()) AS `Quantity`
                     FROM `product_type`
                         LEFT JOIN `product_type_details` ON `Product_Type`.`ID` = `product_type_details`.`ProductTypeID`
                         LEFT JOIN `sub_product_specifications` ON `product_type_details`.`spssID` = `sub_product_specifications`.`ID`
@@ -3112,22 +3171,30 @@ def get_product_types():
         return jsonify(response)
     
     prID = request.form.get('prID')
+    dataType = True
+    if request.form.get('type'):
+        dataType = False
+
     sqlQuery = """
-                    SELECT `product_type`.`ID`,
-                            `product_type`.`Price`,
+                    SELECT  `product_type`.`ID`,
                             `product_type`.`Title`,
+                            `product_type`.`Price`,
                             `product_type`.`Order` AS `SubPrOrder`,
                             (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
                             (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
                             `product_type`.`Status`
                     FROM `product_type`
-                    WHERE `product_type`.`Product_ID` = %s 
+                    WHERE `product_type`.`Product_ID` = %s
                     ORDER BY `SubPrOrder` 
                     ;"""
     sqlValTuple = (prID,)
-    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    result = sqlSelect(sqlQuery, sqlValTuple, dataType)
 
-    response = {'status': '1', 'data': result['data'], 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
+    productTypeData = result['data']
+    if dataType == False:
+        productTypeData = json.dumps(result['data'])
+
+    response = {'status': '1', 'data': productTypeData, 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
     return jsonify(response)
 
 
@@ -3144,6 +3211,104 @@ def cart():
         return render_template('cart.html', result=result, current_locale=get_locale())
     else:
         pass
+
+
+@app.route("/add-to-store", methods=["GET", "POST"])
+@app.route("/add-to-store/<ptID>", methods=["GET", "POST"])
+# @login_required
+def add_to_store(ptID=None):
+    newCSRFtoken = generate_csrf()
+    if request.method == "GET":
+        languageID = getLangID()
+        sqlQuery = """SELECT 
+                        `product`.`ID`,
+                        `product`.`Title`,
+                        `product_type`.`ID` AS `ptID`,
+                        `product_type`.`Title` AS `ptTitle`
+                    FROM `product` 
+                        LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
+                    WHERE `product`.`Language_ID` = %s 
+                    ORDER BY `product`.`ID`, `product_type`.`Order` 
+                    -- LIMIT 2
+                    ;
+                    """
+        sqlValTuple = (languageID,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        prData = json.dumps(result['data']) 
+
+        sqlQueryStore = "SELECT `ID`, `Name` FROM `store` WHERE `Status` = 1;"
+        resultStore = sqlSelect(sqlQueryStore, (), True)
+
+        storeData = json.dumps(resultStore['data'])
+
+        sideBar = side_bar_stuff()
+
+        return render_template('add_to_store.html', storeData=storeData, dataLength=result['length'], prData=prData, ptID=ptID, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+    else:
+
+        if not request.form.get('ptID') or request.form.get('ptID') == 'null':
+            answer = gettext('Please Specify Product Type')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+        
+        if not request.form.get('storeID'):
+            answer = gettext('Please Specify Store')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+        
+        if not request.form.get('quantity') or request.form.get('quantity') == 'null':
+            answer = gettext('Please Specify Quantity')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+        
+        if not request.form.get('quantity').isdigit():
+            return jsonify({'status': '0', 'answer': smthWrong,  'newCSRFtoken': newCSRFtoken})
+
+        if int(request.form.get('quantity')) < 1:
+            answer = gettext('Quantity should be greater than Zero')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+        
+        if not request.form.get('productionDate'):
+            answer = gettext('Please Specify Production Date')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+        
+        if not request.form.get('expDate'):
+            answer = gettext('Please Specify Expiration Date')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+
+        maxQuantity = None       
+        if request.form.get('maxQuantity') != 'false':
+            if not request.form.get('maxQuantity'):
+                answer = gettext('Please Specify Max Allowed Quantity')
+                return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+            
+            if not request.form.get('maxQuantity').isdigit():
+                return jsonify({'status': '0', 'answer': smthWrong + 'sSSSDASDF',  'newCSRFtoken': newCSRFtoken})
+
+            if int(request.form.get('maxQuantity')) < 1:
+                answer = gettext('Max Allowed Quantity should be greater than Zero')
+                return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})    
+
+            maxQuantity = request.form.get('maxQuantity')
+
+        ptID = request.form.get('ptID')
+        storeID = request.form.get('storeID')
+        quantity = request.form.get('quantity')
+        productionDate = request.form.get('productionDate')
+        expDate = request.form.get('expDate')
+        userID = session['user_id']
+
+        sqlQuery = f"""INSERT INTO `quantity` 
+                        (`productTypeID`, `storeID`, `Quantity`, `maxQuantity`, `userID`, `productionDate`, `expDate`, `addDate`) 
+                        VALUES (%s, %s, %s, %s, %s, STR_TO_DATE(%s, '%m/%d/%Y'), STR_TO_DATE(%s, '%m/%d/%Y'), CURRENT_DATE());
+                        """
+        sqlValTuple = (ptID, storeID, quantity, maxQuantity, userID, productionDate, expDate)
+
+        result= sqlInsert(sqlQuery, sqlValTuple)
+        if result['status'] == 0:
+            return jsonify({'status': '0', 'answer': smthWrong,  'newCSRFtoken': newCSRFtoken})
+
+        answer = 'Done!'
+        return jsonify({'status': '1', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+
+
 
 @app.route("/timer", methods=["GET"])
 def random_reminder():

@@ -276,8 +276,12 @@ get_product_types
 change_type_order
 chaneg_pt_status
 edit_price
+add_price
 editprice
 products
+store
+add_to_store
+
 
 
 Interesting Links

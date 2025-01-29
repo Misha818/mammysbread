@@ -305,8 +305,10 @@ CREATE TABLE `quantity` (
     `storeID` INT,
     `userID` INT,
     `Quantity` INT,
-    `addDate` DATE,
+    `maxQuantity` INT,
+    `productionDate` DATE,
     `expDate` DATE,
+    `addDate` DATE,
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;

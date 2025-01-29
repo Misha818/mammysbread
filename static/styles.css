@@ -580,6 +580,9 @@ button[type="submit"]:hover {
 
 #headerEditorModal {
     overflow: visible;
+    top: 370px;
+    left: 50%;
+    width: 500px;
 }
 .modal-body {
     padding: 20px;
@@ -780,7 +783,95 @@ body, html {
 }
 
 
+/* Drop-Down Tree */
 
+/* Container for the overall dropdown */
+.dropdown {
+  width: 250px;
+      margin-bottom: 20px;
+      position: relative; /* Key: children can be absolutely positioned relative to this */
+      display: inline-block; /* So it sizes to content, not full width */
+
+}
+
+/* The clickable label at the top */
+.dropdown-label {
+  background: #f2f2f2;
+  padding: 10px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  user-select: none; /* Prevent text selection on double-click */
+}
+
+/* Container for the list of parents (initially hidden) */
+.dropdown-options {
+  position: absolute;
+      top: 100%; /* Just below the label */
+      left: 0;
+      width: 100%; /* Same width as the .dropdown container */
+      border: 1px solid #ccc;
+      background: #fff;
+      margin-top: 2px; /* small gap from the label */
+      z-index: 999;   
+}
+
+/* Each parent option */
+.option {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+.option:hover {
+  background-color: #ececec;
+}
+
+/* Container for child items (inside each parent) */
+.child-options {
+  margin-left: 20px;   /* Indent children to the right */
+  margin-top: 5px;
+  border-left: 2px solid #ccc;
+  padding-left: 10px;
+}
+
+/* Individual child item */
+.child-option {
+  padding: 5px 0;
+  cursor: pointer;
+  color: #333;
+}
+
+.child-option:hover {
+  background-color: #f7f7f7;
+}
+
+/* Highlight the clicked/selected child */
+.selected-child {
+  background-color: #c3f7c3; /* Light green highlight */
+}
+
+/* End of Drop-Down Tree */
+
+.store-quantity {
+  width: 250px; 
+  margin: 15px 0px 15px 0px; 
+  padding: 12px 8px; 
+  text-align: left;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.datepicker {
+  z-index: 100 !important;
+}
+
+.filters {
+  margin: 15px 0px;
+}
+
+.filters select {
+  margin-right: 5px;
+}
 
 
 
@@ -1519,6 +1610,27 @@ h2 {
   font-size: 1.4em;
 }
 
+.productType::-webkit-scrollbar {
+  width: 8px;               /* width of the scrollbar */
+  background-color: #f0f0f0;/* fallback color if the track render fails */
+}
+
+.productType::-webkit-scrollbar-track {
+  background-color: #fafafa; 
+  border-radius: 4px;
+}
+
+.productType::-webkit-scrollbar-thumb {
+  background-color: #bbb; 
+  border-radius: 4px;
+  border: 1px solid #fff;  /* optional border around the thumb for contrast */
+}
+
+/* 4. Thumb hover effect */
+.productType::-webkit-scrollbar-thumb:hover {
+  background-color: #999; 
+}
+
 .subproduct {
   margin-top: 10px;
 }
@@ -1552,7 +1664,7 @@ h2 {
 
 .animated-underline {
   position: relative;
-  text-decoration: none;
+  text-decoration: none!important;
   color: #fe7166;
   overflow: hidden; /* Ensures the pseudo-element does not extend outside the link */
   display: inline-block; /* Necessary for the overflow property to work */
@@ -2836,6 +2948,7 @@ h2 {
   overflow-x: hidden;
   top: 60px;
   border-radius: 8px;
+  z-index: 9999;
   /* display: none; */
 }
 
@@ -3264,6 +3377,83 @@ tr:nth-child(even) {
   padding: 2px;
 
 }
+
+
+
+
+/* Checkbox */
+  /* Base container styling */
+  .checkbox-container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    user-select: none;
+  }
+
+  /* Hide the browser's default checkbox */
+  .checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+
+  /* Create a custom checkbox */
+  .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+    border-radius: 5px; /* Rounded corners */
+  }
+
+  /* On mouse-over, add a grey background color */
+  .checkbox-container:hover input ~ .checkmark {
+    background-color: #ccc;
+  }
+
+  /* When the checkbox is checked, change the background color */
+  .checkbox-container input:checked ~ .checkmark {
+    background-color: #2196F3;
+  }
+
+  /* Create the checkmark/indicator (hidden when not checked) */
+  .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+
+  /* Show the checkmark when checked */
+  .checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+  }
+
+  /* Style the checkmark/indicator */
+  .checkbox-container .checkmark:after {
+    left: 10px;
+    top: 3px;
+    width: 6px;
+    height: 15px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+  }
+/* End of checkbox */
+
+.inStock {
+  font-size: 1.1em !important;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+
 
 /* Mobile-friendly styling */
 @media (max-width: 1036px) {

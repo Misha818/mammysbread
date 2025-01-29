@@ -1,0 +1,740 @@
+{% extends 'base.html' %}
+{% block title %}
+  {{ _('Store') }}
+{% endblock %}
+
+
+{% block head %}
+  <!-- 1. Bootstrap 5 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+
+  <!-- Bootstrap Icons for the calendar icon -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <!-- 2. Bootstrap Datepicker CSS (uxsolutions) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"/>
+
+  <style>
+    .table-container table {
+      border-spacing: 0;
+      width: 100%;
+      border: 1px solid #ddd;
+    }
+
+    .table-container th {
+      cursor: pointer;
+    }
+
+    .table-container th, td {
+      text-align: left;
+      padding: 16px;
+    }
+
+    .table-container tr:nth-child(even) {
+      background-color: #f2f2f2
+    }
+
+    .draggerContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%; /* Ensure full width to contain all child elements */
+    }
+
+    .child {
+        display: grid;
+        grid-template-columns: 150px 1fr 1fr 1fr 1fr; 
+        gap: 10px; 
+        width: 100%; 
+        align-items: center; 
+        padding: 10px;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        cursor: grab;
+    }
+
+    .child:active {
+        cursor: grabbing; 
+    }
+
+    .child img {
+        width: 150px; 
+        height: auto; 
+    }
+
+    .child p {
+        display: flex;
+        align-items: center; 
+        justify-content: center; 
+        text-align: center; 
+        padding: 10px; 
+    }
+
+    .dragging {
+        opacity: 0.5;
+    }
+
+    .datepicker {
+       width: 195px !important; /* Set to desired width */
+    }
+
+
+    .datepicker-days thead {
+        background-color: inherit; 
+        color: inherit;
+    }
+
+    .datepicker-days th, td {
+        padding: 0px;
+        font-size: 16px;
+    }
+
+    .prev, .next {
+        cursor: pointer;
+        position: inherit;
+        top: 50%;
+        width: inherit;
+        padding: inherit;
+        margin-top: inherit;
+        color: inherit;
+        font-weight: inherit;
+        font-size: inherit;
+        transition: none;
+        border-radius: inherit;
+        user-select: inherit;
+    }
+
+  </style>
+{% endblock %}
+
+{% block content %}
+
+{{ sideBar | safe }}
+
+<div class="container" >
+  
+  <div class="filters">
+    <div class="filter-dates">
+        <!-- Production Date -->
+        <div class="mb-3" style="width: 250px; display: inline-block; vertical-align: top;">
+          <label for="productionDate" class="form-label">{{ _('Production Date') }}</label>
+          <div class="input-group" style="gap: 0px;">
+          <input
+          type="text"
+          class="form-control"
+          id="productionDate"
+          placeholder="MM/DD/YYYY"
+          style="width: 200px"
+          />
+          <span class="input-group-text">
+              <i class="bi bi-calendar-date"></i>
+          </span>
+          </div>
+      </div>
+          
+      <!-- Expiration Date -->
+      
+      <div class="mb-3" style="width: 250px; display: inline-block; vertical-align: top;">
+          <label for="expDate" class="form-label">{{ _('Expiration Date') }}</label>
+          <div class="input-group" style="gap: 0px;">
+          <input
+              type="text"
+              class="form-control"
+              id="expDate"
+              placeholder="MM/DD/YYYY"
+              style="width: 200px; min-height: 48px;"
+          />
+          <span class="input-group-text">
+              <i class="bi bi-calendar-date"></i>
+          </span>
+          </div>
+      </div>    
+      
+      
+      <!-- Add Date -->
+      <div class="mb-3" style="width: 250px; display: inline-block; vertical-align: top;">
+          <label for="addDate" class="form-label">{{ _('Add Date') }}</label>
+          <div class="input-group" style="gap: 0px;">
+          <input
+              type="text"
+              class="form-control"
+              id="addDate"
+              placeholder="MM/DD/YYYY"
+              style="width: 200px; min-height: 48px;"
+          />
+          <span class="input-group-text">
+              <i class="bi bi-calendar-date"></i>
+          </span>
+          </div>
+      </div>    
+      
+    </div>    
+  </div>
+
+
+  
+  
+    <div class="table-container toRight" id="tableDaddy">
+      <table id="myTable">
+        <thead>
+          <tr>
+            <th>
+              <div style="display: flex; align-items: center;">
+              {{ _('Thumbnail') }} 
+              </div>
+            </th>
+
+            <th>
+              <div style="display: flex; align-items: center;">
+                {{ _('Title') }} 
+              </div>
+            </th>
+
+            <th>
+              <div style="display: flex; align-items: center;">
+                {{ _('Quantity') }} 
+              </div>
+            </th>
+
+          </tr>
+      </thead>
+      <tbody>
+      {% if result.length > 0 %}
+        {% for row in result.data %}
+
+          {% if loop.index > 1 %}
+            {% set trBorderTop = 'class=trBorderTop' %}
+
+          {% else %}
+            {% set trBorderTop = '' %}
+          {% endif %}
+            <tr {{ trBorderTop }}>
+              <td style="padding: 16px;"><img src="{{ url_for('static', filename='images/pr_thumbnails/' + row['Thumbnail']) }}" style="width: 100px;"/></td>
+              <td style="padding: 16px;">{{ row['prTitle'] }}</td>
+              <td style="padding: 16px;">{{ row['TotalQuantity'] }}</td>
+
+            </tr>
+            <tr class="extra-row">
+              <td colspan="7" style="text-align: center; padding: 5px; ">
+                <button class="view-types-btn" title="{{ _('View Types') }}" id="btn_{{row['ID']}}" onclick="getProductTypes({{row['ID']}})">
+                  <div class="chevron">&#9660;</div>
+                </button>
+              </td>
+            </tr>
+            
+            
+        {% endfor %}
+        {% else %}
+          <tr><td>{{ _('No data to show!') }}</td></tr></h3>
+        {% endif %}
+
+        </tbody>
+      </table>
+
+    </div>
+
+</div>
+
+
+
+<script>
+let csrfToken = "{{ csrf_token() }}";
+window.addEventListener('load', () => {
+  document.querySelector('body').classList.add('loaded');
+});
+
+let prIdChecker = undefined; 
+let mode = 0;
+let clickedState = false
+function getProductTypes(prID) {
+  console.log(`clickedState is ${clickedState}`);
+  if (clickedState) {
+    return;
+  }
+  clickedState = true;
+
+  let answerTr = document.getElementById('answerID');
+  if (mode === 1) {
+    if (answerTr) {
+      setTimeout(() => (answerTr.style.display = 'none'), 750);
+      answerTr.remove();
+    }
+      
+    mode = 0;
+    if (prIdChecker === prID) {
+      clickedState = false;
+      return;
+    }
+   
+  }
+
+  prIdChecker = prID;
+  mode = 1;
+  if (answerTr) {
+    setTimeout(() => (answerTr.style.display = 'none'), 750);
+    answerTr.remove();
+    clickedState = false;
+  }
+  let clickedBtn = document.getElementById('btn_' + prID);
+  if (clickedBtn) {
+    let chevron = clickedBtn.getElementsByClassName('chevron');
+    chevron[0].style.display = 'none';
+    let loader = myLoader();
+    
+    
+    clickedBtn.appendChild(loader);
+
+    let gearElement = document.getElementById('gear');
+    if (!gearElement) {
+      return;
+    } 
+
+    rotate(gearElement);
+
+    let formData = new FormData();
+    formData.append('prID', prID)
+    
+    // Create a new XMLHttpRequest object
+    let xhr = new XMLHttpRequest();
+    
+    // Configure the request
+    xhr.open('POST', '/get-product-types');                   
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+    // Define what happens on successful data submission
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            let response = JSON.parse(xhr.responseText);
+            gearElement.remove();
+            chevron[0].style.display = 'block';
+            parentTr = clickedBtn.closest('tr');
+            
+            if (response.status === '0') {
+                // Handle Errors
+
+                parentTr.insertAdjacentHTML('afterend', `
+                      <tr id="answerID" >
+                          <td style="text-align: center;" colspan="7">${response.answer}</td>
+                      </tr>
+                  `);   
+                
+                clickedState = false;
+                
+            } 
+            
+            if (response.status === '1') {
+              
+              const mainUrl = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}`;
+                if (response.length === 0) {
+                  // Construct the main URL including the port, if present
+                  const urlTo = mainUrl + '/add-price/' + prID;
+
+                  let addType = 'add-price/' + prID;
+                  parentTr.insertAdjacentHTML('afterend', `
+                      <tr id="answerID" >
+                          <td style="text-align: center;" colspan="7">
+                            <div>{{ _('No Product Type Detected') }}</div>
+                            <div><a class="pcButtonS" href="${urlTo}" style="text-decoration: none">{{ _('Add Product Type') }}</a></div>
+                          </td>
+                      </tr>
+                  `);   
+                
+                  let answerTr = document.getElementById('answerID');
+                  answerTr.style.display = 'revert'; // Make it visible
+                  setTimeout(() => (answerTr.classList.add('active')), 750); 
+                  clickedState = false;  
+                } else {
+
+
+                  let dataArray = Object.entries(response.data);
+                  let rows = '';
+
+                  dataArray.forEach(function(list) {
+                    let imgUrl = mainUrl + '/static/images/sub_product_slider/' + list[1]['imgName']
+                    let editUrl = mainUrl + '/edit-price/' + list[1]['ID']
+                    let checked = '';
+
+                    if (list[1]['Status'] === 1) {
+                      checked = 'checked'
+                    }
+
+                    let title = "{{ _('Disable') }}"; 
+                    if (checked == '') {
+                      title = "{{ _('Enable') }}"; 
+                    }
+
+                    let perRow = `<div class="child" draggable="true">
+                                    <input type="hidden" name="TypeID" value="${list[1]['ID']}">
+                                    <img src="${imgUrl}" alt="${list[1]['AltText']}" class="" style="width: 150px;">
+                                    <div><p style="justify-content: left;">${list[1]['Title']}</p></div>
+                                    <div><p>${list[1]['Price']} {{mainCurrency}}</p></div>
+                                    <div title="${title}" onclick="changeStatus(${list[1]['ID']})">
+                                        <label class="switch" id="switch_${list[1]['ID']}">
+                                            <span class="sliderA round ${checked}"></span>
+                                        </label>
+                                    </div>
+                                    
+                                    <a href="${editUrl}" target="_BLANK"><p>{{ _('Edit') }}</p></a>
+                                </div>`;
+
+                    rows = rows + perRow;
+                    
+                  });
+
+                  let content = `<tr id="answerID" >
+                                  <td style="text-align: center;" colspan="7">
+                                    <div class="draggerContainer" id="draggerContainer">        
+                                      ${rows}    
+                                    </div>
+
+                                    <button class="pcButtonS" style="display: none" id="saveChanges" onclick="saveChanges(${prID})"><span id='schText'>{{ _('Save Changes') }}</span></button>
+                                  </td>
+                                </tr>
+                                `
+
+parentTr.insertAdjacentHTML('afterend', content); 
+
+
+              const draggerContainer = document.getElementById('draggerContainer');
+
+                      draggerContainer.addEventListener('dragstart', (e) => {
+                          if (e.target.classList.contains('child')) {
+                              e.target.classList.add('dragging');
+                              e.dataTransfer.setData('text/plain', e.target.outerHTML); // Store the dragged element.
+                            document.getElementById('saveChanges').style.display = 'inline';
+                          }
+                      });
+
+                      draggerContainer.addEventListener('dragend', (e) => {
+                          if (e.target.classList.contains('child')) {
+                              e.target.classList.remove('dragging');
+                          }
+                      });
+
+                      draggerContainer.addEventListener('dragover', (e) => {
+                          e.preventDefault();
+                          const draggingElement = draggerContainer.querySelector('.dragging');
+                          const afterElement = getDragAfterElement(draggerContainer, e.clientY);
+
+                          if (afterElement == null) {
+                              draggerContainer.appendChild(draggingElement);
+                          } else {
+                              draggerContainer.insertBefore(draggingElement, afterElement);
+                          }
+                      });
+
+                      function getDragAfterElement(draggerContainer, y) {
+                          const draggableElements = [...draggerContainer.querySelectorAll('.child:not(.dragging)')];
+
+                          return draggableElements.reduce(
+                              (closest, child) => {
+                                  const box = child.getBoundingClientRect();
+                                  const offset = y - box.top - box.height / 2;
+                                  if (offset < 0 && offset > closest.offset) {
+                                      return { offset: offset, element: child };
+                                  } else {
+                                      return closest;
+                                  }
+                              },
+                              { offset: Number.NEGATIVE_INFINITY }
+                          ).element;
+                      }
+                    
+                  }
+
+                }
+
+                let answerTr = document.getElementById('answerID');
+                answerTr.style.display = 'revert'; // Make it visible
+                setTimeout(() => (answerTr.classList.add('active')), 750); 
+                clickedState = false;
+        } else {
+            // Handle error response
+            uploadButton.classList.remove('hidden');
+            saving.classList.add('hidden');
+
+            console.error('Error adding category:', xhr.responseText);
+            clickedState = false;
+        }
+    };
+
+    // Send the request with the FormData object
+    xhr.send(formData);
+
+
+  }
+  
+}
+
+let saveChangesFlag = 0;
+function saveChanges(prID) {
+  if (saveChangesFlag === 1) {
+    return;
+  }
+  
+  saveChangesFlag = 1;
+
+  let clickedBtn = document.getElementById('saveChanges');
+  let btnText = clickedBtn.querySelector('span');
+  btnText.style.display = 'none';
+  let loader = myLoader('white');
+
+
+  clickedBtn.appendChild(loader);
+
+  let gearElement = document.getElementById('gear');
+  if (!gearElement) {
+    return;
+  } 
+
+  rotate(gearElement);
+
+
+  let i = 0;
+  let formData = new FormData();
+  let dataArray = document.querySelectorAll('.draggerContainer input');
+    dataArray.forEach(function(input) {
+    let typeID = input.value;
+    formData.append(i, typeID)
+    i++;
+  });
+
+  formData.append('prID', prID);
+
+  // Create a new XMLHttpRequest object
+  let xhr = new XMLHttpRequest();
+  
+  // Configure the request
+  xhr.open('POST', '/change-type-order');                   
+  xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+  // Define what happens on successful data submission
+  xhr.onload = function () {
+      if (xhr.status === 200) {
+          let response = JSON.parse(xhr.responseText);
+
+          alert(response.answer);
+              
+      } else {
+          // Handle error response
+          console.error('Error adding category:', xhr.responseText);
+      }
+      gearElement.remove();
+      btnText.style.display = 'inline';
+
+  };
+
+  // Send the request with the FormData object
+  xhr.send(formData);
+
+  saveChangesFlag = 0;
+}
+
+
+
+
+
+function rotate(gearElement) {
+  let angle = 0;
+    setInterval(() => {
+      angle = (angle + 5) % 360; 
+      gearElement.style.transform = `rotate(${angle}deg)`;
+    }, 50); 
+
+}
+
+function myLoader(color) {
+  if (color === undefined) {
+    color = 'crimson'
+  }
+  let loader = document.createElement('div'); // Create a div element for the loader
+    loader.id = 'gear';
+    loader.style.color = color;
+    loader.style.fontSize = '20px';
+    loader.style.display = 'inline-block';
+    loader.textContent = '⚙';
+    return loader;
+}
+
+
+
+// Create drop-down 
+
+  const storeData = JSON.parse('{{ storeData|safe }}');
+  const productsData = JSON.parse('{{ productsData|safe }}');
+    
+  creatDropDown(storeData, 'store', 'store', '200px', "{{ _('Shows From All Stores') }}", '.filters')
+  creatDropDown(productsData, 'product', 'product', '200px', "{{ _('Shows All Products') }}", '.filters')
+
+  function creatDropDown(dataValues, selectID, selectName, selectWidth, optionText, target, insertAfter=false) {
+
+      const storeSelect = document.createElement('select');
+      storeSelect.id = selectID;
+      storeSelect.name = selectName;
+      storeSelect.className = 'styled-select';
+      storeSelect.style.width = selectWidth;
+      storeSelect.style.marginBottom = '0px';
+      
+      
+      const option = document.createElement('option');
+      option.value = '';
+      option.textContent = optionText;
+      storeSelect.appendChild(option);
+      
+      dataValues.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item[0];
+        option.textContent = item[1];
+        storeSelect.appendChild(option);
+      }); 
+      
+      if (storeSelect.options.length == 2) {
+        storeSelect.options[1].selected = true;
+        storeSelect.disabled = true;
+      }
+      
+      if (insertAfter !== false) {
+        const dropdownPlaceholder = document.getElementById(insertAfter);
+        dropdownPlaceholder.insertAdjacentElement('afterend', storeSelect);
+      } else {
+        const dropdownPlaceholder = document.querySelector(target);
+        dropdownPlaceholder.appendChild(storeSelect);
+      }
+
+
+    }  
+
+    // End of creat drop-down
+
+
+    // Select the dropdown with the class 'product'
+    const productSelect = document.getElementById('product');
+
+    // Add an event listener for the 'change' event
+    productSelect.addEventListener('change', function() {
+      
+      let productType = document.getElementById('productType');
+      if (productType) {
+        productType.remove();
+      }
+      const selectedValue = this.value;
+      if (selectedValue.length > 0) {
+
+        
+        let formData = new FormData();
+        formData.append('prID', selectedValue);
+        formData.append('type', '1');
+
+        // Create a new XMLHttpRequest object
+        let xhr = new XMLHttpRequest();
+        
+        // Configure the request
+        xhr.open('POST', '/get-product-types');
+        
+
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+        // Define what happens on successful data submission
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText);
+
+                // let mistakesDiv = document.getElementById('mistakes_modal');
+                // mistakesDiv.innerHTML = ''; // Clear previous messages
+                
+                if (response.status === '0') {
+                    // Handle Unknown Error
+                    // mistakesDiv.textContent = response.answer;
+                    // mistakesDiv.style.color = 'red';
+
+                    // Scroll the window to the mistakesDiv with smooth behavior
+                    // mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+
+                } 
+                
+                if (response.status === '1' && response.length > 0) {
+                    // Handle success
+                    console.log(response.data.length)
+                    creatDropDown(JSON.parse(response.data), 'productType', 'productType', '200px', "{{ _('Product Types') }}", '.filters', 'product')
+
+                } else {
+                  alert('Something went wrong')
+                }
+
+            } else {
+                // Handle error response
+                console.error('Error:', xhr.responseText);
+            }
+        };
+
+        // Send the request with the FormData object
+        xhr.send(formData);
+
+      } 
+
+    });
+
+
+    const filtersContainer = document.querySelector('.filters');
+
+    // 2. Create the first new DIV (#saveButton)
+    const saveButton = document.createElement('div');
+    saveButton.id = 'saveButton';
+    saveButton.className = 'pcButtonS';     
+    saveButton.textContent = '🔍';
+    saveButton.style = 'background-color: white; border: 1px solid #00a6ed;';
+
+    // 3. Create the second new DIV (#saving)
+    const savingDiv = document.createElement('div');
+    savingDiv.id = 'saving';
+    savingDiv.className = 'pcButtonS hidden';
+    savingDiv.textContent = "{{ _('Loading...') }}";
+    savingDiv.style = 'background-color: white; border: 1px solid #00a6ed; color: #00a6ed;';
+
+    // 4. Append both to .filters (at the end)
+    filtersContainer.appendChild(saveButton);
+    filtersContainer.appendChild(savingDiv);
+</script>
+
+<!-- 3. Bootstrap 5 JS (Popper included) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 4. jQuery (Required by bootstrap-datepicker 1.x) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
+<!-- 5. Bootstrap Datepicker JS (uxsolutions) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+<script>
+  // Initialize the date picker on our input
+  $(function() {
+    $('#productionDate').datepicker({
+      format: 'mm/dd/yyyy', 
+      autoclose: true,      
+      todayHighlight: true  
+    });
+  });
+
+  $(function() {
+    $('#expDate').datepicker({
+      format: 'mm/dd/yyyy', 
+      autoclose: true,      
+      todayHighlight: true  
+    });
+  });
+  
+  $(function() {
+    $('#addDate').datepicker({
+      format: 'mm/dd/yyyy', 
+      autoclose: true,      
+      todayHighlight: true  
+    });
+  });
+
+ 
+
+</script>
+
+
+{% endblock %}
