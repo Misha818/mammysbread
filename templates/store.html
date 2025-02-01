@@ -48,7 +48,7 @@
         width: 100%; 
         align-items: center; 
         padding: 10px;
-        background-color: #f0f0f0;
+        background-color: aliceblue;
         border: 1px solid #ccc;
         cursor: grab;
     }
@@ -104,6 +104,10 @@
         user-select: inherit;
     }
 
+    #saveButton:hover {
+      background-color: #00a6ed!important;
+    }
+
   </style>
 {% endblock %}
 
@@ -111,8 +115,8 @@
 
 {{ sideBar | safe }}
 
-<div class="container" >
-  
+<div class="containerCart">
+  <div class="filter-button">{{ _('Filters') }}</div>
   <div class="filters">
     <div class="filter-dates">
         <!-- Production Date -->
@@ -174,10 +178,10 @@
 
   
   
-    <div class="table-container toRight" id="tableDaddy">
+    <div class="table-container toRight" id="tableDaddy" style="max-width: 1216px;">
       <table id="myTable">
         <thead>
-          <tr>
+          <tr style="    border-width: 1px; border-color: #00a6ed; background-color: #00a6ed;">
             <th>
               <div style="display: flex; align-items: center;">
               {{ _('Thumbnail') }} 
@@ -198,7 +202,7 @@
 
           </tr>
       </thead>
-      <tbody>
+      <tbody id="myTbody">
       {% if result.length > 0 %}
         {% for row in result.data %}
 
@@ -247,7 +251,7 @@ let prIdChecker = undefined;
 let mode = 0;
 let clickedState = false
 function getProductTypes(prID) {
-  console.log(`clickedState is ${clickedState}`);
+  // console.log(`clickedState is ${clickedState}`);
   if (clickedState) {
     return;
   }
@@ -279,7 +283,7 @@ function getProductTypes(prID) {
   if (clickedBtn) {
     let chevron = clickedBtn.getElementsByClassName('chevron');
     chevron[0].style.display = 'none';
-    let loader = myLoader();
+    let loader = myLoader('#00a6ed');
     
     
     clickedBtn.appendChild(loader);
@@ -291,14 +295,30 @@ function getProductTypes(prID) {
 
     rotate(gearElement);
 
+    let productionDate = document.getElementById('productionDate').value;
+    let expDate = document.getElementById('expDate').value;
+    let addDate = document.getElementById('addDate').value;
+    let storeID = document.getElementById('store').value;
+    let productID = document.getElementById('product').value;
+    let ptID = '';
+    if (document.getElementById('productType')) {
+      ptID = document.getElementById('productType').value;
+    }
+
     let formData = new FormData();
     formData.append('prID', prID)
+    formData.append('productionDate', productionDate);
+    formData.append('expDate', expDate);
+    formData.append('addDate', addDate);
+    formData.append('storeID', storeID);
+    formData.append('productID', productID);
+    formData.append('ptID', ptID);
     
     // Create a new XMLHttpRequest object
     let xhr = new XMLHttpRequest();
     
     // Configure the request
-    xhr.open('POST', '/get-product-types');                   
+    xhr.open('POST', '/get-product-types-quantity');                   
     xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
     // Define what happens on successful data submission
@@ -327,14 +347,14 @@ function getProductTypes(prID) {
               const mainUrl = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}`;
                 if (response.length === 0) {
                   // Construct the main URL including the port, if present
-                  const urlTo = mainUrl + '/add-price/' + prID;
+                  const urlTo = mainUrl + '/add-to-store';
 
                   let addType = 'add-price/' + prID;
                   parentTr.insertAdjacentHTML('afterend', `
                       <tr id="answerID" >
                           <td style="text-align: center;" colspan="7">
-                            <div>{{ _('No Product Type Detected') }}</div>
-                            <div><a class="pcButtonS" href="${urlTo}" style="text-decoration: none">{{ _('Add Product Type') }}</a></div>
+                            <div class="no-pt-detected">{{ _('No Product Type Detected In Store') }}</div>
+                            <div><a class="pcButtonS" href="${urlTo}" style="text-decoration: none; margin-bottom: 20px;">{{ _('Add To Store') }}</a></div>
                           </td>
                       </tr>
                   `);   
@@ -343,38 +363,29 @@ function getProductTypes(prID) {
                   answerTr.style.display = 'revert'; // Make it visible
                   setTimeout(() => (answerTr.classList.add('active')), 750); 
                   clickedState = false;  
+
                 } else {
 
 
                   let dataArray = Object.entries(response.data);
                   let rows = '';
-
+                  let inStock = "{{ _('in stock') }}"
                   dataArray.forEach(function(list) {
                     let imgUrl = mainUrl + '/static/images/sub_product_slider/' + list[1]['imgName']
-                    let editUrl = mainUrl + '/edit-price/' + list[1]['ID']
                     let checked = '';
 
                     if (list[1]['Status'] === 1) {
                       checked = 'checked'
                     }
 
-                    let title = "{{ _('Disable') }}"; 
-                    if (checked == '') {
-                      title = "{{ _('Enable') }}"; 
-                    }
-
-                    let perRow = `<div class="child" draggable="true">
+                    let perRow = `<div class="child" draggable="false" style="cursor: auto;">
                                     <input type="hidden" name="TypeID" value="${list[1]['ID']}">
                                     <img src="${imgUrl}" alt="${list[1]['AltText']}" class="" style="width: 150px;">
-                                    <div><p style="justify-content: left;">${list[1]['Title']}</p></div>
-                                    <div><p>${list[1]['Price']} {{mainCurrency}}</p></div>
-                                    <div title="${title}" onclick="changeStatus(${list[1]['ID']})">
-                                        <label class="switch" id="switch_${list[1]['ID']}">
-                                            <span class="sliderA round ${checked}"></span>
-                                        </label>
-                                    </div>
-                                    
-                                    <a href="${editUrl}" target="_BLANK"><p>{{ _('Edit') }}</p></a>
+                                    <div><p style="justify-content: left; font-weight: 600;">${list[1]['Title']}</p></div>
+                                    <div><p><span style="font-weight: 600; margin-right: 3px;">${list[1]['Price']}</span> {{ mainCurrency }}</p></div>
+                                    <div><p><span style="font-weight: 600; margin-right: 3px;">${list[1]['Quantity']}</span> ${inStock}</p></div>
+
+                                    <p data-id="${list[1]['ID']}" class="more-on-quantity" >{{ _('More') }}</p>
                                 </div>`;
 
                     rows = rows + perRow;
@@ -441,13 +452,29 @@ parentTr.insertAdjacentHTML('afterend', content);
                       }
                     
                   }
-
+                  
                 }
 
                 let answerTr = document.getElementById('answerID');
                 answerTr.style.display = 'revert'; // Make it visible
                 setTimeout(() => (answerTr.classList.add('active')), 750); 
                 clickedState = false;
+
+                let scrollTo = 'btn_' + prID.toString();
+                let target = document.getElementById(scrollTo);
+
+                const offset = 0;
+                // Calculate the element's vertical position relative to the top of the page
+                const elementPosition = target.getBoundingClientRect().top + window.pageYOffset;
+                // Subtract the offset
+                const offsetPosition = elementPosition - offset;
+
+                // Smoothly scroll to that position
+                window.scrollTo({
+                  top: offsetPosition,
+                  behavior: "smooth"
+                });
+                
         } else {
             // Handle error response
             uploadButton.classList.remove('hidden');
@@ -642,24 +669,15 @@ function myLoader(color) {
                 // let mistakesDiv = document.getElementById('mistakes_modal');
                 // mistakesDiv.innerHTML = ''; // Clear previous messages
                 
-                if (response.status === '0') {
-                    // Handle Unknown Error
-                    // mistakesDiv.textContent = response.answer;
-                    // mistakesDiv.style.color = 'red';
-
-                    // Scroll the window to the mistakesDiv with smooth behavior
-                    // mistakesDiv.scrollIntoView({ behavior: 'smooth' });
-
-
-                } 
-                
                 if (response.status === '1' && response.length > 0) {
-                    // Handle success
-                    console.log(response.data.length)
+                    // Handle success                    
                     creatDropDown(JSON.parse(response.data), 'productType', 'productType', '200px', "{{ _('Product Types') }}", '.filters', 'product')
 
+                } else if (response.status === '1' && response.length === 0) {
+                  let answer = "{{ _('No Types For Specified Product') }}";
+                  alert(answer)
                 } else {
-                  alert('Something went wrong')
+                  alert("{{ _('Something Went Wrong!') }}")
                 }
 
             } else {
@@ -733,7 +751,293 @@ function myLoader(color) {
   });
 
  
+ document.querySelector('.filter-button').addEventListener('click', function() {
+    document.querySelector('.filters').classList.toggle('show');
+ })
 
+
+ document.querySelector('#saveButton').onclick = function(event) {
+  event.preventDefault();
+
+  let formData = new FormData();
+
+  let productionDate = document.getElementById('productionDate').value;
+  let expDate = document.getElementById('expDate').value;
+  let addDate = document.getElementById('addDate').value;
+  let storeID = document.getElementById('store').value;
+  let productID = document.getElementById('product').value;
+  let ptID = '';
+  if (document.getElementById('productType')) {
+    ptID = document.getElementById('productType').value;
+  }
+
+  // Create a new FormData object
+  formData.append('productionDate', productionDate);
+  formData.append('expDate', expDate);
+  formData.append('addDate', addDate);
+  formData.append('storeID', storeID);
+  formData.append('productID', productID);
+  formData.append('ptID', ptID);
+
+  // Create a new XMLHttpRequest object
+  let xhr = new XMLHttpRequest();
+
+  // Configure the request
+  xhr.open('POST', '/store');
+  xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+  // Define what happens on successful data submission
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      let response = JSON.parse(xhr.responseText);
+
+      if (response.status === '1') {
+
+          const tbody = document.getElementById('myTbody');
+          tbody.innerHTML = '';
+          let imgUrl = "{{ url_for('static', filename='images/pr_thumbnails/') }}";
+
+          if (response.length > 0) {
+            response.answer.forEach(row => {
+              // Create the main row
+              const mainRow = document.createElement('tr');
+              let currentImgUrl = imgUrl + row.Thumbnail
+              mainRow.innerHTML = `
+                <td style="padding: 16px;">
+                  <img src="${currentImgUrl}" style="width: 100px;"/>
+                </td>
+                <td style="padding: 16px;">${row.prTitle}</td>
+                <td style="padding: 16px;">${row.TotalQuantity}</td>
+              `;
+
+              // Create the extra row with the button
+              const extraRow = document.createElement('tr');
+              extraRow.classList.add('extra-row');
+              extraRow.innerHTML = `
+                <td colspan="7" style="text-align: center; padding: 5px;">
+                  <button class="view-types-btn" title="{{ _('View Types') }}" id="btn_${row.ID}" onclick="getProductTypes(${row.ID})">
+                    <div class="chevron">&#9660;</div>
+                  </button>
+                </td>
+              `;
+
+              tbody.appendChild(mainRow);
+              tbody.appendChild(extraRow);
+            });
+          } else {
+            const mainRow = document.createElement('tr');
+            mainRow.textContent = "{{ _('No Data') }}"
+            mainRow.classList.add('tr-no-data');
+            tbody.appendChild(mainRow);
+          }
+
+
+      } else {
+        alert("{{ _('Something Went Wrong!') }}");
+      }
+
+    } else {
+      // Handle error response
+      saveButton.classList.remove('hidden');
+      saving.classList.add('hidden');
+
+      console.error('Error adding category:', xhr.responseText);
+    }
+  };
+
+  // Send the request with the FormData object
+  xhr.send(formData);
+
+
+ }
+
+// Show Quantities of a product type
+document.addEventListener('click', function(event) {
+  if (event.target.classList.contains('more-on-quantity')) {
+    event.preventDefault();
+    let formData = new FormData();
+    const ptID = event.target.getAttribute('data-id');
+    
+    formData.append('ptID', ptID);
+
+    // Create a new XMLHttpRequest object
+    let xhr = new XMLHttpRequest();
+
+    // Configure the request
+    xhr.open('POST', '/get-pt-quantities');
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+    // Define what happens on successful data submission
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        let response = JSON.parse(xhr.responseText);
+
+        if (response.status === '1') {
+
+            if (response.length > 0) {
+              const baseEditStoreUrl = "{{ url_for('edit_store', quantity_pt_IDs='PLACEHOLDER') }}";
+              
+              // Function to build the table rows from JSON data
+              function buildTable(tableBody) {
+                tableBody.innerHTML = ''; // Clear existing rows
+                
+                response.data.forEach(item => {
+                  const row = document.createElement('tr');
+                  row.className = 'pt-quantity-tr';
+                  
+                  // Helper function to create a cell
+                  function createCell(content, cellClass) {
+                    const cell = document.createElement('td');
+                    cell.className = cellClass;
+                    cell.textContent = content;
+                    return cell;
+                  }
+                  
+                  // Append cells for each field
+                  row.appendChild(createCell(item.Name, 'pt-quantity-td'));          // Store Name
+                  row.appendChild(createCell(item.Initials, 'pt-quantity-td'));        // Initials
+                  row.appendChild(createCell(item.Quantity, 'pt-quantity-td'));        // Quantity
+                  row.appendChild(createCell(item.maxQuantity, 'pt-quantity-td'));     // Max Quantity
+                  row.appendChild(createCell(item.productionDate, 'pt-quantity-td'));  // Production Date
+                  row.appendChild(createCell(item.expDate, 'pt-quantity-td'));         // Expiration Date
+                  row.appendChild(createCell(item.addDate, 'pt-quantity-td'));         // Add Date
+                  
+                  quantity_pt_ids = item.ID + 'qptid' + item.ptID;
+                  let editUrl = baseEditStoreUrl.replace('PLACEHOLDER', quantity_pt_ids);
+                  // Action button cell
+                  const actionCell = document.createElement('td');
+                  actionCell.className = 'pt-quantity-td';
+                  const actionLink = document.createElement('a');
+                  actionLink.href = editUrl; 
+                  actionLink.target = "_BLANK"; 
+                  actionLink.textContent = "Edit";
+                  actionLink.className = "pt-quantity-action-btn";
+                  actionCell.appendChild(actionLink);
+                  row.appendChild(actionCell);
+                  
+                  tableBody.appendChild(row);
+                });
+            }
+            
+            // Function to create the modal structure dynamically
+            function createModal(tableTitle) {
+              // Create the modal container
+              const modal = document.createElement('div');
+              modal.id = 'myModal';
+              modal.className = 'pt-quantity-modal';
+              
+              // Create modal content container
+              const modalContent = document.createElement('div');
+              modalContent.className = 'pt-quantity-modal-content';
+              
+              // Create and append the close button
+              const closeBtn = document.createElement('span');
+              closeBtn.id = 'closeModalBtn';
+              closeBtn.className = 'pt-quantity-close';
+              closeBtn.innerHTML = '&times;';
+              modalContent.appendChild(closeBtn);
+              
+              // Create and append a header
+              const header = document.createElement('h2');
+              header.textContent = tableTitle;
+              modalContent.appendChild(header);
+              
+              // Create a container for the table to allow horizontal scrolling on mobile
+              const tableContainer = document.createElement('div');
+              tableContainer.className = 'pt-quantity-table-container';
+              
+              // Create the table
+              const table = document.createElement('table');
+              table.className = 'pt-quantity-table';
+              
+              // Create the table header
+              const thead = document.createElement('thead');
+              thead.className = 'pt-quantity-thead';
+              const headerRow = document.createElement('tr');
+              headerRow.className = 'pt-quantity-tr';
+              
+              const headers = [
+                "{{ _('Store') }}",
+                "{{ _('Submitted By') }}",
+                "{{ _('Quantity') }}",
+                "{{ _('Max Quantity') }}",
+                "{{ _('Production Date') }}",
+                "{{ _('Expiration Date') }}",
+                "{{ _('Add Date') }}",
+                "{{ _('Action') }}"
+              ];
+              headers.forEach(text => {
+                const th = document.createElement('th');
+                th.className = 'pt-quantity-th';
+                th.textContent = text;
+                headerRow.appendChild(th);
+              });
+              thead.appendChild(headerRow);
+              table.appendChild(thead);
+              
+              // Create table body
+              const tbody = document.createElement('tbody');
+              tbody.className = 'pt-quantity-tbody';
+              table.appendChild(tbody);
+              
+              // Append table to container, then container to modal content
+              tableContainer.appendChild(table);
+              modalContent.appendChild(tableContainer);
+              
+              // Append modal content to modal container
+              modal.appendChild(modalContent);
+              
+              // Append modal to the body
+              document.body.appendChild(modal);
+              
+              // Attach event listener for the close button
+              closeBtn.addEventListener('click', () => {
+                modal.remove();
+              });
+              
+              // Return modal references for later use
+              return { modal, tableBody: tbody };
+            }
+            
+            // Variables to store modal elements
+            let modalElements = null;
+            
+              // Create modal if it hasn't been created yet
+              if (!modalElements) {
+                modalElements = createModal(response.data[0].Title);
+              }
+              
+              // Build the table rows
+              buildTable(modalElements.tableBody);
+              
+              // Display the modal
+              modalElements.modal.style.display = 'block';
+            } else {
+              const mainRow = document.createElement('tr');
+              mainRow.textContent = "{{ _('No Data') }}"
+              mainRow.classList.add('tr-no-data');
+              tbody.appendChild(mainRow);
+            }
+
+
+        } else {
+          alert("{{ _('Something Went Wrong!') }}");
+        }
+
+      } else {
+        // Handle error response
+        saveButton.classList.remove('hidden');
+        saving.classList.add('hidden');
+
+        console.error('Error adding category:', xhr.responseText);
+      }
+    };
+
+    // Send the request with the FormData object
+    xhr.send(formData);
+
+  }
+});
 </script>
 
 

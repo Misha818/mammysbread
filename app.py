@@ -2536,12 +2536,13 @@ def products():
 
 @app.route('/store', methods=['GET', 'POST'])
 # @login_required
-def store():
+def store():    
     if request.method == 'GET':
         languageID = getLangID()
-        # Main query that gets all active products in all stores
+        # Main query that gets all active products in all stores [ WHERE `quantity`.`Status` = 1]
         sqlQuery =  f"""
                         SELECT 
+                            `product`.`ID`,
                             `product`.`Title` AS `prTitle`,
                             `product`.`Thumbnail`,
                             SUM(`quantity`.`Quantity`) AS `TotalQuantity`
@@ -2549,7 +2550,7 @@ def store():
                             LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
                             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
                         WHERE `quantity`.`Status` = 1
-                        GROUP BY `product`.`Title`, `product`.`Thumbnail`
+                        GROUP BY `product`.`ID`, `product`.`Title`, `product`.`Thumbnail`
                     ;               
                     """
         
@@ -2567,7 +2568,57 @@ def store():
         sideBar = side_bar_stuff()
         return render_template('store.html', result=result, storeData=storeData, productsData=productsData, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
     else:
-        pass
+        newCSRFtoken = generate_csrf()
+        filters = ''
+        sqlValList = []
+
+        if request.form.get('productionDate'):
+            filters = filters + ' AND productionDate = %s ' 
+            sqlValList.append(request.form.get('productionDate'))
+
+        if request.form.get('expDate'):
+            filters = filters + ' AND expDate = %s ' 
+            sqlValList.append(request.form.get('expDate'))
+
+        if request.form.get('addDate'):
+            filters = filters + ' AND addDate = %s ' 
+            sqlValList.append(request.form.get('addDate'))
+
+        if request.form.get('storeID'):
+            filters = filters + ' AND storeID = %s ' 
+            sqlValList.append(request.form.get('storeID'))
+
+        if request.form.get('productID'):
+            filters = filters + ' AND `product`.`ID` = %s ' 
+            sqlValList.append(request.form.get('productID'))
+
+        if request.form.get('ptID'):
+            filters = filters + ' AND `productTypeID` = %s ' 
+            sqlValList.append(request.form.get('ptID'))
+
+        
+        if len(sqlValList) > 0:
+            sqlValTuple = tuple(sqlValList)
+        else: 
+            sqlValTuple = ()
+
+        sqlQuery = f"""
+                        SELECT 
+                            `product`.`ID`,
+                            `product`.`Title` AS `prTitle`,
+                            `product`.`Thumbnail`,
+                            SUM(`quantity`.`Quantity`) AS `TotalQuantity`
+                        FROM `quantity`
+                            LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                        WHERE `quantity`.`Status` = 1 {filters}
+                        GROUP BY `product`.`ID`, `product`.`Title`, `product`.`Thumbnail`
+                    ;               
+                    """
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        response = {'status': '1', 'answer': result['data'], 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
 
 
 @app.route('/articles', methods=['GET'])
@@ -3198,6 +3249,76 @@ def get_product_types():
     return jsonify(response)
 
 
+@app.route("/get-product-types-quantity", methods=["POST"])
+# @login_required
+def get_product_types_quantity():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('prID'):
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+    prID = request.form.get('prID')
+    dataType = True
+    if request.form.get('type'):
+        dataType = False
+
+    filters = ''
+    sqlValList = []
+    sqlValList.append(prID)
+
+    if request.form.get('productionDate'):
+        filters = filters + ' AND `quantity`.`productionDate` = %s ' 
+        sqlValList.append(request.form.get('productionDate'))
+
+    if request.form.get('expDate'):
+        filters = filters + ' AND `quantity`.`expDate` = %s ' 
+        sqlValList.append(request.form.get('expDate'))
+
+    if request.form.get('addDate'):
+        filters = filters + ' AND `quantity`.`addDate` = %s ' 
+        sqlValList.append(request.form.get('addDate'))
+
+    if request.form.get('storeID'):
+        filters = filters + ' AND `quantity`.`storeID` = %s ' 
+        sqlValList.append(request.form.get('storeID'))
+
+    if request.form.get('ptID'):
+        filters = filters + ' AND `productTypeID` = %s ' 
+        sqlValList.append(request.form.get('ptID'))
+
+    
+    if len(sqlValList) > 0:
+        sqlValTuple = tuple(sqlValList)
+    else: 
+        sqlValTuple = (prID,)
+
+    sqlQuery = f"""
+                    SELECT  `product_type`.`ID`,
+                            `product_type`.`Title`,
+                            `product_type`.`Price`,
+                            `product_type`.`Order` AS `SubPrOrder`,
+                            (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+                            (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+                            SUM(`quantity`.`Quantity`) AS `Quantity`,
+                            `product_type`.`Status`
+                    FROM `quantity`
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                    WHERE `product_type`.`Product_ID` = %s {filters}
+                    GROUP BY `product_type`.`ID`, `product_type`.`Title`, `product_type`.`Price`, `imgName`, `AltText`
+                    ORDER BY `SubPrOrder` 
+                    ;"""
+    print(sqlQuery)
+    result = sqlSelect(sqlQuery, sqlValTuple, dataType)
+
+    productTypeData = result['data']
+    if dataType == False:
+        productTypeData = json.dumps(result['data'])
+
+    response = {'status': '1', 'data': productTypeData, 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
+    return jsonify(response)
+
+
 @app.template_filter('typeof')
 def typeof(var):
     return str(type(var).__name__)
@@ -3211,6 +3332,175 @@ def cart():
         return render_template('cart.html', result=result, current_locale=get_locale())
     else:
         pass
+
+
+@app.route("/get-pt-quantities", methods=["POST"])
+def get_pt_quantities():     
+    if not request.form.get('ptID'):
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+    newCSRFtoken = generate_csrf()
+    ptID = request.form.get('ptID')
+    sqlValTuple = (ptID,)
+    sqlQuary = """
+                SELECT 
+                    `quantity`.`ID`,
+                     `product_type`.`ID` AS `ptID`,
+                    `store`.`Name`,
+                    CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`,
+                    `quantity`.`Quantity`,
+                    `quantity`.`maxQuantity`,
+                    DATE_FORMAT(`productionDate`, '%m-%d-%Y') AS `productionDate`,
+                    DATE_FORMAT(`expDate`, '%m-%d-%Y') AS `expDate`,
+                    DATE_FORMAT(`addDate`, '%m-%d-%Y') AS `addDate`,
+                    CONCAT(`product`.`Title`, ': ', `product_type`.`Title`) AS `Title`
+                FROM `quantity` 
+                    LEFT JOIN `store` ON `store`.`ID` = `quantity`.`storeID`
+                    LEFT JOIN `stuff` ON `stuff`.`ID` = `quantity`.`userID`
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                    LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
+                WHERE `quantity`.`productTypeID` = %s AND `quantity`.`Status` = '1'
+                ;
+            """
+    result = sqlSelect(sqlQuary, sqlValTuple, True)
+    # ptQuantityData = json.dumps(result['data'])
+    ptQuantityData = result['data']
+
+    response = {'status': '1', 'data': ptQuantityData, 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
+    return jsonify(response)
+
+
+@app.route("/edit-store/<quantity_pt_IDs>", methods=["GET"])
+@app.route("/edit-store", methods=["POST"])
+# @login_required
+def edit_store(quantity_pt_IDs=None):
+    newCSRFtoken = generate_csrf()
+    if request.method == "POST":
+        if not request.form.get('quantityID') or request.form.get('quantityID') == 'null':
+            answer = gettext(smthWrong)
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+    
+        if not request.form.get('ptID') or request.form.get('ptID') == 'null':
+            answer = gettext('Please Specify Product Type')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+    
+        if not request.form.get('storeID'):
+            answer = gettext('Please Specify Store')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+        
+        if not request.form.get('quantity') or request.form.get('quantity') == 'null':
+            answer = gettext('Please Specify Quantity')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+        
+        if not request.form.get('quantity').isdigit():
+            return jsonify({'status': '0', 'answer': smthWrong,  'newCSRFtoken': newCSRFtoken})
+
+        if int(request.form.get('quantity')) < 1:
+            answer = gettext('Quantity should be greater than Zero')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+        
+        if not request.form.get('productionDate'):
+            answer = gettext('Please Specify Production Date')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+        
+        if not request.form.get('expDate'):
+            answer = gettext('Please Specify Expiration Date')
+            return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+
+        maxQuantity = None       
+        if request.form.get('maxQuantity') != 'false':
+            if not request.form.get('maxQuantity'):
+                answer = gettext('Please Specify Max Allowed Quantity')
+                return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+            
+            if not request.form.get('maxQuantity').isdigit():
+                return jsonify({'status': '0', 'answer': smthWrong + 'sSSSDASDF',  'newCSRFtoken': newCSRFtoken})
+
+            if int(request.form.get('maxQuantity')) < 1:
+                answer = gettext('Max Allowed Quantity should be greater than Zero')
+                return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})    
+
+            maxQuantity = request.form.get('maxQuantity')
+
+        ptID = request.form.get('ptID')
+        storeID = request.form.get('storeID')
+        quantity = request.form.get('quantity')
+        quantityID = request.form.get('quantityID')
+        productionDate = request.form.get('productionDate').replace("-", "/")
+        expDate = request.form.get('expDate').replace("-", "/")
+        userID = session['user_id']
+
+        sqlQuery =  """
+                    UPDATE `quantity` SET
+                        `productTypeID` = %s,  
+                        `storeID` = %s,  
+                        `Quantity` = %s,  
+                        `maxQuantity` = %s,  
+                        `userID` = %s,  
+                        `productionDate` = STR_TO_DATE(%s, '%m/%d/%Y'),  
+                        `expDate` = STR_TO_DATE(%s, '%m/%d/%Y'),  
+                        `addDate` = CURRENT_DATE()
+                    WHERE `ID` = %s
+                    ;
+                    """
+        sqlValTuple = (ptID, storeID, quantity, maxQuantity, userID, productionDate, expDate, quantityID)
+        result = sqlUpdate(sqlQuery, sqlValTuple)
+        print('AAAAAAAAAAAAAAAAAAAAAA')
+        print(result['answer'])
+        if result['status'] == '-1':
+            # response = {'status': '0', 'answer': gettext(smthWrong), 'newCSRFtoken': newCSRFtoken}
+            response = {'status': '0', 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken}
+            return jsonify(response)        
+
+        response = {'status': '1', 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+
+    else:
+        quantityID, ptID = quantity_pt_IDs.split('qptid')
+        languageID = getLangID()
+
+        sqlQuaryQuantity = """SELECT 
+                                `ID`,
+                                `productTypeID`,
+                                `storeID`,
+                                `Quantity`,
+                                `maxQuantity`,
+                                DATE_FORMAT(`productionDate`, '%d/%m/%Y') AS `productionDate`,
+                                DATE_FORMAT(`expDate`, '%d/%m/%Y') AS `expDate`
+                            FROM `quantity` 
+                            WHERE `ID` = %s
+                            ;
+                            """
+        sqlValTupQuantity = (quantityID,)
+        resultQuantity = sqlSelect(sqlQuaryQuantity, sqlValTupQuantity, True)
+
+        sqlQuery = """SELECT 
+                        `product`.`ID`,
+                        `product`.`Title`,
+                        `product_type`.`ID` AS `ptID`,
+                        `product_type`.`Title` AS `ptTitle`
+                    FROM `product` 
+                        LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
+                    WHERE `product`.`Language_ID` = %s 
+                    ORDER BY `product`.`ID`, `product_type`.`Order` 
+                    -- LIMIT 2
+                    ;
+                    """
+        sqlValTuple = (languageID,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        prData = json.dumps(result['data']) 
+
+        sqlQueryStore = "SELECT `ID`, `Name` FROM `store` WHERE `Status` = 1;"
+        resultStore = sqlSelect(sqlQueryStore, (), True)
+
+        storeData = json.dumps(resultStore['data'])
+
+        sideBar = side_bar_stuff()
+
+        return render_template('edit_store.html', resultQuantity=resultQuantity['data'],  storeData=storeData, storeID = resultQuantity['data'][0]['storeID'], dataLength=result['length'], prData=prData, ptID=ptID, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
+
 
 
 @app.route("/add-to-store", methods=["GET", "POST"])
@@ -3291,13 +3581,13 @@ def add_to_store(ptID=None):
         ptID = request.form.get('ptID')
         storeID = request.form.get('storeID')
         quantity = request.form.get('quantity')
-        productionDate = request.form.get('productionDate')
-        expDate = request.form.get('expDate')
+        productionDate = request.form.get('productionDate').replace("-", "/")
+        expDate = request.form.get('expDate').replace("-", "/")
         userID = session['user_id']
 
         sqlQuery = f"""INSERT INTO `quantity` 
-                        (`productTypeID`, `storeID`, `Quantity`, `maxQuantity`, `userID`, `productionDate`, `expDate`, `addDate`) 
-                        VALUES (%s, %s, %s, %s, %s, STR_TO_DATE(%s, '%m/%d/%Y'), STR_TO_DATE(%s, '%m/%d/%Y'), CURRENT_DATE());
+                        (`productTypeID`, `storeID`, `Quantity`, `maxQuantity`, `userID`, `productionDate`, `expDate`, `addDate`, `Status`) 
+                        VALUES (%s, %s, %s, %s, %s, STR_TO_DATE(%s, '%m/%d/%Y'), STR_TO_DATE(%s, '%m/%d/%Y'), CURRENT_DATE(), '1');
                         """
         sqlValTuple = (ptID, storeID, quantity, maxQuantity, userID, productionDate, expDate)
 

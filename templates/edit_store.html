@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-{{ _('Add To Store') }}
+{{ _('Edit Store') }}
 {% endblock %}
 {% block head %}
 
@@ -51,7 +51,7 @@
 <div class="overlay" id="overlay"></div>
 {{ sideBar | safe }}
 <div class="containerS" style="width: 350px;">
-    <h1>{{ _('Add To Store') }}</h1>
+    <h1>{{ _('Edit Store') }}</h1>
     <!-- Form for adding a product -->
     <div id="mistakes" style="width: 250px"></div>
     <form id="product-category-form" style="margin: 20px 20px -15px 20px">
@@ -66,7 +66,7 @@
         </div>
         <!-- End of drop-down container -->
 
-        <input type="number" name="quantity" id="quantity" min="1" placeholder="{{ _('Quantity') }}" class="store-quantity">
+        <input type="number" value="{{ resultQuantity[0].Quantity|safe }}" name="quantity" id="quantity" min="1" placeholder="{{ _('Quantity') }}" class="store-quantity">
 
         <!-- Production Date -->
         <div class="mb-3" style="width: 250px">
@@ -76,7 +76,7 @@
             type="text"
             class="form-control"
             id="productionDate"
-            placeholder="MM-DD-YYYY"
+            placeholder="MM/DD/YYYY"
             style="width: 200px"
             />
             <span class="input-group-text">
@@ -94,7 +94,7 @@
                 type="text"
                 class="form-control"
                 id="expDate"
-                placeholder="MM-DD-YYYY"
+                placeholder="MM/DD/YYYY"
                 style="width: 200px; min-height: 48px;"
             />
             <span class="input-group-text">
@@ -116,6 +116,7 @@
                 title="{{ _('Max allowed quantity to purchase') }}" 
                 class="store-quantity"
                 id="maxQuantity"
+                value="{{ resultQuantity[0].maxQuantity|safe}}"
                 disabled
             >
         </div>
@@ -127,22 +128,28 @@
     </form>
 </div>
 
-<!-- Thumbnail image manipulations -->
 <script>
 
     // Max quantity checkbox
     const checkbox = document.getElementById('maxQuantityCheckbox');
     const inputField = document.getElementById('maxQuantity');
-
+    let inputFieldValue = 20;
     checkbox.addEventListener('change', function() {
         if (this.checked) {
         inputField.disabled = false;
-        inputField.value = 20;
+        inputField.value = inputFieldValue;
         } else {
             inputField.disabled = true;
             inputField.value = '';
         }
     });
+
+    const maxQuantity = "{{ resultQuantity[0].maxQuantity|safe }}"
+    if (maxQuantity !== 'None') {
+        inputField.disabled = false;
+        checkbox.checked = true;
+        inputFieldValue = parseInt(maxQuantity)
+    }
 
     let csrfToken = "{{ csrf_token() }}"
     // Create a FormData object to hold the files
@@ -165,6 +172,7 @@ saveButton.addEventListener('click', function (event) {
     let quantity = document.getElementById('quantity').value;
     let productionDate = document.getElementById('productionDate').value;
     let expDate = document.getElementById('expDate').value;
+    let quantityID = "{{ resultQuantity[0].ID|safe }}";
     let maxQuantity = false;
 
     if (checkbox.checked) {
@@ -178,12 +186,13 @@ saveButton.addEventListener('click', function (event) {
     formData.append('productionDate', productionDate);
     formData.append('expDate', expDate);
     formData.append('maxQuantity', maxQuantity);
+    formData.append('quantityID', quantityID);
 
     // Create a new XMLHttpRequest object
     let xhr = new XMLHttpRequest();
 
     // Configure the request
-    xhr.open('POST', '/add-to-store');
+    xhr.open('POST', '/edit-store');
     xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
     // Define what happens on successful data submission
@@ -227,16 +236,14 @@ saveButton.addEventListener('click', function (event) {
 });
 
 </script>
-<!-- End of thumbnail image manipulations -->
 
-<!-- Include jQuery library -->
 <script type="text/javascript">
  
     // Dynemically creat drop-down elements
     const ptID = "{{ ptID|safe }}" 
     const dataLength = "{{ dataLength|safe }}"
     const prData = JSON.parse('{{ prData|safe }}');
-    
+    const storeID = "{{ storeID|safe }}";
  
     let dropDownContent = document.createElement('span');
     if (parseInt(dataLength) > 0) {
@@ -404,6 +411,10 @@ saveButton.addEventListener('click', function (event) {
         const option = document.createElement('option');
         option.value = item.ID;
         option.textContent = item.Name;
+
+        if (storeID == item.ID) {
+            option.selected = "selected";
+        }
         storeSelect.appendChild(option);
     }); 
     
@@ -432,13 +443,28 @@ saveButton.addEventListener('click', function (event) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 
 <script>
+
+  function str_to_date(dateString) {
+    const parts = dateString.split("/");  // parts = ["27", "01", "2025"]
+
+    // Convert parts to integers. Note: month is zero-indexed in JavaScript Date.
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // monthIndex: 0 for January, 1 for February, etc.
+    const year = parseInt(parts[2], 10);
+
+    return new Date(year, month, day);
+  }  
+
   // Initialize the date picker on our input
+  const productionDate = str_to_date("{{ resultQuantity[0].productionDate|safe }}");
+  const expDate = str_to_date("{{ resultQuantity[0].expDate|safe }}")
+
   $(function() {
     $('#productionDate').datepicker({
       format: 'mm-dd-yyyy', // Adjust format to your preference
       autoclose: true,      // Close the picker automatically after selecting a date
       todayHighlight: true  // Highlight today's date
-    }).datepicker('setDate', new Date());
+    }).datepicker('setDate', productionDate);
   });
 
   $(function() {
@@ -446,7 +472,7 @@ saveButton.addEventListener('click', function (event) {
       format: 'mm-dd-yyyy', // Adjust format to your preference
       autoclose: true,      // Close the picker automatically after selecting a date
       todayHighlight: true  // Highlight today's date
-    });
+    }).datepicker('setDate', expDate);
   });
 
  

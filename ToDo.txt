@@ -281,6 +281,8 @@ editprice
 products
 store
 add_to_store
+get_product_types_quantity
+edit_store
 
 
 
