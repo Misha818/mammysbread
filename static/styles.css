@@ -3493,6 +3493,8 @@ tr:nth-child(even) {
   border: none;
   padding: 10px;
   cursor: pointer;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .thumb-prev:hover, .thumb-next:hover, .thumb-prevX:hover, .thumb-nextX:hover {

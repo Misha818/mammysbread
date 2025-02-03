@@ -31,7 +31,10 @@
 
 <!-- Middle part -->
 <input type="hidden" value="{{ prData.RefKey }}" id="RefKey">
-<input type="hidden" id="language-id" value="{{ languageID }}">
+<input type="hidden" id="language-id" value="{{ languageID|safe }}">
+<input type="hidden" id="cartMessage" value="{{ cartMessage[0]|safe }}">
+<input type="hidden" id="csrfToket" value="{{ cartMessage[1]|safe }}">
+<input type="hidden" id="inBasketText" value="{{ cartMessage[2]|safe }}">
 
 <div class="overlay" id="overlay"></div>
 
@@ -58,36 +61,7 @@
     </span>
 </div>
 
-    <input type="hidden" id="editorStatus" value="{{ editorStatus }}"
-    
-    <footer style="background-color: #f8f9fa; padding: 40px 20px; text-align: center; border-top: 1px solid #e0e0e0;">
-        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; max-width: 1200px; margin: 0 auto;">
-            <div style="flex: 1; min-width: 200px; padding: 20px;">
-                <h3 style="color: #007bff; margin-bottom: 20px;">Services</h3>
-                <ul style="list-style-type: none; padding: 0;">
-                    <li><a href="#service1" style="color: #007bff; text-decoration: none;">Service 1</a></li>
-                    <li><a href="#service2" style="color: #007bff; text-decoration: none;">Service 2</a></li>
-                    <li><a href="#service3" style="color: #007bff; text-decoration: none;">Service 3</a></li>
-                </ul>
-            </div>
-            <div style="flex: 1; min-width: 200px; padding: 20px;">
-                <h3 style="color: #007bff; margin-bottom: 20px;">Contact</h3>
-                <p style="color: #6c757d;">123 Street Name<br>City, State, 12345<br>Email: info@example.com</p>
-                <div style="margin-top: 20px;">
-                    <a href="https://facebook.com" target="_blank" style="margin-right: 15px;">
-                        <img src="path-to-facebook-icon.png" alt="Facebook" style="height: 24px;">
-                    </a>
-                    <a href="https://twitter.com" target="_blank" style="margin-right: 15px;">
-                        <img src="path-to-twitter-icon.png" alt="Twitter" style="height: 24px;">
-                    </a>
-                    <a href="https://linkedin.com" target="_blank">
-                        <img src="path-to-linkedin-icon.png" alt="LinkedIn" style="height: 24px;">
-                    </a>
-                </div>
-            </div>
-        </div>
-        <p style="color: #6c757d; margin-top: 40px;">&copy; 2024 Your Company. All rights reserved.</p>
-    </footer>
+    <input type="hidden" id="editorStatus" value="{{ editorStatus }}" >    
     
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     

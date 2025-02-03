@@ -1,6 +1,116 @@
 
 document.addEventListener('DOMContentLoaded', function() {
-    let csrfToken = "{{ csrf_token() }}";
+    
+    let csrfToken = document.getElementById('csrfToket').value;
+
+    function modal_message(textContent) {
+        // Create modal elements
+        const modal = document.createElement("div");
+        modal.classList.add("modal", "quantity-alert");
+
+        const modalContent = document.createElement("div");
+        modalContent.classList.add("modal-content", "quantity-alert");
+
+        const closeButton = document.createElement("span");
+        closeButton.classList.add("close", "quantity-alert");
+        closeButton.innerHTML = "&times;"; // "X" symbol
+
+        const message = document.createElement("p");
+        message.classList.add("quantity-alert");
+        message.textContent = textContent;
+
+        // Append elements to the modal
+        modalContent.appendChild(closeButton);
+        modalContent.appendChild(message);
+        modal.appendChild(modalContent);
+
+        // Append the modal to the body
+        document.body.appendChild(modal);
+
+        // Add styles dynamically
+        const style = document.createElement("style");
+        style.textContent = `
+            .modal.quantity-alert {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+
+            .modal-content.quantity-alert {
+                background-color: #fff;
+                margin: 15% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                border-radius: 10px;
+                width: 80%;
+                max-width: 400px;
+                text-align: center;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                animation: fadeIn 0.3s ease-in-out;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .close.quantity-alert {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+                // text-align: right;
+            }
+
+            .close.quantity-alert:hover,
+            .close.quantity-alert:focus {
+                color: #000;
+                text-decoration: none;
+            }
+        `;
+
+        // Append styles to the document head
+        document.head.appendChild(style);
+
+        // Function to open the modal
+        function openModal() {
+            modal.style.display = "block";
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        openModal();
+
+        closeButton.addEventListener("click", closeModal);
+
+        window.addEventListener("click", (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Example: Add a button to trigger the modal
+        // const openModalButton = document.createElement("button");
+        // openModalButton.classList.add("open-modal-btn", "quantity-alert");
+        // openModalButton.textContent = "Add Product";
+        // document.body.appendChild(openModalButton);
+    }
 
     function rotate(gearElement) {
         let angle = 0;
@@ -23,82 +133,59 @@ document.addEventListener('DOMContentLoaded', function() {
           loader.textContent = '⚙';
           return loader;
     }
-      
-    // function addToCartXML(newCookies) {
-
-    //     let formData = new FormData();
-    //     formData.append('newCookies', newCookies);
-
-    //     // Create a new XMLHttpRequest object
-    //     let xhr = new XMLHttpRequest();
-        
-    //     // Configure the request
-    //     xhr.open('POST', '/add-to-cart');
-        
-
-    //     xhr.setRequestHeader('X-CSRFToken', csrfToken);
-
-    //     // Define what happens on successful data submission
-    //     xhr.onload = function () {
-    //         if (xhr.status === 200) {
-    //             let response = JSON.parse(xhr.responseText);
-
-    //             // let mistakesDiv = document.getElementById('mistakes_modal');
-    //             // mistakesDiv.innerHTML = ''; // Clear previous messages
-                
-    //             if (response.status === '0') {
-    //                 // Handle Unknown Error
-    //                 // mistakesDiv.textContent = response.answer;
-    //                 // mistakesDiv.style.color = 'red';
-
-    //                 // Scroll the window to the mistakesDiv with smooth behavior
-    //                 // mistakesDiv.scrollIntoView({ behavior: 'smooth' });
-
-    //                 saveButton.classList.remove('hidden');
-    //                 saving.classList.add('hidden');
-
-    //             } 
-                
-    //             if (response.status === '1') {
-    //                 // Handle success
-    //                 // alert(response.answer);
-    //                 let currentUrl = window.location.href;
-    //                 location.href = currentUrl;
-    //             }
-
-    //         } else {
-    //             // Handle error response
-    //             saveButton.classList.remove('hidden');
-    //             saving.classList.add('hidden');
-
-    //             console.error('Error adding category:', xhr.responseText);
-    //         }
-    //     };
-
-    //     // Send the request with the FormData object
-    //     xhr.send(formData);
-
-    //                 // });
-    // }
 
 
     function basket() {
         let Cart = cookie.get('Cart', false);
         let notification = document.querySelector('.notification');
+        const aTag = notification.parentNode.parentNode;
         if (Cart === false) {
             notification.innerHtml = '';
             notification.style.display = 'none';
+            aTag.href = window.location.origin + '/cart';
         } else {
-            arr = Cart.split('&')
+            let arr = Cart.split('&');
+
             let cartCount = arr.length;
-            notification.textContent = cartCount;
+            notification.textContent = cartCount.toString();
             notification.style.display = 'block';
+
+            aTag.href = window.location.origin + '/cart/' + Cart;
         }
 
     }
 
+    function addToQuantity(clickedBotton, num) {
+        const container = clickedBotton.closest('.cart-container');
+        const quantityInput = container.querySelector('input.quantity');
+
+        if (quantityInput) {
+            // const currentValue = parseInt(quantityInput.value, 10) || 0;
+            quantityInput.value = num;
+        }
+    } 
+
     // Add to card
-    function addToCart(ptID, num) {
+    async function addToCart(ptID, num, clickedBotton) {
+        let checkPtQuantity = await check_pt_quantity(ptID, num);
+
+        // console.log(`checkPtQuantity is ${checkPtQuantity.status}`)
+
+        if (checkPtQuantity.status === '0') {
+            // const textContent = document.getElementById('outOfStock').value;
+            modal_message(checkPtQuantity.answer);
+            return;
+        }
+        
+        // Max allowed quantity to purchase or max quantity in stoke 
+        if (checkPtQuantity.status === '2') {
+            modal_message(checkPtQuantity.answer);
+            addToQuantity(clickedBotton, checkPtQuantity.max);
+            num = parseInt(checkPtQuantity.max);
+        }
+        
+        
+
         let Cart = cookie.get('Cart');
         let flagID = false;
         let flagNum = false;
@@ -131,23 +218,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (flagNum === true) {
-            alert('You have already added this product,\nYou can change the quantoty\nBut change this alert to a nice modal window')
+            let textContent = document.getElementById('cartMessage').value;
+            if (textContent) {
+                modal_message(textContent);
+            } else {
+                modal_message("You have already added this product to the basket. You can change the quantity.");
+            }
             return;
         } else {
 
             if (newPt === true && flagID === false) {
                 newCookie = Cart + '&' + ptID + '-' + num;  
             }
-            // let serverResponse = addToCartXML(newCookie);
-            // console.log(`serverResponse is ${serverResponse}`)
-            // if (serverResponse) {
-            //     cookie.set('Cart', newCookie, { expires: 7 })  
-            // } else {
-                //     alert('Something is wrong. But this alert is temporarly!')
-                // }
-                
+            
+            // Set new Cookies   
             cookie.set('Cart', newCookie, { expires: 7 })  
             basket();
+            const inBasket = document.getElementById('inBasketText').value;
+
+            clickedBotton.childNodes.forEach(node => {
+                // Check if the node is a text node and not just whitespace
+                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length) {
+                    node.textContent = ' ' + inBasket; 
+                }
+            });
+
         }
 
     }
@@ -158,12 +253,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const quantity = document.getElementsByClassName('quantity');
     for (let i = 0; i < addToCartBtns.length; i++) {
         addToCartBtns[i].onclick = function() {
-            console.log(`cartState before is ${cartState}`)
+            // console.log(`cartState before is ${cartState}`)
             if (cartState) {
                 return;
             }
             cartState = true;
-            console.log(`cartState after is ${cartState}`)
+            // console.log(`cartState after is ${cartState}`)
             
             let clickedBotton = addToCartBtns[i];
 
@@ -180,11 +275,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // clickedBotton.textContent = '{{ _("Adding ") }}';
             let ptID = clickedBotton.value;
             let num = quantity[i].value;
-            addToCart(ptID, num)  
+            addToCart(ptID, num, clickedBotton);  
+            
             // setTimeout(() => (gearElement.remove(), 3050)); 
-            setTimeout(() => {
-                gearElement.remove();
-            }, 3000);
+            gearElement.remove();
             
             cartState = false;
         };
@@ -200,5 +294,78 @@ document.addEventListener('DOMContentLoaded', function() {
 
     basket();
 
+    // Check if product type exists in specified quantity
+    // Returns bool    
+    async function check_pt_quantity(ptID, num) {
+        let formData = new FormData();
+        formData.append('ptID', ptID);
+        formData.append('num', num);
+    
+        try {
+            let response = await fetch('/check-pt-quantity', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                },
+                body: formData,
+            });
+    
+            if (response.ok) {
+                let data = await response.json();
+                if (data.status === '0') {
+                    return {'status': '0', 'answer': data.answer}
+                } 
+                
+                if (data.status === '1') {
+                    return {'status': '1'}
+                }
+                
+                if (data.status === '2') {
+                    return {'status': '2', 'answer': data.answer, 'max': data.max}
+                } 
+
+
+            } else {
+                throw new Error('Request failed');
+            }
+        } catch (error) {
+            console.error(error);
+            return false; 
+        }
+    }
+
+
+    function checkAddItems() {
+        let Cart = cookie.get('Cart');
+        if (Cart) {
+            const inBasket = document.getElementById('inBasketText').value;
+            const arr = Cart.split('&');
+            
+            arr.forEach(item => {
+                let array = item.split('-');
+                let ptID = array[0];
+                let quantity = array[1];
+                
+                
+                let buttons = document.querySelectorAll('.add-to-cart-btn');
+                // console.log(buttons);
+                buttons.forEach(button => {
+                    if (button.value === ptID) {
+                        addToQuantity(button, quantity)
+
+                        button.childNodes.forEach(node => {
+                            // Check if the node is a text node and not just whitespace
+                            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length) {
+                                node.textContent = ' ' + inBasket; 
+                            }
+                        });
+                    }
+                });
+                
+            });
+        }
+    }
+
+    checkAddItems();
 });
 

@@ -304,7 +304,12 @@ def index(myLinks):
     else:
         myHtml = 'error.html'
         prData = ''
-    return render_template(myHtml, prData=prData, slideShow=slideShow, supportedLangsData=supportedLangsData, metaTags=metaTags, current_locale=get_locale())
+    cartMessage = [ 
+                    gettext("You have already added this product to the basket. You can change the quantity if You would like to."),
+                    generate_csrf(),
+                    gettext("In Basket")
+    ]  
+    return render_template(myHtml, cartMessage=cartMessage, prData=prData, slideShow=slideShow, supportedLangsData=supportedLangsData, metaTags=metaTags, current_locale=get_locale())
 
 
 # Edit thumbnail image
@@ -3308,7 +3313,7 @@ def get_product_types_quantity():
                     GROUP BY `product_type`.`ID`, `product_type`.`Title`, `product_type`.`Price`, `imgName`, `AltText`
                     ORDER BY `SubPrOrder` 
                     ;"""
-    print(sqlQuery)
+    
     result = sqlSelect(sqlQuery, sqlValTuple, dataType)
 
     productTypeData = result['data']
@@ -3325,10 +3330,15 @@ def typeof(var):
 
 
 
+@app.route("/cart/<productTypesQuantity>", methods=["GET", "POST"])
 @app.route("/cart", methods=["GET", "POST"])
-def cart(): 
+def cart(productTypesQuantity=None): 
     if request.method == "GET":
         result = {'length': 0}
+        if productTypesQuantity is not None and '&' in productTypesQuantity:
+            arr = productTypesQuantity.split('&')
+            print(arr)
+
         return render_template('cart.html', result=result, current_locale=get_locale())
     else:
         pass
@@ -3343,8 +3353,32 @@ def get_pt_quantities():
     
     newCSRFtoken = generate_csrf()
     ptID = request.form.get('ptID')
-    sqlValTuple = (ptID,)
-    sqlQuary = """
+
+    filters = ''
+    sqlValList = []
+    sqlValList.append(ptID)
+
+    if request.form.get('productionDate'):
+        filters = filters + ' AND `quantity`.`productionDate` = %s ' 
+        sqlValList.append(request.form.get('productionDate'))
+
+    if request.form.get('expDate'):
+        filters = filters + ' AND `quantity`.`expDate` = %s ' 
+        sqlValList.append(request.form.get('expDate'))
+
+    if request.form.get('addDate'):
+        filters = filters + ' AND `quantity`.`addDate` = %s ' 
+        sqlValList.append(request.form.get('addDate'))
+
+    if request.form.get('storeID'):
+        filters = filters + ' AND `quantity`.`storeID` = %s ' 
+        sqlValList.append(request.form.get('storeID'))
+
+
+    sqlValTuple = tuple(sqlValList)
+        
+
+    sqlQuary = f"""
                 SELECT 
                     `quantity`.`ID`,
                      `product_type`.`ID` AS `ptID`,
@@ -3352,23 +3386,28 @@ def get_pt_quantities():
                     CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`,
                     `quantity`.`Quantity`,
                     `quantity`.`maxQuantity`,
-                    DATE_FORMAT(`productionDate`, '%m-%d-%Y') AS `productionDate`,
-                    DATE_FORMAT(`expDate`, '%m-%d-%Y') AS `expDate`,
-                    DATE_FORMAT(`addDate`, '%m-%d-%Y') AS `addDate`,
-                    CONCAT(`product`.`Title`, ': ', `product_type`.`Title`) AS `Title`
+                    DATE_FORMAT(`productionDate`, '%d-%m-%Y') AS `productionDate`,
+                    DATE_FORMAT(`expDate`, '%d-%m-%Y') AS `expDate`,
+                    DATE_FORMAT(`addDate`, '%d-%m-%Y') AS `addDate`,
+                    CONCAT(`product`.`Title`, ': ', `product_type`.`Title`) AS `Title`,
+                    CASE 
+                        WHEN `expDate` > CURDATE() THEN 0 
+                        ELSE 1 
+                    END AS `expStatus`
                 FROM `quantity` 
                     LEFT JOIN `store` ON `store`.`ID` = `quantity`.`storeID`
                     LEFT JOIN `stuff` ON `stuff`.`ID` = `quantity`.`userID`
                     LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
                     LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
-                WHERE `quantity`.`productTypeID` = %s AND `quantity`.`Status` = '1'
+                WHERE `quantity`.`productTypeID` = %s AND `quantity`.`Status` = '1' {filters}
                 ;
             """
+    
     result = sqlSelect(sqlQuary, sqlValTuple, True)
     # ptQuantityData = json.dumps(result['data'])
     ptQuantityData = result['data']
 
-    response = {'status': '1', 'data': ptQuantityData, 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
+    response = {'status': '1', 'data': ptQuantityData, 'length': result['length'], 'answer': result['error'], 'newCSRFtoken': newCSRFtoken}
     return jsonify(response)
 
 
@@ -3598,6 +3637,45 @@ def add_to_store(ptID=None):
         answer = 'Done!'
         return jsonify({'status': '1', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
 
+
+# Check if product type exists in specified quantity
+@app.route('/check-pt-quantity', methods=['POST'])
+def check_pt_quantity():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('num') or not request.form.get('ptID') :
+        answer = gettext(smthWrong)
+        return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
+    
+    ptID = request.form.get('ptID') 
+    num = request.form.get('num') 
+
+    sqlQuery = "SELECT SUM(`Quantity`) AS `Quantity` FROM `quantity` WHERE `productTypeID` = %s AND `expDate` >= CURDATE() AND `Status` = 1;"
+    sqlValTuple = (ptID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    print(result['data'])
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+
+    if result['data'][0]['Quantity'] == None:
+        answer = gettext("Out of stock")
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+    # Check if there is a maximum quantity to buy
+    sqlQueryMax = "SELECT `maxQuantity` FROM `quantity` WHERE `productTypeID` = %s AND `maxQuantity` IS NOT NULL AND `expDate` >= CURDATE()  AND `Status` = 1 ORDER BY `maxQuantity` DESC LIMIT 1;"
+    sqlValTupleMax = (ptID,)
+    resultMax = sqlSelect(sqlQueryMax, sqlValTupleMax, True)
+    if resultMax['length'] > 0:
+        maxQuantity = resultMax['data'][0]['maxQuantity']
+        if maxQuantity < int(num):
+            answer = gettext("Maximum available quantity for single purchase is ") + str(maxQuantity)
+            return jsonify({'status': '2', 'max': maxQuantity, 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+    if int(result['data'][0]['Quantity']) < int(num):
+        maxQuantity = result['data'][0]['Quantity']
+
+        answer = gettext("Maximum available quantity is ") + str(maxQuantity)
+        return jsonify({'status': '2', 'max': maxQuantity, 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+   
+    return jsonify({'status': '1', 'newCSRFtoken': newCSRFtoken})
 
 
 @app.route("/timer", methods=["GET"])

@@ -178,7 +178,7 @@
 
   
   
-    <div class="table-container toRight" id="tableDaddy" style="max-width: 1216px;">
+    <div class="table-container toRight" id="tableDaddy" style="max-width: 100%;">
       <table id="myTable">
         <thead>
           <tr style="    border-width: 1px; border-color: #00a6ed; background-color: #00a6ed;">
@@ -857,8 +857,19 @@ document.addEventListener('click', function(event) {
     event.preventDefault();
     let formData = new FormData();
     const ptID = event.target.getAttribute('data-id');
-    
+    let productionDate = document.getElementById('productionDate').value;
+    let expDate = document.getElementById('expDate').value;
+    let addDate = document.getElementById('addDate').value;
+    let storeID = document.getElementById('store').value;
+    let productID = document.getElementById('product').value;
+
     formData.append('ptID', ptID);
+    formData.append('productionDate', productionDate);
+    formData.append('expDate', expDate);
+    formData.append('addDate', addDate);
+    formData.append('storeID', storeID);
+    formData.append('productID', productID);
+    
 
     // Create a new XMLHttpRequest object
     let xhr = new XMLHttpRequest();
@@ -879,17 +890,24 @@ document.addEventListener('click', function(event) {
               
               // Function to build the table rows from JSON data
               function buildTable(tableBody) {
+
                 tableBody.innerHTML = ''; // Clear existing rows
                 
                 response.data.forEach(item => {
-                  const row = document.createElement('tr');
-                  row.className = 'pt-quantity-tr';
+                  const row = document.createElement('tr');                  
                   
                   // Helper function to create a cell
-                  function createCell(content, cellClass) {
+                  function createCell(content, cellClass, color=false) {
                     const cell = document.createElement('td');
                     cell.className = cellClass;
                     cell.textContent = content;
+
+                    if (color) {
+                      if (color === 1) {
+                        cell.style.color = 'red';
+                      }
+                    }
+
                     return cell;
                   }
                   
@@ -899,7 +917,7 @@ document.addEventListener('click', function(event) {
                   row.appendChild(createCell(item.Quantity, 'pt-quantity-td'));        // Quantity
                   row.appendChild(createCell(item.maxQuantity, 'pt-quantity-td'));     // Max Quantity
                   row.appendChild(createCell(item.productionDate, 'pt-quantity-td'));  // Production Date
-                  row.appendChild(createCell(item.expDate, 'pt-quantity-td'));         // Expiration Date
+                  row.appendChild(createCell(item.expDate, 'pt-quantity-td', item.expStatus));         // Expiration Date
                   row.appendChild(createCell(item.addDate, 'pt-quantity-td'));         // Add Date
                   
                   quantity_pt_ids = item.ID + 'qptid' + item.ptID;
@@ -966,7 +984,7 @@ document.addEventListener('click', function(event) {
                 "{{ _('Add Date') }}",
                 "{{ _('Action') }}"
               ];
-              headers.forEach(text => {
+              headers.forEach(text => {                
                 const th = document.createElement('th');
                 th.className = 'pt-quantity-th';
                 th.textContent = text;
@@ -1013,10 +1031,8 @@ document.addEventListener('click', function(event) {
               // Display the modal
               modalElements.modal.style.display = 'block';
             } else {
-              const mainRow = document.createElement('tr');
-              mainRow.textContent = "{{ _('No Data') }}"
-              mainRow.classList.add('tr-no-data');
-              tbody.appendChild(mainRow);
+              alert("{{ _('Nothing was found') }}")
+
             }
 
 
