@@ -3332,26 +3332,62 @@ def typeof(var):
 
 @app.route("/cart/<productTypesQuantity>", methods=["GET", "POST"])
 @app.route("/cart", methods=["GET", "POST"])
-def cart(productTypesQuantity=None): 
+def cart(productTypesQuantity=None):
+    languageID = getLangID() 
     if request.method == "GET":
         result = {'length': 0}
         if productTypesQuantity is not None and '&' in productTypesQuantity:
-            arr = productTypesQuantity.split('&')
-            print(arr)
+            array = productTypesQuantity.split('&')
+            findInSetPtIDs, placeholder = ['', '']
+            ptIdQuantity = []
+            for val in array:
+                arr = val.split('-')
+                ptID = arr[0]
+                clientQuantity = arr[1]
 
-        return render_template('cart.html', result=result, current_locale=get_locale())
+                findInSetPtIDs = findInSetPtIDs + ptID + ','    
+                placeholder = placeholder + '%s,'
+                
+                ptIdQuantity.append([int(ptID), int(clientQuantity)])
+
+
+            findInSetPtIDs = findInSetPtIDs[0:-1]
+            placeholder = placeholder[0:-1]
+
+            sqlQuery =  f"""
+                            SELECT 
+                                `product`.`Title` AS `prTitle`,
+                                `product`.`url`,
+                                `product_type`.`Title` AS `ptTitle`,
+                                `product_type`.`Price`,
+                                (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+                                (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+                                (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
+                                (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
+                                `product_type`.`ID` AS `ptID`        
+                            FROM `product_type`
+                                LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                            WHERE `product`.`Language_ID` = %s AND find_in_set(`product_type`.`ID`, %s)
+                            ORDER BY `product`.`ID`, `product_type`.`Order`; 
+                        """
+            
+            sqlValTuple = (languageID, findInSetPtIDs)
+            result = sqlSelect(sqlQuery, sqlValTuple, True)
+            print(type(ptIdQuantity[0][0]), '   ', type(result['data'][0]['ptID']))
+
+        return render_template('cart.html', result=result, ptIdQuantity=ptIdQuantity, MAIN_CURRENCY=MAIN_CURRENCY, current_locale=get_locale())
     else:
         pass
 
 
 @app.route("/get-pt-quantities", methods=["POST"])
 def get_pt_quantities():     
+    newCSRFtoken = generate_csrf()
     if not request.form.get('ptID'):
         answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
-    newCSRFtoken = generate_csrf()
     ptID = request.form.get('ptID')
 
     filters = ''
@@ -3381,7 +3417,8 @@ def get_pt_quantities():
     sqlQuary = f"""
                 SELECT 
                     `quantity`.`ID`,
-                     `product_type`.`ID` AS `ptID`,
+                    `product_type`.`ID` AS `ptID`,
+                    `product_type`.`Price`,
                     `store`.`Name`,
                     CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`,
                     `quantity`.`Quantity`,
@@ -3408,6 +3445,54 @@ def get_pt_quantities():
     ptQuantityData = result['data']
 
     response = {'status': '1', 'data': ptQuantityData, 'length': result['length'], 'answer': result['error'], 'newCSRFtoken': newCSRFtoken}
+    return jsonify(response)
+
+
+@app.route("/get-pt-quantity", methods=["POST"])
+def get_pt_quantity():     
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('ptID') or not request.form.get('quantity'):
+        answer = gettext(smthWrong)
+        response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        return jsonify(response)
+    
+    ptID = request.form.get('ptID')
+    quantity = float(request.form.get('quantity'))
+
+    
+    sqlValTuple = (ptID,)
+    sqlQuary = f"""
+                SELECT 
+                    SUM(`quantity`.`Quantity`) AS `quantity`,
+                    `product_type`.`Price`,
+                    MAX(`quantity`.`maxQuantity`) AS `maxQuantity`
+                FROM `quantity` 
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                WHERE `quantity`.`productTypeID` = %s AND `quantity`.`Status` = '1' AND `quantity`.`expDate` > CURDATE() 
+                ;
+            """
+    
+    result = sqlSelect(sqlQuary, sqlValTuple, True)
+    status, message = [0, '']
+
+    print(f"float(result['data'][0]['quantity']) >= quantity {float(result['data'][0]['quantity'])} === {quantity}")
+    print(f"{type(float(result['data'][0]['quantity']))} === {type(quantity)}")
+    if result['data'][0]['maxQuantity'] is not None:
+        maxQuantity = result['data'][0]['maxQuantity']
+        if float(maxQuantity) >= quantity:
+            if float(result['data'][0]['quantity']) >= quantity:
+                status = 1
+                result['price'] = quantity * float(result['data'][0]['Price'])
+        else:
+            message = gettext('The specified amount is unavailable.')        
+    else:
+        if float(result['data'][0]['quantity']) >= quantity:
+            status = 1
+            result['price'] = quantity * float(result['data'][0]['Price'])
+        else:
+            message = gettext('The specified amount is unavailable.')      
+
+    response = {'status': status, 'data': result, 'message': message,  'newCSRFtoken': newCSRFtoken}
     return jsonify(response)
 
 

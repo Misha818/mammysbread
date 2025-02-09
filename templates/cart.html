@@ -10,17 +10,16 @@
 
 {% block content %}
 
-
 <div class="containerCart" >
   
 {% if result.length == 0 %}
-
-<div class="shopping-cart">
-  <div class="cart-header-conteiner">
-    <div class="cart-header">Shopping Cart</div>
-    <div class="price-header">Price</div>
-  </div>
-
+  
+  <div class="shopping-cart">
+    <div class="cart-header-conteiner">
+      <div class="cart-header">Shopping Cart</div>
+      <div class="price-header">Price</div>
+    </div>
+    
 
   <div class="cart-item">
     <div class="item-details">
@@ -86,6 +85,93 @@
 
   <div class="subtotal">Subtotal (2 items): $41.89</div>
   <button class="checkout-button">Proceed to Checkout</button>
+</div>
+
+</div>
+{% else %}
+
+<div class="shopping-cart">
+  <div class="cart-header-conteiner">
+    <div class="cart-header">{{ _('Shopping Cart') }}</div>
+    <div class="price-header">{{ _('Price') }}</div>
+  </div>
+
+{% set ns = namespace(index=0, subtotal=0, itemLen=result.length) %}
+  
+{% for row in result.data %}
+  {% if row['quantity'] == None or row['quantity'] == 0 %}
+      {% set ns.itemLen = ns.itemLen - 1 %}
+  {% else %}
+      
+      {% set qs = namespace(quantity=0) %}
+
+      {% if row['maxAllowdQuantity'] != None %}
+          {% for item in ptIdQuantity %}
+              {% if row['ptID'] == item[0] %}
+                  
+                  {% if row['maxAllowdQuantity'] > item[1] %}
+                      {% set qs.quantity = item[1] %}
+                  {% else %}
+                      {% set qs.quantity = row['maxAllowdQuantity'] %}
+                  {% endif %}
+
+              {% endif %}
+          {% endfor %}
+      {% else %}
+
+        {% for item in ptIdQuantity %}
+                {% if row['ptID'] == item[0] %}
+                  
+                  {% if row['quantity'] > item[1] %}
+                      {% set qs.quantity = item[1] %}
+                  {% else %}
+                      {% set qs.quantity = row['quantity'] %}
+                  {% endif %}
+
+              {% endif %}
+        {% endfor %}
+
+      {% endif %}
+
+      {% set prUrl = url_for('index', myLinks=row['url']) %}
+      <div class="cart-item">
+          <div class="item-details">
+              <div class="item-image">
+                  <a href="{{ prUrl }}:{{ row['ptID']}}">
+                      <img src="{{ url_for('static', filename='images/sub_product_slider/' + row['imgName']) }}" alt="Item 1">
+                  </a>
+              </div>
+              <div class="item-info">
+                  <div class="item-title">
+                      <a href="{{ prUrl }}">
+                          {{ row['prTitle'] }} : {{ row['ptTitle'] }}
+                      </a>
+                  </div>
+                  <div class="item-controls" data-value="{{ row['ptID'] }}">
+                      <button class="delete-button"><i class="fa-solid fa-trash-can"></i></button>
+                      <div class="quantity-controls">
+                          <button class="minus-btn">-</button>
+                          <input type="number" class="quantity" name="quantity" value="{{ qs.quantity }}" min="1" 
+                              style=" margin-right: 0px;
+                                      width: 40px;
+                                      height: 40px;"
+                          >
+                          <button class="plus-btn">+</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          {% set ns.subtotal = ns.subtotal + row['Price'] * qs.quantity %}
+          <div class="item-price">{{ MAIN_CURRENCY }} <span style="font-weight: 600">{{ row['Price'] * qs.quantity }}</span></div>
+      </div>
+      {% endif %}
+      {% set ns.index = ns.index + 1 %}
+
+{% endfor %}
+
+
+<div class="subtotal">{{ _('Subtotal') }} ( {{ ns.itemLen }} {{ _('items') }} ): {{ MAIN_CURRENCY }} {{ ns.subtotal }}</div>
+<button class="checkout-button">{{ _('Proceed to Checkout') }}</button>
 </div>
 
 </div>
@@ -310,13 +396,31 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     }); 
 
-    
     const minusButtons = document.querySelectorAll('.minus-btn');
     minusButtons.forEach(minusBtn => {
       minusBtn.addEventListener('click', () => {
-        const grandPa = minusBtn.parentNode.parentNode; 
-        ptID = grandPa.dataset.value;
-        alert(ptID)
+        const parentDiv = minusBtn.parentNode;
+        let quantity = parentDiv.querySelector('.quantity').value;
+        if (quantity <= 1 || quantity == 'undefinied') {
+          return;
+        }
+
+        quantity = parseInt(quantity);
+        const grandPa = parentDiv.parentNode; 
+        let ptID = grandPa.dataset.value;
+        let newQuantity = quantity - 1;
+
+        
+        get_pt_quantity(ptID, newQuantity)
+          .then(response => {
+            if (response.status === 1) {
+              parentDiv.querySelector('.quantity').value = newQuantity;
+              change_price(minusBtn, response.data.price)
+            } else {
+              modal_message(response.message)
+            }
+          }) 
+          .catch(error => console.error(error));
       });
     }); 
 
@@ -324,15 +428,103 @@ document.addEventListener("DOMContentLoaded", function() {
     const plusButtons = document.querySelectorAll('.plus-btn');
     plusButtons.forEach(plusBtn => {
       plusBtn.addEventListener('click', () => {
-        const grandPa = plusBtn.parentNode.parentNode; 
+        const parentDiv = plusBtn.parentNode;
+        let quantity = parentDiv.querySelector('.quantity').value;
+        if (quantity == 0 || quantity == 'undefinied') {
+          return;
+        }
+
+        quantity = parseInt(quantity);
+        const grandPa = parentDiv.parentNode; 
         ptID = grandPa.dataset.value;
-        alert(ptID)
+        let newQuantity = quantity + 1;
+                
+        get_pt_quantity(ptID, newQuantity)
+          .then(response => {
+            if (response.status === 1) {
+              parentDiv.querySelector('.quantity').value = newQuantity;
+              change_price(plusBtn, response.data.price)
+            } else {
+              modal_message(response.message)
+            }
+          }) 
+          .catch(error => console.error(error));
       });
     }); 
 
+
+   async function get_pt_quantity(ptID, quantity) {
+    let formData = new FormData();
+        formData.append('ptID', ptID);
+        formData.append('quantity', quantity);
+
+        try {
+            let response = await fetch('/get-pt-quantity', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                },
+                body: formData,
+            });
+    
+            if (response.ok) {
+                let data = await response.json();
+                return data;
+            } else {
+                throw new Error('Request failed');
+            }
+        } catch (error) {
+            console.error(error);
+            return false; 
+        }
+        // // Create a new XMLHttpRequest object
+        // let xhr = new XMLHttpRequest();
         
+        // // Configure the request
+        // xhr.open('POST', '/get-pt-quantity');
+        
+
+        // xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+        // // Define what happens on successful data submission
+        // xhr.onload = function () {
+        //     if (xhr.status === 200) {
+        //         let response = JSON.parse(xhr.responseText);
+        //         return response;
+        //     } else {
+        //         // Handle error response
+        //         console.error('Error:', xhr.responseText);
+        //     }
+        // };
+
+        // // Send the request with the FormData object
+        // xhr.send(formData);
+
+   }
       
-      
+  
+  function change_price(clickedElement, newPrice) {
+    const cartItem = clickedElement.closest('.cart-item');
+    const oldPriceContainer = cartItem.querySelector('.item-price span');
+    const oldPrice = parseFloat(oldPriceContainer.textContent);
+    const arr = document.querySelector('.subtotal').textContent.split(' ');
+    const subtotalPrice = parseFloat(arr[arr.length - 1])
+
+    const newSubtotalPrice = subtotalPrice - oldPrice + parseFloat(newPrice);
+    arr[arr.length - 1] = newSubtotalPrice.toString();
+    let priceText = '';
+    arr.forEach(item => {
+      priceText = priceText + item + ' ';  
+    });
+    priceText = priceText.trim()
+    // priceText.substring(-1);
+    oldPriceContainer.textContent = newPrice;
+    console.log(`subtotal aaaaa ${document.querySelector('.subtotal').textContent}`)
+    document.querySelector('.subtotal').textContent = priceText;
+    console.log(`oldPrice ${oldPrice}`)
+    console.log(priceText)
+    console.log(arr)
+  }
       
     // Prevent numbers less then 1 in .quantity input
     const inputs = document.querySelectorAll(".quantity");
@@ -343,6 +535,116 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         });
     });
+
+
+    function modal_message(textContent) {
+        // Create modal elements
+        const modal = document.createElement("div");
+        modal.classList.add("modal", "quantity-alert");
+
+        const modalContent = document.createElement("div");
+        modalContent.classList.add("modal-content", "quantity-alert");
+
+        const closeButton = document.createElement("span");
+        closeButton.classList.add("close", "quantity-alert");
+        closeButton.innerHTML = "&times;"; // "X" symbol
+
+        const message = document.createElement("p");
+        message.classList.add("quantity-alert");
+        message.textContent = textContent;
+
+        // Append elements to the modal
+        modalContent.appendChild(closeButton);
+        modalContent.appendChild(message);
+        modal.appendChild(modalContent);
+
+        // Append the modal to the body
+        document.body.appendChild(modal);
+
+        // Add styles dynamically
+        const style = document.createElement("style");
+        style.textContent = `
+            .modal.quantity-alert {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+
+            .modal-content.quantity-alert {
+                background-color: #fff;
+                margin: 15% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                border-radius: 10px;
+                width: 80%;
+                max-width: 400px;
+                text-align: center;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                animation: fadeIn 0.3s ease-in-out;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .close.quantity-alert {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+                // text-align: right;
+            }
+
+            .close.quantity-alert:hover,
+            .close.quantity-alert:focus {
+                color: #000;
+                text-decoration: none;
+            }
+        `;
+
+        // Append styles to the document head
+        document.head.appendChild(style);
+
+        // Function to open the modal
+        function openModal() {
+            modal.style.display = "block";
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        openModal();
+
+        closeButton.addEventListener("click", closeModal);
+
+        window.addEventListener("click", (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Example: Add a button to trigger the modal
+        // const openModalButton = document.createElement("button");
+        // openModalButton.classList.add("open-modal-btn", "quantity-alert");
+        // openModalButton.textContent = "Add Product";
+        // document.body.appendChild(openModalButton);
+    }
 });
 </script>
 
