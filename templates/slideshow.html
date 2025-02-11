@@ -142,7 +142,7 @@
               data-bs-toggle="popover"
               data-bs-placement="right" 
               data-bs-html="true" 
-              data-bs-content="<a href='{{ url_for('edit_price', ptID=resultSpss.data[0]['ID']) }}  '>{{ _('Click me to edit this price') }}</a> </br> <a href='{{ url_for('add_to_store', ptID=resultSpss.data[0]['ID']) }}' target='_BLANK'>{{ _('Click me to add quantity') }}</a>."
+              data-bs-content="<a href='{{ url_for('edit_price', ptID=subProducts[0]['ID']) }}  '>{{ _('Click me to edit this price') }}</a> </br> <a href='{{ url_for('add_to_store', ptID=subProducts[0]['ID']) }}' target='_BLANK'>{{ _('Click me to add quantity') }}</a>."
                  
         >{{ resultSpss.data[0].ptTitle }}</h2>
         <p class="price">{{ resultSpss.data[0].Price }} {{ mainCurrency }} </p>
@@ -189,7 +189,7 @@
                     data-bs-toggle="popover"
                     data-bs-placement="right" 
                     data-bs-html="true" 
-                    data-bs-content="<a href='{{ url_for('edit_price', ptID=row['ID']) }}  '>{{ _('Click me to edit this price') }}</a> </br> <a href='{{ url_for('add_to_store', ptID=row['ID']) }}' target='_BLANK'>{{ _('Click me to add quantity') }}</a>."
+                    data-bs-content="<a href='{{ url_for('edit_price', ptID=ns.flag) }}  '>{{ _('Click me to edit this price') }}</a> </br> <a href='{{ url_for('add_to_store', ptID=ns.flag) }}' target='_BLANK'>{{ _('Click me to add quantity') }}</a>."
               >{{ row['ptTitle'] }}</h2>
               <p class="price">{{ row['Price'] }} {{ mainCurrency }} </p>
               <p class="inStock">

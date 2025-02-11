@@ -1682,6 +1682,7 @@ h2 {
 .icon-wrapper {
   position: relative;
   display: inline-block;
+  color: red;
 }
 
 @media (max-width: 768px) {

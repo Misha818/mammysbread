@@ -5,88 +5,25 @@
 
 
 {% block head %}
-    
 {% endblock %}
 
 {% block content %}
 
 <div class="containerCart" >
+<input type="hidden" id="csrfToket" value="{{ cartMessage[1]|safe }}">
+<input type="hidden" id="inBasketText" value="{{ cartMessage[2]|safe }}">
+
   
 {% if result.length == 0 %}
   
-  <div class="shopping-cart">
-    <div class="cart-header-conteiner">
-      <div class="cart-header">Shopping Cart</div>
-      <div class="price-header">Price</div>
-    </div>
-    
-
-  <div class="cart-item">
-    <div class="item-details">
-      <div class="item-image">
-        <a href="https://www.google.com">
-          <img src="https://picsum.photos/300/225" alt="Item 1">
-        </a>
-        
-      </div>
-      <div class="item-info">
-        <!-- <span class="item-label">#1 Best Seller</span> -->
-        <div class="item-title">
-          <a href="https://www.google.com">
-            50 Pcs Bread Bags for Homemade Bread, Sourdough Paper Bread Bags
-          </a>
-        </div>
-        <div class="item-controls" data-value="13">
-          <button class="delete-button"><i class="fa-solid fa-trash-can"></i></button>
-          <div class="quantity-controls">
-            <button class="minus-btn">-</button>
-            <input type="number" class="quantity" name="quantity" value="1" min="1" 
-                style=" margin-right: 0px;
-                        width: 40px;
-                        height: 40px;"
-            >
-            <button class="plus-btn">+</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="item-price">$<span>11.89</span></div>
-  </div>
-  
-  <div class="cart-item">
-    <div class="item-details">
-      <div class="item-image">
-        <a href="https://www.google.com" >
-          <img src="https://picsum.photos/300/225" alt="Item 2">
-        </a>
-      </div>
-      <div class="item-info">
-        <div class="item-title">
-          <a href="https://www.google.com">
-            Cozy Bread&reg; Thermal Insulation Box
-          </a>
-        </div>
-        <div class="item-controls" data-value="14">
-          <button class="delete-button"><i class="fa-solid fa-trash-can"></i></i></button>
-          <div class="quantity-controls">
-            <button class="minus-btn">-</button>
-            <input type="number" class="quantity" name="quantity" value="15" min="1" 
-                style=" margin-right: 0px;
-                        width: 40px;
-                        height: 40px;"
-            >
-            <button class="plus-btn">+</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="item-price">$<span>30.00</span></div>
+<div class="shopping-cart" style="box-shadow: none;">
+  <div class="cart-header-conteiner">
+    <div class="cart-header" style="margin: 0px auto;">{{ _('Shopping Cart') }}</div>
+    <div class="price-header" style="display: none;">{{ _('Price') }}</div>
   </div>
 
-  <div class="subtotal">Subtotal (2 items): $41.89</div>
-  <button class="checkout-button">Proceed to Checkout</button>
-</div>
-
+  <div class="empty-cart">{{ _('You don’t have any items in your cart.') }}</div>
+    <a class="start-shopping" href="{{ url_for('home') }}">{{ _('Start shopping') }}</a>
 </div>
 {% else %}
 
@@ -96,7 +33,7 @@
     <div class="price-header">{{ _('Price') }}</div>
   </div>
 
-{% set ns = namespace(index=0, subtotal=0, itemLen=result.length) %}
+{% set ns = namespace(index=0, subtotal=0, itemLen=0) %}
   
 {% for row in result.data %}
   {% if row['quantity'] == None or row['quantity'] == 0 %}
@@ -114,7 +51,7 @@
                   {% else %}
                       {% set qs.quantity = row['maxAllowdQuantity'] %}
                   {% endif %}
-
+                  {% set ns.itemLen = ns.itemLen + qs.quantity %}
               {% endif %}
           {% endfor %}
       {% else %}
@@ -127,7 +64,7 @@
                   {% else %}
                       {% set qs.quantity = row['quantity'] %}
                   {% endif %}
-
+                  {% set ns.itemLen = ns.itemLen + qs.quantity %}
               {% endif %}
         {% endfor %}
 
@@ -170,7 +107,7 @@
 {% endfor %}
 
 
-<div class="subtotal">{{ _('Subtotal') }} ( {{ ns.itemLen }} {{ _('items') }} ): {{ MAIN_CURRENCY }} {{ ns.subtotal }}</div>
+<div class="subtotal">{{ _('Subtotal') }} ({{ ns.itemLen }} {{ _('items') }}): {{ MAIN_CURRENCY }} {{ ns.subtotal }}</div>
 <button class="checkout-button">{{ _('Proceed to Checkout') }}</button>
 </div>
 
@@ -184,6 +121,9 @@
     window.addEventListener('load', () => {
       document.querySelector('body').classList.add('loaded');
     });
+
+    
+
 
     let trace;
 
@@ -341,11 +281,16 @@ document.addEventListener("DOMContentLoaded", function() {
       deleteBtn.addEventListener('click', () => {
         const parent = deleteBtn.parentNode; 
         ptID = parent.dataset.value;
-        deleteBtn.closest('.cart-item').remove();
+        
         // ************* IMPORTANT **************
         // Also make sure to delete from cookies
-        // Than add "Shopping cart is empty" if cookies are completly deleted 
-        // ************* IMPORTANT **************
+        let quantityToRemove = parseInt(deleteBtn.closest('.cart-item').querySelector('.quantity').value);
+        let price = deleteBtn.closest('.cart-item').querySelector('.item-price span').textContent;
+        
+        // console.log(`price is ${price}`)
+
+        deleteBtn.closest('.cart-item').remove();
+
 
         quantities = document.querySelectorAll('.quantity');
         let num = 0;
@@ -353,12 +298,12 @@ document.addEventListener("DOMContentLoaded", function() {
         quantities.forEach(quantity => {
           num = num + parseInt(quantity.value);
 
-          let bigDaddy = quantity.parentNode.parentNode.parentNode.parentNode.parentNode;
+          // let bigDaddy = quantity.parentNode.parentNode.parentNode.parentNode.parentNode;
           // console.log(bigDaddy)
-          let itemPrice = bigDaddy.querySelector('.item-price span').textContent;
+          // let itemPrice = bigDaddy.querySelector('.item-price span').textContent;
           // console.log(`itemPrice is ${itemPrice}`)
           // console.log(`subtotal = ${subtotal} + ${parseInt(quantity.value)} * ${parseInt(itemPrice)}`)
-          subtotal = subtotal + parseFloat(quantity.value) * parseFloat(itemPrice);
+          // subtotal = subtotal + parseFloat(quantity.value) * parseFloat(itemPrice);
         });
 
         if (num == 0) {
@@ -381,13 +326,12 @@ document.addEventListener("DOMContentLoaded", function() {
           target.parentNode.appendChild(startShopping);
           document.querySelector('.cart-header').style.margin = "0 auto";
           document.querySelector('.shopping-cart').style.boxShadow = "none";
-          
+          remove_from_cart(ptID)
+
         } else {
 
-          console.log(`num is ${num}`)
-          console.log(`subtotal is ${subtotal}`)
-          let subtotalText = "{{ _('Subtotal') }} " + "(" + num + " {{ _('items') }}" + "): $" + subtotal.toString()
-          document.querySelector('.subtotal').textContent = subtotalText;
+          change_price(deleteBtn, 0, '-', quantityToRemove);
+          remove_from_cart(ptID);
           
         }
 
@@ -396,135 +340,10 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     }); 
 
-    const minusButtons = document.querySelectorAll('.minus-btn');
-    minusButtons.forEach(minusBtn => {
-      minusBtn.addEventListener('click', () => {
-        const parentDiv = minusBtn.parentNode;
-        let quantity = parentDiv.querySelector('.quantity').value;
-        if (quantity <= 1 || quantity == 'undefinied') {
-          return;
-        }
-
-        quantity = parseInt(quantity);
-        const grandPa = parentDiv.parentNode; 
-        let ptID = grandPa.dataset.value;
-        let newQuantity = quantity - 1;
-
-        
-        get_pt_quantity(ptID, newQuantity)
-          .then(response => {
-            if (response.status === 1) {
-              parentDiv.querySelector('.quantity').value = newQuantity;
-              change_price(minusBtn, response.data.price)
-            } else {
-              modal_message(response.message)
-            }
-          }) 
-          .catch(error => console.error(error));
-      });
-    }); 
-
-    
-    const plusButtons = document.querySelectorAll('.plus-btn');
-    plusButtons.forEach(plusBtn => {
-      plusBtn.addEventListener('click', () => {
-        const parentDiv = plusBtn.parentNode;
-        let quantity = parentDiv.querySelector('.quantity').value;
-        if (quantity == 0 || quantity == 'undefinied') {
-          return;
-        }
-
-        quantity = parseInt(quantity);
-        const grandPa = parentDiv.parentNode; 
-        ptID = grandPa.dataset.value;
-        let newQuantity = quantity + 1;
-                
-        get_pt_quantity(ptID, newQuantity)
-          .then(response => {
-            if (response.status === 1) {
-              parentDiv.querySelector('.quantity').value = newQuantity;
-              change_price(plusBtn, response.data.price)
-            } else {
-              modal_message(response.message)
-            }
-          }) 
-          .catch(error => console.error(error));
-      });
-    }); 
 
 
-   async function get_pt_quantity(ptID, quantity) {
-    let formData = new FormData();
-        formData.append('ptID', ptID);
-        formData.append('quantity', quantity);
-
-        try {
-            let response = await fetch('/get-pt-quantity', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                },
-                body: formData,
-            });
-    
-            if (response.ok) {
-                let data = await response.json();
-                return data;
-            } else {
-                throw new Error('Request failed');
-            }
-        } catch (error) {
-            console.error(error);
-            return false; 
-        }
-        // // Create a new XMLHttpRequest object
-        // let xhr = new XMLHttpRequest();
-        
-        // // Configure the request
-        // xhr.open('POST', '/get-pt-quantity');
-        
-
-        // xhr.setRequestHeader('X-CSRFToken', csrfToken);
-
-        // // Define what happens on successful data submission
-        // xhr.onload = function () {
-        //     if (xhr.status === 200) {
-        //         let response = JSON.parse(xhr.responseText);
-        //         return response;
-        //     } else {
-        //         // Handle error response
-        //         console.error('Error:', xhr.responseText);
-        //     }
-        // };
-
-        // // Send the request with the FormData object
-        // xhr.send(formData);
-
-   }
       
   
-  function change_price(clickedElement, newPrice) {
-    const cartItem = clickedElement.closest('.cart-item');
-    const oldPriceContainer = cartItem.querySelector('.item-price span');
-    const oldPrice = parseFloat(oldPriceContainer.textContent);
-    const arr = document.querySelector('.subtotal').textContent.split(' ');
-    const subtotalPrice = parseFloat(arr[arr.length - 1])
-
-    const newSubtotalPrice = subtotalPrice - oldPrice + parseFloat(newPrice);
-    arr[arr.length - 1] = newSubtotalPrice.toString();
-    let priceText = '';
-    arr.forEach(item => {
-      priceText = priceText + item + ' ';  
-    });
-    priceText = priceText.trim()
-    // priceText.substring(-1);
-    oldPriceContainer.textContent = newPrice;
-    console.log(`subtotal aaaaa ${document.querySelector('.subtotal').textContent}`)
-    document.querySelector('.subtotal').textContent = priceText;
-    console.log(`oldPrice ${oldPrice}`)
-    console.log(priceText)
-    console.log(arr)
-  }
       
     // Prevent numbers less then 1 in .quantity input
     const inputs = document.querySelectorAll(".quantity");
@@ -645,7 +464,258 @@ document.addEventListener("DOMContentLoaded", function() {
         // openModalButton.textContent = "Add Product";
         // document.body.appendChild(openModalButton);
     }
+
+
+    function edit_cart(ptID, quantity) {
+        let cart = cookie.get('Cart');
+        
+        if (cart.length > 0) {
+          if (cart.includes('&')) {
+            let newCart = ''
+            let array = cart.split('&');
+            array.forEach(item => {
+              let arr = item.split('-');
+              let cartPtID = arr[0];
+              let oldQuantity = parseInt(arr[1]);
+  
+              if (cartPtID === ptID) {
+                newCart = newCart + '&' + ptID + '-' + quantity.toString();
+              } else {
+                newCart = newCart + '&' + item;
+              }
+  
+            });  
+
+              newCart = newCart.slice(1)
+
+              cookie.set('Cart', newCart, { expires: 7, path: '/' })
+              
+              basket();
+              
+              let newUrl = '/' + newCart;
+              change_url(newUrl);
+          } else if (cart.includes('-')) {
+            let arr = cart.split('-');
+            let newCart = arr[0] + '-' + quantity.toString();
+            cookie.set('Cart', newCart, { expires: 7, path: '/' })
+            basket();
+  
+            let newUrl = '/' + newCart;
+            change_url(newUrl);
+  
+          } else {
+            return;
+          }
+        } 
+      }
+
+
+    function remove_from_cart(ptID) {
+        let cart = cookie.get('Cart');
+        
+        if (cart.length > 0) {
+          if (cart.includes('&')) {
+            let newCart = ''
+            let array = cart.split('&');
+            array.forEach(item => {
+              let arr = item.split('-');
+              let cartPtID = arr[0];
+              let oldQuantity = parseInt(arr[1]);
+  
+              if (cartPtID !== ptID) {
+                newCart = newCart + '&' + item;
+                //   newCart = newCart + '&' + ptID + '-' + quantity.toString();
+                // } else {
+              }
+  
+            });  
+
+              newCart = newCart.slice(1)
+              console.log(`newCart is ${newCart}`)
+
+              cookie.set('Cart', newCart, { expires: 7, path: '/' })
+              
+              basket();
+              
+              let newUrl = '/' + newCart;
+              change_url(newUrl);
+          } else if (cart.includes('-')) {
+            
+            cookie.set('Cart', '', { path: '/', expires: new Date(0) });
+
+            basket();
+  
+            let newUrl = '/';
+            change_url(newUrl);
+  
+          } else {
+            return;
+          }
+        } 
+      }
+  
+  
+      function change_url(path) {
+        let currentUrl = window.location.pathname; // Get the current path
+        let updatedUrl = currentUrl.replace(/\/cart\/[^/]+/, "/cart" + path);
+        history.replaceState(null, "", updatedUrl);
+      }
+      
+      if (document.querySelectorAll('.minus-btn')) {
+        const minusButtons = document.querySelectorAll('.minus-btn');
+        minusButtons.forEach(minusBtn => {
+            minusBtn.addEventListener('click', () => {
+            const parentDiv = minusBtn.parentNode;
+            let quantity = parentDiv.querySelector('.quantity').value;
+            if (quantity <= 1 || quantity == 'undefinied') {
+                return;
+            }
+            
+            quantity = parseInt(quantity);
+            const grandPa = parentDiv.parentNode; 
+            let ptID = grandPa.dataset.value;
+            let newQuantity = quantity - 1;
+    
+            
+            get_pt_quantity(ptID, newQuantity)
+                .then(response => {
+                if (response.status === 1) {
+                    parentDiv.querySelector('.quantity').value = newQuantity;
+                    change_price(minusBtn, response.data.price, '-')
+                    edit_cart(ptID, newQuantity)
+                } else {
+                    modal_message(response.message)
+                }
+                }) 
+                .catch(error => console.error(error));
+            });
+        }); 
+    
+    }    
+      
+    if (document.querySelectorAll('.plus-btn')) {
+
+        const plusButtons = document.querySelectorAll('.plus-btn');
+        plusButtons.forEach(plusBtn => {
+            plusBtn.addEventListener('click', () => {
+            const parentDiv = plusBtn.parentNode;
+            let quantity = parentDiv.querySelector('.quantity').value;
+            if (quantity == 0 || quantity == 'undefinied') {
+                return;
+            }
+    
+            quantity = parseInt(quantity);
+            const grandPa = parentDiv.parentNode; 
+            ptID = grandPa.dataset.value;
+            let newQuantity = quantity + 1;
+                    
+            get_pt_quantity(ptID, newQuantity)
+                .then(response => {
+                if (response.status === 1) {
+                    parentDiv.querySelector('.quantity').value = newQuantity;
+                    change_price(plusBtn, response.data.price, '+')
+                    edit_cart(ptID, newQuantity)
+                } else {
+                    modal_message(response.message)
+                }
+                }) 
+                .catch(error => console.error(error));
+            });
+        }); 
+    }
+        
+    async function get_pt_quantity(ptID, quantity) {
+        let formData = new FormData();
+            formData.append('ptID', ptID);
+            formData.append('quantity', quantity);
+    
+            try {
+                let response = await fetch('/get-pt-quantity', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: formData,
+                });
+        
+                if (response.ok) {
+                    let data = await response.json();
+                    return data;
+                } else {
+                    throw new Error('Request failed');
+                }
+            } catch (error) {
+                console.error(error);
+                return false; 
+            }
+        
+       }
+
+
+      function change_price(clickedElement, newPrice, more_or_less, num=1) {
+
+          const cartItem = clickedElement.closest('.cart-item');
+          const oldPriceContainer = cartItem.querySelector('.item-price span');
+          const oldPrice = parseFloat(oldPriceContainer.textContent);
+          const arr = document.querySelector('.subtotal').textContent.split(' ');
+          const subtotalPrice = parseFloat(arr[arr.length - 1])
+      
+          const newSubtotalPrice = subtotalPrice - oldPrice + parseFloat(newPrice);
+          arr[arr.length - 1] = newSubtotalPrice.toString();
+          let priceText = '';
+          arr.forEach(item => {
+            let newItem = item;
+
+            if (newItem.includes('(')) {
+              let itemList = newItem.split(' ');
+              let oldSubPrice = parseFloat(itemList[0].slice(1));
+
+              if (more_or_less === '-') {
+                oldSubPrice = oldSubPrice - num;
+              } else {
+                oldSubPrice = oldSubPrice + num;
+              }
+              itemLen = item.length;
+              newItem = '(' + oldSubPrice + ' ' + item.slice(itemLen)
+
+            }
+            priceText = priceText + newItem + ' ';  
+          });
+          priceText = priceText.trim()
+          // priceText.substring(-1);
+          oldPriceContainer.textContent = newPrice;
+
+
+          console.log(`subtotal aaaaa ${document.querySelector('.subtotal').textContent}`)
+          document.querySelector('.subtotal').textContent = priceText;
+          console.log(`oldPrice ${oldPrice}`)
+          console.log(priceText)
+          console.log(arr)
+      }
+
+   
+      function basket() {
+        let Cart = cookie.get('Cart', false);
+        let notification = document.querySelector('.notification');
+        const aTag = notification.parentNode.parentNode;
+        if (Cart === false) {
+            notification.innerHtml = '';
+            notification.style.display = 'none';
+            aTag.href = window.location.origin + '/cart';
+        } else {
+            let arr = Cart.split('&');
+
+            let cartCount = arr.length;
+            notification.textContent = cartCount.toString();
+            notification.style.display = 'block';
+
+            aTag.href = window.location.origin + '/cart/' + Cart;
+        }
+
+    }
 });
+
+
 </script>
 
 {% endblock %}

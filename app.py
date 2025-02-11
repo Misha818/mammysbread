@@ -3336,46 +3336,55 @@ def cart(productTypesQuantity=None):
     languageID = getLangID() 
     if request.method == "GET":
         result = {'length': 0}
-        if productTypesQuantity is not None and '&' in productTypesQuantity:
-            array = productTypesQuantity.split('&')
-            findInSetPtIDs, placeholder = ['', '']
-            ptIdQuantity = []
-            for val in array:
-                arr = val.split('-')
-                ptID = arr[0]
-                clientQuantity = arr[1]
+        findInSetPtIDs = ''
+        ptIdQuantity = []
+        if productTypesQuantity is not None:
+            if '&' in productTypesQuantity:
+                array = productTypesQuantity.split('&')
+                for val in array:
+                    arr = val.split('-')
+                    ptID = arr[0]
+                    clientQuantity = arr[1]
 
-                findInSetPtIDs = findInSetPtIDs + ptID + ','    
-                placeholder = placeholder + '%s,'
-                
-                ptIdQuantity.append([int(ptID), int(clientQuantity)])
+                    findInSetPtIDs = findInSetPtIDs + ptID + ','    
+                    ptIdQuantity.append([int(ptID), int(clientQuantity)])
+                findInSetPtIDs = findInSetPtIDs[0:-1]
+            elif '-' in productTypesQuantity:
+                array = productTypesQuantity.split('-')
+                findInSetPtIDs = array[0]
+                ptIdQuantity.append([int(array[0]), int(array[1])])
 
+        else:
+            pass
 
-            findInSetPtIDs = findInSetPtIDs[0:-1]
-            placeholder = placeholder[0:-1]
-
-            sqlQuery =  f"""
-                            SELECT 
-                                `product`.`Title` AS `prTitle`,
-                                `product`.`url`,
-                                `product_type`.`Title` AS `ptTitle`,
-                                `product_type`.`Price`,
-                                (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
-                                (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
-                                (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
-                                (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
-                                `product_type`.`ID` AS `ptID`        
-                            FROM `product_type`
-                                LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-                            WHERE `product`.`Language_ID` = %s AND find_in_set(`product_type`.`ID`, %s)
-                            ORDER BY `product`.`ID`, `product_type`.`Order`; 
-                        """
             
-            sqlValTuple = (languageID, findInSetPtIDs)
-            result = sqlSelect(sqlQuery, sqlValTuple, True)
-            print(type(ptIdQuantity[0][0]), '   ', type(result['data'][0]['ptID']))
 
-        return render_template('cart.html', result=result, ptIdQuantity=ptIdQuantity, MAIN_CURRENCY=MAIN_CURRENCY, current_locale=get_locale())
+        sqlQuery =  f"""
+                        SELECT 
+                            `product`.`Title` AS `prTitle`,
+                            `product`.`url`,
+                            `product_type`.`Title` AS `ptTitle`,
+                            `product_type`.`Price`,
+                            (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+                            (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+                            (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
+                            (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
+                            `product_type`.`ID` AS `ptID`        
+                        FROM `product_type`
+                            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                        WHERE `product`.`Language_ID` = %s AND find_in_set(`product_type`.`ID`, %s)
+                        ORDER BY `product`.`ID`, `product_type`.`Order`; 
+                    """
+        
+        sqlValTuple = (languageID, findInSetPtIDs)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        # print(type(ptIdQuantity[0][0]), '   ', type(result['data'][0]['ptID']))
+        cartMessage = [ 
+                    gettext("You have already added this product to the basket. You can change the quantity if You would like to."),
+                    generate_csrf(),
+                    gettext("In Basket")
+    ]
+        return render_template('cart.html', result=result, ptIdQuantity=ptIdQuantity, MAIN_CURRENCY=MAIN_CURRENCY, cartMessage=cartMessage, current_locale=get_locale())
     else:
         pass
 
@@ -3757,7 +3766,7 @@ def check_pt_quantity():
     if int(result['data'][0]['Quantity']) < int(num):
         maxQuantity = result['data'][0]['Quantity']
 
-        answer = gettext("Maximum available quantity is ") + str(maxQuantity)
+        answer = gettext("Maximum available quantity is ") + str(maxQuantity) + '. ' + str(maxQuantity) + ' ' + gettext("item added to the cart") 
         return jsonify({'status': '2', 'max': maxQuantity, 'answer': answer, 'newCSRFtoken': newCSRFtoken})
    
     return jsonify({'status': '1', 'newCSRFtoken': newCSRFtoken})

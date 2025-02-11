@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Set new Cookies   
-            cookie.set('Cart', newCookie, { expires: 7 })  
+            cookie.set('Cart', newCookie, { expires: 7, path: '/' })  
             basket();
             const inBasket = document.getElementById('inBasketText').value;
 
@@ -367,5 +367,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     checkAddItems();
+
+
+
 });
 
