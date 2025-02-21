@@ -23,6 +23,7 @@ CREATE TABLE `product` (
     `Text` TEXT,
     `DatePublished` DATE,
     `DateModified` DATE,
+    `Order` INT NOT NULL,
     `Product_Category_ID` INT,
     `Product_Status` INT,
     `Language_ID` INT,
@@ -337,26 +338,62 @@ VALUES ('superuser', '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,2
 -- If ActionType = 1 show on dushboard, 2 => actions with POST requests.
 INSERT INTO `actions` (`Action`, `ActionDir`, `ActionName`, `ActionGroup`, `ActionType`, `Img`)
 VALUES 
-    ('team', 'team', 'Team', 1, 1, 'tema.png'),
-    ('add_teammate', 'add-teammate', 'Add teammate', 1, 1, 'new-teammate.png'),
-    ('edit_teammate', 'edit-teammate', 'Edit Teammate', 1, 2, 'edit-teammate.png'),    
-    ('roles', 'roles', 'Roles', 2, 1, 'roles.png'),  
-    ('add_role', 'add-role', 'Add Role', 2, 1, 'add-role.png'),
-    ('edit_role', 'edit-role/', 'Edit Role', 2, 2, 'add-role.png'),
-    ('article_categories', 'article-categories', 'Article Categories', 3, 1, 'article-categories.png'),    
-    ('addPC', 'add-article-category', 'Add Article Category', 3, 1, 'add-article-category.png'),    
-    ('add_p_c', 'add-article-category', 'Add Article Category', 3, 2, 'add-article-category.png'),    
-    ('edit_product_category', 'edit-article-category', 'Edit Article Category', 3, 2, 'edit-article-category.png'),    
-    ('articles', 'articles', 'Articles', 4, 1, 'articles.png'),    
-    ('pd', 'article/new', 'Add Article', 4, 1, 'add-article.png'),    
-    ('add_pr', 'article/new', 'Add Article', 4, 2, 'add-article.png'),    
-    ('pd', 'article/', 'Article', 4, 2, 'article.png'),    
-    ('edit_pr_headers', 'edit_article_headers', 'Edit Article Headers', null, 2, 'edit-article-headers.png'),    
-    ('submit_r_t', 'submit_reach_text', 'Article Content', null, 2, 'article-content.png'),    
-    ('thumbnail', 'thumbnail/', 'Thumbnail', null, 2, 'thumbnail.png'),  
-    ('edit_thumbnail', 'edit_thumbnail', 'Edit Thumbnail', null, 2, 'edit_thumbnail.png'),  
-    ('publishA', 'publish', 'Publish', null, 2, 'publish.png') 
+    ('products', 'products', 'Products', 1, 1, 'products.png'),    
+    ('pd', 'product/new', 'Add Product', 1, 1, 'add-products.png'),    
+    ('add_pr', 'add_product', 'Add Product', 1, 2, 'add-product.png'),    
+    ('pd', 'product/', 'Product Page', 1, 2, 'product.png'), 
+
+    ('product_categories', 'product-categories', 'Product Categories', 2, 1, 'product-categories.png'),    
+    ('addPC', 'add-product-category', 'Add Product Category', 2, 1, 'add-product-category.png'),    
+    ('add_p_c', 'add_product_category', 'Add Product Category', 2, 2, 'add-product-category.png'),    
+    ('edit_product_category', 'edit-product-category/', 'Edit Product Category', 2, 2, 'edit-product-category.png'),    
+    ('edit_p_c', 'edit_product_category', 'Edit Product Category', 2, 2, 'edit-product-category.png'),    
+    
+    ('pt_specifications', 'pt-specifications', 'Product Type Specifications', 3, 1, 'pt-specifications.png'),  
+    ('add_sps_view', 'add-sps', 'Add Product Type Specification', 3, 1, 'add-pt-specifications.png'),  
+    ('add_sps', 'add_sps', 'Add Product Type Specification', 3, 2, 'add-pt-specifications.png'),  
+    ('edit_pts_view', 'edit-pts/', 'Edit Product Type Specification', 3, 2, 'edit-pt-specifications.png'),  
+    ('edit_pts', 'edit-pts', 'Edit Product Type Specification', 3, 2, 'edit-pt-specifications.png'),  
+    
+    ('store', 'store', 'Store', 4, 1, 'store.png'),    
+    ('add_to_store', 'add-to-store', 'Add To Store', 4, 1, 'add-to-store.png'),    
+    ('add_to_store', 'add-to-store/', 'Add To Store', 4, 2, 'add-to-store.png'),    
+    ('add_to_store', 'add-to-store', 'Add To Store', 4, 2, 'add-to-store.png'),    
+    ('edit_store', 'edit-store', 'Edit Store', 4, 2, 'edit-store.png'),  
+    ('edit_store', 'edit-store/', 'Edit Store', 4, 2, 'edit-store.png'),  
+
+    ('edit_pr_headers', 'edit_product_headers', 'Edit Product Headers', 5, 3, 'edit-product-headers.png'),    
+    ('submit_r_t', 'submit_reach_text', 'Product Content', 5, 3, 'product-content.png'),    
+    ('pr_thumbnail', 'pr-thumbnail/', 'Thumbnail', 5, 3, 'thumbnail.png'),  
+    ('edit_pr_thumbnail', 'edit_pr_thumbnail', 'Edit Thumbnail', 5, 3, 'edit_thumbnail.png'),  
+    ('publishP', 'publish-product', 'Publish Product', 5, 3, 'publish-product.png'),
+
+    ('team', 'team', 'Team', 6, 1, 'tema.png'),
+    ('add_teammate', 'add-teammate', 'Add teammate', 6, 1, 'new-teammate.png'),
+    ('teampage', 'team/', 'Team', 6, 2, 'tema.png'),
+    ('edit_teammate', 'edit-teammate/', 'Edit Teammate', 6, 2, 'edit-teammate.png'),
+
+    ('roles', 'roles', 'Roles', 7, 1, 'roles.png'),  
+    ('add_role', 'add-role', 'Add Role', 7, 1, 'add-role.png'),
+    ('edit_role', 'edit-role/', 'Edit Role', 7, 2, 'add-role.png'), 
+
+    ('stuff', 'stuff', 'Stuff', 8, 2, 'stuff.png'), 
+
+    ('change_pr_order', 'changeprorder', 'Change Product Order', 9, 2, 'changeprorder.png'), 
+    ('add_price', 'add-price/', 'Add Price', 9, 2, 'changeprorder.png'), 
+    ('add_price', 'add-price/', 'Add Price', 9, 2, 'changeprorder.png'), 
+    ('upload_slides', 'upload_slides', 'Add Price, Upload Slides', 9, 2, 'upload-slides.png'), 
+    ('edit_price', 'edit-price/', 'Edit Price', 9, 2, 'editprice.png'), 
+    ('editprice', 'editprice', 'Edit Price', 9, 2, 'editprice.png'), 
+    ('get_product_types_quantity', 'get-product-types-quantity', 'Get Product Types Quantity', 9, 2, 'get_product_types_quantity.png'), 
+    ('get_specifications', 'get-spacifications', 'Get Spacifications', 9, 2, 'get-spacifications.png'), 
+    ('get_product_types', 'get-product-types', 'Get Product Types', 9, 2, 'get-product-types.png'), 
+    ('change_type_order', 'change-type-order', 'Get Type Order', 9, 2, 'change-type-order.png'), 
+    ('chaneg_pt_status', 'chaneg-pt-status', 'Change Product Type Status', 9, 2, 'change-type-order.png'), 
+    ('submit_product_t', 'submit_product_text', 'Submit Product Text', 9, 2, 'change-type-order.png'), 
+    ('get_slides', 'get_slides', 'Get Slides', 9, 2, 'get_slides.png') 
     ;
+
 
 
 INSERT INTO `languages` (`Language`, `Prefix`) VALUES

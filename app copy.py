@@ -44,7 +44,7 @@ cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 def handle_csrf_error(e):
     return render_template('csrf_error.html', reason=e.description), 400
 
-smthWrong = gettext('Something went wrong. Please try again!')
+smthWrong = 'Something went wrong. Please try again!'
 
 def side_bar_stuff():
     stuffID = session.get("user_id")
@@ -74,10 +74,11 @@ def side_bar_stuff():
     supportedLangsData = supported_langs()
 
     return render_template('side-bar-stuff-1.html', result=result['data'], supportedLangsData=supportedLangsData, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+    # return result
 
 
 @app.route('/submit_product_text', methods=['POST'])
-@login_required
+# @login_required
 def submit_product_t():
     newCSRFtoken = generate_csrf()
         
@@ -140,45 +141,13 @@ def setlang():
     return redirect(request.referrer)
 
 @app.route('/changeprorder', methods=['POST'])
-@login_required
+# @login_required
 def change_pr_order():
-    status = '0'
-    if not request.form.get('order') or not request.form.get('order'):
-        return jsonify({'status': status, 'answer': smthWrong})
-    
-    newOrder = int(request.form.get('order'))
-    prID = int(request.form.get('prID'))
-    langID = getLangID()
+    order = request.form.get('order')
+    print(order)
+    print('order order order order order order order ')
 
-    sqlQueryOldOrder = "SELECT `Order` FROM `product` WHERE `ID` = %s;"
-    resultOldOrder = sqlSelect(sqlQueryOldOrder, (prID,), True)
-    oldOrder = resultOldOrder['data'][0]['Order']
-
-    
-    if oldOrder < newOrder:
-        condition = "`Order` - 1"    
-        sqlValTuple = (oldOrder+1, newOrder, langID)
-    elif oldOrder > newOrder:
-        condition = "`Order` + 1"    
-        sqlValTuple = (newOrder, oldOrder-1, langID)
-    
-    sqlQuery =  f"""
-                    UPDATE `product`
-                    SET `Order` = {condition}
-                    WHERE `Order` BETWEEN %s AND %s
-                    AND `Language_ID` = %s
-                """
-    result = sqlUpdate(sqlQuery, sqlValTuple)
-    if result['status'] == '-1':
-        return jsonify({'status': status, 'answer': smthWrong})
-
-    sqlQueryOdd = "UPDATE `product` SET `Order` = %s WHERE `ID` = %s;"
-    sqlVT = (newOrder, prID)
-    resultOdd = sqlUpdate(sqlQueryOdd, sqlVT)
-    if resultOdd['status'] == '-1':
-        return jsonify({'status': status, 'answer': smthWrong})
-
-    status = '1'
+    status = 1
     return jsonify({'status': status})
 
 
@@ -204,7 +173,6 @@ def home():
                       ON  `product_relatives`.`P_ID` = `product`.`ID`
                     WHERE `product_relatives`.`Language_ID` = %s
                     AND `Product_Status` = 2
-                    ORDER BY `product`.`Order` ASC
                 """
     
     sqlValTuple = (languageID,)
@@ -246,7 +214,7 @@ def contacts():
 
 # Edit thumbnail image
 @app.route('/pr-thumbnail/<RefKey>', methods=['GET'])
-@login_required
+# @login_required
 def pr_thumbnail(RefKey):
     languageID = getLangID()
     sqlQuery = f"""
@@ -282,9 +250,99 @@ def pr_thumbnail(RefKey):
     return render_template('pr_thumbnail.html', content=result, resultIMG=resultIMG, thumbnailImages=thumbnailImages, languageID=languageID, RefKey=RefKey, errorMessage=False, current_locale=get_locale() ) 
 # End of edit product's thumbnail image
 
-
-@app.route('/get_slides', methods=['POST'])
+# Edit article's thumbnail image
+@app.route('/thumbnail/<RefKey>', methods=['GET'])
 @login_required
+def thumbnail(RefKey):
+    languageID = getLangID()
+    sqlQuery = f"""
+                    SELECT `thumbnail`, `AltText` FROM `article` 
+                    LEFT JOIN `article_relatives`
+                      ON  `article_relatives`.`A_ID` = `article`.`ID`
+                    WHERE `article_relatives`.`A_Ref_Key` = %s
+                    AND  `article_relatives`.`Language_ID` = %s
+                """ 
+    
+    sqlValTuple = (RefKey, languageID)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    result['content'] = True
+    if result['length'] == 0:
+        result['content'] = False   
+   
+    
+    # Get thumbnail images from other languages of the same article
+    sqlQueryIMG = f"""
+                    SELECT `thumbnail`, `AltText` FROM `article` 
+                    LEFT JOIN `article_relatives`
+                      ON  `article_relatives`.`A_ID` = `article`.`ID`
+                    WHERE `article_relatives`.`A_Ref_Key` = %s
+                    AND `article_relatives`.`Language_ID` != %s
+                """ 
+    
+    sqlValTupIMG = (RefKey, languageID)
+    resultIMG = sqlSelect(sqlQueryIMG, sqlValTupIMG, True)
+
+    thumbnailImages = get_ar_thumbnail_images(RefKey)
+
+    return render_template('thumbnail.html', content=result, resultIMG=resultIMG, thumbnailImages=thumbnailImages, languageID=languageID, RefKey=RefKey, errorMessage=False, current_locale=get_locale() ) 
+# End of eidt article's thumbnail image
+
+
+# View and Edit article
+@app.route('/article/<RefKey>', methods=['GET'])
+@login_required
+def ar(RefKey):
+    articleTemplate = 'articleVE.html'
+    root_url = url_for('home', _external=True)
+    errorMessage = False
+    languageID = getLangID()
+    supportedLangsData = supported_langs()
+
+    articleCategory = get_article_categories(None, languageID)
+    # productCategory = get_product_categories(None, languageID)
+    prData = ''
+    if RefKey is None:
+         errorMessage = True
+    if 'new' in RefKey.lower():      
+        articleTemplate = 'add_article.html'
+
+        if len(RefKey) > 3:
+            errorMessage = True
+    else: 
+        if RefKey.isdigit(): # Check if the variable is numeric
+            prData = constructPrData(RefKey, '')
+
+            if prData['content'] == True == prData['headers']: 
+                articleTemplate = 'articleVE.html' 
+                        
+            if prData['content'] == True and prData['headers'] == False:
+                
+                pr_id = prData['ID']
+                productCategory = get_product_categories(pr_id, languageID)
+
+                pcRefKey = get_pc_ref_key(prData['Product_Category_ID']) 
+                pcRefKeyLang = get_pc_id_by_lang(pcRefKey)
+                productCategory['Product_Category_ID'] = pcRefKeyLang
+                articleTemplate = 'add_product_lang.html'
+                prData['RefKey'] = RefKey
+
+            if prData['content'] == False == prData['headers']: # Product with specified RefKey does not exist
+                errorMessage = True       
+                                          
+        else:
+            errorMessage = True
+    
+    if errorMessage == True:
+        return render_template('error.html')
+    else:
+        sideBar = side_bar_stuff()
+        return render_template(articleTemplate, prData=prData, sideBar=sideBar, productCategory=productCategory, supportedLangsData=supportedLangsData, errorMessage=errorMessage, root_url=root_url, languageID=languageID, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+
+
+# View and Edit Product 
+@app.route('/get_slides', methods=['POST'])
+# @login_required
 def get_slides():
     if not request.form.get('ProductID') or not request.form.get('languageID'):
         return []
@@ -296,7 +354,6 @@ def get_slides():
     return result
 
 @app.route('/add-price/<prID>', methods=["GET"])
-@login_required
 def add_price(prID):
 
     answer = gettext('Something is wrong! 0')
@@ -357,7 +414,7 @@ def add_price(prID):
 
 # Edit price view
 @app.route('/edit-price/<ptID>', methods=['GET'])
-@login_required
+# @login_required
 def edit_price(ptID):
     languageID = getLangID()
 
@@ -421,13 +478,13 @@ def edit_price(ptID):
 
 # Edit price action
 @app.route('/editprice', methods=['POST'])
-@login_required
+# @login_required
 def editprice():
     newCSRFtoken = generate_csrf()
     ptID = request.form.get('PtID')
 
     if not ptID:
-        answer = smthWrong
+        answer = gettext(smthWrong)
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     if not request.form.get('title') or len(request.form.get('title').strip())  == 0:
@@ -553,7 +610,7 @@ def editprice():
 
         if request.form.get('upload_status_' + str(i)) == '1':
             if not request.form.get('slideID_' + str(i)):
-                answer = smthWrong
+                answer = gettext(smthWrong)
                 return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
             
             slideID = request.form.get('slideID_' + str(i))
@@ -562,7 +619,7 @@ def editprice():
                 sqlValTupleSlide = (request.form.get('alt_text_' + str(i)), i,  slideID)      
                 resultUpdate = sqlUpdate(sqlUpdateSlide, sqlValTupleSlide)
                 if resultUpdate['status'] == '-1':
-                    answer = smthWrong
+                    answer = gettext(smthWrong)
                     return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
             del shortKeys[int(slideID)]  
 
@@ -573,7 +630,7 @@ def editprice():
             sqlValTuple = (unique_filename, altText, i, ptID, 2)
             result = sqlInsert(sqlInsertSlide, sqlValTuple)
             if result['status'] == 0:
-                answer = smthWrong
+                answer = gettext(smthWrong)
                 return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
         i = i + 1
@@ -589,7 +646,7 @@ def editprice():
             # Del from folder
             removeResult = removeRedundantFiles(val[0], imgDir)
             if removeResult == False:
-                answer = smthWrong
+                answer = gettext(smthWrong)
                 return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     # End of image upload
@@ -598,6 +655,7 @@ def editprice():
     sqlQueryPT = "SELECT `spsID` FROM `product_type` WHERE `ID` = %s;"
     sqlValTuplePT = (ptID,)
     resultPT = sqlSelect(sqlQueryPT, sqlValTuplePT, True)
+    # print(resultPT['data'])
     title = request.form.get('title')
     price = request.form.get('price')
     if not request.form.get('spsID'):
@@ -610,7 +668,7 @@ def editprice():
     sqlValTuple = (title, price, spsID, ptID)
     updateResult = sqlUpdate(sqlUpdatePriceTitle, sqlValTuple) 
     if updateResult['status'] == '-1':
-        answer = smthWrong
+        answer = gettext(smthWrong)
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     spsChecker = request.form.get('spsChecker')
@@ -619,7 +677,7 @@ def editprice():
         sqlValTuple = (ptID,)
         resultDelete = sqlDelete(sqlQueryDel, sqlValTuple)
         if resultDelete['status'] == '-1':
-            answer = smthWrong
+            answer = gettext(smthWrong)
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
         
 
@@ -634,7 +692,7 @@ def editprice():
                 sqlValTupleSpss = (ptID, int(arr[0]), arr[1])
                 resultInsert = sqlInsert(sqlInsertPtDetails, sqlValTupleSpss)
                 if resultInsert['status'] == 0:
-                    answer = smthWrong
+                    answer = gettext(smthWrong)
                     return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
 
             i += 1
@@ -721,10 +779,10 @@ def pd(RefKey):
 
 # Edit product'd thumbnail client-server transaction
 @app.route('/upload_slides', methods=['POST'])
-@login_required
+# @login_required
 def upload_slides():
     
-    answer = smthWrong
+    answer = gettext(smthWrong)
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
     
@@ -732,7 +790,7 @@ def upload_slides():
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
 
-    answer = smthWrong # Delete after function is completed
+    answer = gettext(smthWrong) # Delete after function is completed
 
 
     if not request.form.get('upload_status_0') and request.form.get('Type') == 1:
@@ -833,12 +891,12 @@ def upload_slides():
                         sqlValTuplePTD = (ProductID, row['spssID'], Text)
                         resultInsertPTD = sqlInsert(sqlP_T_DetailsInsert, sqlValTuplePTD)
                         if resultInsertPTD['status'] == 0:
-                            answer = smthWrong
+                            answer = gettext(smthWrong)
                             return jsonify({'status': '0', 'answer': resultInsertPTD['answer'], 'newCSRFtoken': newCSRFtoken})
 
 
         else: 
-            answer = smthWrong
+            answer = gettext(smthWrong)
             return jsonify({'status': '0', 'answer': insertedResult['answer'], 'newCSRFtoken': newCSRFtoken})
             
 
@@ -893,7 +951,7 @@ def upload_slides():
                     sqlValTupleSlide = (request.form.get('alt_text_' + str(i)), i,  slideID)      
                     resultUpdate = sqlUpdate(sqlUpdateSlide, sqlValTupleSlide)
                     if resultUpdate['status'] == '-1':
-                        answer = smthWrong
+                        answer = gettext(smthWrong)
                         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
                 del shortKeys[int(slideID)]  
                 # sliderID = shortKeys[filename][0]
@@ -915,7 +973,7 @@ def upload_slides():
                     # Stegh es grum file uploader
                     dataList.append(result['answer'])
                 else:
-                    answer = smthWrong
+                    answer = gettext(smthWrong)
                     return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
          
 
@@ -924,6 +982,7 @@ def upload_slides():
             i = i + 1    
             fileName = 'file_' + str(i)
 
+        # print('SSSSSSSSSSSSSSSSSSSSS', shortKeys)
         lenShortkeys = len(shortKeys)
         if lenShortkeys > 0 and productType == '1':
             sqlValList = []
@@ -933,13 +992,14 @@ def upload_slides():
                 # Del from folder
                 removeResult = removeRedundantFiles(val[0], imgDir)
                 if removeResult == False:
-                    answer = smthWrong
+                    answer = gettext(smthWrong)
                     return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
             
             idCount = lenShortkeys * "%s, "
             idCount = idCount[:-2]
             sqlDeleteQuery = f"DELETE FROM `slider` WHERE `ID` IN ({idCount});" 
             sqlValTuple = tuple(sqlValList)
+            # print(f"Query {sqlDeleteQuery} AND sqlValTuple {sqlValTuple}")
             delResult = sqlDelete(sqlDeleteQuery, sqlValTuple)
             if delResult['status'] == '-1':
                 return jsonify({'status': '0', 'answer': delResult['answer'], 'newCSRFtoken': newCSRFtoken}) 
@@ -950,7 +1010,7 @@ def upload_slides():
 
 # Edit product'd thumbnail client-server transaction
 @app.route('/edit_pr_thumbnail', methods=['POST'])
-@login_required
+# @login_required
 def edit_pr_thumbnail():
     newCSRFtoken = generate_csrf()
         
@@ -1028,6 +1088,86 @@ def edit_pr_thumbnail():
     return result
 
 
+# edit_thumbnail client-server transaction
+@app.route('/edit_thumbnail', methods=['POST'])
+# @login_required
+def edit_thumbnail():
+    newCSRFtoken = generate_csrf()
+        
+    languageID = request.form.get('languageID').strip()
+    RefKey = request.form.get('RefKey').strip()
+    altText = ''
+    if request.form.get('AltText'):
+        altText = request.form.get('AltText').strip()
+
+    state = request.form.get('state')
+
+    if len(languageID) == 0 or len(RefKey) == 0:
+        answer = gettext('Something is wrong!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+
+    sqlQueryID = f"""
+                    SELECT `A_ID`
+                    FROM `article_relatives`
+                    WHERE `article_relatives`.`A_Ref_Key` = %s
+                        AND `article_relatives`.`Language_ID` = %s
+                  """
+    
+    sqlQueryValId = (RefKey, languageID)
+
+    resultID = sqlSelect(sqlQueryID, sqlQueryValId, True)
+    
+    if resultID['length'] > 0:  
+        articleID = resultID['data'][0]['A_ID']
+    else:
+        answer = gettext('Something is wrong!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    state = json.loads(state)
+
+    sqlImage = " `Thumbnail` = %s, "
+    if state['status'] == 0: # Image was not changed
+        sqlImage = ""
+        sqlQueryVal = (altText, articleID)
+    if state['status'] == 1: # Image was chosen from another language
+
+        # Get Image name
+        if getFileName('Thumbnail', 'article', 'ID', articleID):
+            imageName = getFileName('Thumbnail', 'article', 'ID', articleID)
+
+            if checkForRedundantFiles(imageName, 'Thumbnail', 'article'):
+                removeRedundantFiles(imageName, 'images/thumbnails')
+
+        sqlQueryVal = (state['file'], altText, articleID)
+
+    if state['status'] == 2: # New image is uploaded   
+        
+        # Get Image name
+        if getFileName('Thumbnail', 'article', 'ID', articleID):
+            imageName = getFileName('Thumbnail', 'article', 'ID', articleID)
+        
+            if checkForRedundantFiles(imageName, 'Thumbnail', 'article'):
+                removeRedundantFiles(imageName, 'images/thumbnails')
+            
+        file = request.files.get('file')
+        unique_filename = fileUpload(file, 'images/thumbnails')
+
+        sqlQueryVal = (unique_filename, altText,  articleID)
+    
+    sqlQuery   = f"""   
+                    UPDATE `article`
+                    SET 
+                        {sqlImage}                       
+                        `DateModified` = CURDATE(),
+                        `AltText` = %s
+                    WHERE `ID` = %s;
+                 """
+
+    result = sqlUpdate(sqlQuery, sqlQueryVal)
+    return result
+
+
 # add_product client-server transaction
 @app.route('/add_product', methods=['POST'])
 @login_required
@@ -1073,12 +1213,103 @@ def add_pr():
     return add_product(productName, productLink, languageID, CategoryID, file, altText, shortDescription, longDescription, RefKey)
 
 
+# add_article client-server transaction
+@app.route('/add_article', methods=['POST'])
+@login_required
+def add_ar():
+    newCSRFtoken = generate_csrf()
+        
+    if not request.form.get('productName'):
+        answer = gettext('Title is empty!')
+        return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    elif not request.form.get('productLink'): 
+        answer = gettext('Link is empty!')
+        return jsonify({'status': '4', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    elif not request.form.get('CategoryID'):
+        answer = gettext('Please Choose Article Category!')
+        return jsonify({'status': '6', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    productName = request.form.get('productName').strip()
+    productLink = request.form.get('productLink').strip()
+    CategoryID = request.form.get('CategoryID').strip()
+
+    if request.form.get('languageID'):
+        languageID = request.form.get('languageID').strip()
+
+    altText = ''
+    if request.form.get('altText'):
+        altText = request.form.get('altText').strip()
+
+    shortDescription = ''
+    if request.form.get('short-description'):
+        shortDescription = request.form.get('short-description').strip()
+
+    longDescription = ''  
+    if request.form.get('long-description'):
+        longDescription = request.form.get('long-description').strip()
+
+    RefKey = ''  
+    if request.form.get('RefKey'):
+        RefKey = request.form.get('RefKey').strip()
+
+
+    file = request.files.get('file')    
+
+    return add_article(productName, productLink, languageID, CategoryID, file, altText, shortDescription, longDescription, RefKey)
+
+# add article lang client-server transaction
+@app.route('/add_article_lang', methods=['POST'])
+@login_required
+def add_pr_lang():
+
+    if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
+        answer = gettext(smthWrong)
+        return jsonify({'status': '0', 'answer': answer}) # productName is Empty
+    
+    RefKey = request.form.get('RefKey').strip()
+
+    if not request.form.get('productName'):
+        answer = gettext('Title is empty!')
+        return jsonify({'status': '2', 'answer': answer}) 
+    elif not request.form.get('productLink'): 
+        answer = gettext('Link is empty!')
+        return jsonify({'status': '4', 'answer': answer}) 
+    elif not request.form.get('CategoryID'):
+        answer = gettext('Please Choose Article Category!')
+        return jsonify({'status': '6', 'answer': answer}) 
+    
+    productName = request.form.get('productName').strip()
+    productLink = request.form.get('productLink').strip()
+    CategoryID = request.form.get('CategoryID').strip()
+
+    if request.form.get('languageID'):
+        languageID = request.form.get('languageID').strip()
+
+    altText = ''
+    if request.form.get('altText'):
+        altText = request.form.get('altText').strip()
+
+    shortDescription = ''
+    if request.form.get('short-description'):
+        shortDescription = request.form.get('short-description').strip()
+
+    longDescription = ''  
+    if request.form.get('long-description'):
+        longDescription = request.form.get('long-description').strip()
+
+    file = request.files.get('file')    
+    
+    return add_product_lang(productName, productLink, languageID, CategoryID, RefKey, altText, file, shortDescription, longDescription)
+
+
 # edit product headers client-server transaction
 @app.route('/edit_product_headers', methods=['POST'])
-@login_required
+# @login_required
 def edit_pr_headers():
+    newCSRFtoken = generate_csrf()
+        
     if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
-        answer = smthWrong
+        answer = gettext(smthWrong)
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
     elif not request.form.get('productName'):
         answer = gettext('Product name is empty!')
@@ -1108,10 +1339,49 @@ def edit_pr_headers():
     return edit_p_h(productName, productLink, languageID, CategoryID, RefKey, ShortDescription, LongDescription)
 
 
+# edit article headers client-server transaction
+@app.route('/edit_article_headers', methods=['POST'])
+@login_required
+def edit_ar_headers():
+    newCSRFtoken = generate_csrf()
+        
+    if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
+        answer = gettext(smthWrong)
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    elif not request.form.get('productName'):
+        answer = gettext('Article name is empty!')
+        return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    elif not request.form.get('productLink'):
+        answer = gettext('Article link is empty!')
+        return jsonify({'status': '4', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    elif not request.form.get('CategoryID'):
+        answer = gettext('Please Choose Article Category!')
+        return jsonify({'status': '6', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    productName = request.form.get('productName').strip()
+    productLink = request.form.get('productLink').strip()
+    languageID = request.form.get('languageID').strip()
+    CategoryID = request.form.get('CategoryID').strip()
+    RefKey = request.form.get('RefKey').strip()
+   
+    ShortDescription = ''
+    if  request.form.get('short-description'):
+        ShortDescription = request.form.get('short-description').strip()
+    
+    LongDescription = ''
+    if  request.form.get('long-description'):
+        LongDescription = request.form.get('long-description').strip()
+
+    # return jsonify({'status': '0', 'answer': answer}) # Please Choose Product Category
+    return edit_a_h(productName, productLink, languageID, CategoryID, RefKey, ShortDescription, LongDescription)
+
+
 # Render the add_product_category.html template
 @app.route('/add-product-category', methods=['GET'])
 @login_required
 def addPC():
+    # Vortegh em Stegh em
+    # sps - ov dropdown es steghcum!
     languageID = getLangID()
     sqlQuery = f"""SELECT 
                         `sub_product_specification`.`ID`,
@@ -1150,42 +1420,51 @@ def add_p_c():
     
     return add_p_c_sql(categoryName, file, AltText, currentLanguage, spsID, newCSRFtoken)
 
+# Render the add_article_category.html template
+@app.route('/add-article-category', methods=['GET'])
+@login_required
+def addAC():
+    languageID = getLangID()
+    sideBar = side_bar_stuff()
+    return render_template('add_article_category.html', sideBar=sideBar, languageID=languageID, current_locale=get_locale())
+
+
+# add_product_category client-server transaction
+@app.route('/add_article_category', methods=['POST'])
+@login_required
+def add_a_c():
+    newCSRFtoken = generate_csrf()
+    categoryName = request.form.get('categoryName')
+    AltText = request.form.get('AltText')
+    file = request.files.get('file')
+    currentLanguage = request.form.get('languageID')
+
+    if not categoryName:
+        answer = gettext('Category name is empty!')
+        return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) # categoryName is Empty
+    
+    
+    return add_a_c_sql(categoryName, file, AltText, currentLanguage, newCSRFtoken)
+
 
 # Render the edit_product_category.html template
 @app.route('/edit-product-category/<RefKey>', methods=['GET'])
-@login_required
+# @login_required
 def edit_product_category(RefKey):
-
-    languageID = getLangID()
-    sqlQuery = f"""SELECT 
-                        `sub_product_specification`.`ID`,
-                        `sub_product_specification`.`Name`
-                    FROM `sub_product_specification`
-                    LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
-                    WHERE `sps_relatives`.`Language_ID` = %s AND `sub_product_specification`.`Status` = %s;
-
-                """
-    sqlValTuple = (languageID, 1)
-    result = sqlSelect(sqlQuery, sqlValTuple, True)
-    
-
     content = edit_p_c_view(RefKey)
     pcImages = get_product_category_images(RefKey) 
     languageID = getLangID()
     sideBar = side_bar_stuff()
-    return render_template('edit_product_category.html', sideBar=sideBar, sps=result, content=content, pcImages=pcImages, languageID=languageID, RefKey=RefKey, current_locale=get_locale())
+    return render_template('edit_product_category.html', sideBar=sideBar, content=content, pcImages=pcImages, languageID=languageID, RefKey=RefKey, current_locale=get_locale())
+
 
 
 # edit_product_category client-server transaction
 @app.route('/edit_product_category', methods=['POST'])
-@login_required
+# @login_required
 def edit_p_c():
     newCSRFtoken = generate_csrf()
         
-    spsID = 0
-    if request.form.get('spsID'):
-        spsID = int(request.form.get('spsID'))
-
     languageID = request.form.get('languageID').strip()
     RefKey = request.form.get('RefKey').strip()
     altText = ''
@@ -1232,7 +1511,7 @@ def edit_p_c():
     sqlImage = "`Product_Category_Images` = %s,"
     if state['status'] == 0:
         sqlImage = ""
-        sqlQueryVal = (altText, categoryName, categoryStatus, spsID, productCategoryID)
+        sqlQueryVal = (altText, categoryName, categoryStatus, productCategoryID)
     if state['status'] == 1:
         # Get Image name
         if getFileName('Product_Category_Images', 'product_category', 'Product_Category_ID', productCategoryID):
@@ -1241,7 +1520,7 @@ def edit_p_c():
             if checkForRedundantFiles(imageName, 'Product_Category_Images', 'product_category'):
                 removeRedundantFiles(imageName, 'images/pc_uploads')
 
-        sqlQueryVal = (state['file'], altText, categoryName, categoryStatus, spsID, productCategoryID)
+        sqlQueryVal = (state['file'], altText, categoryName, categoryStatus, productCategoryID)
     if state['status'] == 2:    
         # Get Image name
         if getFileName('Product_Category_Images', 'product_category', 'Product_Category_ID', productCategoryID):
@@ -1253,7 +1532,7 @@ def edit_p_c():
         file = request.files.get('file')
 
         unique_filename = fileUpload(file, 'images/pc_uploads')
-        sqlQueryVal = (unique_filename, altText, categoryName, categoryStatus, spsID, productCategoryID)
+        sqlQueryVal = (unique_filename, altText, categoryName, categoryStatus, productCategoryID)
     
     # Stegh es !!!
     sqlQuery   = f"""   
@@ -1262,8 +1541,7 @@ def edit_p_c():
                         {sqlImage}                       
                         `AltText` = %s,
                         `Product_Category_Name` = %s,
-                        `Product_Category_Status` = %s,
-                        `spsID` = %s
+                        `Product_Category_Status` = %s
                     WHERE `Product_Category_ID` = %s;
                  """
 
@@ -1271,9 +1549,112 @@ def edit_p_c():
     return result
 
 
+# Render the edit_product_category.html template
+@app.route('/edit-article-category/<RefKey>', methods=['GET'])
+@login_required
+def edit_article_category(RefKey):
+    content = edit_a_c_view(RefKey)
+    pcImages = get_article_category_images(RefKey)
+    languageID = getLangID()
+    sideBar = side_bar_stuff()
+    return render_template('edit_product_category.html', sideBar=sideBar, content=content, pcImages=pcImages, languageID=languageID, RefKey=RefKey, current_locale=get_locale())
+
+
+
+# edit_product_category client-server transaction
+@app.route('/edit_article_category', methods=['POST'])
+@login_required
+def edit_a_c():
+    newCSRFtoken = generate_csrf()
+        
+    languageID = request.form.get('languageID').strip()
+    RefKey = request.form.get('RefKey').strip()
+    altText = ''
+    if request.form.get('AltText'):
+        altText = request.form.get('AltText').strip()
+    state = request.form.get('state')
+
+    if len(languageID) == 0 or len(RefKey) == 0:
+        answer = gettext('Something is wrong!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    if request.form.get('categoryName'):
+        categoryName = request.form.get('categoryName').strip()
+    else:         
+        answer = gettext('Category Name is empty!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
+    categoryNameExists = checkCategoryName(RefKey, languageID, categoryName)
+    if categoryNameExists == True:
+        answer = gettext('Category Name Exists!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
+    categoryStatus = request.form.get('categoryStatus')
+
+    sqlQueryID = f"""
+                    SELECT `AC_ID`
+                    FROM `article_c_relatives`
+                    WHERE `article_c_relatives`.`AC_Ref_Key` = %s
+                    AND `article_c_relatives`.`Language_ID` = %s;
+                  """
+    
+    sqlQueryValId = (RefKey, languageID)
+
+    resultID = sqlSelect(sqlQueryID, sqlQueryValId, True)
+    
+    if resultID['length'] > 0:  
+        articleCategoryID = resultID['data'][0]['AC_ID']
+    else:
+        answer = gettext('Something is wrong!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    state = json.loads(state)
+
+    sqlImage = "`Article_Category_Images` = %s,"
+    if state['status'] == 0:
+        sqlImage = ""
+        sqlQueryVal = (altText, categoryName, categoryStatus, articleCategoryID)
+    if state['status'] == 1:
+        # Get Image name
+        if getFileName('Article_Category_Images', 'article_category', 'Article_Category_ID', articleCategoryID):
+            imageName = getFileName('Article_Category_Images', 'article_category', 'Article_Category_ID', articleCategoryID)
+
+            if checkForRedundantFiles(imageName, 'Article_Category_Images', 'article_category'):
+                removeRedundantFiles(imageName, 'images/pc_uploads')
+
+        sqlQueryVal = (state['file'], altText, categoryName, categoryStatus, articleCategoryID)
+    if state['status'] == 2:    
+        # Get Image name
+        if getFileName('Article_Category_Images', 'article_category', 'Article_Category_ID', articleCategoryID):
+            imageName = getFileName('Article_Category_Images', 'article_category', 'Article_Category_ID', articleCategoryID)
+    
+            if checkForRedundantFiles(imageName, 'Article_Category_Images', 'article_category'):
+                removeRedundantFiles(imageName, 'images/pc_uploads')
+            
+        file = request.files.get('file')
+
+        unique_filename = fileUpload(file, 'images/pc_uploads')
+        sqlQueryVal = (unique_filename, altText, categoryName, categoryStatus, articleCategoryID)
+    
+    sqlQuery   = f"""   
+                    UPDATE `article_category`
+                    SET 
+                        {sqlImage}                       
+                        `AltText` = %s,
+                        `Article_Category_Name` = %s,
+                        `Article_Category_Status` = %s
+                    WHERE `Article_Category_ID` = %s;
+                 """
+
+    result = sqlUpdate(sqlQuery, sqlQueryVal)
+    return result
+
+
+
+
 # Publish/Unpublish product
 @app.route('/publish-product', methods=['POST'])
-@login_required
+# @login_required
 def publishP():
 
     languageID = request.form.get('languageID').strip()
@@ -1315,9 +1696,52 @@ def publishP():
 # End of Publish/Unpublish product
 
 
+# Publish/Unpublish article
+@app.route('/publish', methods=['POST'])
+@login_required
+def publishA():
+
+    languageID = request.form.get('languageID').strip()
+    RefKey = request.form.get('RefKey').strip()
+    ArticleStatus = request.form.get('articleStatus').strip()
+
+    answer = gettext('Something is wrong!')
+
+    if ArticleStatus is None or languageID is None or RefKey is None:
+        return jsonify({'status': '0', 'answer': answer}) 
+    
+    articleID = get_pr_id_by_lang(RefKey, languageID)
+
+    if articleID == False:
+        return jsonify({'status': '0', 'answer': answer})
+    
+    # Published date
+    sqlQueryPub = "SELECT `DatePublished` FROM `article` WHERE `ID` = %s"
+    sqlQueryPubVal = (articleID,)
+    resultPub = sqlSelect(sqlQueryPub, sqlQueryPubVal, True)
+
+    if resultPub['data'][0]['DatePublished'] == None:
+        sqlQuery = "UPDATE `article` SET `Article_Status` = %s, `DatePublished` = CURDATE() WHERE `ID` = %s"
+    else:
+        sqlQuery = "UPDATE `article` SET `Article_Status` = %s WHERE `ID` = %s"
+    
+    sqlValTuple = (ArticleStatus, articleID)
+    result = sqlUpdate(sqlQuery, sqlValTuple)
+
+    if result['status'] == '1':
+        if ArticleStatus == '2':
+            answer = gettext('Article is published')
+        if ArticleStatus == '1':
+            answer = gettext('Article is unpublished')
+        return jsonify({'status': '1', 'answer': answer})
+    else:
+        return jsonify({'status': '0', 'answer': answer})
+
+# End of Publish/Unpublish article
+
 # Product categories view
 @app.route('/product-categories', methods=['GET'])
-@login_required
+# @login_required
 def product_categories():
     languageID = getLangID()
     sqlQuery = """
@@ -1337,6 +1761,29 @@ def product_categories():
     sideBar = side_bar_stuff()
 
     return render_template('product-categories.html', sideBar=sideBar, result=result, current_locale=get_locale())
+
+# Publish/Unpublish article
+@app.route('/article-categories', methods=['GET'])
+@login_required
+def article_categories():
+    languageID = getLangID()
+    sqlQuery = """
+                SELECT 
+                    `Article_Category_ID`,
+                    `Article_Category_Name`,
+                    `Article_Category_Images`,
+                    `Article_Category_Status`,
+                    `AC_Ref_Key`
+                FROM `article_category`
+                LEFT JOIN `article_c_relatives` ON `article_c_relatives`.`AC_ID` = `article_category`.`Article_Category_ID` 
+                WHERE `article_c_relatives`.`Language_ID` = %s
+                ORDER BY `Article_Category_ID` DESC; 
+               """
+    sqlValTuple = (languageID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    sideBar = side_bar_stuff()
+
+    return render_template('article-categories.html', sideBar=sideBar, result=result, current_locale=get_locale())
 
 
 @app.route('/team', methods=['GET'])
@@ -1368,7 +1815,7 @@ def team():
 
 
 @app.route('/team/<page>', methods=['Get'])
-@login_required
+# @login_required
 def teampage(page): 
     languageID = getLangID()
     newCSRFtoken = generate_csrf()
@@ -1400,7 +1847,7 @@ def teampage(page):
 
 
 @app.route('/edit-teammate/<teammateID>', methods=['GET', 'POST'])
-@login_required
+# @login_required
 def edit_teammate(teammateID):
     languageID = getLangID()
     if request.method == 'POST':
@@ -1939,6 +2386,7 @@ def edit_role(RoleID):
         return render_template('edit-role.html', row=result['data'][0], sideBar=sideBar, resultActions=resultActions, languageID=languageID, current_locale=get_locale())
 
 
+# Publish/Unpublish article
 @app.route('/stuff', methods=['GET'])
 @login_required
 def stuff():
@@ -1974,7 +2422,7 @@ def stuff():
 
 
 @app.route('/products', methods=['GET'])
-@login_required
+# @login_required
 def products():
     languageID = getLangID()
     sqlQuery =  f"""SELECT * FROM `product` 
@@ -1983,7 +2431,7 @@ def products():
                     LEFT JOIN `product_category` 
                       ON `product_category`.`Product_Category_ID` = `product`.`Product_Category_ID`
                     WHERE `product_relatives`.`Language_ID` = %s  
-                    ORDER BY `product`.`Order` ASC                 
+                    ORDER BY `product`.`Order`                  
                 """
     
     sqlValTuple = (languageID,)
@@ -1994,7 +2442,7 @@ def products():
 
 
 @app.route('/store', methods=['GET', 'POST'])
-@login_required
+# @login_required
 def store():    
     if request.method == 'GET':
         languageID = getLangID()
@@ -2080,8 +2528,27 @@ def store():
         return jsonify(response)
 
 
-@app.route("/pt-specifications", methods=['GET'])
+@app.route('/articles', methods=['GET'])
 @login_required
+def articles():
+    languageID = getLangID()
+    sqlQuery =  f"""SELECT * FROM `article` 
+                    LEFT JOIN `article_relatives`
+                      ON  `article_relatives`.`A_ID` = `article`.`ID`
+                    LEFT JOIN `article_category` 
+                      ON `article_category`.`Article_Category_ID` = `article`.`Article_Category_ID`
+                    WHERE `article_relatives`.`Language_ID` = %s                    
+                """
+    
+    sqlValTuple = (languageID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    sideBar = side_bar_stuff()
+
+    return render_template('articles.html', result=result, sideBar=sideBar, current_locale=get_locale()) 
+
+
+@app.route("/pt-specifications", methods=['GET'])
+# @login_required
 def pt_specifications():
     languageID = getLangID()
     sqlQuery = """
@@ -2100,9 +2567,9 @@ def pt_specifications():
 
     return render_template('product-type-specifications.html', result=result, sideBar=sideBar, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), current_locale=get_locale())
 
-# Edit product type specification (subproduct)
+
 @app.route("/edit-pts/<ptsID>", methods=['GET'])
-@login_required
+# @login_required
 def edit_pts_view(ptsID):
     languageID = getLangID()
     sqlQuery = """
@@ -2129,11 +2596,11 @@ def edit_pts_view(ptsID):
 
 # Change order of product types of a product
 @app.route("/change-type-order", methods=['POST'])
-@login_required
+# @login_required
 def change_type_order():
     newCSRFtoken = generate_csrf()
     if not request.form.get('prID'):
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -2148,7 +2615,7 @@ def change_type_order():
     sqlValTuple = (prID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] == 0:
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
 
@@ -2157,11 +2624,12 @@ def change_type_order():
     while True:
         if not request.form.get(str(i)):
             break
+        print(f"result['data'][i]['ID'] Type is {type(result['data'][i]['ID'])} Value is {result['data'][i]['ID']}  ===== request.form.get(i) Type is {type(request.form.get(str(i)))} Value is {request.form.get(str(i))}")    
         if result['data'][i]['ID'] != int(request.form.get(str(i))):
             sqlValTuple = (i, request.form.get(str(i)))
             updateResult = sqlUpdate(sqlQuery, sqlValTuple)
             if updateResult['status'] == '-1':
-                answer = smthWrong
+                answer = gettext(smthWrong)
                 response = {'status': '0', 'answer': updateResult['answer'], 'newCSRFtoken': newCSRFtoken}
                 return jsonify(response)   
              
@@ -2174,13 +2642,13 @@ def change_type_order():
     
 
 @app.route("/chaneg-pt-status", methods=['POST'])
-@login_required
+# @login_required
 def chaneg_pt_status():
     newCSRFtoken = generate_csrf()
     ptID = request.form.get('ptID') 
     status = request.form.get('status') 
     if not ptID or not status:
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -2189,7 +2657,7 @@ def chaneg_pt_status():
     result = sqlUpdate(sqlQuery, sqlValTuple)
 
     if result['status'] == '-1':
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -2199,7 +2667,7 @@ def chaneg_pt_status():
 
 
 @app.route("/edit-pts", methods=['POST'])
-@login_required
+# @login_required
 def edit_pts():
     newCSRFtoken = generate_csrf()
     spsName = request.form.get('spsName') 
@@ -2210,7 +2678,7 @@ def edit_pts():
     
     spsID = request.form.get('spsID') 
     if not spsID:
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
 
@@ -2254,7 +2722,7 @@ def edit_pts():
         sqlValTupleUpdate = (spsName, spsID)
         updateResult = sqlUpdate(sqlQueryUpdate, sqlValTupleUpdate)
         if updateResult['status'] == '-1':
-            answer = smthWrong
+            answer = gettext(smthWrong)
             response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
             return jsonify(response)
         
@@ -2271,20 +2739,25 @@ def edit_pts():
         spsText = request.form.get('text_' + str(i))
         if not spsText: 
             break
+        # print('AAAAAAAAAAAAAAAAAAAAAAa')
+        # print(i)
+        # print(f"result['data'] Length {len(result['data'])}")
+        # print('BBBBBBBBBBBBBBBBBBBBBBB')
         
         if len(result['data']) > i:
             if spsText != result['data'][i]['Text']:
+                # print(f"{spsText} -- {result['data'][i]['Text']} ")
                 sqlValTuple = (spsText, result['data'][i]['spssID'])
                 updateResult = sqlUpdate(sqlQuerySpssUpdate, sqlValTuple)
                 if updateResult['status'] == '-1':
-                    answer = smthWrong
+                    answer = gettext(smthWrong)
                     response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
                     return jsonify(response)
         else:
             sqlValTuple = (spsText, i, spsID, 1)
             resultInsert = sqlInsert(sqlQuerySpssInsert, sqlValTuple)
             if resultInsert['status'] == 0:
-                answer = smthWrong
+                answer = gettext(smthWrong)
                 response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
                 return jsonify(response)
 
@@ -2293,7 +2766,7 @@ def edit_pts():
             sqlValTupleSPSRel = (spssID, RefKey, languageID, userID, 1)
             insertResult = sqlInsert(sqlQuerySPSSRelativeInsert, sqlValTupleSPSRel)
             if insertResult['status'] == 0:
-                answer = smthWrong
+                answer = gettext(smthWrong)
                 response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
                 return jsonify(response)
             
@@ -2310,7 +2783,7 @@ def edit_pts():
             sqlValTuple = (row['spssID'],)
             resultDel = sqlDelete(sqlQueryDel, sqlValTuple)
             if resultDel['status'] == '-1':
-                answer = smthWrong
+                answer = gettext(smthWrong)
                 response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
                 return jsonify(response)
             
@@ -2322,14 +2795,13 @@ def edit_pts():
 
 
 @app.route("/add-sps", methods=['GET'])
-@login_required
+# @login_required
 def add_sps_view():
-    sideBar = side_bar_stuff()
-    return render_template('sp-specifications.html', sideBar=sideBar, current_locale=get_locale())
+    return render_template('sp-specifications.html', current_locale=get_locale())
 
 # Subproduct situation and situations adding function
 @app.route("/add_sps", methods=['POST'])
-@login_required
+# @login_required
 def add_sps():
     newCSRFtoken = generate_csrf()
     # Checking spsName
@@ -2360,7 +2832,7 @@ def add_sps():
     result = sqlInsert(sqlQuery, sqlValTuple)
 
     if not result['inserted_id']:
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response) 
 
@@ -2511,16 +2983,16 @@ def validate_password(password):
     return errors
 
 
-# def table(structure):
+def table(structure):
 
-#     structure = {
-#         'rows': [], # [{}, {}, {}, ... ]
-#         'header': [], # ['ID', 'Name', 'Status', ... ]
-#         'buttons': [], # ['url', 'name']
-#         'pagination': [] # True, False
-#     }
+    structure = {
+        'rows': [], # [{}, {}, {}, ... ]
+        'header': [], # ['ID', 'Name', 'Status', ... ]
+        'buttons': [], # ['url', 'name']
+        'pagination': [] # True, False
+    }
     
-#     return render_template('table.html', structure=structure, current_locale=get_locale())
+    return render_template('table.html', structure=structure, current_locale=get_locale())
 
 
 def getSlides(PrID):
@@ -2615,11 +3087,11 @@ def getSlides(PrID):
 
 
 @app.route("/get-spacifications", methods=["POST"])
-@login_required
+# @login_required
 def get_specifications():
     newCSRFtoken = generate_csrf()
     if not request.form.get('LanguageID') or not request.form.get('spsID'):
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -2647,11 +3119,11 @@ def get_specifications():
 
 
 @app.route("/get-product-types", methods=["POST"])
-@login_required
+# @login_required
 def get_product_types():
     newCSRFtoken = generate_csrf()
     if not request.form.get('prID'):
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -2684,11 +3156,11 @@ def get_product_types():
 
 
 @app.route("/get-product-types-quantity", methods=["POST"])
-@login_required
+# @login_required
 def get_product_types_quantity():
     newCSRFtoken = generate_csrf()
     if not request.form.get('prID'):
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -2807,6 +3279,7 @@ def cart(productTypesQuantity=None):
         
         sqlValTuple = (languageID, findInSetPtIDs)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
+        # print(type(ptIdQuantity[0][0]), '   ', type(result['data'][0]['ptID']))
         cartMessage = [ 
                     gettext("You have already added this product to the basket. You can change the quantity if You would like to."),
                     generate_csrf(),
@@ -2821,7 +3294,7 @@ def cart(productTypesQuantity=None):
 def get_pt_quantities():     
     newCSRFtoken = generate_csrf()
     if not request.form.get('ptID'):
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -2889,7 +3362,7 @@ def get_pt_quantities():
 def get_pt_quantity():     
     newCSRFtoken = generate_csrf()
     if not request.form.get('ptID') or not request.form.get('quantity'):
-        answer = smthWrong
+        answer = gettext(smthWrong)
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -2912,6 +3385,8 @@ def get_pt_quantity():
     result = sqlSelect(sqlQuary, sqlValTuple, True)
     status, message = [0, '']
 
+    print(f"float(result['data'][0]['quantity']) >= quantity {float(result['data'][0]['quantity'])} === {quantity}")
+    print(f"{type(float(result['data'][0]['quantity']))} === {type(quantity)}")
     if result['data'][0]['maxQuantity'] is not None:
         maxQuantity = result['data'][0]['maxQuantity']
         if float(maxQuantity) >= quantity:
@@ -2933,12 +3408,12 @@ def get_pt_quantity():
 
 @app.route("/edit-store/<quantity_pt_IDs>", methods=["GET"])
 @app.route("/edit-store", methods=["POST"])
-@login_required
+# @login_required
 def edit_store(quantity_pt_IDs=None):
     newCSRFtoken = generate_csrf()
     if request.method == "POST":
         if not request.form.get('quantityID') or request.form.get('quantityID') == 'null':
-            answer = smthWrong
+            answer = gettext(smthWrong)
             return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
     
         if not request.form.get('ptID') or request.form.get('ptID') == 'null':
@@ -3006,8 +3481,10 @@ def edit_store(quantity_pt_IDs=None):
                     """
         sqlValTuple = (ptID, storeID, quantity, maxQuantity, userID, productionDate, expDate, quantityID)
         result = sqlUpdate(sqlQuery, sqlValTuple)
+        print('AAAAAAAAAAAAAAAAAAAAAA')
+        print(result['answer'])
         if result['status'] == '-1':
-            # response = {'status': '0', 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}
+            # response = {'status': '0', 'answer': gettext(smthWrong), 'newCSRFtoken': newCSRFtoken}
             response = {'status': '0', 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken}
             return jsonify(response)        
 
@@ -3062,7 +3539,7 @@ def edit_store(quantity_pt_IDs=None):
 
 @app.route("/add-to-store", methods=["GET", "POST"])
 @app.route("/add-to-store/<ptID>", methods=["GET", "POST"])
-@login_required
+# @login_required
 def add_to_store(ptID=None):
     newCSRFtoken = generate_csrf()
     if request.method == "GET":
@@ -3161,7 +3638,7 @@ def add_to_store(ptID=None):
 def check_pt_quantity():
     newCSRFtoken = generate_csrf()
     if not request.form.get('num') or not request.form.get('ptID') :
-        answer = smthWrong
+        answer = gettext(smthWrong)
         return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
     
     ptID = request.form.get('ptID') 
@@ -3170,7 +3647,9 @@ def check_pt_quantity():
     sqlQuery = "SELECT SUM(`Quantity`) AS `Quantity` FROM `quantity` WHERE `productTypeID` = %s AND `expDate` >= CURDATE() AND `Status` = 1;"
     sqlValTuple = (ptID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
-    
+    print(result['data'])
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+
     if result['data'][0]['Quantity'] == None:
         answer = gettext("Out of stock")
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
@@ -3311,9 +3790,9 @@ def index(myLinks):
     return render_template(myHtml, cartMessage=cartMessage, prData=prData, ptID=ptID, slideShow=slideShow, supportedLangsData=supportedLangsData, metaTags=metaTags, current_locale=get_locale())
 
 
-# @app.route("/timer", methods=["GET"])
-# def random_reminder():
-#     return render_template('random-reminder.html')
+@app.route("/timer", methods=["GET"])
+def random_reminder():
+    return render_template('random-reminder.html')
 
 
 if __name__ == '__main__':

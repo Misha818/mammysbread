@@ -152,6 +152,13 @@ document.addEventListener('DOMContentLoaded', function(){
         </a>
     {% endif %}
 
+      <select class="styled-select changePrOrder" style="margin-bottom: 10px;">
+        {% for row in ordering.data %}
+          <option value="{{ row['Order'] }}" {{ 'selected' if row['Order'] ==  prData.Order  else '' }}>{{ row['Order'] }}</option>
+        {% endfor %}
+      </select>
+    
+
     {% if supportedLangsData | length > 1 %}     
       <select onchange="location = '/setlang?lang=' + this.value;" class="styled-select">
         {% for lang in supportedLangsData %}
@@ -1403,6 +1410,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     });
 });   
+
+
+document.querySelector('.changePrOrder').onchange = function(event) {
+    const order = this.value;
+    const prID = prData.Product_ID;
+
+    let formData = new FormData();
+        formData.append('order', order);
+        formData.append('prID', prID);
+
+        // Create a new XMLHttpRequest object
+        var xhr = new XMLHttpRequest();
+
+        // Configure the request
+        xhr.open('POST', '/changeprorder');
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+        // Define what happens on successful data submission
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText);
+
+                if (response.status === '1') {
+                    // Handle success
+                    let RefKey = document.getElementById('RefKey').value;
+                    let prURL = window.location.origin  + '/product/' + RefKey;
+                    location.href = prURL;
+                } else {
+                    alert(response.answer)
+                }
+            } else {
+                console.error('Error adding category:', xhr.responseText);
+            }
+        };
+
+        // Send the request with the FormData object
+        xhr.send(formData);
+};
 </script>
 
 {% endblock %}

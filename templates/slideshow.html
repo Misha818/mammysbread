@@ -93,9 +93,22 @@
     </div>
   </div>
 
-    
   <div class="product-details">
-    <div class="prTitle">{{ Title }}</div>
+    <div 
+      {% if subProducts | length == 1 %}
+      
+        class="prTitle popoverImage"
+        data-bs-toggle="popover"
+        data-bs-placement="right" 
+        data-bs-html="true" 
+        data-bs-content="<a href='{{ url_for('edit_price', ptID=subProducts[0]['ID']) }}  '>{{ _('Click me to edit this price') }}</a> </br> <a href='{{ url_for('add_to_store', ptID=subProducts[0]['ID']) }}' target='_BLANK'>{{ _('Click me to add quantity') }}</a>."
+      {% else %}    
+        class="prTitle"       
+      {% endif %}
+    
+    >
+    {{ Title }}
+  </div>
     
     <!-- <div class="rating">
       ★★★★☆ (67 reviews)
@@ -123,9 +136,12 @@
           {% endif %}
           {% set fileDir = 'images/sub_product_slider/' + row['Name'] %}
 
-          <img src="{{ url_for('static', filename='') + fileDir}} " alt='{{ row["AltText"] }}' class='{{ selectedThumbnail }} '
-            onclick='showImage({{row["i"]}}), changeType({{ ns.i }}, this), scrollThumbnailsFromPrice({{ row["i"] }})'
-            
+          <img  src="{{ url_for('static', filename='') + fileDir}} " 
+                alt='{{ row["AltText"] }}' 
+                class='{{ selectedThumbnail }}'
+                data-ptid="{{ row['ID'] }}"
+                data-value="{{row['i']}}" 
+                onclick='showImage({{row["i"]}}), changeType({{ ns.i }}, this), scrollThumbnailsFromPrice({{ row["i"] }})'
             />
           {% set ns.i = ns.i + 1 %}
           {% endfor %}

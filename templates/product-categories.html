@@ -1,20 +1,10 @@
-<!doctype html>
-<html lang="{{ current_locale }}">
+{% extends 'base.html' %}
+{% block title %}
+{{ _('Roles') }}
+{% endblock %}
 
-<head>
-    <!-- Required meta tags -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
-    <title>
-        {{ _('Product Categories') }}
-    </title>
-
-    <script>
-
-    </script>
+{% block head %}
     <style>
       table {
   border-spacing: 0;
@@ -35,44 +25,75 @@ tr:nth-child(even) {
   background-color: #f2f2f2
 }
     </style>
-</head>
-<body>
-{{ sideBar | safe }}  
+{% endblock %}
+
+{% block content %}
+
+{{ sideBar | safe }}
 <div class="container" >
   
 {% if result.length > 0 %}
+<div class="table-container toRight" id="tableDaddy">
+  <table id="myTable">
+    <thead>
+      <tr>
+        <th>
+          <div style="display: flex; align-items: center;">
+           {{ _('Thumbnail') }} 
+  
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+            </div>
+          </div>
+        </th>
 
-<table id="myTable" class="toRight">
-  <tr>
-    <!--When a header is clicked, run the sortTable function, with a parameter, 0 for sorting by names, 1 for sorting by country:-->  
-    <th onclick="sortTable(0)">{{ _('Thumbnail') }}</th>
-    <th onclick="sortTable(1)">{{ _('Name') }}</th>
-    <th onclick="sortTable(2)">{{ _('Status') }}</th>
-  </tr>
-{% for row in result.data %}
-  {% set status = _('Published') %}
-  {% if row['Product_Category_Status'] == 0 %}
-    {% set status = _('Unpublished') %}
-  {% endif %}
-  {% set editUrl = 'edit-product-category/' + row['PC_Ref_Key']|string %}
+        <th>
+          <div style="display: flex; align-items: center;">
+            {{ _('Name') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 1, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 1, 'down')"></i>
+            </div>
+          </div>
+        </th>
 
-  {% set imgUrl = url_for('static', filename='images/pc_uploads/' + row['Product_Category_Images']) if row['Product_Category_Images'] else url_for('static', filename='images/error.png') %}
-
-  {% set name = row['Product_Category_Name'] if row['Product_Category_Name'] else  _('Empty')  %}
-    <tr>
-      <td><img src="{{ imgUrl }}" style="width: 100px;"/></td>
-      <td>{{ name }}</td>
-      <td>{{ status }}</td>
-      <td>
-        <a href="{{ url_for('home', _external=True) + editUrl }}" >{{ _('Edit') }}</a>
-      </td>
-    </tr>
+        <th>
+          <div style="display: flex; align-items: center;">
+            {{ _('Status') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 1, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 1, 'down')"></i>
+            </div>
+          </div>
+        </th>
+        <th></th>
+      </tr>
+      </thead>
+    {% for row in result.data %}
+      {% set status = _('Published') %}
+      {% if row['Product_Category_Status'] == 0 %}
+        {% set status = _('Unpublished') %}
+      {% endif %}
+      {% set editUrl = 'edit-product-category/' + row['PC_Ref_Key']|string %}
+    
+      {% set imgUrl = url_for('static', filename='images/pc_uploads/' + row['Product_Category_Images']) if row['Product_Category_Images'] else url_for('static', filename='images/error.png') %}
+    
+      {% set name = row['Product_Category_Name'] if row['Product_Category_Name'] else  _('Empty')  %}
+      <tr>
+        <td><img src="{{ imgUrl }}" style="width: 100px;"/></td>
+        <td>{{ name }}</td>
+        <td>{{ status }}</td>
+        <td>
+          <a href="{{ url_for('home', _external=True) + editUrl }}" >{{ _('Edit') }}</a>
+        </td>
+      </tr>
     
     
 {% endfor %}
 
   </table>
-
+</div>
 
 {% else %}
 <h3>{{ _('No data to show!') }}</h3>
@@ -82,11 +103,26 @@ tr:nth-child(even) {
 
 
 <script>
+
 window.addEventListener('load', () => {
   document.querySelector('body').classList.add('loaded');
 });
-function sortTable(n) {
-  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+
+let trace;
+
+function sortTable(arrowElement, n, direction) {
+  
+  // console.log(n);
+  if (trace === String(n) + direction) {
+    return;
+  }
+
+  trace = String(n) + direction;
+  
+  document.querySelectorAll('.sort-icons i').forEach(icon => icon.style.color = '#fff');
+  arrowElement.style.color = '#ff0000';
+
+  let table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
   table = document.getElementById("myTable");
   switching = true;
   //Set the sorting direction to ascending:
@@ -139,10 +175,6 @@ function sortTable(n) {
     }
   }
 }
+
 </script>
-
-
-
-</body>
-
-</html>
+{% endblock %}

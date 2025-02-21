@@ -283,6 +283,7 @@ store
 add_to_store
 get_product_types_quantity
 edit_store
+change_pr_order
 
 
 
@@ -291,6 +292,34 @@ Interesting Links
 https://www.skynettechnologies.com/
 https://www.studio-one.am/
 www.f5.am
+
+
+
+
+
+
+Functions to add to PERMISSIONS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

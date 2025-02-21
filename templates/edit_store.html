@@ -256,7 +256,7 @@ saveButton.addEventListener('click', function (event) {
          
             if (flag === row['ID']) {
 
-                childerenData = childerenData + row['ptID'] + '_sp_' + row['ptTitle'] + ',';
+                childerenData = childerenData + row['ptID'] + '_sp_' + row['ptTitle'] + '_sppr_';
 
             } else {
                 
@@ -265,7 +265,7 @@ saveButton.addEventListener('click', function (event) {
                     newDiv.dataset.parent = newDivTitle;
                     newDiv.dataset.value = flag;
                     newDiv.textContent = newDivTitle;
-                    newDiv.dataset.children = childerenData.slice(0, -1);    
+                    newDiv.dataset.children = childerenData.slice(0, -6);    
                 
                 let childOptions = document.createElement('div');
                     childOptions.className = "child-options hidden"
@@ -275,7 +275,7 @@ saveButton.addEventListener('click', function (event) {
 
                 flag = row['ID']
                 newDivTitle = row['Title']
-                childerenData = row['ptID'] + '_sp_' + row['ptTitle'] + ',';
+                childerenData = row['ptID'] + '_sp_' + row['ptTitle'] + '_sppr_';
 
             }               
 
@@ -286,7 +286,7 @@ saveButton.addEventListener('click', function (event) {
             newDiv.dataset.parent = newDivTitle;
             newDiv.dataset.value = flag;
             newDiv.textContent = newDivTitle;
-            newDiv.dataset.children = childerenData.slice(0, -1);    
+            newDiv.dataset.children = childerenData.slice(0, -6);    
         
         let childOptions = document.createElement('div');
             childOptions.className = "child-options hidden"
@@ -323,7 +323,7 @@ saveButton.addEventListener('click', function (event) {
                 
                 const parentDiv = document.querySelector(`[data-parent="${row['Title']}"]`);
                 const childContainer = parentDiv.querySelector('.child-options');
-                const children = parentDiv.getAttribute('data-children').split(',');
+                const children = parentDiv.getAttribute('data-children').split('_sppr_');
                 children.forEach((childInfo) => {
 
                     let childArr = childInfo.split('_sp_');

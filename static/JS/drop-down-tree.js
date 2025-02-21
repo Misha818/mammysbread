@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Otherwise, create child items from data-children
-        const children = parentItem.getAttribute('data-children').split(',');
+        const children = parentItem.getAttribute('data-children').split('_sppr_');
         children.forEach((childInfo) => {
           
           let childArr = childInfo.split('_sp_');
@@ -86,6 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedLabel.textContent = parentItem.getAttribute('data-parent') + ': ' + childDiv.textContent;
             selectedLabel.dataset.value = childDiv.getAttribute('data-value');
             // 2d) Hide the entire dropdown (parent list)
+            
+            // document.getElementById('parent-options').classList.add('hidden');
             parentOptions.classList.add('hidden');
             
           });

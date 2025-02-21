@@ -345,6 +345,44 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         });
     });
+
+    const hiddenPtID = document.getElementById('hiddenPtID').value;
+
+    if (hiddenPtID) {
+        // scrollThumbnailsFromPrice(1);
+        if (document.querySelectorAll('.add-to-cart-btn')) {
+            let btns = document.querySelectorAll('.add-to-cart-btn');
+            let i = 0;
+            let flag = 0;
+            let imgs = document.querySelectorAll('.price-thumbnails img');
+            let productTypeBlocks = document.querySelectorAll('.productType');
+
+            btns.forEach(btn => {
+                if (btn.value === hiddenPtID) {
+                    flag = i;
+                    imgs.forEach(img => {
+                        img.classList.remove('selectedThumbnail');
+                    });
+
+                    productTypeBlocks.forEach(block => {
+                        block.style.display = 'none';
+                    });
+                }
+                i += 1;
+            });
+
+            const imgElement = document.querySelector(`img[data-ptid="${hiddenPtID}"]`);
+
+            const dataValue = parseInt(imgElement.getAttribute('data-value'));
+
+
+            imgs[flag].classList.add('selectedThumbnail');
+            productTypeBlocks[flag].style.display = 'block';
+            scrollThumbnailsFromPrice(dataValue);
+            showImage(dataValue);
+        }
+    }
+
 });
       
       

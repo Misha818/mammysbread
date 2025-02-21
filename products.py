@@ -427,6 +427,7 @@ def edit_p_c_view(pc_ref_key):
                     'image': image1, 
                     'AltText': AltText, 
                     'status': result1['data'][0]['Product_Category_Status'], 
+                    'spsID': result['data'][0]['spsID'], 
                     'pc_id': result1['data'][0]['Product_Category_ID'],
                     'content': True
                 }
@@ -450,6 +451,7 @@ def edit_p_c_view(pc_ref_key):
             'name': myName, 
             'image': myImage, 
             'AltText': AltText, 
+            'spsID': result['data'][0]['spsID'], 
             'status': result['data'][0]['Product_Category_Status'], 
             'pc_id': result['data'][0]['Product_Category_ID'],
             'content': True
@@ -750,10 +752,14 @@ def add_product(productName, productLink, languageID, CategoryID, file, AltText,
         return myResponse
  
     unique_filename = fileUpload(file, 'images/pr_thumbnails')
+    Order = 1
+    arrOrder = get_pr_order()
+    if arrOrder['length'] > 0:
+        Order = arrOrder['data'][arrOrder['length']-1]['Order'] + 1
 
-    userID = getUserID()  # Stegh es: short u long descriptionner@ lracru table - um!
-    sqlQueryInsert = "INSERT INTO `product` (`Title`, `Url`, `User_ID`, `Language_ID`, `Product_Category_ID`, `Thumbnail`, `AltText`,  `Product_Status`, `ShortDescription`, `LongDescription`) Values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-    sqlQueryValInsert = (productName, productLink, userID, languageID, CategoryID, unique_filename, AltText, 1, shortDescription, longDescription)
+    userID = getUserID()  
+    sqlQueryInsert = "INSERT INTO `product` (`Title`, `Url`, `User_ID`, `Language_ID`, `Product_Category_ID`, `Thumbnail`, `AltText`,  `Product_Status`, `ShortDescription`, `LongDescription`, `Order`) Values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    sqlQueryValInsert = (productName, productLink, userID, languageID, CategoryID, unique_filename, AltText, 1, shortDescription, longDescription, Order)
 
     resultInsert = sqlInsert(sqlQueryInsert, sqlQueryValInsert)
 
@@ -891,6 +897,7 @@ def articleDetails(RefKey, articleStatus):
 def productDetails(RefKey, productStatus):
     sqlQuery = f""" SELECT 
                         `product`.`ID`,
+                        `product`.`Order`,
                         `product`.`Product_Category_ID`,
                         `product`.`Url`,
                         `product`.`Title`,
@@ -924,6 +931,7 @@ def constructPrData(RefKey, productStatus):
         row = prData['data'][0]
         content = {
             'Product_ID': row['ID'], 
+            'Order': row['Order'], 
             'Product_Category_ID': row['Product_Category_ID'], 
             'Url': row['Url'], 
             'Title': row['Title'], 
@@ -1149,37 +1157,50 @@ def checkCategoryName(RefKey, languageID, categoryName):
     
 
 def get_RefKey_LangID_by_link(myLink):
+
+    ptID, prUrl = ['', '']
+    if '&' in myLink:
+        arr = myLink.split('&')
+        prUrl = arr[0]
+        ptID = get_ptid_by_title(arr[1])
+        
+    else:
+        prUrl = myLink
+        
     sqlQuery = "SELECT `ID`, `Language_ID` FROM `product` WHERE `Url` = %s;"
-    sqlValTuple = (myLink,)
+    sqlValTuple = (prUrl,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
-
-    if result['length'] == 0:
-        # look url in articles
-        sqlQuery = "SELECT `ID`, `Language_ID` FROM `article` WHERE `Url` = %s;"
-        sqlValTuple = (myLink,)
-        result = sqlSelect(sqlQuery, sqlValTuple, True)
-
-        if result['length'] == 0:
-            return None
-        
-        articleID = result['data'][0]['ID']
-
-        sqlQueryRef = "SELECT `A_Ref_Key` FROM `article_relatives` WHERE `A_ID` = %s;"
-        sqlValRef = (articleID,)
-        resultRef = sqlSelect(sqlQueryRef, sqlValRef, True)
-
-        if result['length'] == 0:
-            return None
-        
-        content = {
-            'RefKey': resultRef['data'][0]['A_Ref_Key'],
-            'LanguageID': result['data'][0]['Language_ID'],
-            'Type': 'article'
-        }
-
-        return content
     
-        # End of looking url in articles
+    # look url in articles
+    # if result['length'] == 0:
+        # sqlQuery = "SELECT `ID`, `Language_ID` FROM `article` WHERE `Url` = %s;"
+        # sqlValTuple = (prUrl,)
+        # result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        # if result['length'] == 0:
+        #     return None
+        
+        # articleID = result['data'][0]['ID']
+
+        # sqlQueryRef = "SELECT `A_Ref_Key` FROM `article_relatives` WHERE `A_ID` = %s;"
+        # sqlValRef = (articleID,)
+        # resultRef = sqlSelect(sqlQueryRef, sqlValRef, True)
+
+        # if result['length'] == 0:
+        #     return None
+        
+        # content = {
+        #     'RefKey': resultRef['data'][0]['A_Ref_Key'],
+        #     'LanguageID': result['data'][0]['Language_ID'],
+        #     'Type': 'article'
+        # }
+
+        # return content
+    
+    # End of looking url in articles
+    
+    if result['length'] == 0:
+        return None
     
     productID = result['data'][0]['ID']
 
@@ -1187,12 +1208,10 @@ def get_RefKey_LangID_by_link(myLink):
     sqlValRef = (productID,)
     resultRef = sqlSelect(sqlQueryRef, sqlValRef, True)
 
-    if result['length'] == 0:
-        return None
-    
     content = {
         'RefKey': resultRef['data'][0]['P_Ref_Key'],
         'LanguageID': result['data'][0]['Language_ID'],
+        'ptID': ptID,
         'Type': 'product'
     }
 
@@ -1238,3 +1257,21 @@ def slidesToEdit(PrID):
 
     return result['data']
 
+
+def get_ptid_by_title(title):
+    title = title.replace('-', ' ')
+    sqlQuery = "SELECT `ID` FROM `product_type` WHERE `Title` = %s;"
+    sqlValTuple = (title,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] > 0:
+        return result['data'][0]['ID']
+    else: 
+        return ''
+
+
+def get_pr_order():
+    sqlQuery = "SELECT `Order` FROM `product` WHERE `Language_ID` = %s ORDER BY `Order`;"
+    
+    result = sqlSelect(sqlQuery, (getLangID(),), True)
+    
+    return result 

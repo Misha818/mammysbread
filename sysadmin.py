@@ -215,13 +215,14 @@ def sqlDelete(sqlQuery, sqlValuesTuple):
 def getLangID():
 
     defLang = getDefLang()
+    langID = defLang['id']
 
     currentLangPrefix = session.get('lang', defLang['Prefix'])
     supportedLangs = supported_langs()
     for lang in supportedLangs:
         if currentLangPrefix == lang['Prefix']:
             langID = lang['Language_ID']
-
+   
     return langID
 
 

@@ -37,17 +37,17 @@
 
 {{ sideBar | safe }}
 
-<div class="containerS">
-    <h1>{{ _('Add Product Category') }}</h1>
+<div class="containerS" style="width: 25%">
+    <h1 class="title" style="margin-top: 15px;">{{ _('Add Product Category') }}</h1>
     <!-- Form for adding a product -->
-    <div id="mistakes"></div>
-
-    <form>
+    
+    <form id="product-category-form" style="width: 95%;">
+        <div id="mistakes" style="width: 100%"></div>
         <input type="hidden" id="image" value="1">
         <input type="hidden" id="img_value" value="">
         
         
-        <input type="text" id="category-name" placeholder="{{ _('Product Category Name') }}" style="padding: 15px;">
+        <input type="text" id="category-name" placeholder="{{ _('Product Category Name') }}" style="padding: 15px; width: 100%;">
         {% if sps.length > 0 %}
         <select name="smsName" id="spsName" class="styled-select">
             <option value="">{{ _('Choose subproduct situation name') }}</option>
@@ -86,7 +86,7 @@
         
         <div  class="dropzone" id="myDropzone" style="
         width: 141px;
-        margin-left: 15%;
+        margin: 0px auto 5px auto;
     ">
             <div class="dz-message dz-button">{{ _('Thumbnail image') }}</div>
         </div>
@@ -95,8 +95,16 @@
         <input type="hidden" id="language-id" value="{{ languageID }}">
         <input type="hidden" id="RefKey" value="{{ RefKey }}">
 
-        <div id="saveButton" class="pcButtonS modifiedB" style="width: 100%;">{{ _('Submit') }}</div>
-        <div id="saving" class="pcButtonS modifiedB hidden" style="width: 100%;">{{ _('Saving...') }}</div>
+        <div id="saveButton" class="pcButtonS modifiedB" 
+            style=" width: 40%;
+                    margin: 0px auto 0px auto;
+                    display: block;"
+                >{{ _('Submit') }}</div>
+        <div id="saving" class="pcButtonS1 modifiedB hidden" 
+            style=" width: 40%;
+                    margin: 0px auto 0px auto;
+                    "
+                >{{ _('Saving...') }}</div>
     </form>
 
 

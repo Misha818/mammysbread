@@ -25,6 +25,7 @@
   <div class="empty-cart">{{ _('You don’t have any items in your cart.') }}</div>
     <a class="start-shopping" href="{{ url_for('home') }}">{{ _('Start shopping') }}</a>
 </div>
+</div>
 {% else %}
 
 <div class="shopping-cart">
@@ -74,13 +75,13 @@
       <div class="cart-item">
           <div class="item-details">
               <div class="item-image">
-                  <a href="{{ prUrl }}:{{ row['ptID']}}">
+                  <a href="{{ prUrl }}&{{ row['ptTitle'] | replace(' ', '-') }}">
                       <img src="{{ url_for('static', filename='images/sub_product_slider/' + row['imgName']) }}" alt="Item 1">
                   </a>
               </div>
               <div class="item-info">
                   <div class="item-title">
-                      <a href="{{ prUrl }}">
+                      <a href="{{ prUrl }}&{{ row['ptTitle'] | replace(' ', '-') }}">
                           {{ row['prTitle'] }} : {{ row['ptTitle'] }}
                       </a>
                   </div>

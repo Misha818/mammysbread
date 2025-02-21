@@ -71,22 +71,22 @@
     </tbody>
   </table>
 
-  {% if result.length > 0 %}
+  {% if result.length == -1 %}
 
-  <div class="pagination">
+<div class="pagination">
   {%if page > 1 %}
   {% set urlPrev = '/' + (page - 1) | string %}
-  <a href="{{ url_for('team', _external=True) + urlPrev }}">&laquo;</a>
+  <a href="{{ url_for('pt_specifications', _external=True) + urlPrev }}">&laquo;</a>
   {% endif %}
   {% for i in range(1, (numRows // pagination) + 1 + (1 * ( (numRows % pagination) // (numRows % pagination) ) )) %}
   
   {% set urlPage = '/' ~ i %}
-  <a {% if i == page %} class="active" {% endif %} href="{{ url_for('team', _external=True) + urlPage }}">{{ i }}</a>
+  <a {% if i == page %} class="active" {% endif %} href="{{ url_for('pt_specifications', _external=True) + urlPage }}">{{ i }}</a>
   {% endfor %}
   
   {% if page < (numRows // pagination) + (1 * ( (numRows % pagination) // (numRows % pagination) )) %}
   {% set urlNext = '/' + (page + 1) | string %}
-  <a href="{{ url_for('team', _external=True) + urlNext }}">&raquo;</a>
+  <a href="{{ url_for('pt_specifications', _external=True) + urlNext }}">&raquo;</a>
   {% endif %}
   
 </div>

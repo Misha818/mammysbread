@@ -6,7 +6,10 @@
 
 
 {% block content %}
-<div class="container">
+
+{{ sideBar | safe }}
+
+<div class="container toRight" id="tableDaddy" style="width: 70%;">
 <div id="response"></div>
 <div class="mb-3 containerSPS pr-name">
     <input autocomplete="off" autofocus class="" id="name" name="name" placeholder="{{ _('Product Type Situation name') }}" type="text">
@@ -174,10 +177,9 @@
             if (xhr.status === 200) {
                 const response = JSON.parse(xhr.responseText);
                 if (response.status === '1') {
-                    alert(response.answer)
-                    // let website_url = "{{ website_url|e }}/";
-                    // window.location.href = website_url;
-                } 
+                    let ptsURL = window.location.origin  + '/pt-specifications';
+                    location.href = ptsURL;
+                }
                 
                 if (response.status === '0') {
                     document.querySelector("#response").textContent = response.answer;

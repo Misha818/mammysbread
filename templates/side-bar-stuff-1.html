@@ -18,7 +18,7 @@
     
   {% if supportedLangsData | length > 1 %}     
   <a>  
-    <select onchange="location = '/setlang?lang=' + this.value;" class="styled-select" style="width: 80%;">
+    <select onchange="location = '/setlang?lang=' + this.value;" class="styled-select" style="width: 80%; margin-bottom: 0px;">
       {% for lang in supportedLangsData %}
         <option value="{{ lang['Prefix'] }}" {{ 'selected' if get_locale() ==  lang['Prefix']  else '' }}>{{ lang['Language'] }}</option>
       {% endfor %}
