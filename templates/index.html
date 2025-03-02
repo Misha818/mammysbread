@@ -353,7 +353,8 @@ function createShoppingCartModal(prData) {
 
       const cartItem = document.createElement('div');
       if (num == dataLen) {
-        cartItem.classList = 'cart-item cart-item-last';       
+        // cartItem.classList = 'cart-item cart-item-last';       
+        cartItem.className = 'cart-item';       
       } else {
         cartItem.className = 'cart-item';
       }
