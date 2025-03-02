@@ -103,9 +103,26 @@
       <p style="color: #6c757d; margin-top: 40px;">&copy; 2024 Your Company. All rights reserved.</p>
       </footer>
     
+      <!-- Full-Screen Overlay Nav -->
+      <div class="mobile-nav-overlay">
+        <nav class="mobile-nav-content">
+          <button class="mobile-menu-close" aria-label="Close Mobile Menu">
+            ✕
+          </button>
+          <ul class="mobile-nav-links">
+            <li><a href="{{ url_for('home') }}">{{ _('Home') }}</a></li>
+            <li><a href="{{ url_for('favorites') }}">{{ _('Favorites') }}</a></li>
+            <li><a href="{{ url_for('products_client') }}">{{ _('Products') }}</a></li>
+            <li><a href="{{ url_for('about') }}">{{ _('Our History') }}</a></li>
+            <li><a href="{{ url_for('contacts') }}">{{ _('Contacts') }}</a></li>
+          </ul>
+
+          </select>
+        </nav>
+      </div>
+
   
     <script>
-      
       let xhr = new XMLHttpRequest();
       let csrfToken = "{{ csrf_token() }}";
 
@@ -147,16 +164,12 @@
               option.textContent = text;
               
               if (lang.selected) {
-                option.selected = true;
-                option.style.textAlign = 'center'
-              } else {
-                option.style.textAlign = 'left'
-              }
+                option.setAttribute("selected", "selected");
+              } 
                 
               select.appendChild(option);
             });
 
-      
           } else {
 
             // Loop through the languages array to create and append options
@@ -167,10 +180,7 @@
               option.textContent = text;
               
               if (lang.selected) {
-                option.selected = true;
-                option.style.textAlign = 'center'
-              } else {
-                option.style.textAlign = 'left'
+                option.setAttribute("selected", "selected");
               }
 
               select.appendChild(option);
@@ -179,15 +189,40 @@
           }
             
           document.querySelector('.header_public').prepend(select);
+
+          let mobileNavSelect = select.cloneNode(true);
+
+          mobileNavSelect.className = "change-language-menu";
+          mobileNavSelect.addEventListener("change", function() {
+            window.location.href = '/setlang?lang=' + this.value;
+          });
+
+          document.querySelector('.mobile-nav-content').append(mobileNavSelect);
+
+
       };
 
       // Send the request with the FormData object
       xhr.send();
 
 
-      
+        // Grab elements
+        const mobileMenuButton = document.querySelector('.mobile-menu');
+        const mobileNavOverlay = document.querySelector('.mobile-nav-overlay');
+        const mobileMenuCloseButton = document.querySelector('.mobile-menu-close');
 
-    </script>  
+        // Open the overlay when the hamburger is clicked
+        mobileMenuButton.addEventListener('click', () => {
+          mobileNavOverlay.classList.add('open');
+        });
+
+        // Close the overlay when the close button is clicked
+        mobileMenuCloseButton.addEventListener('click', () => {
+          mobileNavOverlay.classList.remove('open');
+        });
+
+      </script>
+
     </body>
 
   

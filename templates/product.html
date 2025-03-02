@@ -216,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <script>
         document.getElementById('cencelUpload').addEventListener('click', function(){
             document.getElementById('mySlideShow').style.display = 'none';
+            document.getElementById('mySlideShow').classList = 'blocks hidden';
             if (document.getElementById('slides') !== 'undefined') {
                 document.getElementById('slides').style.display = 'flex';
                 document.getElementById('editorContent').style.display = 'block';
@@ -1181,6 +1182,8 @@ backgroundColorPickr.on('save', (color) => {
 
                 document.getElementById(clickedId).innerHTML = "{{ _('Slider') }}";
                 document.getElementById('mySlideShow').style.display = 'block';
+                document.getElementById('mySlideShow').classList.remove('hidden');
+
             } else if (clickedId === 'thumbnailButton') {
                 urlTo = window.location.origin + '/pr-thumbnail/' + {{ prData.RefKey }}
                 window.location = urlTo

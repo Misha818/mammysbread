@@ -117,7 +117,7 @@ input[type=submit]:hover {
 
 
 
-<div class="card-container-user">
+<div class="card-container-user" id="card-container-user">
 {% if result.length > 0 %}
   {% for row in result.data %}
   
@@ -242,15 +242,7 @@ input[type=submit]:hover {
 
     });
     
-    function headerScroll() {
-          let scrollTo = "{{ scrollTo }}";  
-          let target_to_navigate = document.getElementById(scrollTo);
-          target_to_navigate.scrollIntoView({ behavior: 'smooth' });
-      };
-
-      // headerScroll();
-
-    });
+  });
 
 
   document.querySelector('.order-now').addEventListener('click', function(event) {
@@ -1249,7 +1241,45 @@ async function get_pt_quantity(ptID, quantity) {
             xhr.send(formData);
         });
     }
-      
+  
+  document.addEventListener('DOMContentLoaded', function() {  
+    function headerScroll() {
+          let scrollTo = "{{ scrollTo }}";  
+          if (scrollTo) {
+            let target_to_navigate = document.getElementById(scrollTo);
+
+
+            // setTimeout(() => {
+            //   target_to_navigate.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // }, 1000);
+
+            setTimeout(() => {
+              let num = 0;
+              const screenWidth = window.screen.width;
+              if (screenWidth < 801) {
+                num = 10;
+              }
+
+              // Get the header height
+              const header = document.querySelector('.header_public');
+              const headerHeight = header ? header.offsetHeight : 0;
+
+              // Calculate target element's top position relative to the document
+              const targetRect = target_to_navigate.getBoundingClientRect();
+              const scrollTarget = targetRect.top + window.pageYOffset - headerHeight - num;
+            
+              window.scrollTo({
+                top: scrollTarget,
+                behavior: 'smooth'
+              });
+            }, 1500);
+
+
+          }
+      };
+
+    headerScroll();
+  });
         
 </script>
 

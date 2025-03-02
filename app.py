@@ -290,11 +290,12 @@ def home():
 @app.route('/about')
 def about():
     languageID = getLangID()
-    sqlQuery =  f"""SELECT * FROM `article` 
-                    LEFT JOIN `article_relatives`
-                      ON  `article_relatives`.`A_ID` = `article`.`ID`
-                    WHERE `article_relatives`.`Language_ID` = %s
-                    AND `Article_Status` = 2
+    sqlQuery =  f"""SELECT * FROM `product` 
+                    LEFT JOIN `product_relatives`
+                      ON  `product_relatives`.`P_ID` = `product`.`ID`
+                    WHERE `product_relatives`.`Language_ID` = %s
+                    AND `Product_Status` = 2
+                    ORDER BY `product`.`Order` ASC
                 """
     
     sqlValTuple = (languageID,)
@@ -306,17 +307,52 @@ def about():
 @app.route('/contacts')
 def contacts():
     languageID = getLangID()
-    sqlQuery =  f"""SELECT * FROM `article` 
-                    LEFT JOIN `article_relatives`
-                      ON  `article_relatives`.`A_ID` = `article`.`ID`
-                    WHERE `article_relatives`.`Language_ID` = %s
-                    AND `Article_Status` = 2
+    sqlQuery =  f"""SELECT * FROM `product` 
+                    LEFT JOIN `product_relatives`
+                      ON  `product_relatives`.`P_ID` = `product`.`ID`
+                    WHERE `product_relatives`.`Language_ID` = %s
+                    AND `Product_Status` = 2
+                    ORDER BY `product`.`Order` ASC
                 """
     
     sqlValTuple = (languageID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
     return render_template('index.html', result=result, scrollTo='contacts', current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+
+
+@app.route('/favorites')
+def favorites():
+    languageID = getLangID()
+    sqlQuery =  f"""SELECT * FROM `product` 
+                    LEFT JOIN `product_relatives`
+                      ON  `product_relatives`.`P_ID` = `product`.`ID`
+                    WHERE `product_relatives`.`Language_ID` = %s
+                    AND `Product_Status` = 2
+                    ORDER BY `product`.`Order` ASC
+                """
+    
+    sqlValTuple = (languageID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    return render_template('index.html', result=result, scrollTo='favorites', current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+
+
+@app.route('/products-client')
+def products_client():
+    languageID = getLangID()
+    sqlQuery =  f"""SELECT * FROM `product` 
+                    LEFT JOIN `product_relatives`
+                      ON  `product_relatives`.`P_ID` = `product`.`ID`
+                    WHERE `product_relatives`.`Language_ID` = %s
+                    AND `Product_Status` = 2
+                    ORDER BY `product`.`Order` ASC
+                """
+    
+    sqlValTuple = (languageID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    return render_template('index.html', result=result, scrollTo='card-container-user', current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
 
 # Edit thumbnail image

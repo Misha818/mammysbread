@@ -241,15 +241,12 @@
         // let scrollPosition = 0; // Maybe I delete you
         
         let maxShownThumbnailsP = 5;
-        window.addEventListener('resize', function() {
             if (screen.width < 475) {
                 maxShownThumbnailsP = 3;
             } else {
                 maxShownThumbnailsP = 5;
             }
-
             
-        });
         let scrollCounterP = 1
     
         let scrollNumberP = Math.floor(imagesP.length / maxShownThumbnailsP) +  (imagesP.length % maxShownThumbnailsP === 0 ? 0 : 1);
@@ -271,6 +268,35 @@
         
         
     function scrollThumbnailsPrice(direction, stop) {
+
+        if (screen.width < 475) {
+            maxShownThumbnailsP = 3;
+        } else {
+            maxShownThumbnailsP = 5;
+        }
+
+        const imagesP = [];
+        const imagesSRCPrice = [];
+
+        thumbnailsP.forEach(thumbnail => {
+            const src = thumbnail.getAttribute('src');
+            const imageName = src.split('/').pop();
+            imagesSRCPrice.push(src);
+            imagesP.push(imageName);
+        });
+        
+        let thumbnailImageP = document.querySelector('.price-thumbnails img');
+        let imgWidthP = thumbnailImageP ? thumbnailImageP.offsetWidth : 0;
+        let imgStyleP;
+        let marginRightP;
+        if (thumbnailImageP) {
+            imgStyleP = window.getComputedStyle(thumbnailImageP);
+            marginRightP = imgStyleP.marginRight;
+            marginRightP = parseInt(marginRightP.replace("px", ""), 10);
+        }
+
+        let itemWidthP = imgWidthP + marginRightP;
+
         let thumbnailsWrapperWidthP = document.querySelector('.price-thumbnails-wrapper').offsetWidth;
         // Scroll to the left
         if (direction === 'left') {

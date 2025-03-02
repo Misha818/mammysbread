@@ -61,19 +61,41 @@
 
 .modal {
     display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    border-radius: 8px;
-    max-width: 90%;
-    max-height: 90%;
-    overflow: auto;
+    position: fixed!important;
+    top: 50%!important;
+    left: 50%!important;
+    transform: translate(-50%, -50%)!important;
+    background-color: white!important;
+    padding: 20px!important;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5)!important;
+    z-index: 1000!important;
+    border-radius: 8px!important;
+    max-width: 90%!important;
+    max-height: 90%!important;
+    overflow-x: hidden!important;
+    overflow-y: hidden!important;
+    width: unset!important;
+    height: unset!important;
 }
+
+
+/* 
+.modal {
+    display: none;
+    position: fixed!important;
+    top: 50%!important;
+    left: 50%!important;
+    transform: translate(-50%, -50%)!important;
+    background-color: white!important;
+    padding: 20px!important;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5)!important;
+    z-index: 1000!important;
+    border-radius: 8px!important;
+    max-width: 90%!important;
+    max-height: 90%!important;
+    overflow-x: hidden!important;
+    overflow-y: hidden!important;
+} */
 
 .modal.open {
     display: block;
