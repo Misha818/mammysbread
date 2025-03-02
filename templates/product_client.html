@@ -56,7 +56,10 @@
     </span>
 </div>
 
-    <input type="hidden" id="editorStatus" value="{{ editorStatus }}" >    
+    <input type="hidden" id="editorStatus" value="{{ editorStatus }}" >   
+    
+
+<div class="card-container-user" id="card-container-user"></div>
     
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     
@@ -70,17 +73,96 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    // let Size = Quill.import('attributors/style/size');
-    // Quill.register(Size, true);
-    // const quill = new Quill('#editor-container', {
-    //     modules: { 
-    //         // toolbar: toolbarOptions 
-    //         toolbar: '#toolbar'
-    //         // scrollingContainer: '#editor-container'
-    //     },
-    //     theme: 'snow'
-    // });
+    prID = "{{ prData.Product_ID|safe }}";
 
+    let formData = new FormData();
+    formData.append('prID', prID);
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', '/other-products');
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            let response = JSON.parse(xhr.responseText);
+            if (response.status === "1") {
+                console.log(response.data.data)
+                creat_other_products(response.data.data)
+            } 
+        } else {
+            console.log(new Error('Error: ' + xhr.responseText));
+        }
+    };
+
+    xhr.onerror = function () {
+        console.log(new Error('Network Error'));
+    };
+
+    xhr.send(formData);
+
+    
+    function creat_other_products(products) {
+      
+
+        const container = document.getElementById("card-container-user");
+
+        products.forEach((product) => {
+            // Create card container
+            const card = document.createElement("div");
+            card.className = "card";
+            card.style.borderRadius = '15px'
+
+            // Create card layout
+            const cardLayout = document.createElement("div");
+            cardLayout.className = "card-layout";
+            card.appendChild(cardLayout);
+
+            // Create and append image element
+            const img = document.createElement("img");
+            const imgUrl = "{{ url_for('static', filename='images/pr_thumbnails/') }}";
+            img.src = imgUrl + product.Thumbnail;
+
+            img.alt = product.AltText;
+            img.className = "card-image";
+            card.appendChild(img);
+
+            // Create card content container
+            const cardContent = document.createElement("div");
+            cardContent.className = "card-content";
+            card.appendChild(cardContent);
+
+            // Create and append title
+            const title = document.createElement("h2");
+            title.className = "card-title";
+            title.textContent = product.Title;
+            cardContent.appendChild(title);
+
+            // Create and append description
+            const description = document.createElement("p");
+            description.className = "card-text";
+            description.textContent = product.LongDescription;
+            cardContent.appendChild(description);
+
+            // Create card buttons container
+            const cardButtons = document.createElement("div");
+            cardButtons.className = "card-buttons";
+            card.appendChild(cardButtons);
+
+            // Create "See Details" link
+            const seeDetails = document.createElement("a");
+            seeDetails.href = "{{ url_for('home') }}" + product.Url;
+            seeDetails.className = "btn_landing";
+            seeDetails.textContent = "{{ _('See Details') }}";
+            seeDetails.addEventListener('mouseover', () => {
+                seeDetails.style.color = 'white';
+            });
+            cardButtons.appendChild(seeDetails);
+
+            // Append the completed card to the container
+            container.appendChild(card);
+        });
+    }        
+    
 
 
     // Function to convert HTML to Delta

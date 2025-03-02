@@ -355,6 +355,26 @@ def products_client():
     return render_template('index.html', result=result, scrollTo='card-container-user', current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
 
+@app.route('/other-products', methods=['POST'])
+def other_products():
+    if request.form.get('prID'):
+        prID = request.form.get('prID')
+        languageID = getLangID()
+        sqlQuery =  f"""SELECT * FROM `product` 
+                        LEFT JOIN `product_relatives`
+                        ON  `product_relatives`.`P_ID` = `product`.`ID`
+                        WHERE `product_relatives`.`Language_ID` = %s
+                            AND `Product`.`ID` != %s
+                            AND `Product_Status` = 2
+                        ORDER BY `product`.`Order` ASC
+                    """
+        
+        sqlValTuple = (languageID, prID)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        return jsonify({'status': "1", 'data': result})
+    else:
+        return jsonify({'status': "0"})
 # Edit thumbnail image
 @app.route('/pr-thumbnail/<RefKey>', methods=['GET'])
 @login_required
