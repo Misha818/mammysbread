@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function basket() {
         let Cart = cookie.get('Cart', false);
+        console.log(`Cart is ${Cart}`);
         let notification = document.querySelector('.notification');
         const aTag = notification.parentNode.parentNode;
         if (Cart === false) {
@@ -144,13 +145,43 @@ document.addEventListener('DOMContentLoaded', function() {
             notification.style.display = 'none';
             aTag.href = window.location.origin + '/cart';
         } else {
-            let arr = Cart.split('&');
 
-            let cartCount = arr.length;
-            notification.textContent = cartCount.toString();
-            notification.style.display = 'block';
+            get_cart_content(Cart).then(response => {
+                let prData = response.content.result.data;
 
-            aTag.href = window.location.origin + '/cart/' + Cart;
+                let arr = Cart.split('&');
+                let cartCount = 0;
+
+                arr.forEach(item => {
+                    let itemArr = item.split('-');
+
+                    let ptIDCookie = parseInt(itemArr[0]);
+                    let countCookie = parseInt(itemArr[1]);
+
+                    prData.forEach(row => {
+                        if (parseInt(row['ptID']) === ptIDCookie) {               
+                            let amount = countCookie;
+                            if (countCookie > parseInt(row['quantity'])) {
+                                amount = parseInt(row['quantity'])
+                            }
+                            cartCount = cartCount + amount;
+                        }
+                    });
+
+                });
+
+                document.querySelector('.basket').src = document.getElementById('full-basket').value;
+
+
+                notification.textContent = cartCount.toString();
+                notification.style.display = 'block';
+    
+                aTag.href = window.location.origin + '/cart/' + Cart;
+
+            }).catch(error => {
+                console.error(error);
+            });
+            
         }
 
     }
@@ -368,7 +399,63 @@ document.addEventListener('DOMContentLoaded', function() {
 
     checkAddItems();
 
+    
+    // async function get_cart_content(newCookies) {
 
+    //     let formData = new FormData();
+    //     formData.append('cart-data', newCookies);
+
+    //     let xhr = new XMLHttpRequest();
+        
+    //     xhr.open('POST', '/cart');
+        
+    //     xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+    //     xhr.onload = function () {
+    //         if (xhr.status === 200) {
+    //             let response = JSON.parse(xhr.responseText);
+    //             return response
+
+    //         } else {
+    //             console.error('Error:', xhr.responseText);
+    //         }
+    //     };
+
+    //     // Send the request with the FormData object
+    //     xhr.send(formData);
+
+    // }
+
+    function get_cart_content(newCookies) {
+        return new Promise((resolve, reject) => {
+            let formData = new FormData();
+            formData.append('cart-data', newCookies);
+    
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', '/cart');
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+    
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    try {
+                        let response = JSON.parse(xhr.responseText);
+                        resolve(response);
+                    } catch (error) {
+                        reject(error);
+                    }
+                } else {
+                    reject(new Error('Error: ' + xhr.responseText));
+                }
+            };
+    
+            xhr.onerror = function () {
+                reject(new Error('Network Error'));
+            };
+    
+            xhr.send(formData);
+        });
+    }
+    
 
 });
 

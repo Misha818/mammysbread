@@ -25,6 +25,8 @@
       function getCsrfToken() {
           return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
       }
+
+
       
     </script>
     
@@ -33,35 +35,32 @@
     {% endblock %}
   </head>
   <body>    
-      <!-- Header -->
-      <header class="client-header">
-        <div class="client-logo-parent">
-            <img src="{{ url_for('static', filename='images/logo.png')}}" alt="Logo" class="client-logo">
+      <input type="hidden" id="full-basket" value="{{ url_for('static', filename='images/icons/full-basket.png') }}">
+      <input type="hidden" id="empty-basket" value="{{ url_for('static', filename='images/icons/empty-basket.png') }}">
+
+        <!-- Header Section -->
+      <header class="header_public">
+        <div class="mobile-menu">
+          <img src="{{ url_for('static', filename='images/icons/mobile-menu.png') }}" style="width: 50px;">
         </div>
-        <div class="header-bar">
-            <nav>
-                <div><a href="{{ url_for('home') }}" class="animated-underline">{{ _('Home') }}</a></div>
-                <div><a href="{{ url_for('home') }}about" class="animated-underline">{{ _('About') }}</a></div>
-                <div><a href="{{ url_for('home') }}contacts" class="animated-underline">{{ _('Contact') }}</a></div>
-                
-                {% if supportedLangsData | length > 1 %}     
-                <select onchange="location = '/' + this.value;" class="lang-drop-down">
-                    {% for lang in supportedLangsData %}
-                    <option value="{{ lang[0] }}" {{ 'selected' if get_locale() ==  lang[2]  else '' }}>{{ lang[1] }}</option>
-                    {% endfor %}
-                </select>
-                {% endif %}
-    
-                <!-- <i class="fa-solid fa-cart-arrow-down"></i> -->
-                <a href="{{ url_for('cart') }}" > 
-                  <div class="icon-wrapper">
-                      <i class="fa-solid fa-cart-arrow-down"></i>
-                      <span class="notification">5</span>
-                  </div>
-                </a>  
-            </nav>
+        <div class="logo-container">
+          <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='images/logo.jpg')}}" alt='{{ _("Mammys Bread Logo") }}' class="logo_public" />
+          </a>
         </div>
+        <a href="{{ url_for('cart') }}" id="basket-url"> 
+          <div class="icon-wrapper">
+            <img src="{{ url_for('static', filename='images/icons/empty-basket.png') }}" class="basket">
+              <!-- <i class="fa-solid fa-cart-arrow-down"></i> -->
+              <span class="notification">0</span>
+          </div>
+        </a>
       </header>
+
+
+
+
+
       <script type="text/javascript" src="{{ url_for('static', filename='JS/cookie.umd.min.js') }}"></script>
       <script type="text/javascript" src="{{ url_for('static', filename='JS/header.js') }}"></script>
       <!-- End of Header -->
@@ -70,7 +69,7 @@
 
     {% endblock %}
 
-      <footer style="background-color: #f8f9fa; padding: 40px 60px; text-align: left; width: 100%; margin-top: 40px;">
+      <footer style="background-color: #fdf6ec; padding: 40px 60px; text-align: left; width: 100%; margin-top: 40px;">
       <div style="display: flex; justify-content: space-between; flex-wrap: wrap; max-width: 1720px; margin: 0 auto;">
       <!-- <div style="flex: 1; min-width: 200px; padding: 20px;">
       <h3 style="color: #007bff; margin-bottom: 20px;">Services</h3>
@@ -104,6 +103,93 @@
       <p style="color: #6c757d; margin-top: 40px;">&copy; 2024 Your Company. All rights reserved.</p>
       </footer>
     
-  </body>
+  
+    <script>
+      
+      let xhr = new XMLHttpRequest();
+      let csrfToken = "{{ csrf_token() }}";
+
+      csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden'
+      csrfInput.id = 'csrfToket'
+      csrfInput.value = csrfToken
+
+      document.body.appendChild(csrfInput)
+
+      // Define an array of language objects
+      let languages = [
+          { value: "en", text: "En", selected: true }
+      ];
+
+      // Create the select element and set its class
+      const select = document.createElement("select");
+      select.className = "change-language";
+
+      // Add an event listener for the change event
+      select.addEventListener("change", function() {
+        window.location.href = '/setlang?lang=' + this.value;
+      });
+
+      // Configure the request
+      xhr.open('POST', '/get_langs');  
+      xhr.setRequestHeader('X-CSRFToken', csrfToken);                 
+
+      // Define what happens on successful data submission
+      xhr.onload = function () {
+          if (xhr.status === 200) {
+            languages = JSON.parse(xhr.responseText);
+
+            // Loop through the languages array to create and append options
+            languages.forEach(lang => {
+              const option = document.createElement("option");
+              option.value = lang.value;
+              let text = lang.value.charAt(0).toUpperCase() + lang.value.slice(1);
+              option.textContent = text;
+              
+              if (lang.selected) {
+                option.selected = true;
+                option.style.textAlign = 'center'
+              } else {
+                option.style.textAlign = 'left'
+              }
+                
+              select.appendChild(option);
+            });
+
+      
+          } else {
+
+            // Loop through the languages array to create and append options
+            languages.forEach(lang => {
+              const option = document.createElement("option");
+              option.value = lang.value;
+              let text = lang.value.charAt(0).toUpperCase() + lang.value.slice(1);
+              option.textContent = text;
+              
+              if (lang.selected) {
+                option.selected = true;
+                option.style.textAlign = 'center'
+              } else {
+                option.style.textAlign = 'left'
+              }
+
+              select.appendChild(option);
+            });
+
+          }
+            
+          document.querySelector('.header_public').prepend(select);
+      };
+
+      // Send the request with the FormData object
+      xhr.send();
+
+
+      
+
+    </script>  
+    </body>
+
+  
 
 </html>

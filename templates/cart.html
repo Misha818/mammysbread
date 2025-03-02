@@ -5,6 +5,12 @@
 
 
 {% block head %}
+
+<style>
+  body {
+    background-color: #ffffff;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -76,7 +82,7 @@
           <div class="item-details">
               <div class="item-image">
                   <a href="{{ prUrl }}&{{ row['ptTitle'] | replace(' ', '-') }}">
-                      <img src="{{ url_for('static', filename='images/sub_product_slider/' + row['imgName']) }}" alt="Item 1">
+                      <img src="{{ url_for('static', filename='images/sub_product_slider/' + row['imgName']) }}" alt="{{ row['AltText'] }}">
                   </a>
               </div>
               <div class="item-info">
@@ -93,6 +99,7 @@
                               style=" margin-right: 0px;
                                       width: 40px;
                                       height: 40px;"
+                              disabled        
                           >
                           <button class="plus-btn">+</button>
                       </div>
@@ -108,17 +115,23 @@
 {% endfor %}
 
 
-<div class="subtotal">{{ _('Subtotal') }} ({{ ns.itemLen }} {{ _('items') }}): {{ MAIN_CURRENCY }} {{ ns.subtotal }}</div>
-<button class="checkout-button">{{ _('Proceed to Checkout') }}</button>
+  <div class="subtotal">{{ _('Subtotal') }} ({{ ns.itemLen }} {{ _('items') }}): {{ MAIN_CURRENCY }} {{ ns.subtotal }}</div>
+  <div class="farther-actions">
+    <button class="checkout-button">{{ _('Proceed to Checkout') }}</button>
+  </div>
+
+
 </div>
 
 </div>
+
+
 
 {% endif %}
 
 
 <script>
-    let csrfToken = "{{ csrf_token() }}";
+    // let csrfToken = "{{ csrf_token() }}";
     window.addEventListener('load', () => {
       document.querySelector('body').classList.add('loaded');
     });
@@ -193,55 +206,35 @@
       }
     }
 
+
     function get_cart_content(newCookies) {
-
-        let formData = new FormData();
-        formData.append('newCookies', newCookies);
-
-        // Create a new XMLHttpRequest object
-        let xhr = new XMLHttpRequest();
-        
-        // Configure the request
-        xhr.open('POST', '/cart');
-        
-
-        xhr.setRequestHeader('X-CSRFToken', csrfToken);
-
-        // Define what happens on successful data submission
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                let response = JSON.parse(xhr.responseText);
-
-                // let mistakesDiv = document.getElementById('mistakes_modal');
-                // mistakesDiv.innerHTML = ''; // Clear previous messages
-                
-                if (response.status === '0') {
-                    // Handle Unknown Error
-                    // mistakesDiv.textContent = response.answer;
-                    // mistakesDiv.style.color = 'red';
-
-                    // Scroll the window to the mistakesDiv with smooth behavior
-                    // mistakesDiv.scrollIntoView({ behavior: 'smooth' });
-
-
-                } 
-                
-                if (response.status === '1') {
-                    // Handle success
-                    // alert(response.answer);
-                    // document.getElementById('').
-                    alert('Success')
+        return new Promise((resolve, reject) => {
+            let formData = new FormData();
+            formData.append('cart-data', newCookies);
+    
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', '/cart');
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+    
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    try {
+                        let response = JSON.parse(xhr.responseText);
+                        resolve(response);
+                    } catch (error) {
+                        reject(error);
+                    }
+                } else {
+                    reject(new Error('Error: ' + xhr.responseText));
                 }
-
-            } else {
-                // Handle error response
-                console.error('Error:', xhr.responseText);
-            }
-        };
-
-        // Send the request with the FormData object
-        xhr.send(formData);
-
+            };
+    
+            xhr.onerror = function () {
+                reject(new Error('Network Error'));
+            };
+    
+            xhr.send(formData);
+        });
     }
 
     
@@ -288,7 +281,6 @@ document.addEventListener("DOMContentLoaded", function() {
         let quantityToRemove = parseInt(deleteBtn.closest('.cart-item').querySelector('.quantity').value);
         let price = deleteBtn.closest('.cart-item').querySelector('.item-price span').textContent;
         
-        // console.log(`price is ${price}`)
 
         deleteBtn.closest('.cart-item').remove();
 
@@ -299,12 +291,6 @@ document.addEventListener("DOMContentLoaded", function() {
         quantities.forEach(quantity => {
           num = num + parseInt(quantity.value);
 
-          // let bigDaddy = quantity.parentNode.parentNode.parentNode.parentNode.parentNode;
-          // console.log(bigDaddy)
-          // let itemPrice = bigDaddy.querySelector('.item-price span').textContent;
-          // console.log(`itemPrice is ${itemPrice}`)
-          // console.log(`subtotal = ${subtotal} + ${parseInt(quantity.value)} * ${parseInt(itemPrice)}`)
-          // subtotal = subtotal + parseFloat(quantity.value) * parseFloat(itemPrice);
         });
 
         if (num == 0) {
@@ -532,7 +518,6 @@ document.addEventListener("DOMContentLoaded", function() {
             });  
 
               newCart = newCart.slice(1)
-              console.log(`newCart is ${newCart}`)
 
               cookie.set('Cart', newCart, { expires: 7, path: '/' })
               
@@ -546,7 +531,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             basket();
   
-            let newUrl = '/';
+            let newUrl = '';
             change_url(newUrl);
   
           } else {
@@ -561,6 +546,9 @@ document.addEventListener("DOMContentLoaded", function() {
         let updatedUrl = currentUrl.replace(/\/cart\/[^/]+/, "/cart" + path);
         history.replaceState(null, "", updatedUrl);
       }
+
+      let loader = myLoader('#FCC628');
+      let flag = false;
       
       if (document.querySelectorAll('.minus-btn')) {
         const minusButtons = document.querySelectorAll('.minus-btn');
@@ -571,6 +559,23 @@ document.addEventListener("DOMContentLoaded", function() {
             if (quantity <= 1 || quantity == 'undefinied') {
                 return;
             }
+
+            
+            if (flag === true) {
+              return;
+            }
+            flag = true;
+
+            minusBtn.textContent = '';
+            minusBtn.style.padding = '6px 10px';
+            minusBtn.appendChild(loader);
+        
+            let gearElement = document.getElementById('gear');
+            if (!gearElement) {
+              return;
+            } 
+        
+            rotate(gearElement);
             
             quantity = parseInt(quantity);
             const grandPa = parentDiv.parentNode; 
@@ -587,6 +592,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else {
                     modal_message(response.message)
                 }
+                gearElement.remove();
+                minusBtn.textContent = '-';
+                minusBtn.style.padding = '10px 15px';
+                flag = false;
                 }) 
                 .catch(error => console.error(error));
             });
@@ -604,6 +613,22 @@ document.addEventListener("DOMContentLoaded", function() {
             if (quantity == 0 || quantity == 'undefinied') {
                 return;
             }
+
+            if (flag === true) {
+              return;
+            }
+            flag = true;
+
+            plusBtn.textContent = '';
+            plusBtn.style.padding = '6px 10px';
+            plusBtn.appendChild(loader);
+        
+            let gearElement = document.getElementById('gear');
+            if (!gearElement) {
+              return;
+            } 
+        
+            rotate(gearElement);
     
             quantity = parseInt(quantity);
             const grandPa = parentDiv.parentNode; 
@@ -619,6 +644,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else {
                     modal_message(response.message)
                 }
+                gearElement.remove();
+                plusBtn.textContent = '+';
+                plusBtn.style.padding = '10px 15px';
+                flag = false;
                 }) 
                 .catch(error => console.error(error));
             });
@@ -685,13 +714,7 @@ document.addEventListener("DOMContentLoaded", function() {
           priceText = priceText.trim()
           // priceText.substring(-1);
           oldPriceContainer.textContent = newPrice;
-
-
-          console.log(`subtotal aaaaa ${document.querySelector('.subtotal').textContent}`)
           document.querySelector('.subtotal').textContent = priceText;
-          console.log(`oldPrice ${oldPrice}`)
-          console.log(priceText)
-          console.log(arr)
       }
 
    
@@ -700,17 +723,47 @@ document.addEventListener("DOMContentLoaded", function() {
         let notification = document.querySelector('.notification');
         const aTag = notification.parentNode.parentNode;
         if (Cart === false) {
+            document.querySelector('.basket').src = document.getElementById('empty-basket').value;
             notification.innerHtml = '';
             notification.style.display = 'none';
             aTag.href = window.location.origin + '/cart';
         } else {
-            let arr = Cart.split('&');
+            get_cart_content(Cart).then(response => {
+                let prData = response.content.result.data;
 
-            let cartCount = arr.length;
-            notification.textContent = cartCount.toString();
-            notification.style.display = 'block';
+                let arr = Cart.split('&');
+                let cartCount = 0;
 
-            aTag.href = window.location.origin + '/cart/' + Cart;
+                arr.forEach(item => {
+                    let itemArr = item.split('-');
+
+                    let ptIDCookie = parseInt(itemArr[0]);
+                    let countCookie = parseInt(itemArr[1]);
+
+                    prData.forEach(row => {
+                        if (parseInt(row['ptID']) === ptIDCookie) {
+                            let amount = countCookie;
+                            if (countCookie > parseInt(row['quantity'])) {
+                                amount = parseInt(row['quantity'])
+                            }
+                            cartCount = cartCount + amount;
+                        }
+                    });
+
+                });
+
+                document.querySelector('.basket').src = document.getElementById('full-basket').value;
+
+
+                notification.textContent = cartCount.toString();
+                notification.style.display = 'block';
+    
+                aTag.href = window.location.origin + '/cart/' + Cart;
+
+            }).catch(error => {
+                console.error(error);
+            });
+        
         }
 
     }

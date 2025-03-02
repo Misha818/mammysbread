@@ -1,9 +1,13 @@
-<!doctype html>
-<html lang="{{ current_locale }}">
+{% extends 'public.html' %}
+{% block title %}
+    {{ _("Mammy's Bread") }}
+{% endblock %}
 
-<head>
+
+{% block head %}
+
     <!-- Required meta tags -->
-    <meta charset="UTF-8">
+    <!-- <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
@@ -11,9 +15,9 @@
 
     <title>
         {{ _('Home') }}
-    </title>
+    </title> -->
 
-    <script>
+    <!-- <script>
       document.addEventListener('DOMContentLoaded', function(){
         document.addEventListener('click', function(event) {
           if (event.target.classList.contains('nav-to')) {
@@ -28,7 +32,7 @@
         });
 
       
-    </script>
+    </script> -->
     <style>
 body {
   font-family: Arial, Helvetica, sans-serif;
@@ -92,40 +96,24 @@ input[type=submit]:hover {
 }
 
     </style>
-</head>
-<body>
-    <div class="containerH" id="home">
-        <div class="image-container">
-            <img src="{{ url_for('static', filename='images/home.png') }}" alt="{{ _('Home Image') }}" />
-        </div>
-        <div class="text-container">
-            <h2>
-                <strong class="typewriter">
-                    <span id="text"></span><span class="cursor"></span>
-                </strong>
-            </h2>
-                
-        </div>
-    </div>
-  
-
-<div class="header" style="display: none;">
-    <div class="nav-item">
-      <div class="nav-link nav-to" value="home">{{ _('Home') }}</div>
-      <div class="line"></div>
-    </div>
-    <div class="nav-item">
-      <div class="nav-link nav-to about" value="about">{{ _('About') }}</div>
-      <div class="line"></div>
-    </div>
-    <div class="nav-item">
-      <div class="nav-link nav-to contacts" value="contacts">{{ _('Contacts') }}</div>
-      <div class="line"></div>
-    </div>
-</div>
+{% endblock %}
 
 
+{% block content %}
 
+<input type="hidden" id="inBasketText" value="{{ _('In Basket') }}">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <!-- Replace with your actual hero image file -->
+    <img src="{{ url_for('static', filename='images/homeSlides/background-1.png') }}" alt="{{ _('Fresh Sourdough Bread') }}" class="hero-image" />
+  </section>
+
+  <!-- Navigation Buttons -->
+  <nav class="nav-buttons">
+    <div class="btn_landing contacts">{{ _('Contact US') }}</div>
+    <div class="btn_landing btn-highlight order-now">{{ _('Order Now!') }}</div>
+    <div class="btn_landing about">{{ _('Our History') }}</div>
+  </nav>
 
 
 
@@ -134,19 +122,25 @@ input[type=submit]:hover {
   {% for row in result.data %}
   
   <div class="card">
+    <div class="card-layout"></div>
     <img src="{{ url_for('static', filename='images/pr_thumbnails/' + row['Thumbnail']) }}" alt="{{ row['AltText'] }}" class="card-image">
     <div class="card-content">
       <h2 class="card-title">{{ row['Title'] }}</h2>
       <p class="card-text">
-        {% if row['LongDescription']|length > 112 %}
-          {% set LongDescription = row['LongDescription'][:120] %}
+        {% if row['LongDescription']|length > 125 %}
+          {% set LongDescription = row['LongDescription'][:125] %}
+          {% set LongDescription = LongDescription + ' ...' %}
         {% else %}
           {% set LongDescription = row['LongDescription'] %}
         {% endif %}
         {{ LongDescription }}
-        <a href="{{ url_for('home', _external=True) + row['Url'] }}" class="simple-card-button" target="_blank">{{ _('More') }}</a>
 
       </p>
+    </div>
+    <div class="card-buttons">
+      <a href="{{ url_for('home', _external=True) + row['Url'] }}" class="btn_landing">{{ _('See Details') }}</a>
+      <div data-value="{{ row['ID'] }}" class="btn_landing add-to-cart-home">{{ _('Add To Cart') }}</div>
+      <a href="#" class="btn_landing btn-highlight">{{ _('Buy Now') }}</a>
     </div>
   </div>
   {% endfor %}
@@ -175,49 +169,11 @@ input[type=submit]:hover {
   </div>
 </div>
   
-<div class="container" style="padding: 0px;
-                              width: 100%;
-                              ">
-
-  
-  <footer style="background-color: #f8f9fa; padding: 40px 20px; text-align: left; width: 90%; margin-left: 10%;">
-    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; max-width: 1720px; margin: 0 auto;">
-      <!-- <div style="flex: 1; min-width: 200px; padding: 20px;">
-        <h3 style="color: #007bff; margin-bottom: 20px;">Services</h3>
-          <ul style="list-style-type: none; padding: 0;">
-              <li><a href="#service1" style="color: #007bff; text-decoration: none;">Service 1</a></li>
-              <li><a href="#service2" style="color: #007bff; text-decoration: none;">Service 2</a></li>
-              <li><a href="#service3" style="color: #007bff; text-decoration: none;">Service 3</a></li>
-            </ul>
-          </div> -->
-
-          <div style="flex: 1; min-width: 200px; padding: 20px;">
-            <h3 style="color: #007bff; margin-bottom: 20px;">Contact</h3>
-            <p style="color: #6c757d;">123 Street Name<br>City, State, 12345<br>Email: info@example.com</p>
-            <div style="margin-top: 20px;">
-              <a href="https://facebook.com" class="fa fa-facebook" target="_blank" ></a>
-              <a href="https://instagram.com" class="fa fa-instagram" target="_blank"></a>
-              <a href="https://youtube.com" class="fa fa-youtube" target="_blank"></a>
-              
-            </div>
-          </div>
-
-          <div style="flex: 1; min-width: 200px; padding: 20px;">
-            <h3 style="color: #007bff; margin-bottom: 20px;">Subscribe to us!</h3>
-            <p style="color: #6c757d;">Be the first to know about discounts and promotions.</p>
-            <div>
-              <input type="text" name="email" id="email" style="width: 90%"/>
-              <div class="pcButtonS" id="subscribe" style="margin-top: unset;">Submit</div>
-            </div>
-          </div>
-        </div>
-        <p style="color: #6c757d; margin-top: 40px;">&copy; 2024 Your Company. All rights reserved.</p>
-      </footer>
-      
-    </div>
 
   <script>
+    let prData = []
     document.addEventListener('DOMContentLoaded', function() {
+
 
         const text = "Happy New 2025 Year!";
         const delay = 100; // Delay in milliseconds
@@ -225,13 +181,16 @@ input[type=submit]:hover {
         
         function typeWriter() {
             if (index < text.length) {
+              if (document.getElementById('text')) {
+
                 document.getElementById('text').innerHTML += text.charAt(index);
                 index++;
                 setTimeout(typeWriter, delay);
                 if (index === text.length) {
-                    document.querySelector('.cursor').style.display = 'none';
-                    // setTimeout(slide_moves, 400);
+                  document.querySelector('.cursor').style.display = 'none';
+                  // setTimeout(slide_moves, 400);
                 }
+              }
             }
         }
         
@@ -256,9 +215,13 @@ input[type=submit]:hover {
 
         
         const navBar = document.querySelector('.image-container');
-        navBar.addEventListener('click', ()=>{
+        if (navBar) {
+
+          navBar.addEventListener('click', ()=>{
             slide_moves();
-        });
+          });
+          
+        }
 
     window.addEventListener('load', () => {
       document.querySelector('body').classList.add('loaded');
@@ -285,12 +248,1009 @@ input[type=submit]:hover {
           target_to_navigate.scrollIntoView({ behavior: 'smooth' });
       };
 
-      headerScroll();
+      // headerScroll();
 
     });
+
+
+  document.querySelector('.order-now').addEventListener('click', function(event) {
+      event.preventDefault(); // Prevent default action if it's a link
+
+      const targetElement = document.querySelector('.card-container-user');
+      
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+  });
+ 
+  document.querySelector('.about').addEventListener('click', function(event) {
+      event.preventDefault(); // Prevent default action if it's a link
+
+      const targetElement = document.querySelector('#about');
+      
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+  });
+
+  document.querySelector('.contacts').addEventListener('click', function(event) {
+      event.preventDefault(); // Prevent default action if it's a link
+
+      const targetElement = document.querySelector('#contacts');
+      
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+  });
+
+function check_quantity(ptID) {
+  let Cart = cookie.get('Cart', false);
+  let answer = {'status': false, 'val': 0};
+  if (Cart === false) {
+      return answer;
+  } else {
+      let arr = Cart.split('&');
+      let num = 0;
+      arr.forEach(item => {
+        let itemArr = item.split('-');
+        if (parseInt(itemArr[0]) == parseInt(ptID)) {
+          answer.status = true;
+          answer.val = itemArr[1];
+        }
+      });
+      return answer;      
+  }
+}
+
+function createShoppingCartModal(prData) {
+
+  // Create the modal backdrop
+  const modalBackdrop = document.createElement('div');
+  modalBackdrop.className = 'modal-backdrop';
+
+  // Create the modal content container
+  const modalContent = document.createElement('div');
+  modalContent.className = 'modal-content';
+
+  // Create the close button
+  const closeButton = document.createElement('span');
+  closeButton.textContent = '×';
+  closeButton.className = 'add-to-cart-modal-close';
+  closeButton.addEventListener('click', () => {
+    modalBackdrop.remove();
+  });
+
+  // Create the shopping cart content
+  const shoppingCart = document.createElement('div');
+  shoppingCart.className = 'add-to-cart-modal';
+
+  const cartHeaderContainer = document.createElement('div');
+  cartHeaderContainer.className = 'cart-header-conteiner';
+  // cartHeaderContainer.style.borderBottom = '1px solid #ddd';
+
+  const cartHeader = document.createElement('div');
+  cartHeader.className = 'cart-header';
+  cartHeader.style.borderBottom = 'unset';
+  cartHeader.textContent = prData[0].prTitle;
+
+  // const priceHeader = document.createElement('div');
+  // priceHeader.className = 'price-header';
+  // priceHeader.textContent = "{{ _('Price') }}";
+
+  cartHeaderContainer.appendChild(cartHeader);
+  // cartHeaderContainer.appendChild(priceHeader);
+  modalContent.appendChild(cartHeaderContainer);
+
+  num = 1;
+  dataLen = prData.length;
+  if (dataLen === 1) {
+    shoppingCart.style.gridTemplateColumns = 'repeat(1, 1fr)';
+  }  
+
+  console.log(`type of ${typeof(dataLen)}`)
+  prData.forEach(row => {
+      let fullPath = "{{ url_for('home') }}" + row.url + '&' + row.ptTitle.replace(' ', '-')
+      let quantityState = check_quantity(row.ptID)
+      let quantityValue = quantityState.val;
+      let addToCartContent = "{{ _('Add To Cart') }}";
+      let dataState = "0"
+      if (quantityState.status === true) {
+        addToCartContent = "{{ _('In Basket') }}";
+        dataState = "1"
+      }
+
+      const cartItem = document.createElement('div');
+      if (num == dataLen) {
+        cartItem.classList = 'cart-item cart-item-last';       
+      } else {
+        cartItem.className = 'cart-item';
+      }
+
+      const itemDetails = document.createElement('div');
+      // itemDetails.className = 'item-details';
+
+      const itemImage = document.createElement('div');      
+      itemImage.className = 'item-image';
+
+
+      const itemImageLink = document.createElement('a');
+      itemImageLink.href = fullPath;
+
+      const itemImg = document.createElement('img');
+      itemImg.src = "{{ url_for('static', filename='images/sub_product_slider/') }}" + row.imgName;
+      itemImg.alt = row.AltText;
+
+      itemImageLink.appendChild(itemImg);
+      itemImage.appendChild(itemImageLink);
+
+      const itemInfo = document.createElement('div');
+      itemInfo.className = 'item-info-modal';
+
+      const itemTitle = document.createElement('div');
+      itemTitle.className = 'item-title';
+      itemTitle.style.width = '150px';
+      itemTitle.style.textAlign = 'left';
+      itemTitle.style.marginBottom = '0px';
+
+      const itemTitleLink = document.createElement('a');
+      itemTitleLink.href = fullPath;
+      itemTitleLink.textContent = row.ptTitle;
+
+      itemTitle.appendChild(itemTitleLink);
+
+      const itemControls = document.createElement('div');
+      itemControls.className = 'item-controls';
+      itemControls.setAttribute('data-value', row.ptID);
+
+      const quantityControls = document.createElement('div');
+      quantityControls.className = 'quantity-controls';
+
+      const minusButton = document.createElement('button');
+      minusButton.className = 'minus-btn';
+      minusButton.textContent = '-';
+
+      const quantityInput = document.createElement('input');
+      quantityInput.type = 'number';
+      quantityInput.className = 'quantity';
+      quantityInput.name = 'quantity';
+      quantityInput.value = quantityValue;
+      quantityInput.min = '1';
+      quantityInput.disabled = true;
+      quantityInput.style.marginRight = '0px';
+      quantityInput.style.width = '40px';
+      quantityInput.style.height = '40px';
+
+      const plusButton = document.createElement('button');
+      plusButton.className = 'plus-btn';
+      plusButton.textContent = '+';
+
+      quantityControls.appendChild(minusButton);
+      quantityControls.appendChild(quantityInput);
+      quantityControls.appendChild(plusButton);
+
+      itemControls.appendChild(quantityControls);
+
+      itemInfo.appendChild(itemTitle);
+      
+      itemDetails.appendChild(itemImage);
+      
+      const itemPrice = document.createElement('div');
+      itemPrice.className = 'item-price-modal';
+      itemPrice.innerHTML = "{{ MAIN_CURRENCY|safe }}" + ` <span style="font-weight: 600">${parseFloat(row.Price) * parseFloat(quantityValue)}</span>`;
+      
+      cartItem.appendChild(itemDetails);
+      cartItem.appendChild(itemInfo);
+
+      const cpParent = document.createElement('div');
+      cpParent.className = 'cpParent';
+
+      cpParent.appendChild(itemControls);
+      cpParent.appendChild(itemPrice);
+      cartItem.appendChild(cpParent);
+      
+      const addToCart = document.createElement('div');
+      addToCart.classList = 'add-to-cart-modal-home';
+      addToCart.textContent = addToCartContent;
+      addToCart.dataset.state = dataState;
+      addToCart.dataset.value = row.ptID;
+      
+      const buyNow = document.createElement('div');
+      buyNow.classList = 'buy-now-modal-btn';
+      buyNow.textContent = "{{ _('Buy Now') }}";
+      buyNow.dataset.value = row.ptID;
+
+      const abParent = document.createElement('div');
+      abParent.className = 'abParent';
+      
+      abParent.appendChild(addToCart);
+      // abParent.appendChild(buyNow);
+      cartItem.appendChild(abParent);
+
+      
+
+
+      shoppingCart.appendChild(cartItem);
+      
+      num = num + 1;
+
+  });  
+
+
+
+
+  const fartherActions = document.createElement('div');
+  fartherActions.className = 'farther-actions';
+
+  const checkoutButton = document.createElement('div');
+  checkoutButton.className = 'checkout-button';
+  checkoutButton.textContent = "{{ _('Proceed to Checkout') }}";
+  
+  const continueShopping = document.createElement('div');
+  continueShopping.classList = 'continue-shopping';
+  continueShopping.textContent = "{{ _('Continue Shopping') }}";
+  continueShopping.addEventListener('click', () => {
+    modalBackdrop.remove();
+  });
+  
+  
+  fartherActions.appendChild(checkoutButton);
+  fartherActions.appendChild(continueShopping);
+  shoppingCart.appendChild(fartherActions);
+
+  // Append the close button and shopping cart to the modal content
+  modalContent.appendChild(closeButton);
+  modalContent.appendChild(shoppingCart);
+
+  // Append the modal content to the backdrop
+  modalBackdrop.appendChild(modalContent);
+
+  // Append the modal backdrop to the body
+  document.body.appendChild(modalBackdrop);
+
+  return modalBackdrop;
+}
+
+
+function myLoader(color, gearID) {
+    if (color === undefined) {
+      color = 'crimson'
+    }
+
+    if (gearID === undefined) {
+      gearID = 'gear'
+    }
+    let loader = document.createElement('div'); // Create a div element for the loader
+      loader.id = gearID;
+      loader.style.color = color;
+      loader.style.fontSize = '20px';
+      loader.style.display = 'inline-block';
+      loader.textContent = '⚙';
+      return loader;
+}
+
+function rotate(gearElement) {
+  let angle = 0;
+  setInterval(() => {
+      angle = (angle + 5) % 360; 
+      gearElement.style.transform = `rotate(${angle}deg)`;
+  }, 50); 
+}
+
+// Get all elements with the 'add-to-cart-btn' class
+const addToCartButtons = document.querySelectorAll('.add-to-cart-home');
+
+let homeFlag = false;
+// Loop through each button and attach a click event listener
+if (addToCartButtons) {
+
+  addToCartButtons.forEach(button => {
+    button.addEventListener('click', function(event) {
+    if (event.target) {
+
+      const clickedButtonHome = event.target;
+      const prID = event.target.getAttribute('data-value');
+
+      if (homeFlag === true) {
+        return;
+      }
+        
+      homeFlag = true;
+      let loaderHome = myLoader('white', 'gearHome');
+
+      clickedButtonHome.textContent = '';
+      // clickedButton.style.padding = '6px 10px';
+      clickedButtonHome.appendChild(loaderHome);
+
+      let gearElementHome = document.getElementById('gearHome');
+      if (!gearElementHome) {
+        return;
+      } 
+
+      rotate(gearElementHome);
+
+      // Create a new FormData object
+      let formData = new FormData();
+      formData.append('prID', prID);
+      
+      // Create a new XMLHttpRequest object
+      let xhr = new XMLHttpRequest();
+      
+      // Configure the request
+      xhr.open('POST', '/get-available-pts');
+      xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+      xhr.onload = function () {
+          if (xhr.status === 200) {
+              let response = JSON.parse(xhr.responseText);
+              
+              if (response.status === '1') {
+                  // Handle success
+                  console.log(response.data);
+                  prData = response.data
+                  
+                  const newShoppingCartModal = createShoppingCartModal(response.data);
+                  const data = {
+                    newShoppingCartModal: newShoppingCartModal.outerHTML
+                  }
+
+                  // const basketElement = document.querySelector('#basket-url');
+                  // const destinationContainer = document.querySelector('.add-to-cart-modal-close');
+                  // if (basketElement && destinationContainer) {
+                  //   // Append the element to the new container
+                  //   destinationContainer.appendChild(basketElement);
+                  // }
+
+
+                  
+                    // function myLoader(color) {
+                    //     if (color === undefined) {
+                    //       color = 'crimson'
+                    //     }
+                    //     let loader = document.createElement('div'); // Create a div element for the loader
+                    //       loader.id = 'gear';
+                    //       loader.style.color = color;
+                    //       loader.style.fontSize = '20px';
+                    //       loader.style.display = 'inline-block';
+                    //       loader.textContent = '⚙';
+                    //       return loader;
+                    // }
+
+                    // function rotate(gearElement) {
+                    //   let angle = 0;
+                    //   setInterval(() => {
+                    //       angle = (angle + 5) % 360; 
+                    //       gearElement.style.transform = `rotate(${angle}deg)`;
+                    //   }, 50); 
+                    // }
+
+                    let loader = myLoader('#FCC628');
+                    let flag = false;
+
+                    if (document.querySelectorAll('.add-to-cart-modal-home')) {
+                      
+                      const addToCartModals = document.querySelectorAll('.add-to-cart-modal-home');
+                      
+                      addToCartModals.forEach(addToCartModal => {
+                        addToCartModal.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            const clickedButton = event.target;
+                            if (clickedButton) {
+                              
+                              const parentDiv = clickedButton.parentNode.parentNode;
+                              let quantity = parentDiv.querySelector('.quantity').value;
+                              if (quantity == 'undefinied' || quantity == 0) {
+                                return;
+                              }
+                              if (flag === true) {
+                                return;
+                              }
+                              console.log('I am here')  
+                              flag = true;
+
+                              let ptID = clickedButton.dataset.value;
+
+                              let clickedButtonWidth = clickedButton.offsetWidth;
+                              let clickedButtonHeight = clickedButton.offsetHeight;
+                              clickedButton.textContent = '';
+                              clickedButton.style.width = clickedButtonWidth + 'px';
+                              clickedButton.style.height = clickedButtonHeight + 'px';
+
+                              let loader = myLoader('white');
+                              clickedButton.appendChild(loader);
+                          
+                              let gearElement = document.getElementById('gear');
+                              gearElement.style.fontSize = '25px';
+                              if (!gearElement) {
+                                return;
+                              } 
+                          
+                              rotate(gearElement);
+                              quantity = parseInt(quantity);
+                                    
+                              addToCart(ptID, quantity, clickedButton).then(() => {
+                                  gearElement.remove();
+                                  clickedButton.textContent = "{{ _('In Basket') }}";
+                                  clickedButton.dataset.state = "1";
+                                  flag = false;
+                              });
+
+                              } 
+                          });
+                      });
+                    }
+
+                    if (document.querySelectorAll('.minus-btn')) {
+                                            
+                      const minusButtons = document.querySelectorAll('.minus-btn');
+                      minusButtons.forEach(minusBtn => {
+                          minusBtn.addEventListener('click', (event) => {
+                            event.preventDefault();                            
+                            
+                            const clickedButton = event.target;
+                            if (clickedButton) {  
+                              const parentDiv = clickedButton.parentNode;
+                              let quantity = parentDiv.querySelector('.quantity').value;
+                              if (quantity <= 1 || quantity == 'undefinied') {
+                                return;
+                              }
+                              
+                              if (flag === true) {
+                                return;
+                              }
+                              flag = true;
+
+                              clickedButton.textContent = '';
+                              clickedButton.style.padding = '6px 10px';
+                              clickedButton.appendChild(loader);
+                          
+                              let gearElement = document.getElementById('gear');
+                              if (!gearElement) {
+                                return;
+                              } 
+                          
+                              rotate(gearElement);
+                                                            
+                              quantity = parseInt(quantity);
+                              const grandPa = parentDiv.parentNode; 
+                              let ptID = grandPa.dataset.value;
+                              let newQuantity = quantity - 1;
+                      
+                              
+                              get_pt_quantity(ptID, newQuantity)
+                                  .then(response => {
+                                    if (response.status === 1) {
+                                        parentDiv.querySelector('.quantity').value = newQuantity;
+                                        change_price(minusBtn, response.data.price, '-')
+                                        addToCart(ptID, newQuantity, clickedButton).then(() => {
+                                            gearElement.remove();
+                                            clickedButton.textContent = '-';
+                                            clickedButton.style.padding = '10px 15px';
+                                            flag = false;
+                                          });
+                                    } else {
+                                      gearElement.remove();
+                                      clickedButton.textContent = '-';
+                                      clickedButton.style.padding = '10px 15px';
+                                      flag = false;
+                                    }
+                                  }) 
+                                  .catch(error => console.error(error));
+                            }  
+                          });
+                      }); 
+
+                    }
+
+                    if (document.querySelectorAll('.plus-btn')){
+                      
+                      const plusButtons = document.querySelectorAll('.plus-btn');
+                      
+                      plusButtons.forEach(plusBtn => {
+                          plusBtn.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            const clickedButton = event.target;
+                            if (clickedButton) {
+                              
+                              const parentDiv = clickedButton.parentNode;
+                              let quantity = parentDiv.querySelector('.quantity').value;
+                              if (quantity == 'undefinied') {
+                                return;
+                              }
+
+                              if (flag === true) {
+                                return;
+                              }
+                              flag = true;
+
+                              clickedButton.textContent = '';
+                              clickedButton.style.padding = '6px 10px';
+                              clickedButton.appendChild(loader);
+                          
+                              let gearElement = document.getElementById('gear');
+                              if (!gearElement) {
+                                return;
+                              } 
+                          
+                              rotate(gearElement);
+
+                              quantity = parseInt(quantity);
+                              const grandPa = parentDiv.parentNode; 
+                              ptID = grandPa.dataset.value;
+                              let newQuantity = quantity + 1;
+                                      
+                              get_pt_quantity(ptID, newQuantity)
+                                  .then(response => {
+                                    if (response.status === 1) {
+                                        parentDiv.querySelector('.quantity').value = newQuantity;
+                                        change_price(plusBtn, response.data.price, '+')
+                                        let dataState = grandPa.parentNode.parentNode.querySelector('.add-to-cart-modal-home').dataset.state;
+                                        if (dataState === "1") {
+                                          addToCart(ptID, newQuantity, clickedButton).then(() => {
+                                            gearElement.remove();
+                                            clickedButton.textContent = '+';
+                                            clickedButton.style.padding = '10px 15px';
+                                            flag = false;
+                                          });
+                                        } else {
+                                          gearElement.remove();
+                                          clickedButton.textContent = '+';
+                                          clickedButton.style.padding = '10px 15px';
+                                          flag = false;
+                                        }
+                                    } 
+
+                                    
+                                  }) 
+                                  .catch(error => console.error(error));
+                            }  
+                          });
+                      }); 
+                    }
+
+                }
+                
+            if (response.status === '0') {
+              modal_message(response.answer)
+              console.log(response.answer);
+              console.log('response.answer');
+            }
+              
+          } else {
+              console.error('Error adding category:', xhr.responseText);
+          }
+          gearElementHome.remove();
+          clickedButtonHome.textContent = "{{ _('Add To Cart') }}";
+          homeFlag = false;
+      };
+
+      // Send the request with the FormData object
+      xhr.send(formData);
+
+      }
+    });
+  });
+  
+}
+
+async function get_pt_quantity(ptID, quantity) {
+        let formData = new FormData();
+            formData.append('ptID', ptID);
+            formData.append('quantity', quantity);
+    
+            try {
+                let response = await fetch('/get-pt-quantity', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: formData,
+                });
+        
+                if (response.ok) {
+                    let data = await response.json();
+                    return data;
+                } else {
+                    throw new Error('Request failed');
+                }
+            } catch (error) {
+                console.error(error);
+                return false; 
+            }
+        
+       }
+
+
+      function change_price(clickedElement, newPrice, more_or_less, num=1) {
+
+          const cartItem = clickedElement.closest('.cart-item');
+          const oldPriceContainer = cartItem.querySelector('.item-price-modal span');
+      
+          oldPriceContainer.textContent = newPrice;
+      }
+
+   
+      function basket() {
+        let Cart = cookie.get('Cart', false);
+        
+        let notification = document.querySelector('.notification');
+        const aTag = notification.parentNode.parentNode;
+        if (Cart === false) {
+            document.querySelector('.basket').src = document.getElementById('empty-basket').value;
+            notification.innerHtml = '';
+            notification.style.display = 'none';
+            aTag.href = window.location.origin + '/cart';
+        } else {
+            get_cart_content(Cart).then(response => {
+                let prData = response.content.result.data;
+
+                let arr = Cart.split('&');
+                let cartCount = 0;
+
+                arr.forEach(item => {
+                    let itemArr = item.split('-');
+
+                    let ptIDCookie = parseInt(itemArr[0]);
+                    let countCookie = parseInt(itemArr[1]);
+
+                    prData.forEach(row => {
+                        if (parseInt(row['ptID']) === ptIDCookie) {
+                            let amount = countCookie;
+                            if (countCookie > parseInt(row['quantity'])) {
+                                amount = parseInt(row['quantity'])
+                            }
+                            cartCount = cartCount + amount;
+                        }
+                    });
+
+                });
+
+                document.querySelector('.basket').src = document.getElementById('full-basket').value;
+
+
+                notification.textContent = cartCount.toString();
+                notification.style.display = 'block';
+    
+                aTag.href = window.location.origin + '/cart/' + Cart;
+
+            }).catch(error => {
+                console.error(error);
+            });
+        
+        }
+
+    }
+    
+    // Add to card
+    async function addToCart(ptID, num, clickedBotton) {
+        let checkPtQuantity = await check_pt_quantity(ptID, num);
+
+        // console.log(`checkPtQuantity is ${checkPtQuantity.status}`)
+
+        if (checkPtQuantity.status === '0') {
+            // const textContent = document.getElementById('outOfStock').value;
+            modal_message(checkPtQuantity.answer);
+            return true;
+        }
+        
+        // Max allowed quantity to purchase or max quantity in stoke 
+        if (checkPtQuantity.status === '2') {
+            modal_message(checkPtQuantity.answer);
+            addToQuantity(clickedBotton, checkPtQuantity.max);
+            num = parseInt(checkPtQuantity.max);
+        }
+        
+        
+
+        let Cart = cookie.get('Cart');
+        let flagID = false;
+        let flagNum = false;
+        let newPt = false;
+        let newCookie = '';
+        if (Cart) {
+            arr = Cart.split('&');
+            arr.forEach(item => {
+                array = item.split('-');
+                if (array[0] === ptID) {
+                    flagID = true; 
+                    if (array[1] === num) {
+                        flagNum = true; 
+                        return true;
+                    } else {
+                        let newItem = ptID + '-' + num;
+                        newCookie = newCookie + '&' + newItem;
+                    }  
+
+                } else { 
+                    newPt = true;
+                    newCookie = newCookie + '&' + item;
+                }
+                
+            });
+            newCookie = newCookie.substring(1);
+            
+        } else {
+            newCookie = ptID + '-' + num;   
+        }
+        
+        if (flagNum === true) {
+            let textContent = document.getElementById('cartMessage').value;
+            if (textContent) {
+                modal_message(textContent);
+            } else {
+                modal_message("You have already added this product to the basket. You can change the quantity.");
+            }
+            return true;
+        } else {
+
+            if (newPt === true && flagID === false) {
+                newCookie = Cart + '&' + ptID + '-' + num;  
+            }
+            
+            // Set new Cookies   
+            cookie.set('Cart', newCookie, { expires: 7, path: '/' })  
+            basket();
+            const inBasket = document.getElementById('inBasketText').value;
+
+            clickedBotton.childNodes.forEach(node => {
+                // Check if the node is a text node and not just whitespace
+                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length) {
+                    node.textContent = ' ' + inBasket; 
+                }
+            });
+
+        }
+      return true;  
+    }
+
+    // Check if product type exists in specified quantity
+    // Returns bool    
+    async function check_pt_quantity(ptID, num) {
+        let formData = new FormData();
+        formData.append('ptID', ptID);
+        formData.append('num', num);
+    
+        try {
+            let response = await fetch('/check-pt-quantity', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                },
+                body: formData,
+            });
+    
+            if (response.ok) {
+                let data = await response.json();
+                if (data.status === '0') {
+                    return {'status': '0', 'answer': data.answer}
+                } 
+                
+                if (data.status === '1') {
+                    return {'status': '1'}
+                }
+                
+                if (data.status === '2') {
+                    return {'status': '2', 'answer': data.answer, 'max': data.max}
+                } 
+
+
+            } else {
+                throw new Error('Request failed');
+            }
+        } catch (error) {
+            console.error(error);
+            return false; 
+        }
+    }
+
+    
+    function addToQuantity(clickedBotton, num) {
+        const container = clickedBotton.closest('.cart-container');
+        const quantityInput = container.querySelector('input.quantity');
+
+        if (quantityInput) {
+            // const currentValue = parseInt(quantityInput.value, 10) || 0;
+            quantityInput.value = num;
+        }
+    } 
+
+
+    function modal_message(textContent) {
+        // Create modal elements
+        const modal = document.createElement("div");
+        modal.classList.add("modal", "quantity-alert");
+
+        const modalContent = document.createElement("div");
+        modalContent.classList.add("modal-content", "quantity-alert");
+
+        const closeButton = document.createElement("span");
+        closeButton.classList.add("close", "quantity-alert");
+        closeButton.innerHTML = "&times;"; // "X" symbol
+
+        const message = document.createElement("p");
+        message.classList.add("quantity-alert");
+        message.textContent = textContent;
+
+        // Append elements to the modal
+        modalContent.appendChild(closeButton);
+        modalContent.appendChild(message);
+        modal.appendChild(modalContent);
+
+        // Append the modal to the body
+        document.body.appendChild(modal);
+
+        // Add styles dynamically
+        const style = document.createElement("style");
+        style.textContent = `
+            .modal.quantity-alert {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+
+            .modal-content.quantity-alert {
+                background-color: #fff;
+                margin: 15% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                border-radius: 10px;
+                width: 80%;
+                max-width: 400px;
+                text-align: center;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                animation: fadeIn 0.3s ease-in-out;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .close.quantity-alert {
+                width: 30px;
+                height: auto;
+                color: #aaa;
+                float: right;
+                font-size: 18pt;
+                font-weight: bold;
+                cursor: pointer;
+                margin-top: -35px;
+                margin-right: -26px;
+                background-color: white;
+                padding: 3px;
+                border-radius: 20px;
+                box-shadow: 0 10px 10px rgba(0, 0, 0, 0.05);
+            }
+
+            .close.quantity-alert:hover,
+            .close.quantity-alert:focus {
+                color: #000;
+                text-decoration: none;
+            }
+        `;
+
+        // Append styles to the document head
+        document.head.appendChild(style);
+
+        // Function to open the modal
+        function openModal() {
+            modal.style.display = "block";
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        openModal();
+
+        closeButton.addEventListener("click", closeModal);
+
+        window.addEventListener("click", (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Example: Add a button to trigger the modal
+        // const openModalButton = document.createElement("button");
+        // openModalButton.classList.add("open-modal-btn", "quantity-alert");
+        // openModalButton.textContent = "Add Product";
+        // document.body.appendChild(openModalButton);
+    }
+
+      // function edit_cart(ptID, quantity) {
+      //   let cart = cookie.get('Cart');
+        
+      //   if (cart.length > 0) {
+      //     if (cart.includes('&')) {
+      //       let newCart = ''
+      //       let array = cart.split('&');
+      //       array.forEach(item => {
+      //         let arr = item.split('-');
+      //         let cartPtID = arr[0];
+      //         let oldQuantity = parseInt(arr[1]);
+  
+      //         if (cartPtID === ptID) {
+      //           newCart = newCart + '&' + ptID + '-' + quantity.toString();
+      //         } else {
+      //           newCart = newCart + '&' + item;
+      //         }
+  
+      //       });  
+
+      //         newCart = newCart.slice(1)
+
+      //         cookie.set('Cart', newCart, { expires: 7, path: '/' })
+              
+      //         basket();
+              
+      //         let newUrl = '/' + newCart;
+      //         change_url(newUrl);
+      //     } else if (cart.includes('-')) {
+      //       let arr = cart.split('-');
+      //       let newCart = arr[0] + '-' + quantity.toString();
+      //       cookie.set('Cart', newCart, { expires: 7, path: '/' })
+      //       basket();
+  
+      //       let newUrl = '/' + newCart;
+      //       change_url(newUrl);
+  
+      //     } else {
+      //       return;
+      //     }
+      //   } 
+      // }
+        
+      
+      function change_url(path) {
+        let basketUrl = document.getElementById('basket-url').getAttribute('href'); // Get basket url
+        let updatedUrl = basketUrl.replace(/\/cart\/[^/]+/, "/cart" + path);
+      }
+
+      
+    function get_cart_content(newCookies) {
+        return new Promise((resolve, reject) => {
+            let formData = new FormData();
+            formData.append('cart-data', newCookies);
+    
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', '/cart');
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+    
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    try {
+                        let response = JSON.parse(xhr.responseText);
+                        resolve(response);
+                    } catch (error) {
+                        reject(error);
+                    }
+                } else {
+                    reject(new Error('Error: ' + xhr.responseText));
+                }
+            };
+    
+            xhr.onerror = function () {
+                reject(new Error('Network Error'));
+            };
+    
+            xhr.send(formData);
+        });
+    }
+      
+        
 </script>
 
-
-</body>
-
-</html>
+{% endblock %}

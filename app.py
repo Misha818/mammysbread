@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, g, url_for
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from products import get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
 from sysadmin import checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -13,11 +15,34 @@ from io import BytesIO
 import json
 import re
 import copy
+from flask_recaptcha import ReCaptcha
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+# app = Flask(__name__)
+# limiter = Limiter(get_remote_address, app=app)
+
+
 app = Flask(__name__)
+
+# app.config['RECAPTCHA_SITE_KEY'] = os.getenv('SECRET_KEY')
+# app.config['RECAPTCHA_SECRET_KEY'] = os.getenv('SECRET_KEY')
+# recaptcha = ReCaptcha(app)
+
+
+# Initialize limiter with in-memory storage explicitly.
+# limiter = Limiter(
+#     app=app,
+#     key_func=get_remote_address,
+#     default_limits=["200 per day", "50 per hour"],
+#     storage_uri="memory://",  # explicitly using in-memory storage
+#     strategy="fixed-window"
+# )
+
+
+
+
 
 defLang = getDefLang()
 
@@ -74,6 +99,56 @@ def side_bar_stuff():
     supportedLangsData = supported_langs()
 
     return render_template('side-bar-stuff-1.html', result=result['data'], supportedLangsData=supportedLangsData, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+
+
+@app.route("/login", methods=["GET", "POST"])
+# @limiter.limit("3 per minute")
+def login():
+    if request.method == "POST":
+        # if recaptcha.verify():
+            session.clear()
+            newCSRFtoken = generate_csrf()
+            # Checking username
+            username = request.form.get('username') 
+            if not username:
+                answer = gettext('Please specify username')
+                response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+                return jsonify(response)
+            
+
+            # Checking passwords 
+            password = request.form.get('password') 
+            if not password:
+                answer = gettext('Please specify password')
+                response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+                return jsonify(response)
+            
+            sqlQuery = "SELECT * FROM `stuff` WHERE `Username` = %s AND `Status` = 1"
+            sqlValTuple  = (username,)
+            result = sqlSelect(sqlQuery, sqlValTuple, True)    
+            
+
+            if result['length'] == 1 and check_password_hash(result['data'][0]["Password"], password): 
+                session['user_id'] = result['data'][0]['ID']
+                response = {'status': '1'}
+                return jsonify(response)
+            else:
+                answer = gettext('The username or password do not match')
+                response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+                return jsonify(response)
+        # else:
+        #     return jsonify({'status': "0", 'answer': gettext("CAPTCHA verification failed.")})
+    else:
+        if 'user_id' in session:
+            return redirect('/stuff')
+        
+        return render_template("login.html", current_locale=get_locale())
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+
+    return jsonify({'status': '0', 'answer': gettext('Rate limit exceeded'), 'newCSRFtoken': generate_csrf()}), 429
 
 
 @app.route('/submit_product_text', methods=['POST'])
@@ -210,7 +285,7 @@ def home():
     sqlValTuple = (languageID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
   
-    return render_template('index.html', result=result, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+    return render_template('index.html', result=result, MAIN_CURRENCY=MAIN_CURRENCY, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
 @app.route('/about')
 def about():
@@ -2415,47 +2490,6 @@ def add_sps():
     return response
 
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        session.clear()
-        newCSRFtoken = generate_csrf()
-        # Checking username
-        username = request.form.get('username') 
-        if not username:
-            answer = gettext('Please specify username')
-            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
-            return jsonify(response)
-        
-
-        # Checking passwords 
-        password = request.form.get('password') 
-        if not password:
-            answer = gettext('Please specify password')
-            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
-            return jsonify(response)
-        
-        sqlQuery = "SELECT * FROM `stuff` WHERE `Username` = %s AND `Status` = 1"
-        sqlValTuple  = (username,)
-        result = sqlSelect(sqlQuery, sqlValTuple, True)    
-        
-
-        if result['length'] == 1 and check_password_hash(result['data'][0]["Password"], password): 
-            session['user_id'] = result['data'][0]['ID']
-            response = {'status': '1'}
-            return jsonify(response)
-        else:
-            answer = gettext('The username or password do not match')
-            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
-            return jsonify(response)
-        
-    else:
-        if 'user_id' in session:
-            return redirect('/stuff')
-        
-        return render_template("login.html", current_locale=get_locale())
-
-
 # @app.route("/superpassword", methods=['GET'])
 # def superpassword1234():
 #     password = generate_password_hash('1234')
@@ -2762,59 +2796,134 @@ def typeof(var):
 @app.route("/cart/<productTypesQuantity>", methods=["GET", "POST"])
 @app.route("/cart", methods=["GET", "POST"])
 def cart(productTypesQuantity=None):
-    languageID = getLangID() 
+    
     if request.method == "GET":
-        result = {'length': 0}
-        findInSetPtIDs = ''
-        ptIdQuantity = []
-        if productTypesQuantity is not None:
-            if '&' in productTypesQuantity:
-                array = productTypesQuantity.split('&')
-                for val in array:
-                    arr = val.split('-')
-                    ptID = arr[0]
-                    clientQuantity = arr[1]
+        cartData = productTypesQuantity
 
-                    findInSetPtIDs = findInSetPtIDs + ptID + ','    
-                    ptIdQuantity.append([int(ptID), int(clientQuantity)])
-                findInSetPtIDs = findInSetPtIDs[0:-1]
-            elif '-' in productTypesQuantity:
-                array = productTypesQuantity.split('-')
-                findInSetPtIDs = array[0]
-                ptIdQuantity.append([int(array[0]), int(array[1])])
+        content = analyse_cart_data(cartData)
+        result = content['result']
+        ptIdQuantity = content['ptIdQuantity']
+        cartMessage = content['cartMessage']
 
-        else:
-            pass
-
-            
-
-        sqlQuery =  f"""
-                        SELECT 
-                            `product`.`Title` AS `prTitle`,
-                            `product`.`url`,
-                            `product_type`.`Title` AS `ptTitle`,
-                            `product_type`.`Price`,
-                            (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
-                            (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
-                            (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
-                            (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
-                            `product_type`.`ID` AS `ptID`        
-                        FROM `product_type`
-                            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-                        WHERE `product`.`Language_ID` = %s AND find_in_set(`product_type`.`ID`, %s)
-                        ORDER BY `product`.`ID`, `product_type`.`Order`; 
-                    """
-        
-        sqlValTuple = (languageID, findInSetPtIDs)
-        result = sqlSelect(sqlQuery, sqlValTuple, True)
-        cartMessage = [ 
-                    gettext("You have already added this product to the basket. You can change the quantity if You would like to."),
-                    generate_csrf(),
-                    gettext("In Basket")
-    ]
         return render_template('cart.html', result=result, ptIdQuantity=ptIdQuantity, MAIN_CURRENCY=MAIN_CURRENCY, cartMessage=cartMessage, current_locale=get_locale())
+
     else:
-        pass
+        if request.form.get('cart-data'):
+            cartData = request.form.get('cart-data')
+            content = analyse_cart_data(cartData)
+
+            return jsonify({'content': content, 'status': "1", 'newCSRFtoken': generate_csrf()})
+
+
+def analyse_cart_data(cartData):    
+    languageID = getLangID() 
+    result = {'length': 0}
+    findInSetPtIDs = ''
+    ptIdQuantity = []
+    if cartData is not None:
+        if '&' in cartData:
+            array = cartData.split('&')
+            for val in array:
+                arr = val.split('-')
+                ptID = arr[0]
+                clientQuantity = arr[1]
+
+                findInSetPtIDs = findInSetPtIDs + ptID + ','    
+                ptIdQuantity.append([int(ptID), int(clientQuantity)])
+            findInSetPtIDs = findInSetPtIDs[0:-1]
+        elif '-' in cartData:
+            array = cartData.split('-')
+            findInSetPtIDs = array[0]
+            ptIdQuantity.append([int(array[0]), int(array[1])])
+
+    sqlQuery =  f"""
+                    SELECT 
+                        `product`.`Title` AS `prTitle`,
+                        `product`.`url`,
+                        `product_type`.`Title` AS `ptTitle`,
+                        `product_type`.`Price`,
+                        (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+                        (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+                        (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
+                        (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
+                        `product_type`.`ID` AS `ptID`        
+                    FROM `product_type`
+                        LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                    WHERE `product`.`Language_ID` = %s 
+                        AND find_in_set(`product_type`.`ID`, %s)
+                        AND (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) > 0
+                    ORDER BY `product`.`ID`, `product_type`.`Order`; 
+                """
+    
+    sqlValTuple = (languageID, findInSetPtIDs)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    cartMessage = [ 
+                gettext("You have already added this product to the basket. You can change the quantity if You would like to."),
+                generate_csrf(),
+                gettext("In Basket")
+    ]
+
+    content = {
+        'result': result,
+        'ptIdQuantity': ptIdQuantity,
+        'cartMessage': cartMessage
+    }
+
+    return content
+
+
+
+# @app.route("/cart/<productTypesQuantity>", methods=["GET", "POST"])
+# @app.route("/cart", methods=["GET", "POST"])
+# def cart(productTypesQuantity=None):
+#     languageID = getLangID() 
+#     if request.method == "GET":
+#         result = {'length': 0}
+#         findInSetPtIDs = ''
+#         ptIdQuantity = []
+#         if productTypesQuantity is not None:
+#             if '&' in productTypesQuantity:
+#                 array = productTypesQuantity.split('&')
+#                 for val in array:
+#                     arr = val.split('-')
+#                     ptID = arr[0]
+#                     clientQuantity = arr[1]
+
+#                     findInSetPtIDs = findInSetPtIDs + ptID + ','    
+#                     ptIdQuantity.append([int(ptID), int(clientQuantity)])
+#                 findInSetPtIDs = findInSetPtIDs[0:-1]
+#             elif '-' in productTypesQuantity:
+#                 array = productTypesQuantity.split('-')
+#                 findInSetPtIDs = array[0]
+#                 ptIdQuantity.append([int(array[0]), int(array[1])])
+
+#         sqlQuery =  f"""
+#                         SELECT 
+#                             `product`.`Title` AS `prTitle`,
+#                             `product`.`url`,
+#                             `product_type`.`Title` AS `ptTitle`,
+#                             `product_type`.`Price`,
+#                             (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+#                             (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+#                             (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
+#                             (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
+#                             `product_type`.`ID` AS `ptID`        
+#                         FROM `product_type`
+#                             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+#                         WHERE `product`.`Language_ID` = %s AND find_in_set(`product_type`.`ID`, %s)
+#                         ORDER BY `product`.`ID`, `product_type`.`Order`; 
+#                     """
+        
+#         sqlValTuple = (languageID, findInSetPtIDs)
+#         result = sqlSelect(sqlQuery, sqlValTuple, True)
+#         cartMessage = [ 
+#                     gettext("You have already added this product to the basket. You can change the quantity if You would like to."),
+#                     generate_csrf(),
+#                     gettext("In Basket")
+#     ]
+#         return render_template('cart.html', result=result, ptIdQuantity=ptIdQuantity, MAIN_CURRENCY=MAIN_CURRENCY, cartMessage=cartMessage, current_locale=get_locale())
+#     else:
+#         pass
 
 
 @app.route("/get-pt-quantities", methods=["POST"])
@@ -3155,7 +3264,6 @@ def add_to_store(ptID=None):
         answer = 'Done!'
         return jsonify({'status': '1', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
 
-
 # Check if product type exists in specified quantity
 @app.route('/check-pt-quantity', methods=['POST'])
 def check_pt_quantity():
@@ -3172,7 +3280,7 @@ def check_pt_quantity():
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     
     if result['data'][0]['Quantity'] == None:
-        answer = gettext("Out of stock")
+        answer = gettext("The seller doesn't have that many left.")
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
     # Check if there is a maximum quantity to buy
@@ -3190,11 +3298,10 @@ def check_pt_quantity():
 
         answer = gettext("Maximum available quantity is ") + str(maxQuantity) + '. ' + str(maxQuantity) + ' ' + gettext("item added to the cart") 
         return jsonify({'status': '2', 'max': maxQuantity, 'answer': answer, 'newCSRFtoken': newCSRFtoken})
-   
+    
     return jsonify({'status': '1', 'newCSRFtoken': newCSRFtoken})
 
 
-# Render the index.html template
 @app.route('/<myLinks>')
 def index(myLinks):
     content = get_RefKey_LangID_by_link(myLinks)
@@ -3309,6 +3416,60 @@ def index(myLinks):
     ]  
 
     return render_template(myHtml, cartMessage=cartMessage, prData=prData, ptID=ptID, slideShow=slideShow, supportedLangsData=supportedLangsData, metaTags=metaTags, current_locale=get_locale())
+
+
+@app.route("/get_langs", methods=["POST"])
+def get_langs():
+
+    arr = supported_langs()
+    defLang = getDefLang()
+    currentLangPrefix = session.get('lang', defLang['Prefix'])
+    langData = []
+    for row in arr:
+        selected = False
+        if currentLangPrefix == row['Prefix']:
+            selected = True
+        childDict = {'value':  row['Prefix'], 'text': row['Language'], 'selected': selected}
+        langData.append(childDict)
+        
+    return langData
+
+
+@app.route("/get-available-pts", methods=["POST"])
+def get_available_pts():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('prID'):
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+    
+    prID = request.form.get('prID')
+    langID = getLangID()
+
+    sqlQuery =  """
+                    SELECT 
+                    `product`.`Title` AS `prTitle`,
+                    `product`.`url`,
+                    `product_type`.`Title` AS `ptTitle`,
+                    `product_type`.`Price`,
+                    `product_type`.`Status`,
+                    (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+                    (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+                    (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
+                    (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
+                    `product_type`.`ID` AS `ptID`        
+                FROM `product`
+                    LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
+                WHERE `product`.`ID` = %s 
+                    AND `product`.`Language_ID` = %s 
+                    AND (SELECT SUM(`Quantity`) FROM `quantity` 
+                        WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) IS NOT NULL
+                ORDER BY `product`.`ID`, `product_type`.`Order`;            
+                """
+    sqlValTuple = (prID, langID)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] == 0:
+        return jsonify({'status': "0", 'answer': gettext("Out of stock."), 'newCSRFtoken': newCSRFtoken})
+    
+    return jsonify({'status': "1", 'data': result['data'], 'newCSRFtoken': newCSRFtoken})
 
 
 # @app.route("/timer", methods=["GET"])

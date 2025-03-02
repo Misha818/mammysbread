@@ -6,7 +6,7 @@
 
 {% block content %}
 <form class="containerS" style="width: auto">
-        <div id="mistakes"></div>
+        <div id="mistakes" style="width: 90%;"></div>
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="username" placeholder="{{ _('Username') }}" type="text">
         </div>
@@ -40,7 +40,7 @@
 
             // Define what happens on successful data submission
             xhr.onload = function () {
-                if (xhr.status === 200) {
+                if (xhr.status === 200 || xhr.status === 429) {
                     let response = JSON.parse(xhr.responseText);
 
                     let mistakesDiv = document.getElementById('mistakes');
