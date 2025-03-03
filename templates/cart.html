@@ -8,8 +8,9 @@
 
 <style>
   body {
-    background-color: #ffffff;
-  }
+    background-color: #fdf6ec;
+  }  
+
 </style>
 {% endblock %}
 
@@ -117,7 +118,7 @@
 
   <div class="subtotal">{{ _('Subtotal') }} ({{ ns.itemLen }} {{ _('items') }}): {{ MAIN_CURRENCY }} {{ ns.subtotal }}</div>
   <div class="farther-actions">
-    <button class="checkout-button">{{ _('Proceed to Checkout') }}</button>
+    <a href="{{ url_for('checkout') }}" class="checkout-button">{{ _('Proceed to Checkout') }}</a>
   </div>
 
 

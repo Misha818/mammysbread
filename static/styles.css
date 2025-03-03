@@ -1329,6 +1329,7 @@ h2 {
             
             .card-title {
               font-size: 2rem; 
+              text-align: center;
             }
 
             .text-container {
@@ -2137,7 +2138,7 @@ h2 {
   background-color: #ffffff;
   padding: 20px 20px 0px 20px;
   overflow-y: auto;
-  max-height: 80vh;
+  /* max-height: 80vh; */
   scrollbar-width: thin;
 }
 
@@ -2961,6 +2962,10 @@ h2 {
 }
 
 @media screen and (min-width: 700px) and  (max-width: 800px) {
+  
+  .checkout-form {
+    margin-top: 60px;
+  }
 
   .logo_public {
     max-width: 110px;
@@ -3129,6 +3134,10 @@ h2 {
 }
 
 @media screen and (min-width: 600px) and  (max-width: 700px) {
+
+  .checkout-form {
+    margin-top: 70px;
+  }
   
   .logo_public {
     max-width: 110px;
@@ -3183,7 +3192,7 @@ h2 {
     margin-bottom: 3%;
     /* margin-top: 3%; */
     grid-template-columns: repeat(2, 1fr);
-    max-height: 90vh;
+    /* max-height: 90vh; */
   }
 
   .cart-item {
@@ -3306,6 +3315,11 @@ h2 {
 }
 
 @media screen and (min-width: 600px) and  (max-width: 650px) {
+
+  .checkout-form {
+    margin-top: 70px;
+  }
+
   .quantity-controls button {
     padding: 8px 13px!important;
   }
@@ -3341,6 +3355,10 @@ h2 {
 }
 
 @media screen and (min-width: 500px) and  (max-width: 600px) {
+
+  .checkout-form {
+    margin-top: 80px;
+  }
 
   .logo_public {
     max-width: 100px;
@@ -3520,6 +3538,10 @@ h2 {
 }
 
 @media screen and (min-width: 475px) and  (max-width: 500px) {
+
+  .checkout-form {
+    margin-top: 80px;
+  }
 
   .logo_public {
     max-width: 100px;
@@ -3718,7 +3740,10 @@ h2 {
 
 @media screen and (min-width: 450px) and  (max-width: 475px) {
 
-  
+  .checkout-form {
+    margin-top: 80px;
+  }
+
   .logo_public {
     max-width: 95px;
   }
@@ -3919,7 +3944,10 @@ h2 {
 
 @media screen and (min-width: 425px) and  (max-width: 450px) {
 
-  
+  .checkout-form {
+    margin-top: 80px;
+  }
+
   .logo_public {
     max-width: 95px;
   }
@@ -4127,7 +4155,10 @@ h2 {
 
 @media screen and (min-width: 400px) and  (max-width: 425px) {
 
-  
+  .checkout-form {
+    margin-top: 80px;
+  }
+
   .logo_public {
     max-width: 80px;
   }
@@ -4331,7 +4362,10 @@ h2 {
 
 @media screen and (min-width: 375px) and  (max-width: 400px) {
 
-  
+  .checkout-form {
+    margin-top: 80px;
+  }
+
   .logo_public {
     max-width: 80px;
   }
@@ -4551,6 +4585,9 @@ h2 {
 
 @media screen and (min-width: 350px) and  (max-width: 375px) {
 
+  .checkout-form {
+    margin-top: 80px;
+  }
   
   .logo_public {
     max-width: 80px;
@@ -4768,7 +4805,10 @@ h2 {
 
 @media screen and (min-width: 325px) and  (max-width: 350px) {
 
-  
+  .checkout-form {
+    margin-top: 80px;
+  }
+
   .logo_public {
     max-width: 75px;
   }
@@ -4990,6 +5030,9 @@ h2 {
 
 @media screen and (min-width: 300px) and  (max-width: 325px) {
 
+  .checkout-form {
+    margin-top: 80px;
+  }
   
   .logo_public {
     max-width: 75px;
@@ -5230,6 +5273,10 @@ h2 {
 
 @media screen and (min-width: 275px) and  (max-width: 300px) {
 
+  .checkout-form {
+    margin-top: 80px;
+  }
+
   
   .logo_public {
     max-width: 75px;
@@ -5453,6 +5500,10 @@ h2 {
 
 
 @media screen and (min-width: 250px) and  (max-width: 275px) {
+
+  .checkout-form {
+    margin-top: 80px;
+  }
 
   
   .logo_public {

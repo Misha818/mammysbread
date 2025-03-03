@@ -137,7 +137,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function basket() {
         let Cart = cookie.get('Cart', false);
-        console.log(`Cart is ${Cart}`);
         let notification = document.querySelector('.notification');
         const aTag = notification.parentNode.parentNode;
         if (Cart === false) {

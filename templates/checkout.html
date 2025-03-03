@@ -1,99 +1,29 @@
 {% extends 'public.html' %}
 {% block title %}
-    {{ _("Mammy's Bread") }}
+    {{ _("Checkout") }}
 {% endblock %}
 
 
 {% block head %}
 
-    <!-- Required meta tags -->
-    <!-- <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <title>
-        {{ _('Home') }}
-    </title> -->
+<style>
 
-    <!-- <script>
-      document.addEventListener('DOMContentLoaded', function(){
-        document.addEventListener('click', function(event) {
-          if (event.target.classList.contains('nav-to')) {
-              let target_val = event.target.getAttribute('value');
-              let target_to_navigate = document.getElementById(target_val);
-              
-              // Scroll the window to the target div with smooth behavior
-              target_to_navigate.scrollIntoView({ behavior: 'smooth' });
-              
-            }
-          });
-        });
-
-      
-    </script> -->
-    <style>
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #fdf6ec;
+}  
+
+.header_public {
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-/* Style inputs */
-input[type=text], select, textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  margin-top: 6px;
-  margin-bottom: 16px;
-  resize: vertical;
-}
-
-input[type=submit] {
-  background-color: #04AA6D;
-  color: white;
-  padding: 12px 20px;
-  border: none;
-  cursor: pointer;
-}
-
-input[type=submit]:hover {
-  background-color: #45a049;
-}
-
-/* Style the container/contact section */
 .container {
-  border-radius: 5px;
-  background-color: #f8f9fa;
-  padding: 20px;
-  margin-bottom: 2%;
+    max-width: 960px;
 }
+.lh-condensed { line-height: 1.25; }
 
-/* Create two columns that float next to eachother */
-.column {
-  float: left;
-  width: 50%;
-  margin-top: 6px;
-  padding: 20px;
-}
-
-/* Clear floats after the columns */
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-/* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
-@media screen and (max-width: 600px) {
-  .column, input[type=submit] {
-    width: 100%;
-    margin-top: 0;
-  }
-}
 
     </style>
 {% endblock %}
@@ -102,116 +32,174 @@ input[type=submit]:hover {
 {% block content %}
 
 <input type="hidden" id="inBasketText" value="{{ _('In Basket') }}">
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <!-- Replace with your actual hero image file -->
-    <img src="{{ url_for('static', filename='images/homeSlides/background-1.png') }}" alt="{{ _('Fresh Sourdough Bread') }}" class="hero-image" />
-  </section>
-
-  <!-- Navigation Buttons -->
-  <nav class="nav-buttons">
-    <div class="btn_landing contacts">{{ _('Contact US') }}</div>
-    <div class="btn_landing btn-highlight order-now">{{ _('Order Now!') }}</div>
-    <div class="btn_landing about">{{ _('Our History') }}</div>
-  </nav>
 
 
+<div class="container checkout-form">
+  <main>
+      <div class="row g-5">
+          <div class="col-md-5 col-lg-4 order-md-last">
+              <h4 class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-primary">{{ _('Your cart') }}</span>
+                <span class="badge bg-primary rounded-pill" 
+                      style="background-color: #fdf6ec !important;
+                        color: #454d56;
+                        box-shadow: 1px 3px 6px rgba(0, 0, 0, 0.3);"
+                >3</span>
+              </h4>
+              <ul class="list-group mb-3" style="max-height: 78vh; overflow-y: auto;">
+                <li class="list-group-item d-flex justify-content-between lh-sm">
+                  <div>
+                    <h6 class="my-0">Product name</h6>
+                    <!-- <small class="text-muted">Brief description</small> -->
+                  </div>
+                  <span class="text-muted">{{ mainCurrency|safe }} 12</span>
+                </li>
+                
+                
 
-<div class="card-container-user" id="card-container-user">
-{% if result.length > 0 %}
-  {% for row in result.data %}
-  
-  <div class="card">
-    <div class="card-layout"></div>
-    <img src="{{ url_for('static', filename='images/pr_thumbnails/' + row['Thumbnail']) }}" alt="{{ row['AltText'] }}" class="card-image">
-    <div class="card-content">
-      <h2 class="card-title">{{ row['Title'] }}</h2>
-      <p class="card-text">
-        {% if row['LongDescription']|length > 125 %}
-          {% set LongDescription = row['LongDescription'][:125] %}
-          {% set LongDescription = LongDescription + ' ...' %}
-        {% else %}
-          {% set LongDescription = row['LongDescription'] %}
-        {% endif %}
-        {{ LongDescription }}
-
-      </p>
-    </div>
-    <div class="card-buttons">
-      <a href="{{ url_for('home', _external=True) + row['Url'] }}" class="btn_landing">{{ _('See Details') }}</a>
-      <div data-value="{{ row['ID'] }}" class="btn_landing add-to-cart-home">{{ _('Add To Cart') }}</div>
-      <a href="#" class="btn_landing btn-highlight">{{ _('Buy Now') }}</a>
-    </div>
-  </div>
-  {% endfor %}
-{% else %}
-  <h3>{{ _('No data to show!') }}</h3>
-{% endif %}
+              </ul>
+      
+              <form class="card p-2">
+                <ul class="list-group mb-3">
+                  
+                <li class="list-group-item d-flex justify-content-between bg-light">
+                  <div class="text-success">
+                    <h6 class="my-0">{{ _('Promo code') }}</h6>
+                    <small>EXAMPLECODE</small>
+                  </div>
+                  <span class="text-success">−$5</span>
+                </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>Total </span>
+                    <strong>{{ mainCurrency|safe }} 20</strong>
+                  </li>
+                </ul>
+      
+                <div class="input-group">
+                  <input type="text" class="form-control" placeholder="Promo code">
+                  <button class="btn btn-secondary pay">{{ _('Redeem') }}</button>
+                </div>
+              </form>
+            </div>
+          <div class="col-md-7 col-lg-8">
+              <h4 class="mb-3">{{ _('Billing address') }}</h4>
+              <form class="needs-validation" novalidate>
+                  <div class="row g-3">
+                      <div class="col-sm-6">
+                          <label for="firstName" class="form-label">{{ _('First name') }}</label>
+                          <input type="text" class="form-control" id="firstName" required>
+                          <div class="invalid-feedback"> {{_('Valid first name is required.')}} </div>
+                      </div>
+                      <div class="col-sm-6">
+                          <label for="lastName" class="form-label">{{_('Last name')}}</label>
+                          <input type="text" class="form-control" id="lastName" required>
+                          <div class="invalid-feedback"> {{_('Valid last name is required.')}} </div>
+                      </div>
+                      <div class="col-12">
+                          <label for="email" class="form-label">{{_('Email')}} <span class="text-muted">( {{_('Optional')}} )</span></label>
+                          <input type="email" class="form-control" id="email">
+                          <div class="invalid-feedback"> {{ _('Please enter a valid email address.')}} </div>
+                      </div>
+                      <div class="col-12">
+                          <label for="address" class="form-label">{{ _('Address')}}</label>
+                          <input type="text" class="form-control" id="address" required>
+                          <div class="invalid-feedback"> {{ _('Please enter your shipping address.')}} </div>
+                      </div>
+                      <!-- <div class="col-md-5">
+                          <label for="country" class="form-label">Country</label>
+                          <select class="form-select" id="country" required>
+                              <option value="">Choose...</option>
+                              <option>United States</option>
+                          </select>
+                          <div class="invalid-feedback"> Please select a valid country. </div>
+                      </div> -->
+                      <div class="col-md-4">
+                          <label for="state" class="form-label">{{ _('City')}}</label>
+                          <select class="form-select" id="state" required disabled>
+                              <option value="">Choose...</option>
+                              <option selected>{{ _('Yerevan')}}</option>
+                          </select>
+                          <!-- <div class="invalid-feedback"> Please provide a valid state. </div> -->
+                      </div>
+                      <!-- <div class="col-md-3">
+                          <label for="zip" class="form-label">Zip</label>
+                          <input type="text" class="form-control" id="zip" required>
+                          <div class="invalid-feedback"> Zip code required. </div>
+                      </div> -->
+                  </div>
+                  <hr class="my-4">
+                  <h4 class="mb-3">{{ _('Payment')}}</h4>
+                  <div class="my-3">
+                      <div class="form-check">
+                          <input id="credit" name="paymentMethod" type="radio" class="form-check-input" checked required>
+                          <label class="form-check-label" for="credit">{{ _('Credit card')}}</label>
+                      </div>
+                      <div class="form-check">
+                          <input id="debit" name="paymentMethod" type="radio" class="form-check-input" required>
+                          <label class="form-check-label" for="debit">{{ _('Debit card')}}</label>
+                      </div>
+                      <div class="form-check">
+                          <input id="paypal" name="paymentMethod" type="radio" class="form-check-input" required>
+                          <label class="form-check-label" for="paypal">{{ _('PayPal')}}</label>
+                      </div>
+                  </div>
+                  <div class="row gy-3">
+                      <div class="col-md-6">
+                          <label for="cc-name" class="form-label">{{ _('Name on card')}}</label>
+                          <input type="text" class="form-control" id="cc-name" required>
+                          <div class="invalid-feedback"> {{ _('Name on card is required.')}} </div>
+                      </div>
+                      <div class="col-md-6">
+                          <label for="cc-number" class="form-label">{{ _('Credit card number')}}</label>
+                          <input type="text" class="form-control" id="cc-number" required>
+                          <div class="invalid-feedback"> {{ _('Credit card number is required.')}} </div>
+                      </div>
+                      <div class="col-md-3">
+                          <label for="cc-expiration" class="form-label">{{ _('Expiration')}}</label>
+                          <input type="text" class="form-control" id="cc-expiration" required>
+                          <div class="invalid-feedback"> {{ _('Expiration date required.')}} </div>
+                      </div>
+                      <div class="col-md-3">
+                          <label for="cc-cvv" class="form-label">{{ _('CVV')}}</label>
+                          <input type="text" class="form-control" id="cc-cvv" required>
+                          <div class="invalid-feedback"> {{ _('Security code required.')}} </div>
+                      </div>
+                  </div>
+                  <hr class="my-4">
+                  <button class="w-100 btn btn-primary btn-lg" type="submit">{{ _('Continue')}}</button>
+              </form>
+          </div>
+      </div>
+  </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  (function () {
+      'use strict'
+      var forms = document.querySelectorAll('.needs-validation')
+      Array.prototype.slice.call(forms).forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+              if (!form.checkValidity()) {
+                  event.preventDefault()
+                  event.stopPropagation()
+              }
+              form.classList.add('was-validated')
+          }, false)
+      })
+  })()
 
-
-<div class="container" id="about">
-  <div style="text-align:center">
-    <h2>{{ _('About') }}</h2>
-    <p>Some interesting information about what we do</p>
-    <p>And why we do</p>
-  </div>
-  <div class="row">
-
-  
-  </div>
-</div>
-
-<div class="container" id="contacts">
-  <div style="text-align:center">
-    <h2>Contact Us</h2>
-    <p>Swing by for a cup of coffee, or leave us a message:</p>
-  </div>
-</div>
-  
-
-  <script>
     let prData = []
     document.addEventListener('DOMContentLoaded', function() {
 
+      basket();
 
-        const text = "Happy New 2025 Year!";
-        const delay = 100; // Delay in milliseconds
-        let index = 0;
+      // if (document.querySelector('.notification')) {
+
+      //   let prQountity = document.querySelector('.notification').textContent;
+      //   document.querySelector('.badge').innerHTML = prQountity;
         
-        function typeWriter() {
-            if (index < text.length) {
-              if (document.getElementById('text')) {
+      // }
 
-                document.getElementById('text').innerHTML += text.charAt(index);
-                index++;
-                setTimeout(typeWriter, delay);
-                if (index === text.length) {
-                  document.querySelector('.cursor').style.display = 'none';
-                  // setTimeout(slide_moves, 400);
-                }
-              }
-            }
-        }
-        
-        window.onload = typeWriter;
-        function slide_moves() {
-
-            const header = document.querySelector('.header');
-            if (header.style.display === 'none') {
-                header.style.display = 'flex'
-                header.classList.remove('slide-up');
-                header.classList.add('slide-down');
-            } else {
-                header.classList.remove('slide-down');
-                header.classList.add('slide-up');
-                setTimeout(() => {
-                    header.style.display = 'none';
-                }, 500); // Match this duration to your animation duration
-            }
-            
-            // modify this function so it opens from top to bottom slowly, with oscillations, undulating
-        }
 
         
         const navBar = document.querySelector('.image-container');
@@ -245,36 +233,6 @@ input[type=submit]:hover {
   });
 
 
-  document.querySelector('.order-now').addEventListener('click', function(event) {
-      event.preventDefault(); // Prevent default action if it's a link
-
-      const targetElement = document.querySelector('.card-container-user');
-      
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-  });
- 
-  document.querySelector('.about').addEventListener('click', function(event) {
-      event.preventDefault(); // Prevent default action if it's a link
-
-      const targetElement = document.querySelector('#about');
-      
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-  });
-
-  document.querySelector('.contacts').addEventListener('click', function(event) {
-      event.preventDefault(); // Prevent default action if it's a link
-
-      const targetElement = document.querySelector('#contacts');
-      
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-  });
-
 function check_quantity(ptID) {
   let Cart = cookie.get('Cart', false);
   let answer = {'status': false, 'val': 0};
@@ -294,223 +252,7 @@ function check_quantity(ptID) {
   }
 }
 
-function createShoppingCartModal(prData) {
 
-  // Create the modal backdrop
-  const modalBackdrop = document.createElement('div');
-  modalBackdrop.className = 'modal-backdrop';
-
-  // Create the modal content container
-  const modalContent = document.createElement('div');
-  modalContent.className = 'modal-content';
-
-  // Create the close button
-  const closeButton = document.createElement('span');
-  closeButton.textContent = '×';
-  closeButton.className = 'add-to-cart-modal-close';
-  closeButton.addEventListener('click', () => {
-    modalBackdrop.remove();
-  });
-
-  // Create the shopping cart content
-  const shoppingCart = document.createElement('div');
-  shoppingCart.className = 'add-to-cart-modal';
-
-  const cartHeaderContainer = document.createElement('div');
-  cartHeaderContainer.className = 'cart-header-conteiner';
-  // cartHeaderContainer.style.borderBottom = '1px solid #ddd';
-
-  const cartHeader = document.createElement('div');
-  cartHeader.className = 'cart-header';
-  cartHeader.style.borderBottom = 'unset';
-  cartHeader.textContent = prData[0].prTitle;
-
-  // const priceHeader = document.createElement('div');
-  // priceHeader.className = 'price-header';
-  // priceHeader.textContent = "{{ _('Price') }}";
-
-  cartHeaderContainer.appendChild(cartHeader);
-  // cartHeaderContainer.appendChild(priceHeader);
-  modalContent.appendChild(cartHeaderContainer);
-
-  num = 1;
-  dataLen = prData.length;
-  if (dataLen === 1) {
-    shoppingCart.style.gridTemplateColumns = 'repeat(1, 1fr)';
-  }  
-
-  console.log(`type of ${typeof(dataLen)}`)
-  prData.forEach(row => {
-      let fullPath = "{{ url_for('home') }}" + row.url + '&' + row.ptTitle.replace(' ', '-')
-      let quantityState = check_quantity(row.ptID)
-      let quantityValue = quantityState.val;
-      let addToCartContent = "{{ _('Add To Cart') }}";
-      let dataState = "0"
-      if (quantityState.status === true) {
-        addToCartContent = "{{ _('In Basket') }}";
-        dataState = "1"
-      }
-
-      const cartItem = document.createElement('div');
-      if (num == dataLen) {
-        // cartItem.classList = 'cart-item cart-item-last';       
-        cartItem.className = 'cart-item';       
-      } else {
-        cartItem.className = 'cart-item';
-      }
-
-      if (dataLen === 1 && window.innerWidth < '950px') {
-        cartItem.style.margin = '0 auto';
-        cartItem.style.width = '80%';
-      }  
-
-      const itemDetails = document.createElement('div');
-      // itemDetails.className = 'item-details';
-
-      const itemImage = document.createElement('div');      
-      itemImage.className = 'item-image';
-
-
-      const itemImageLink = document.createElement('a');
-      itemImageLink.href = fullPath;
-
-      const itemImg = document.createElement('img');
-      itemImg.src = "{{ url_for('static', filename='images/sub_product_slider/') }}" + row.imgName;
-      itemImg.alt = row.AltText;
-
-      itemImageLink.appendChild(itemImg);
-      itemImage.appendChild(itemImageLink);
-
-      const itemInfo = document.createElement('div');
-      itemInfo.className = 'item-info-modal';
-
-      const itemTitle = document.createElement('div');
-      itemTitle.className = 'item-title';
-      itemTitle.style.width = '150px';
-      itemTitle.style.textAlign = 'left';
-      itemTitle.style.marginBottom = '0px';
-
-      const itemTitleLink = document.createElement('a');
-      itemTitleLink.href = fullPath;
-      itemTitleLink.textContent = row.ptTitle;
-
-      itemTitle.appendChild(itemTitleLink);
-
-      const itemControls = document.createElement('div');
-      itemControls.className = 'item-controls';
-      itemControls.setAttribute('data-value', row.ptID);
-
-      const quantityControls = document.createElement('div');
-      quantityControls.className = 'quantity-controls';
-
-      const minusButton = document.createElement('button');
-      minusButton.className = 'minus-btn';
-      minusButton.textContent = '-';
-
-      const quantityInput = document.createElement('input');
-      quantityInput.type = 'number';
-      quantityInput.className = 'quantity';
-      quantityInput.name = 'quantity';
-      quantityInput.value = quantityValue;
-      quantityInput.min = '1';
-      quantityInput.disabled = true;
-      quantityInput.style.marginRight = '0px';
-      quantityInput.style.width = '40px';
-      quantityInput.style.height = '40px';
-
-      const plusButton = document.createElement('button');
-      plusButton.className = 'plus-btn';
-      plusButton.textContent = '+';
-
-      quantityControls.appendChild(minusButton);
-      quantityControls.appendChild(quantityInput);
-      quantityControls.appendChild(plusButton);
-
-      itemControls.appendChild(quantityControls);
-
-      itemInfo.appendChild(itemTitle);
-      
-      itemDetails.appendChild(itemImage);
-      
-      const itemPrice = document.createElement('div');
-      itemPrice.className = 'item-price-modal';
-      itemPrice.innerHTML = "{{ MAIN_CURRENCY|safe }}" + ` <span style="font-weight: 600">${parseFloat(row.Price) * parseFloat(quantityValue)}</span>`;
-      
-      cartItem.appendChild(itemDetails);
-      cartItem.appendChild(itemInfo);
-
-      const cpParent = document.createElement('div');
-      cpParent.className = 'cpParent';
-
-      cpParent.appendChild(itemControls);
-      cpParent.appendChild(itemPrice);
-      cartItem.appendChild(cpParent);
-      
-      const addToCart = document.createElement('div');
-      addToCart.classList = 'add-to-cart-modal-home';
-      addToCart.textContent = addToCartContent;
-      addToCart.dataset.state = dataState;
-      addToCart.dataset.value = row.ptID;
-      
-      const buyNow = document.createElement('div');
-      buyNow.classList = 'buy-now-modal-btn';
-      buyNow.textContent = "{{ _('Buy Now') }}";
-      buyNow.dataset.value = row.ptID;
-
-      const abParent = document.createElement('div');
-      abParent.className = 'abParent';
-      
-      abParent.appendChild(addToCart);
-      // abParent.appendChild(buyNow);
-      cartItem.appendChild(abParent);
-
-      
-
-
-      shoppingCart.appendChild(cartItem);
-      
-      num = num + 1;
-
-  });  
-
-
-
-
-  const fartherActions = document.createElement('div');
-  fartherActions.className = 'farther-actions';
-
-  const checkoutButton = document.createElement('a');
-  checkoutButton.className = 'checkout-button';
-  checkoutButton.textContent = "{{ _('Proceed to Checkout') }}";
-  checkoutButton.href = "{{ url_for('checkout') }}";
-  
-  const continueShopping = document.createElement('div');
-  continueShopping.classList = 'continue-shopping';
-  continueShopping.textContent = "{{ _('Continue Shopping') }}";
-  continueShopping.addEventListener('click', () => {
-    modalBackdrop.remove();
-  });
-  
-  
-  fartherActions.appendChild(checkoutButton);
-  fartherActions.appendChild(continueShopping);
-  shoppingCart.appendChild(fartherActions);
-
-  // Append the close button and shopping cart to the modal content
-  modalContent.appendChild(closeButton);
-  modalContent.appendChild(shoppingCart);
-
-  // Append the modal content to the backdrop
-  modalBackdrop.appendChild(modalContent);
-
-  // Append the modal backdrop to the body
-  document.body.appendChild(modalBackdrop);
-
-  change_modal_height();
-
-return modalBackdrop;
-
-}
 
 
 function myLoader(color, gearID) {
@@ -880,6 +622,7 @@ async function get_pt_quantity(ptID, quantity) {
             document.querySelector('.basket').src = document.getElementById('empty-basket').value;
             notification.innerHtml = '';
             notification.style.display = 'none';
+            document.querySelector('.badge').innerHTML = '0';
             aTag.href = window.location.origin + '/cart';
         } else {
             get_cart_content(Cart).then(response => {
@@ -911,6 +654,7 @@ async function get_pt_quantity(ptID, quantity) {
 
                 notification.textContent = cartCount.toString();
                 notification.style.display = 'block';
+                document.querySelector('.badge').textContent = cartCount.toString();
     
                 aTag.href = window.location.origin + '/cart/' + Cart;
 

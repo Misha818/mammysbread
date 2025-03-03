@@ -375,6 +375,8 @@ def other_products():
         return jsonify({'status': "1", 'data': result})
     else:
         return jsonify({'status': "0"})
+    
+
 # Edit thumbnail image
 @app.route('/pr-thumbnail/<RefKey>', methods=['GET'])
 @login_required
@@ -414,6 +416,14 @@ def pr_thumbnail(RefKey):
 # End of edit product's thumbnail image
 
 
+
+@app.route('/checkout', methods=['GET'])
+def checkout():
+    mainCurrency = MAIN_CURRENCY
+    return render_template('checkout.html', mainCurrency=mainCurrency, current_locale=get_locale())
+
+    
+    
 @app.route('/get_slides', methods=['POST'])
 @login_required
 def get_slides():
