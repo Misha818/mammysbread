@@ -3346,7 +3346,7 @@ def create_promo_code():
                     FROM `product` 
                         LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
                     WHERE `product`.`Language_ID` = %s 
-                        AND `product_type`.`Status` = 1
+                        -- AND `product_type`.`Status` = 1
                     ORDER BY `product`.`ID`, `product_type`.`Order` 
                     -- LIMIT 2
                     ;
@@ -3355,10 +3355,24 @@ def create_promo_code():
         result = sqlSelect(sqlQuery, sqlValTuple, True)
         prData = json.dumps(result['data']) 
 
+        sqlQueryAffiliate = "SELECT `ID`, `Firstname`, `Lastname`, `email` FROM `stuff` WHERE `rolID` = 2 AND `Status` = 1;"
+        affiliates = sqlSelect(sqlQueryAffiliate, (), True)
+
         sideBar = side_bar_stuff()
 
-        return render_template('create-promo-code.html', dataLength=result['length'], prData=prData, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+        return render_template('create-promo-code.html', dataLength=result['length'], prData=prData, affiliates=affiliates, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
+
+# Check weather promo code exists
+@app.route('/check-promo-code', methods=['POST'])
+def check_promo_code():
+    if not request.form.get('promo'):
+        return jsonify({'status': '0'})
+    promo = request.form.get('promo')
+
+    # Check weather promo code exists in db
+
+    return jsonify({'status': '1', 'val': promo})
 
 # Check if product type exists in specified quantity
 @app.route('/check-pt-quantity', methods=['POST'])

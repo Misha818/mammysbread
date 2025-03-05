@@ -588,6 +588,11 @@ button[type="submit"]:hover {
     display: none!important;
 }
 
+.promo-publish {
+  display: flex;
+  margin-left: 5px;
+  justify-content: center;
+}
 
 #headerEditorModal {
     overflow: visible;
@@ -813,6 +818,7 @@ button[type="submit"]:hover {
   border: 1px solid #ccc;
   cursor: pointer;
   user-select: none; /* Prevent text selection on double-click */
+  border-radius: 5px;
 }
 
 /* Container for the list of parents (initially hidden) */
@@ -5793,12 +5799,13 @@ h2 {
 #mistakes, #response {
   margin-top: 5%; 
   border: solid 1px red;
+  border-radius: 5px;
   color: red;
   padding: 15px;
   display: none;
   transition: max-height 0.5s ease, opacity 0.5s ease;
+}
 
- }
 
  #response {
   margin-bottom: 20px;

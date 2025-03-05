@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         
         parentTitle.style.color = 'black';
+
+
         // Hide children of ALL other parents first
         parentTitles.forEach((otherTitle) => {
           if (otherTitle !== parentTitle) {
@@ -35,6 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
         });
+
+
 
         const grandpa = parentTitle.parentNode.parentNode;    
 
@@ -62,12 +66,13 @@ document.addEventListener('DOMContentLoaded', () => {
               childCheckbox.className = 'child-checkbox';
 
           if (childValue === 'null') {
+
               childName = 'Click on me to add a product type'
               childDiv.className = 'child-option';
               childDiv.textContent = childName;
               childDiv.dataset.value = childValue.trim();
               ptA = document.createElement('a');
-              ptA.href = window.origin + '/add-price/' + parentItem.getAttribute('data-value')
+              ptA.href = window.origin + '/add-price/' + grandpa.getAttribute('data-value')
               ptA.appendChild(childDiv)
               childContainer.appendChild(ptA);
               
@@ -76,6 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
               childDiv.dataset.value = childValue.trim();
               
               childCheckbox.id = 'child_checkbox_' + childValue.trim();
+
+              childCheckbox.addEventListener('change', function(){
+                childCheckbox.parentNode.parentNode.parentNode.querySelector('.parent-checkbox').checked = false;
+              });
               
               if (grandpa.querySelector('.parent-checkbox').checked) {
                 childCheckbox.checked = true;  
@@ -147,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   const parentDiscountInput = bigDeddy.querySelector('.parent-discount');
                   const parentCheckbox = bigDeddy.querySelector('.parent-checkbox');
                   parentDiscountInput.value = '';  
-                  // parentCheckbox.checked = false;                   
+                  parentCheckbox.checked = false;                   
 
               });
 
@@ -168,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
               const revardDiv = document.createElement('div');
-              revardDiv.className = "input-group flex-nowrap";
+              revardDiv.className = "input-group flex-nowrap revard-box-child hidden";
               // Set inline styles
               revardDiv.style.width = "auto";
               revardDiv.style.gap = "0px";
@@ -225,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   const parentDiscountInput = bigDeddy.querySelector('.parent-discount');
                   const parentCheckbox = bigDeddy.querySelector('.parent-checkbox');
                   parentDiscountInput.value = '';  
-                  // parentCheckbox.checked = false;       
+                  parentCheckbox.checked = false;       
 
               });
 
@@ -271,6 +280,28 @@ document.addEventListener('DOMContentLoaded', () => {
               }
 
 
+              // Create the label element with class "switch" and id "mySwitch"
+              const labelSwitch = document.createElement('label');
+              labelSwitch.className = 'switch';
+
+
+              // Create the span element with classes "sliderA" and "round"
+              const spanSlider = document.createElement('span');
+              spanSlider.className = 'sliderA round';
+
+
+              // Create the outer div with class "promo-publish"
+              const promoPublish = document.createElement('div');
+              promoPublish.classList = 'promo-publish promo-publish-parent';
+              promoPublish.title = 'Discount state is disabled';
+              
+              // Build the structure by appending the span to the label, then the label to the div
+              labelSwitch.appendChild(spanSlider);
+              promoPublish.appendChild(labelSwitch);
+              promoPublish.addEventListener('click', function() {
+                  this.querySelector('.sliderA').classList.toggle('checked');                  
+              });    
+
               // Append the input and select elements to the container div
               revardDiv.appendChild(inputElement);
               revardDiv.appendChild(selectElement);
@@ -279,6 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
               childDiv.appendChild(childDivName);
               childDiv.appendChild(discountGroupDiv);
               childDiv.appendChild(revardDiv);
+              childDiv.appendChild(promoPublish);
 
               
               childContainer.appendChild(childDiv);
@@ -286,6 +318,34 @@ document.addEventListener('DOMContentLoaded', () => {
           } 
           
         });
+
+        
+        if (document.querySelector('#affiliates').value) {
+
+            if (document.querySelectorAll('.revard-box-parent')) {
+                document.querySelectorAll('.revard-box-parent').forEach(element => {
+                    element.classList.remove('hidden');
+                });
+            }
+
+            if (document.querySelectorAll('.revard-box-child')) {
+                document.querySelectorAll('.revard-box-child').forEach(element => {
+                    element.classList.remove('hidden');
+                });
+            }
+
+        }
+
+        if (parentTitle.parentNode.querySelector('.sliderA')) {
+            if (parentTitle.parentNode.querySelector('.sliderA').classList.contains('checked')) {
+              if (parentTitle.parentNode.parentNode.querySelectorAll('.child-options .sliderA')) {
+                  childPromoStates = parentTitle.parentNode.parentNode.querySelectorAll('.child-options .sliderA');
+                  childPromoStates.forEach(element => {
+                    element.classList.add('checked');
+                  });
+              }
+            }
+        }
 
         // Show the newly populated child container
         childContainer.classList.remove('hidden');
