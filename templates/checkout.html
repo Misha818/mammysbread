@@ -46,32 +46,29 @@ body {
                         box-shadow: 1px 3px 6px rgba(0, 0, 0, 0.3);"
                 >3</span>
               </h4>
-              <ul class="list-group mb-3" style="max-height: 78vh; overflow-y: auto;">
-                <li class="list-group-item d-flex justify-content-between lh-sm">
+              <ul class="list-group mb-3" id="checkout-basket" style="max-height: 78vh; overflow-y: auto;">
+                <!-- <li class="list-group-item d-flex justify-content-between lh-sm">
                   <div>
                     <h6 class="my-0">Product name</h6>
-                    <!-- <small class="text-muted">Brief description</small> -->
+                    <small class="text-muted">Brief description</small>
                   </div>
-                  <span class="text-muted">{{ mainCurrency|safe }} 12</span>
-                </li>
-                
-                
-
+                  <span class="text-muted"> 12</span>
+                </li> -->
               </ul>
-      
+                      
               <form class="card p-2">
                 <ul class="list-group mb-3">
                   
-                <li class="list-group-item d-flex justify-content-between bg-light">
+                <li class="list-group-item d-flex justify-content-between bg-light" style="display: none!important;">
                   <div class="text-success">
                     <h6 class="my-0">{{ _('Promo code') }}</h6>
-                    <small>EXAMPLECODE</small>
+                    <small id="promo-code-value">Example</small>
                   </div>
-                  <span class="text-success">−$5</span>
+                  <span class="text-success" id="promo-code-success">{{ mainCurrency|safe }} -5</span>
                 </li>
-                  <li class="list-group-item d-flex justify-content-between">
-                    <span>Total </span>
-                    <strong>{{ mainCurrency|safe }} 20</strong>
+                  <li class="list-group-item d-flex justify-content-between" style="border-top-width: 1px; border-radius: inherit;">
+                    <span>{{ _('Total') }} </span>
+                    <strong id="checkout-total-price">{{ mainCurrency|safe }} 0</strong>
                   </li>
                 </ul>
       
@@ -628,8 +625,11 @@ async function get_pt_quantity(ptID, quantity) {
             get_cart_content(Cart).then(response => {
                 let prData = response.content.result.data;
 
+                console.log(prData)
+
                 let arr = Cart.split('&');
                 let cartCount = 0;
+                let totlaPrice = 0;
 
                 arr.forEach(item => {
                     let itemArr = item.split('-');
@@ -644,8 +644,48 @@ async function get_pt_quantity(ptID, quantity) {
                                 amount = parseInt(row['quantity'])
                             }
                             cartCount = cartCount + amount;
+
+                            let prPrice = amount * row.Price;
+                            let prName = row.prTitle + ': ' + row.ptTitle
+
+                            totlaPrice = totlaPrice + prPrice;
+
+                            // Get the container element
+                            const checkoutBasket = document.getElementById('checkout-basket');
+
+                            // Create the list item and assign classes
+                            const li = document.createElement('li');
+                            li.className = "list-group-item d-flex justify-content-between lh-sm";
+
+                            // Create the inner div
+                            const div = document.createElement('div');
+
+                            // Create the h6 element for the product name
+                            const h6 = document.createElement('h6');
+                            h6.className = "my-0";
+                            h6.textContent = prName + ` (${amount})`;
+
+                            // Append the h6 to the div
+                            div.appendChild(h6);
+
+                            // Create the span element for the additional text
+                            const span = document.createElement('span');
+                            span.className = "text-muted";
+                            span.textContent = prPrice;
+
+                            // Append the div and span to the li element
+                            li.appendChild(div);
+                            li.appendChild(span);
+
+                            // Finally, append the li to the checkout basket element
+                            checkoutBasket.appendChild(li);
+
+                            
+
                         }
                     });
+
+                    document.getElementById('checkout-total-price').textContent = "{{ mainCurrency}}" + ' ' + totlaPrice;
 
                 });
 

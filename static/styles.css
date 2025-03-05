@@ -838,6 +838,20 @@ button[type="submit"]:hover {
   background-color: #ececec;
 }
 
+.parent-discount {
+  padding: 3px!important;
+  width: 33px!important;
+  height: 33px!important;
+  border-radius: 5px 0px 0px 5px!important;
+}
+
+.parent-discount-symbol {
+  height: 33px!important;
+  width: 25px!important;
+  padding: 5px!important;
+  border-radius: 0px 5px 5px 0px!important;
+}
+
 /* Container for child items (inside each parent) */
 .child-options {
   margin-left: 20px;   /* Indent children to the right */
@@ -856,6 +870,21 @@ button[type="submit"]:hover {
 .child-option:hover {
   background-color: #f7f7f7;
 }
+
+.child-checkbox {
+  height: 20px;
+  width: 15px;
+  background-color: #eee;
+  border-radius: 5px;
+}
+
+.parent-title {
+  width: 100%;
+  /* border: 1px solid; */
+  padding: 10px;
+  margin: -5px auto -5px auto;
+}
+
 
 /* Highlight the clicked/selected child */
 .selected-child {

@@ -1,0 +1,689 @@
+{% extends 'base.html' %}
+{% block title %}
+{{ _('Create Promo Code') }}
+{% endblock %}
+{% block head %}
+
+  <!-- 1. Bootstrap 5 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+
+  <!-- Bootstrap Icons for the calendar icon -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <!-- 2. Bootstrap Datepicker CSS (uxsolutions) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"/>
+
+  <style>
+    .datepicker {
+       width: 195px !important; /* Set to desired width */
+    }
+
+    thead {
+        background-color: inherit; 
+        color: inherit;
+    }
+    th, td {
+        padding: 0px;
+        font-size: 16px;
+    }
+
+    .prev, .next {
+        cursor: pointer;
+        position: inherit;
+        top: 50%;
+        width: inherit;
+        padding: inherit;
+        margin-top: inherit;
+        color: inherit;
+        font-weight: inherit;
+        font-size: inherit;
+        transition: none;
+        border-radius: inherit;
+        user-select: inherit;
+    }
+
+
+    .dropdown {
+        width: 90%;
+    }
+    
+    .option-box {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+  
+    .child-option {
+        display: flex;
+        flex-direction: row;
+        gap: 5px;
+        padding: 5px 10px;
+        align-items: center;
+        cursor: pointer;
+        color: #333;
+        border-bottom: 1px solid gray;
+    }
+
+    .option:hover {
+        background-color: unset;
+    }
+
+    .child-option:hover {
+        background-color: #ececec;
+    }
+
+    .form-select-revard, .form-select-revard-parent  {
+        font-style: italic!important;
+    }   
+
+    /* Hide default checkbox */
+    .parent-checkbox {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #4CAF50;
+    border-radius: 5px;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    background-color: white;
+    transition: all 0.3s ease-in-out;
+    }
+
+    /* Checked state */
+    .parent-checkbox:checked {
+        background-color: #4CAF50;
+        border-color: #4CAF50;
+    }
+
+    /* Add custom checkmark */
+        /* .parent-checkbox:checked::after {
+        content: "\2713";
+        font-size: 14px;
+        color: white;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: bold;
+    } */
+
+
+    .child-checkbox {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        position: relative;
+        cursor: pointer;
+        outline: none;
+        background-color: white;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Checked state */
+    .child-checkbox:checked {
+        background-color: #ccc;
+        border-color: #ccc;
+    }
+
+    /* Add custom checkmark */
+    .child-checkbox:checked::after, .parent-checkbox:checked::after {
+    content: "\2713";
+    font-size: 14px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    }
+
+
+  </style>  
+
+{% endblock %}
+
+{% block content %}
+
+<div class="overlay" id="overlay"></div>
+{{ sideBar | safe }}
+<div class="containerS" style="width: 50%;">
+    <h1>{{ _('Create Promo Code') }}</h1>
+    <!-- Form for adding a product -->
+    <div id="mistakes" style="width: 250px"></div>
+    <form id="product-category-form" style="margin: 20px 20px -15px 20px; width: 100%;">
+
+        <!-- Dropdown Container -->
+        <div class="dropdown">
+            <!-- The top label -->
+            <div class="dropdown-label" id="selected-label">{{ _('Choose a Product') }}</div>
+
+            <!-- Parents list (hidden initially) -->
+            <div class="dropdown-options hidden" id="parent-options"></div>
+        </div>
+        <!-- End of drop-down container -->
+
+        <input type="number" name="promo-code" id="promo-code"  placeholder="{{ _('Promo Code') }}" class="store-quantity">
+
+        <!-- Expiration Date -->
+         
+        <div class="mb-3" style="width: 250px">
+            <label for="expDate" class="form-label">{{ _('Expiration Date') }}</label>
+            <div class="input-group" style="gap: 0px;">
+            <input
+                type="text"
+                class="form-control"
+                id="expDate"
+                placeholder="MM-DD-YYYY"
+                style="width: 200px; min-height: 48px;"
+            />
+            <span class="input-group-text">
+                <i class="bi bi-calendar-date"></i>
+            </span>
+            </div>
+        </div>    
+
+            
+        <input type="hidden" id="language-id" value="{{ languageID }}">
+
+        <div id="saveButton" class="pcButtonS margin10" style="width: 250px;">{{ _('Submit') }}</div>
+        <div id="saving" class="pcButtonS margin10 hidden" style="width: 250px;">{{ _('Saving...') }}</div>
+    </form>
+</div>
+
+<!-- Thumbnail image manipulations -->
+<script>
+
+    let csrfToken = "{{ csrf_token() }}"
+    // Create a FormData object to hold the files
+
+
+saveButton.addEventListener('click', function (event) {
+    // Prevent the default form submission
+    event.preventDefault();
+
+    const saveButton = document.getElementById('saveButton');
+    const saving = document.getElementById('saving');
+    
+    saveButton.classList.add('hidden');
+    saving.classList.remove('hidden');
+    
+    let formData = new FormData();
+
+    let ptID = document.getElementById('selected-label').getAttribute('data-value');
+    let storeID = document.getElementById('store').value;
+    let quantity = document.getElementById('quantity').value;
+    let productionDate = document.getElementById('productionDate').value;
+    let expDate = document.getElementById('expDate').value;
+    let maxQuantity = false;
+
+    if (checkbox.checked) {
+        maxQuantity = document.getElementById('maxQuantity').value;
+    } 
+
+    // Create a new FormData object
+    formData.append('ptID', ptID);
+    formData.append('storeID', storeID);
+    formData.append('quantity', quantity);
+    formData.append('productionDate', productionDate);
+    formData.append('expDate', expDate);
+    formData.append('maxQuantity', maxQuantity);
+
+    // Create a new XMLHttpRequest object
+    let xhr = new XMLHttpRequest();
+
+    // Configure the request
+    xhr.open('POST', '/create-promo-code');
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+    // Define what happens on successful data submission
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            let response = JSON.parse(xhr.responseText);
+
+            let mistakesDiv = document.getElementById('mistakes');
+            mistakesDiv.innerHTML = ''; // Clear previous messages
+
+            if (response.status === '1') {
+                alert('Done!');
+                window.close();
+            }
+
+            if (response.status === '0') {
+                // Handle empty product name
+                mistakesDiv.innerHTML = response.answer;
+                mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'flex';
+
+                // Scroll the window to the mistakesDiv with smooth behavior
+                mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                saveButton.classList.remove('hidden');
+                saving.classList.add('hidden');
+
+            } 
+
+        } else {
+            // Handle error response
+            saveButton.classList.remove('hidden');
+            saving.classList.add('hidden');
+
+            console.error('Error adding category:', xhr.responseText);
+        }
+    };
+
+    // Send the request with the FormData object
+    xhr.send(formData);
+});
+
+</script>
+<!-- End of thumbnail image manipulations -->
+
+<!-- Include jQuery library -->
+<script type="text/javascript">
+ 
+    // Dynemically creat drop-down elements
+    const ptID = "{{ ptID|safe }}" 
+    const dataLength = "{{ dataLength|safe }}"
+    const prData = JSON.parse('{{ prData|safe }}');
+ 
+    let dropDownContent = document.createElement('span');
+    if (parseInt(dataLength) > 0) {
+        
+        let flag = prData[0].ID;
+        let newDivTitle = prData[0].Title;
+        let childerenData = '';
+      
+        prData.forEach((row) => {
+         
+            if (flag === row['ID']) {
+
+                childerenData = childerenData + row['ptID'] + '_sp_' + row['ptTitle'] + '_sppr_';
+            } else {
+
+                
+                let newDiv = document.createElement('div');
+                    newDiv.className = 'option';
+                    newDiv.id = 'parent_' + row.ID;
+                    newDiv.dataset.parent = newDivTitle;
+                    newDiv.dataset.value = flag;
+                    newDiv.dataset.children = childerenData.slice(0, -6);    
+                
+                let optionBox = document.createElement('span');
+                    optionBox.className = 'option-box';
+
+                let parentCheckbox = document.createElement('input');
+                    parentCheckbox.type = 'checkbox';
+                    parentCheckbox.className = 'parent-checkbox';
+
+                let newDivText = document.createElement('span');
+                    newDivText.className = 'parent-title';
+                    newDivText.textContent = newDivTitle;
+
+                let childOptions = document.createElement('div');
+                    childOptions.className = "child-options hidden"
+
+                
+                // Discount items 
+                const discountGroupDiv = document.createElement('div');
+                discountGroupDiv.className = "input-group flex-nowrap";
+                // Set inline styles
+                discountGroupDiv.style.width = "auto";
+                discountGroupDiv.style.gap = "0";
+                discountGroupDiv.style.margin = "0 0 0 auto";
+
+                // Create the input element
+                const input = document.createElement('input');
+                input.type = "text";
+                input.classList = "form-control parent-discount";
+                input.id = "parent_discount_" + row.ID;
+                input.setAttribute('aria-label', "Username");
+                input.setAttribute('aria-describedby', "addon-wrapping");
+                input.setAttribute('title', "Add Discount Rate");
+
+                input.addEventListener('input', function() {
+                    
+                    // Check if input is numeric
+                    if (!/^\d*\.?\d+$/.test(this.value) && this.value !== '') {
+                        input.value = this.value.slice(0, -1); 
+                        return;
+                    }
+
+                    const valFloat = parseFloat(this.value);
+
+                    const bigDeddy = this.parentNode.parentNode.parentNode;
+                    const childDiscountValues = bigDeddy.querySelectorAll('.child-options .child-discount');
+
+                    if (valFloat > 99 || valFloat < 1) {
+                        input.value = this.value.slice(0, -1); 
+                        if (valFloat === '' && valFloat !== 0) {
+                            if(confirm("{{ _('All discount values in current Product Type fields will be changed to') }} " + this.value)) {
+                                childDiscountValues.forEach(input => {
+                                    input.value = this.value;
+                                });
+                            }
+                        }
+                        return;
+                    }
+                                        
+                    let flag = 0;
+                    childDiscountValues.forEach(input => {
+                        if (input.value !== '') {
+                           flag = 1; 
+                           return;
+                        }
+                    });
+
+                    if (flag === 1) {                        
+                        if(!confirm("{{ _('All discount values in current Product Type fields will be changed to') }} " + this.value)) {
+                            input.value = this.value.slice(0, -1); 
+                            return;
+                        }
+                    }
+                    
+                    childDiscountValues.forEach(input => {
+                        input.value = this.value;
+                    });
+
+                });
+
+                // Create the span element for parent discount symbol
+                const span = document.createElement('span');
+                span.classList = "input-group-text parent-discount-symbol";
+                span.id = "addon-wrapping";
+                span.textContent = "%";
+
+                // End of Discount items
+
+                // Revard items
+                const revardDiv = document.createElement('div');
+                revardDiv.className = "input-group flex-nowrap";
+                // Set inline styles
+                revardDiv.style.width = "auto";
+                revardDiv.style.gap = "0px";
+                revardDiv.style.margin = "0px 0px 0px 5px";
+                revardDiv.style.flexDirection = "row";
+                revardDiv.style.alignItems = "center";
+
+                // Create the input element
+                const inputElement = document.createElement('input');
+                inputElement.type = "text";
+                inputElement.classList = "form-control revard-input-parent";
+                inputElement.setAttribute('aria-label', 'Username');
+                inputElement.setAttribute('aria-describedby', 'addon-wrapping');
+                inputElement.title = "Revard Value";
+                inputElement.id = "parent_revard_value_" + row.ID;
+
+                // Set inline styles for the input
+                inputElement.style.padding = "3px";
+                inputElement.style.width = "33px";
+                inputElement.style.height = "33px";
+
+                inputElement.addEventListener('input', function() {
+                    
+                    // Check if input is numeric
+                    if (!/^\d*\.?\d+$/.test(this.value) && this.value !== '') {
+                        inputElement.value = this.value.slice(0, -1); 
+                        return;
+                    }
+                   
+                    const bigDeddy = this.parentNode.parentNode.parentNode;
+                    const childRevardValues = bigDeddy.querySelectorAll('.child-options .revard-input');
+
+                    
+                    let flag = 0;
+                    childRevardValues.forEach(input => {
+                        if (input.value !== '') {
+                           flag = 1; 
+                           return;
+                        }
+                    });
+
+                    if (flag === 1) {                        
+                        if(!confirm("{{ _('All revard values in Product Type fields will be changed to') }} " + this.value)) {
+                            inputElement.value = this.value.slice(0, -1); 
+                            return;
+                        }
+                    }
+                    
+                    childRevardValues.forEach(input => {
+                        input.value = this.value;
+                    });
+
+                });
+
+                // Create the select element
+                const selectElement = document.createElement('select');
+                selectElement.classList = "form-select form-select-revard-parent";
+                selectElement.id = "inputGroupSelect03";
+                selectElement.setAttribute('aria-label', 'Example select with button addon');
+                selectElement.title = "Revard Options";
+
+                // Set inline styles for the select
+                selectElement.style.height = "33px";
+                selectElement.style.padding = "0px 30px 0px 11px";
+                selectElement.style.width = "60px";
+
+                // Create the first option (selected by default)
+                const option1 = document.createElement('option');
+                option1.selected = true;
+                option1.value = "0";
+                option1.textContent = "%";
+
+                // Create the second option
+                const option2 = document.createElement('option');
+                option2.value = "1";
+                option2.textContent = "fx";
+
+                // Append the options to the select element
+                selectElement.appendChild(option1);
+                selectElement.appendChild(option2);
+
+                selectElement.addEventListener('focus', function() {
+                    this.oldValue = this.value; // Store the previous value before change
+                });
+
+                selectElement.addEventListener('change', function() {
+                    const bigDeddy = this.parentNode.parentNode.parentNode;
+                    
+                    const childRevardOptions = bigDeddy.querySelectorAll('.child-options .form-select-revard');
+                    
+                    let flag = 0;
+                    childRevardOptions.forEach(select => {
+
+                        if (select.value !== this.value) {
+                           flag = 1; 
+                           return;
+                        }
+                    });
+
+                    if (flag === 1) {
+                        const selectedText = this.options[this.selectedIndex].text;
+                        if(!confirm("{{ _('All revard options in current Product Type fields will be changed to') }} " + selectedText)) {
+                            this.value = this.oldValue; 
+                            return;
+                        }
+
+                    }
+                    
+                    childRevardOptions.forEach(select => {
+                        select.value = this.value;
+                    });
+
+                });
+
+                // Append the input and select elements to the container div
+                revardDiv.appendChild(inputElement);
+                revardDiv.appendChild(selectElement);
+
+                //   End of Revard items
+             
+              
+                optionBox.appendChild(parentCheckbox)
+                optionBox.appendChild(newDivText)
+
+                optionBox.appendChild(input);
+                optionBox.appendChild(span);
+                optionBox.appendChild(revardDiv);
+
+                
+                newDiv.appendChild(optionBox)
+                newDiv.appendChild(childOptions)
+                dropDownContent.append(newDiv);
+
+                flag = row['ID']
+                newDivTitle = row['Title']
+                childerenData = row['ptID'] + '_sp_' + row['ptTitle'] + '_sppr_';
+
+            }               
+
+        });
+
+        let newDiv = document.createElement('div');
+            newDiv.className = 'option';
+            newDiv.dataset.parent = newDivTitle;
+            newDiv.dataset.value = flag;
+            newDiv.textContent = newDivTitle;
+            newDiv.dataset.children = childerenData.slice(0, -6);    
+        
+        let childOptions = document.createElement('div');
+            childOptions.className = "child-options hidden"
+
+        newDiv.appendChild(childOptions)
+        dropDownContent.append(newDiv);
+
+    } else {
+        let newA = document.createElement('a');
+        newA.href = window.origin + '/product/new';
+        let newDiv = document.createElement('div');
+            let newDivTitle ="{{ _('Click on me to add a product') }}";
+            newDiv.className = 'option';
+            newDiv.dataset.parent = newDivTitle;
+            newDiv.textContent = newDivTitle;
+        
+        let childOptions = document.createElement('div');
+            childOptions.className = "child-options hidden"
+
+        newDiv.appendChild(childOptions)
+        newA.appendChild(newDiv)
+        dropDownContent.append(newA);
+    }
+    
+    document.getElementById('parent-options').appendChild(dropDownContent);
+
+
+    // If ptID is True
+    if (ptID !== 'None') {
+        prData.forEach((row) => {
+            if (parseInt(ptID) === row['ptID']) {
+                
+                const parentDiv = document.querySelector(`[data-parent="${row['Title']}"]`);
+                const childContainer = parentDiv.querySelector('.child-options');
+                const children = parentDiv.getAttribute('data-children').split('_sppr_');
+                children.forEach((childInfo) => {
+
+                    let childArr = childInfo.split('_sp_');
+                    let childValue = childArr[0];
+                    let childName = childArr[1];    
+                    
+                    const childDiv = document.createElement('div');
+
+                    childDiv.className = 'child-option';
+                    childDiv.textContent = childName.trim();
+                    childDiv.dataset.value = childValue.trim();
+                    
+                    if (childValue === ptID) {
+                        childDiv.classList.add('selected-child');
+                    }
+                        
+                    childContainer.appendChild(childDiv);
+                });
+
+
+                const selectedLabel = document.getElementById('selected-label');
+                    selectedLabel.textContent = row['Title'] + ': ' + row['ptTitle'];
+                    selectedLabel.dataset.value = row['ptID'];
+
+                childContainer.classList.remove('hidden');    
+
+            }
+        });    
+    }
+
+
+    // document.getElementById('parent-options').classList.remove('hidden')
+
+    if (ptID !== 'None') {
+        // Child click event
+        childDiv = document.querySelectorAll('.child-option');
+        childDiv.forEach(div => {
+        
+            div.onclick = function(childEvent) {
+                childEvent.stopPropagation(); // Prevent parent click
+                // 2a) Revert style of previously selected child (if any)
+
+                let lastSelectedChild = document.querySelector('.selected-child');
+                if (lastSelectedChild) {
+                lastSelectedChild.classList.remove('selected-child');
+                }
+                
+                const clickedElement = childEvent.target;
+                // 2b) Highlight the newly selected child
+                clickedElement.classList.add('selected-child');
+                lastSelectedChild = clickedElement;
+
+                // 2c) Update top label to the child's name
+                const selectedLabel = document.getElementById('selected-label');
+                const parentItem = clickedElement.parentNode.parentNode;
+                selectedLabel.textContent = parentItem.getAttribute('data-parent') + ': ' + clickedElement.textContent;
+                selectedLabel.dataset.value = clickedElement.getAttribute('data-value');
+                // 2d) Hide the entire dropdown (parent list)
+                document.getElementById('parent-options').classList.add('hidden');
+                // parentOptions.classList.add('hidden');
+                
+            }
+        });
+
+   }
+
+</script>
+
+<script type="text/javascript" src="{{ url_for('static', filename='JS/drop-down-tree-promo-code.js')}}"></script>
+
+<!-- 3. Bootstrap 5 JS (Popper included) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 4. jQuery (Required by bootstrap-datepicker 1.x) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
+<!-- 5. Bootstrap Datepicker JS (uxsolutions) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+<script>
+  // Initialize the date picker on our input
+  $(function() {
+    $('#productionDate').datepicker({
+      format: 'mm-dd-yyyy', // Adjust format to your preference
+      autoclose: true,      // Close the picker automatically after selecting a date
+      todayHighlight: true  // Highlight today's date
+    }).datepicker('setDate', new Date());
+  });
+
+  $(function() {
+    $('#expDate').datepicker({
+      format: 'mm-dd-yyyy', // Adjust format to your preference
+      autoclose: true,      // Close the picker automatically after selecting a date
+      todayHighlight: true  // Highlight today's date
+    });
+  });
+
+ 
+
+</script>
+
+{% endblock %}
+
+

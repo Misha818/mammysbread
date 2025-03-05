@@ -266,6 +266,11 @@ rgba(10, 161, 221, 0.92)
 
 =========================================
 Functions to add to PERMISSIONS
+create_promo_code()
+
+
+
+
 add_sps_view
 add_sps
 pt_specifications

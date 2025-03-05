@@ -3330,6 +3330,36 @@ def add_to_store(ptID=None):
         answer = 'Done!'
         return jsonify({'status': '1', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
 
+
+
+@app.route("/create-promo-code", methods=["GET", "POST"])
+# @login_required
+def create_promo_code():
+    newCSRFtoken = generate_csrf()
+    if request.method == "GET":
+        languageID = getLangID()
+        sqlQuery = """SELECT 
+                        `product`.`ID`,
+                        `product`.`Title`,
+                        `product_type`.`ID` AS `ptID`,
+                        `product_type`.`Title` AS `ptTitle`
+                    FROM `product` 
+                        LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
+                    WHERE `product`.`Language_ID` = %s 
+                        AND `product_type`.`Status` = 1
+                    ORDER BY `product`.`ID`, `product_type`.`Order` 
+                    -- LIMIT 2
+                    ;
+                    """
+        sqlValTuple = (languageID,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        prData = json.dumps(result['data']) 
+
+        sideBar = side_bar_stuff()
+
+        return render_template('create-promo-code.html', dataLength=result['length'], prData=prData, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+    
+
 # Check if product type exists in specified quantity
 @app.route('/check-pt-quantity', methods=['POST'])
 def check_pt_quantity():
