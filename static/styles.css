@@ -5796,6 +5796,8 @@ h2 {
   color: red;
   padding: 15px;
   display: none;
+  transition: max-height 0.5s ease, opacity 0.5s ease;
+
  }
 
  #response {

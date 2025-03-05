@@ -97,19 +97,6 @@
         border-color: #4CAF50;
     }
 
-    /* Add custom checkmark */
-        /* .parent-checkbox:checked::after {
-        content: "\2713";
-        font-size: 14px;
-        color: white;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-weight: bold;
-    } */
-
-
     .child-checkbox {
         appearance: none;
         width: 20px;
@@ -141,6 +128,12 @@
     font-weight: bold;
     }
 
+    .revard-input-parent, .revard-input {
+        padding: 3px!important;
+        width: 40px!important;
+        height: 33px!important;
+    }
+
 
   </style>  
 
@@ -153,25 +146,24 @@
 <div class="containerS" style="width: 50%;">
     <h1>{{ _('Create Promo Code') }}</h1>
     <!-- Form for adding a product -->
-    <div id="mistakes" style="width: 250px"></div>
+    <div id="mistakes" style="width: 90%"></div>
     <form id="product-category-form" style="margin: 20px 20px -15px 20px; width: 100%;">
 
         <!-- Dropdown Container -->
         <div class="dropdown">
             <!-- The top label -->
-            <div class="dropdown-label" id="selected-label">{{ _('Choose a Product') }}</div>
+            <div class="dropdown-label" id="selected-label">{{ _('Products') }}</div>
 
             <!-- Parents list (hidden initially) -->
             <div class="dropdown-options hidden" id="parent-options"></div>
         </div>
         <!-- End of drop-down container -->
 
-        <input type="number" name="promo-code" id="promo-code"  placeholder="{{ _('Promo Code') }}" class="store-quantity">
 
         <!-- Expiration Date -->
          
         <div class="mb-3" style="width: 250px">
-            <label for="expDate" class="form-label">{{ _('Expiration Date') }}</label>
+            <!-- <label for="expDate" class="form-label">{{ _('Expiration Date') }}</label>
             <div class="input-group" style="gap: 0px;">
             <input
                 type="text"
@@ -183,9 +175,38 @@
             <span class="input-group-text">
                 <i class="bi bi-calendar-date"></i>
             </span>
-            </div>
+            </div> -->
         </div>    
 
+        <!-- <input type="text" name="promo-code" id="promo-code"  placeholder="{{ _('Promo Code') }}" class="store-quantity"> -->
+
+
+        <div class="input-group mb-3" style="gap: unset; width: 90%;">
+            <!-- <label for="expDate" class="form-label">{{ _('Expiration Date') }}</label> -->
+            <!-- <div class="input-group" style="gap: 0px;"> -->
+            <input
+                type="text"
+                class="form-control"
+                id="expDate"
+                placeholder="{{ _('Expiration Date') }}"
+                style="width: 35px; min-height: 48px;"
+            />
+            <span class="input-group-text">
+                <i class="bi bi-calendar-date"></i>
+            </span>
+            <!-- </div> -->
+            <input type="text" 
+                id="promo-code"
+                placeholder="{{ _('Promo Code') }}"
+                aria-label="Recipient's username" 
+                aria-describedby="basic-addon2"
+                style="margin-left: 10px;"
+                class="form-control"
+            >
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" style="height: -webkit-fill-available; border-radius: 0 5px 5px 0;" type="button">{{ _('Auto Genarate') }}</button>
+            </div>
+          </div>
             
         <input type="hidden" id="language-id" value="{{ languageID }}">
 
@@ -199,19 +220,100 @@
 
     let csrfToken = "{{ csrf_token() }}"
     // Create a FormData object to hold the files
+    
+
+const saveButton = document.getElementById('saveButton');
+const saving = document.getElementById('saving');
 
 
 saveButton.addEventListener('click', function (event) {
     // Prevent the default form submission
     event.preventDefault();
-
-    const saveButton = document.getElementById('saveButton');
-    const saving = document.getElementById('saving');
-    
     saveButton.classList.add('hidden');
     saving.classList.remove('hidden');
+
+
+    const parents = document.querySelectorAll('.option');
+    let flag = 0;
+    let products = []
+
+    const productLabel = document.querySelector('#selected-label');
+
+    if (parents) {
+        parents.forEach(parent => {
+            if (parent.querySelectorAll('.child-option')) {
+                parent.querySelectorAll('.child-option').forEach(child => {
+                    if (child.querySelector('.child-checkbox').checked === true) {
+                        let ptData = {};
+
+                        if (!child.querySelector('.child-discount').value) {
+                            flag = 1;
+
+                            child.querySelector('.child-discount').style.border = '1px solid red';
+                            parent.querySelector('.parent-title').style.color = 'red';
+                            productLabel.style.color = 'red';
+                            productLabel.style.border = '1px solid red';
+
+                            // console.log(child.querySelector('.child-discount'))
+                        }
+
+                        // For future Check if affiliate is specified
+                        if (!child.querySelector('.revard-input').value) {
+                            flag = 1;
+
+                            child.querySelector('.revard-input').style.border = '1px solid red';
+                            parent.querySelector('.parent-title').style.color = 'red';
+                            productLabel.style.color = 'red';
+                            productLabel.style.border = '1px solid red';
+
+                            
+                        }
+
+                        ptData['ptID'] = child.querySelector('.child-discount').id;
+                        ptData['discount'] = child.querySelector('.child-discount').value;
+                        
+                        // Check if affiliate is specified
+                        ptData['revard'] = child.querySelector('.revard-input').value;
+                        ptData['revard_option'] = child.querySelector('.form-select-revard').value;
+
+                        products.push(ptData);
+
+                    }
+                });
+            } 
+        });
+    } else {
+        console.log('No Product Detected!')
+        return;
+    }
+
+    const mistakeContainer = document.querySelector('#mistakes');
+    if (flag === 1) {
+        mistakeContainer.textContent = "{{ _('Please improve all fields marked with red in products!') }}";
+        mistakeContainer.style.display = "block";
+        saveButton.classList.remove('hidden');
+        saving.classList.add('hidden');
+        return;
+    }
+    
+    if (products.length === 0) {
+        mistakeContainer.textContent = "{{ _('Please select at least one product type!') }}"
+        mistakeContainer.style.display = "block";
+        saveButton.classList.remove('hidden');
+        saving.classList.add('hidden');
+        return;
+    }
+
+    console.log(products);
+    saveButton.classList.remove('hidden');
+    saving.classList.add('hidden');
+    return;
+
     
     let formData = new FormData();
+
+
+    formData.append('products', products);
 
     let ptID = document.getElementById('selected-label').getAttribute('data-value');
     let storeID = document.getElementById('store').value;
@@ -318,6 +420,17 @@ saveButton.addEventListener('click', function (event) {
                 let parentCheckbox = document.createElement('input');
                     parentCheckbox.type = 'checkbox';
                     parentCheckbox.className = 'parent-checkbox';
+                    parentCheckbox.addEventListener("change", function(event) {
+
+                        const grandpa = parentCheckbox.parentNode.parentNode;    
+                        if (grandpa.querySelector('.child-checkbox')) {
+                            let childCheckboxes = grandpa.querySelectorAll('.child-checkbox');
+                            childCheckboxes.forEach(checkbox => {
+                                checkbox.checked = event.target.checked;
+                            });
+                        }
+                    });
+
 
                 let newDivText = document.createElement('span');
                     newDivText.className = 'parent-title';
@@ -348,13 +461,13 @@ saveButton.addEventListener('click', function (event) {
                     
                     // Check if input is numeric
                     if (!/^\d*\.?\d+$/.test(this.value) && this.value !== '') {
-                        input.value = this.value.slice(0, -1); 
+                        input.value = this.value.replace(/\D/g, ''); 
                         return;
                     }
 
                     const valFloat = parseFloat(this.value);
 
-                    const bigDeddy = this.parentNode.parentNode.parentNode;
+                    const bigDeddy = this.parentNode.parentNode;
                     const childDiscountValues = bigDeddy.querySelectorAll('.child-options .child-discount');
 
                     if (valFloat > 99 || valFloat < 1) {
@@ -382,7 +495,7 @@ saveButton.addEventListener('click', function (event) {
                             input.value = this.value.slice(0, -1); 
                             return;
                         }
-                    }
+                    }                    
                     
                     childDiscountValues.forEach(input => {
                         input.value = this.value;
@@ -417,22 +530,28 @@ saveButton.addEventListener('click', function (event) {
                 inputElement.title = "Revard Value";
                 inputElement.id = "parent_revard_value_" + row.ID;
 
-                // Set inline styles for the input
-                inputElement.style.padding = "3px";
-                inputElement.style.width = "33px";
-                inputElement.style.height = "33px";
-
+               
                 inputElement.addEventListener('input', function() {
                     
                     // Check if input is numeric
                     if (!/^\d*\.?\d+$/.test(this.value) && this.value !== '') {
-                        inputElement.value = this.value.slice(0, -1); 
+                        inputElement.value = this.value.replace(/\D/g, ''); 
                         return;
                     }
                    
+                    const directParent = this.parentNode;
                     const bigDeddy = this.parentNode.parentNode.parentNode;
                     const childRevardValues = bigDeddy.querySelectorAll('.child-options .revard-input');
+                    const valFloat = parseFloat(this.value);
 
+                    if (directParent.querySelector('.form-select-revard-parent').value === "0") { // if revarded in persents per sold product
+
+                        if (valFloat > 99 || valFloat < 1) {
+                            inputElement.value = this.value.slice(0, -1); 
+                            return;
+                        }
+                        
+                    } 
                     
                     let flag = 0;
                     childRevardValues.forEach(input => {
@@ -502,17 +621,29 @@ saveButton.addEventListener('click', function (event) {
 
                     if (flag === 1) {
                         const selectedText = this.options[this.selectedIndex].text;
-                        if(!confirm("{{ _('All revard options in current Product Type fields will be changed to') }} " + selectedText)) {
+                        if(!confirm("{{ _('All revard options in current Product Type fields will be changed to') }} " + selectedText + "{{ _('And all corresponding reward values will be removed') }}") ) {
                             this.value = this.oldValue; 
                             return;
                         }
 
                     }
-                    
-                    childRevardOptions.forEach(select => {
-                        select.value = this.value;
-                    });
 
+                    selectElement.parentNode.querySelector('.revard-input-parent').value = '';
+
+                    childRevardInputs = bigDeddy.querySelectorAll('.child-options .revard-input');
+                    if (childRevardInputs) {
+                        childRevardInputs.forEach(input => {
+                            input.value = '';
+                        });
+                    }
+
+                    if (childRevardOptions) {
+
+                        childRevardOptions.forEach(select => {
+                            select.value = this.value;
+                        });
+                        
+                    }
                 });
 
                 // Append the input and select elements to the container div

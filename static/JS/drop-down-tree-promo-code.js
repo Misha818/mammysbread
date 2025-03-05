@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Prevent the click from closing the parent list
         e.stopPropagation();
         
+        parentTitle.style.color = 'black';
         // Hide children of ALL other parents first
         parentTitles.forEach((otherTitle) => {
           if (otherTitle !== parentTitle) {
@@ -35,14 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         });
 
+        const grandpa = parentTitle.parentNode.parentNode;    
 
-          // if (e.target !== parentItem) {
-          //   console.log(e.target.className); 
-          //   return;
-          // }
-
-
-          // Get the child container for this parent
+        // Get the child container for this parent
         const childContainer = parentTitle.parentNode.parentNode.querySelector('.child-options');
 
         // If it's already populated, just toggle it
@@ -80,6 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
               childDiv.dataset.value = childValue.trim();
               
               childCheckbox.id = 'child_checkbox_' + childValue.trim();
+              
+              if (grandpa.querySelector('.parent-checkbox').checked) {
+                childCheckbox.checked = true;  
+              }
+
               const childDivName = document.createElement('span');
               childDivName.textContent = childName.trim();
               
@@ -97,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
               // Create the input element
               const input = document.createElement('input');
               input.type = "text";
+              input.id = childValue;
               input.classList = "form-control child-discount";
               input.setAttribute('aria-label', "Username");
               input.setAttribute('aria-describedby', "addon-wrapping");
@@ -105,12 +107,16 @@ document.addEventListener('DOMContentLoaded', () => {
               input.style.padding = "3px";
               input.style.width = "33px";
               input.style.height = "33px";
+              
+              if (grandpa.querySelector('.parent-discount').value) {
+                input.value = grandpa.querySelector('.parent-discount').value;  
+              }
 
               input.addEventListener('input', function() {
                     
                   // Check if input is numeric
                   if (!/^\d*\.?\d+$/.test(this.value) && this.value !== '') {
-                      input.value = this.value.slice(0, -1); 
+                      input.value = this.value.replace(/\D/g, '');  
                       return;
                   }
                   let valFloat = 0;
@@ -125,13 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   const revardInput = grandpa.querySelector('.revard-input').value;
                   const childCheckbox = grandpa.querySelector('.child-checkbox');
 
-                  console.log(`revardInput is ${revardInput.length}`);
-                  console.log(`valFloat is ${valFloat}`);
-
-
-
                   if (revardInput.length === 0 && valFloat < 1) {
-                     childCheckbox.checked = false; 
+                    //  childCheckbox.checked = false; 
                   } else {
                     childCheckbox.checked = true; 
                   }
@@ -141,11 +142,12 @@ document.addEventListener('DOMContentLoaded', () => {
                       return;
                   }
 
+                  input.style.border = '1px solid #dee2e6';
 
                   const parentDiscountInput = bigDeddy.querySelector('.parent-discount');
                   const parentCheckbox = bigDeddy.querySelector('.parent-checkbox');
                   parentDiscountInput.value = '';  
-                  parentCheckbox.checked = false;                   
+                  // parentCheckbox.checked = false;                   
 
               });
 
@@ -181,10 +183,55 @@ document.addEventListener('DOMContentLoaded', () => {
               inputElement.setAttribute('aria-label', 'Username');
               inputElement.setAttribute('aria-describedby', 'addon-wrapping');
               inputElement.title = "Revard Value";
-              // Set inline styles for the input
-              inputElement.style.padding = "3px";
-              inputElement.style.width = "33px";
-              inputElement.style.height = "33px";
+              inputElement.id = "revard_" + childValue;
+
+              inputElement.addEventListener('input', function() {
+                  // Check if input is numeric
+                  if (!/^\d*\.?\d+$/.test(this.value) && this.value !== '') {
+                      inputElement.value = this.value.replace(/\D/g, ''); 
+                      return;
+                  }
+                
+                  const directParent = this.parentNode;
+                  
+                  let valFloat = 0;
+                  if (this.value !== '') {
+                    valFloat = parseFloat(this.value);
+                  }
+
+                  if (directParent.querySelector('.form-select-revard').value === "0") { // if revarded in persents per sold product
+                      if (valFloat > 99 || valFloat < 1) {
+                        inputElement.value = this.value.slice(0, -1); 
+                          return;
+                      }
+                      
+                  } 
+
+                  
+                  const grandpa = this.parentNode.parentNode;
+                  const bigDeddy = this.parentNode.parentNode.parentNode.parentNode;
+
+                  const revardInput = grandpa.querySelector('.revard-input').value;
+                  const childCheckbox = grandpa.querySelector('.child-checkbox');
+
+
+                  if (revardInput.length === 0 && valFloat < 1) {
+                    // childCheckbox.checked = false; 
+                  } else {
+                    childCheckbox.checked = true; 
+                  }
+
+                  inputElement.style.border = '1px solid #dee2e6';
+                  const parentDiscountInput = bigDeddy.querySelector('.parent-discount');
+                  const parentCheckbox = bigDeddy.querySelector('.parent-checkbox');
+                  parentDiscountInput.value = '';  
+                  // parentCheckbox.checked = false;       
+
+              });
+
+              if (grandpa.querySelector('.revard-input-parent').value) {
+                inputElement.value = grandpa.querySelector('.revard-input-parent').value;  
+              }
 
               // Create the select element
               const selectElement = document.createElement('select');
@@ -208,9 +255,21 @@ document.addEventListener('DOMContentLoaded', () => {
               option2.value = "1";
               option2.textContent = "fx";
 
+              
+
               // Append the options to the select element
               selectElement.appendChild(option1);
               selectElement.appendChild(option2);
+
+              selectElement.addEventListener('change', function() {
+                  const bigDeddy = this.parentNode.parentNode.parentNode;
+                  selectElement.parentNode.querySelector('.revard-input').value = '';
+              });
+
+              if (grandpa.querySelector('.form-select-revard-parent').value) {
+                selectElement.value = grandpa.querySelector('.form-select-revard-parent').value;  
+              }
+
 
               // Append the input and select elements to the container div
               revardDiv.appendChild(inputElement);
@@ -235,13 +294,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
       // (Optional) If user clicks anywhere outside the dropdown, close it
-      // document.addEventListener('click', (e) => {
-      //   // If the click is not inside the dropdown or its children, hide it
-      //   const isClickInside = e.target.closest('.dropdown');
-      //   if (!isClickInside) {
-      //     parentOptions.classList.add('hidden');
-      //   }
-      // });
+      document.addEventListener('click', (e) => {
+        // If the click is not inside the dropdown or its children, hide it
+        const isClickInside = e.target.closest('.dropdown');
+        if (!isClickInside) {
+          parentOptions.classList.add('hidden');
+        }
+      });
 
       
     });
