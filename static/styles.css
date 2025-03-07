@@ -848,6 +848,7 @@ button[type="submit"]:hover {
   padding: 3px!important;
   width: 33px!important;
   height: 33px!important;
+  text-align: right!important;
   border-radius: 5px 0px 0px 5px!important;
 }
 

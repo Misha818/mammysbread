@@ -267,7 +267,8 @@ rgba(10, 161, 221, 0.92)
 =========================================
 Functions to add to PERMISSIONS
 create_promo_code()
-
+promo_codes
+edit_promo_code
 
 
 

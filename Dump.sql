@@ -332,7 +332,7 @@ DROP TABLE IF EXISTS `promo_code`;
 CREATE TABLE `promo_code` (
     `ID` INT AUTO_INCREMENT,
     `Promo` VARCHAR(255),
-    `affiliateID` VARCHAR(255),
+    `affiliateID` INT,
     `expDate` DATE,
     `Status` INT,
     PRIMARY KEY (`ID`)
@@ -346,13 +346,25 @@ CREATE TABLE `discount` (
     `promo_code_id` INT,
     `ptID` INT,
     `discount` INT,
-    `discount_status` INT, -- 0 = Disabled, 1 = Enabled if 1 promo will work even at state of discount
+    `discount_status` INT, -- 0 = Disabled, 1 = Enabled | if 1 promo will work even aif product is at state of sale
     `revard_value` INT,
-    `revard_type` VARCHAR(255),
+    `revard_type` INT, -- 0 is % per sold product, 1 is speciified sum per sold product 
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `discount` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `sale`;
+CREATE TABLE `sale` (
+    `ID` INT AUTO_INCREMENT,
+    `ptID` INT,
+    `sale` INT,
+    `startDate` DATE,
+    `expDate` DATE,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `sale` AUTO_INCREMENT = 1;
 
 
 

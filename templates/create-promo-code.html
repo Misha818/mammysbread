@@ -127,12 +127,14 @@
     transform: translate(-50%, -50%);
     font-weight: bold;
     }
-
+    
     .revard-input-parent, .revard-input {
         padding: 3px!important;
-        width: 40px!important;
+        width: 50px!important;
         height: 33px!important;
+        text-align: right;
     }
+
 
 
   </style>  
@@ -245,47 +247,103 @@ saveButton.addEventListener('click', function (event) {
             const parentCheckbox = parent.querySelector('.parent-checkbox');
             if (parentCheckbox && parentCheckbox.checked) {
 
-                let prData = {};
-                let discountStateFlag = 0;
-
-                const parentDiscountState = parent.querySelector('.option-box .sliderA');
-                if (parentDiscountState.classList.contains('checked')) {
-                    discountStateFlag = 1;
-                }
-
-                prData['discount_status'] = discountStateFlag;
-
-                if (!parent.querySelector('.parent-discount').value) {
-                    flag = 1;
-
-                    parent.querySelector('.parent-discount').style.border = '1px solid red';
-                    parent.querySelector('.parent-title').style.color = 'red';
-                    productLabel.style.color = 'red';
-                    productLabel.style.border = '1px solid red';
+                const children = parent.getAttribute('data-children').split('_sppr_');
+                children.forEach((childInfo) => {
+                
+                    let childArr = childInfo.split('_sp_');
+                    let ptID = childArr[0];
+                    // let childName = childArr[1];
                     
-                }
-                prData['prID'] = parent.querySelector('.parent-discount').id;
-                prData['discount'] = parent.querySelector('.parent-discount').value;
+                    let ptData = {};
+                    let discountStateFlag = 0;
 
-                if (document.querySelector('#affiliates').value) { // Perform only when an affiliate is specified
-                    
-                    if (!parent.querySelector('.revard-input-parent').value) {
+                    const parentDiscountState = parent.querySelector('.option-box .sliderA');
+                    if (parentDiscountState.classList.contains('checked')) {
+                        discountStateFlag = 1;
+                    }
+
+                    ptData['discount_status'] = discountStateFlag;
+
+                    if (!parent.querySelector('.parent-discount').value) {
                         flag = 1;
 
-                        parent.querySelector('.revard-input-parent').style.border = '1px solid red';
+                        parent.querySelector('.parent-discount').style.border = '1px solid red';
                         parent.querySelector('.parent-title').style.color = 'red';
                         productLabel.style.color = 'red';
                         productLabel.style.border = '1px solid red';
                         
                     }
+                    ptData['ptID'] = ptID;
+                    ptData['discount'] = parent.querySelector('.parent-discount').value;
 
-                    // Check if affiliate is specified
-                    prData['revard'] = parent.querySelector('.revard-input-parent').value;
-                    prData['revard_option'] = parent.querySelector('.form-select-revard-parent').value;
+                    if (document.querySelector('#affiliates').value) { // Perform only when an affiliate is specified
+                        
+                        if (!parent.querySelector('.revard-input-parent').value) {
+                            flag = 1;
 
-                }
+                            parent.querySelector('.revard-input-parent').style.border = '1px solid red';
+                            parent.querySelector('.parent-title').style.color = 'red';
+                            productLabel.style.color = 'red';
+                            productLabel.style.border = '1px solid red';
+                            
+                        }
 
-                products.push(prData);
+                        // Check if affiliate is specified
+                        ptData['revard'] = parent.querySelector('.revard-input-parent').value;
+                        ptData['revard_option'] = parent.querySelector('.form-select-revard-parent').value;
+
+                    }
+
+                    products.push(ptData);
+
+                    
+                
+                });
+
+
+                
+                
+                // let prData = {};
+                // let discountStateFlag = 0;
+
+                // const parentDiscountState = parent.querySelector('.option-box .sliderA');
+                // if (parentDiscountState.classList.contains('checked')) {
+                //     discountStateFlag = 1;
+                // }
+
+                // prData['discount_status'] = discountStateFlag;
+
+                // if (!parent.querySelector('.parent-discount').value) {
+                //     flag = 1;
+
+                //     parent.querySelector('.parent-discount').style.border = '1px solid red';
+                //     parent.querySelector('.parent-title').style.color = 'red';
+                //     productLabel.style.color = 'red';
+                //     productLabel.style.border = '1px solid red';
+                    
+                // }
+                // prData['prID'] = parent.querySelector('.parent-discount').id;
+                // prData['discount'] = parent.querySelector('.parent-discount').value;
+
+                // if (document.querySelector('#affiliates').value) { // Perform only when an affiliate is specified
+                    
+                //     if (!parent.querySelector('.revard-input-parent').value) {
+                //         flag = 1;
+
+                //         parent.querySelector('.revard-input-parent').style.border = '1px solid red';
+                //         parent.querySelector('.parent-title').style.color = 'red';
+                //         productLabel.style.color = 'red';
+                //         productLabel.style.border = '1px solid red';
+                        
+                //     }
+
+                //     // Check if affiliate is specified
+                //     prData['revard'] = parent.querySelector('.revard-input-parent').value;
+                //     prData['revard_option'] = parent.querySelector('.form-select-revard-parent').value;
+
+                // }
+
+                // products.push(prData);
 
             } else if (parent.querySelectorAll('.child-option')) {
                 parent.querySelectorAll('.child-option').forEach(child => {
@@ -361,10 +419,7 @@ saveButton.addEventListener('click', function (event) {
         return;
     }
 
-    console.log(products);
-    // saveButton.classList.remove('hidden');
-    // saving.classList.add('hidden');
-    // return;
+    // console.log(products);
 
     if (!document.querySelector('#expDate').value) {
         mistakeContainer.textContent = "{{ _('Please select expiration date!') }}"
@@ -383,19 +438,17 @@ saveButton.addEventListener('click', function (event) {
         saving.classList.add('hidden');
         return;
     }
-    
 
+    let affiliate = document.querySelector('#affiliates').value;
     let expDate = document.querySelector('#expDate').value;
     let promoCode = document.querySelector('#promo-code').value;
 
     let formData = new FormData();
 
-
-    formData.append('products', products);
+    formData.append('affiliate', affiliate);
+    formData.append('products', JSON.stringify(products));
     formData.append('expDate', expDate);
-    formData.append('promoCode', promoCode);
-
-
+    formData.append('promo', promoCode);
 
     // Create a new XMLHttpRequest object
     let xhr = new XMLHttpRequest();
@@ -411,10 +464,12 @@ saveButton.addEventListener('click', function (event) {
 
             let mistakesDiv = document.getElementById('mistakes');
             mistakesDiv.innerHTML = ''; // Clear previous messages
+            mistakesDiv.style.display = 'none';
 
             if (response.status === '1') {
-                alert('Done!');
-                window.close();
+                let answer = response.answer;
+                alert(answer)
+                location.reload();
             }
 
             if (response.status === '0') {
