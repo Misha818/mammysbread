@@ -269,7 +269,7 @@ Functions to add to PERMISSIONS
 create_promo_code()
 promo_codes
 edit_promo_code
-
+edit_promo
 
 
 add_sps_view

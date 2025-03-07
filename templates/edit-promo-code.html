@@ -145,7 +145,7 @@
 <div class="overlay" id="overlay"></div>
 {{ sideBar | safe }}
 <div class="containerS" style="width: 50%;">
-    <h1>{{ _('Create Promo Code') }}</h1>
+    <h1>{{ _('Edit Promo Code') }}</h1>
     <!-- Form for adding a product -->
     <div id="mistakes" style="width: 90%"></div>
     <form id="product-category-form" style="margin: 20px 20px -15px 20px; width: 100%;">
@@ -204,6 +204,7 @@
           </div>
             
         <input type="hidden" id="language-id" value="{{ languageID }}">
+        <input type="hidden" id="promoID" value="{{ promoID }}">
 
         <div id="saveButton" class="pcButtonS margin10" style="width: 250px;">{{ _('Submit') }}</div>
         <div id="saving" class="pcButtonS margin10 hidden" style="width: 250px;">{{ _('Saving...') }}</div>
@@ -321,7 +322,6 @@ saveButton.addEventListener('click', function (event) {
                             productLabel.style.color = 'red';
                             productLabel.style.border = '1px solid red';
 
-                            // console.log(child.querySelector('.child-discount'))
                         }
 
                         ptData['ptID'] = child.querySelector('.child-discount').id;
@@ -374,7 +374,7 @@ saveButton.addEventListener('click', function (event) {
         return;
     }
 
-    // console.log(products);
+    console.log(products);
 
     if (!document.querySelector('#expDate').value) {
         mistakeContainer.textContent = "{{ _('Please select expiration date!') }}"
@@ -397,6 +397,7 @@ saveButton.addEventListener('click', function (event) {
     let affiliate = document.querySelector('#affiliates').value;
     let expDate = document.querySelector('#expDate').value;
     let promoCode = document.querySelector('#promo-code').value;
+    let promoID = document.querySelector('#promoID').value;
 
     let formData = new FormData();
 
@@ -404,12 +405,13 @@ saveButton.addEventListener('click', function (event) {
     formData.append('products', JSON.stringify(products));
     formData.append('expDate', expDate);
     formData.append('promo', promoCode);
+    formData.append('promoID', promoID);
 
     // Create a new XMLHttpRequest object
     let xhr = new XMLHttpRequest();
 
     // Configure the request
-    xhr.open('POST', '/create-promo-code');
+    xhr.open('POST', '/edit-promo');
     xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
     // Define what happens on successful data submission
@@ -475,6 +477,7 @@ saveButton.addEventListener('click', function (event) {
     if (parseInt(dataLength) > 0) {
         
         let flagID = prData[0].ID;
+        let firstElse = 0;
         let newDivTitle = prData[0].Title;
         let childerenData = '';
             
@@ -484,6 +487,311 @@ saveButton.addEventListener('click', function (event) {
                 childerenData = childerenData + row['ptID'] + '_sp_' + row['ptTitle'] + '_sppr_';
   
             } else {
+
+                if (firstElse == 0) {
+                    let newDiv = document.createElement('div');
+                        newDiv.className = 'option-select';
+                        newDiv.id = 'select-all';
+                    
+                    let optionBox = document.createElement('span');
+                        optionBox.className = 'option-box';
+
+                    let parentCheckbox = document.createElement('input');
+                        parentCheckbox.type = 'checkbox';
+                        parentCheckbox.className = 'select-all-checkbox';
+                        parentCheckbox.addEventListener("change", function(event) {
+
+                            const allParentCheckboxes = document.querySelectorAll('.parent-checkbox');    
+                            if (allParentCheckboxes) {
+                                allParentCheckboxes.forEach(checkbox => {
+                                    checkbox.checked = event.target.checked;
+                                });
+                            }
+                        });
+
+
+                    let newDivText = document.createElement('span');
+                        newDivText.className = 'parent-title';
+                        newDivText.textContent = "{{ _('Select All') }}";
+                        newDivText.style.fontStyle = 'italic';
+                        newDivText.style.fontWeight = '600';
+
+                    let childOptions = document.createElement('div');
+                        childOptions.className = "child-options hidden"
+
+                    
+                    // Discount items 
+                    const discountGroupDiv = document.createElement('div');
+                    discountGroupDiv.className = "input-group flex-nowrap";
+                    // Set inline styles
+                    discountGroupDiv.style.width = "auto";
+                    discountGroupDiv.style.gap = "0";
+                    discountGroupDiv.style.margin = "0 0 0 auto";
+
+                    // Create the input element
+                    const input = document.createElement('input');
+                    input.type = "text";
+                    input.classList = "form-control parent-discount";
+                    input.setAttribute('aria-label', "Username");
+                    input.setAttribute('aria-describedby', "addon-wrapping");
+                    input.setAttribute('title', "Add Discount Rate");
+
+                    input.addEventListener('input', function() {
+                        
+                        // Check if input is numeric
+                        if (!/^\d*\.?\d+$/.test(this.value) && this.value !== '') {
+                            input.value = this.value.replace(/\D/g, ''); 
+                            return;
+                        }
+
+                        const valFloat = parseFloat(this.value);
+
+                        const childDiscountValues = document.querySelectorAll('.parent-discount');
+
+                        if (valFloat > 99 || valFloat < 1) {
+                            input.value = this.value.slice(0, -1); 
+                            if (valFloat === '' && valFloat !== 0) {
+                                if(confirm("{{ _('All discount values will be changed to') }} " + this.value)) {
+                                    childDiscountValues.forEach(input => {
+                                        input.value = this.value;
+                                    });
+                                }
+                            }
+                            return;
+                        }
+                                            
+                        let flag = 0;
+                        childDiscountValues.forEach(input => {
+                            if (input.value !== '') {
+                            flag = 1; 
+                            return;
+                            }
+                        });
+
+                        if (flag === 1) {                        
+                            if(!confirm("{{ _('All discount values will be changed to') }} " + this.value)) {
+                                input.value = this.value.slice(0, -1); 
+                                return;
+                            }
+                        }
+
+                        input.style.border = "1px solid #dee2e6";
+                        
+                        childDiscountValues.forEach(input => {
+                            input.value = this.value;
+                        });
+
+                    });
+
+                    // Create the span element for parent discount symbol
+                    const span = document.createElement('span');
+                    span.classList = "input-group-text parent-discount-symbol";
+                    // span.id = "addon-wrapping";
+                    span.textContent = "%";
+
+                    // End of Discount items
+
+                    // Revard items
+                    let hidden = ''
+                    if ("{{ affiliateID }}" == 0) {
+                        hidden = 'hidden'
+                    }
+                    const revardDiv = document.createElement('div');
+                    revardDiv.classList = "input-group flex-nowrap revard-box-parent " + hidden;
+                    // Set inline styles
+                    revardDiv.style.width = "auto";
+                    revardDiv.style.gap = "0px";
+                    revardDiv.style.margin = "0px 0px 0px 5px";
+                    revardDiv.style.flexDirection = "row";
+                    revardDiv.style.alignItems = "center";
+
+                    // Create the input element
+                    const inputElement = document.createElement('input');
+                    inputElement.type = "text";
+                    inputElement.classList = "form-control revard-input-parent";
+                    inputElement.setAttribute('aria-label', 'Username');
+                    inputElement.setAttribute('aria-describedby', 'addon-wrapping');
+                    inputElement.title = "Revard Value";
+                    // inputElement.id = "parent_revard_value_" + row.ID;
+
+                
+                    inputElement.addEventListener('input', function() {
+                        
+                        // Check if input is numeric
+                        if (!/^\d*\.?\d+$/.test(this.value) && this.value !== '') {
+                            inputElement.value = this.value.replace(/\D/g, ''); 
+                            return;
+                        }
+                    
+                        const directParent = this.parentNode;
+                        // const bigDeddy = this.parentNode.parentNode.parentNode;
+                        const childRevardValues = document.querySelectorAll('.revard-input-parent');
+                        const valFloat = parseFloat(this.value);
+
+                        if (directParent.querySelector('.form-select-revard-parent').value === "0") { // if revarded in persents per sold product
+
+                            if (valFloat > 99 || valFloat < 1) {
+                                inputElement.value = this.value.slice(0, -1); 
+                                return;
+                            }
+                            
+                        } 
+                        
+                        let flag = 0;
+                        childRevardValues.forEach(input => {
+                            if (input.value !== '') {
+                            flag = 1; 
+                            return;
+                            }
+                        });
+
+                        if (flag === 1) {                        
+                            if(!confirm("{{ _('All revard values in Product Type fields will be changed to') }} " + this.value)) {
+                                inputElement.value = this.value.slice(0, -1); 
+                                return;
+                            }
+                        }
+                        
+                        inputElement.style.border = "1px solid #dee2e6";
+                        childRevardValues.forEach(input => {
+                            input.value = this.value;
+                        });
+
+                    });
+
+                    // Create the select element
+                    const selectElement = document.createElement('select');
+                    selectElement.classList = "form-select form-select-revard-parent";
+                    selectElement.id = "inputGroupSelect03";
+                    selectElement.setAttribute('aria-label', 'Example select with button addon');
+                    selectElement.title = "Revard Options";
+
+                    // Set inline styles for the select
+                    selectElement.style.height = "33px";
+                    selectElement.style.padding = "0px 30px 0px 11px";
+                    selectElement.style.width = "60px";
+
+                    // Create the first option (selected by default)
+                    const option1 = document.createElement('option');
+                    option1.selected = true;
+                    option1.value = "0";
+                    option1.textContent = "%";
+
+                    // Create the second option
+                    const option2 = document.createElement('option');
+                    option2.value = "1";
+                    option2.textContent = "fx";
+
+                    // Append the options to the select element
+                    selectElement.appendChild(option1);
+                    selectElement.appendChild(option2);
+
+                    selectElement.addEventListener('focus', function() {
+                        this.oldValue = this.value; // Store the previous value before change
+                    });
+
+                    selectElement.addEventListener('change', function() {
+                        
+                        const childRevardOptions = document.querySelectorAll('.form-select-revard-parent');
+                        
+                        let flag = 0;
+                        childRevardOptions.forEach(select => {
+
+                            if (select.value !== this.value) {
+                            flag = 1; 
+                            return;
+                            }
+                        });
+
+                        if (flag === 1) {
+                            const selectedText = this.options[this.selectedIndex].text;
+                            if(!confirm("{{ _('All revard options will be changed to') }} " + selectedText + "{{ _('And all corresponding reward values will be removed') }}") ) {
+                                this.value = this.oldValue; 
+                                return;
+                            }
+
+                        }
+
+                        selectElement.parentNode.querySelector('.revard-input-parent').value = '';
+
+                        childRevardInputs = document.querySelectorAll('.revard-input-parent');
+                        if (childRevardInputs) {
+                            childRevardInputs.forEach(input => {
+                                input.value = '';
+                            });
+                        }
+
+                        if (childRevardOptions) {
+
+                            childRevardOptions.forEach(select => {
+                                select.value = this.value;
+                            });
+                            
+                        }
+                    });
+
+                    // Append the input and select elements to the container div
+                    revardDiv.appendChild(inputElement);
+                    revardDiv.appendChild(selectElement);
+
+                    //   End of Revard items
+
+                    
+                    // Create the outer div with class "promo-publish"
+                    const promoPublish = document.createElement('div');
+                    promoPublish.classList = 'promo-publish promo-publish-parent';
+                    promoPublish.title = "{{ _('Discount state is disabled') }}";
+
+                    // Create the label element with class "switch" and id "mySwitch"
+                    const labelSwitch = document.createElement('label');
+                    labelSwitch.className = 'switch';
+
+                    // Create the span element with classes "sliderA" and "round"
+                    const spanSlider = document.createElement('span');
+                    spanSlider.className = 'sliderA round';
+
+                    // Build the structure by appending the span to the label, then the label to the div
+                    labelSwitch.appendChild(spanSlider);
+                    promoPublish.appendChild(labelSwitch);
+                    promoPublish.addEventListener('click', function() {
+                        const slider = this.querySelector('.sliderA');
+                        let promo_state = false;
+                        
+                        
+                        if (document.querySelectorAll('.sliderA')) {
+
+                            childPromoPublishes = document.querySelectorAll('.sliderA');
+                            
+                            slider.classList.toggle('checked');  
+                            if (slider.classList.contains('checked')) {
+                                childPromoPublishes.forEach(promo => {
+                                    promo.classList.add('checked');
+                                });
+                            } else {
+                                childPromoPublishes.forEach(promo => {
+                                    promo.classList.remove('checked');
+                                });
+                            }
+                            
+                        }
+
+                    });    
+                
+                    optionBox.appendChild(parentCheckbox)
+                    optionBox.appendChild(newDivText)
+
+                    optionBox.appendChild(input);
+                    optionBox.appendChild(span);
+                    optionBox.appendChild(revardDiv);
+                    optionBox.appendChild(promoPublish);
+
+                    
+                    newDiv.appendChild(optionBox)
+                    newDiv.appendChild(childOptions)
+                    dropDownContent.append(newDiv);
+
+                    firstElse = 1;
+                }
                 
                 
                 let newDiv = document.createElement('div');
@@ -911,8 +1219,12 @@ saveButton.addEventListener('click', function (event) {
             // End of Discount items
 
             // Revard items
+            let hiddenClass = '';
+            if ({{ affiliateID }} == 0) {
+                hiddenClass = 'hidden'
+            }
             const revardDiv = document.createElement('div');
-            revardDiv.classList = "input-group flex-nowrap revard-box-parent hidden";
+            revardDiv.classList = "input-group flex-nowrap revard-box-parent " + hiddenClass;
             // Set inline styles
             revardDiv.style.width = "auto";
             revardDiv.style.gap = "0px";
@@ -1147,7 +1459,6 @@ saveButton.addEventListener('click', function (event) {
         prData.forEach(row => {
             if (rowFlag == row.ID) {
                 rowPtCount = rowPtCount + 1;
-                // console.log(`rowPtCount is ${rowPtCount} and discount.prID is ${discount.prID} and rowFlag is ${rowFlag}`)
             } else {
                 
                 if (discount.prID == rowFlag) {
@@ -1436,10 +1747,8 @@ saveButton.addEventListener('click', function (event) {
                                     option2.value = "1";
                                     option2.textContent = "fx";
                                     if (revardType == '0') {
-                                        console.log(`revardType in if is ${revardType}`)
                                         option1.selected = true;
                                     } else {
-                                        console.log(`revardType in else is ${revardType}`)
                                         option2.selected = true;
                                     }
 
@@ -1615,7 +1924,6 @@ saveButton.addEventListener('click', function (event) {
 <script>
   // Initialize the date picker on our input
   $(function() {
-    console.log("{{ expDate | safe }}")
     $('#expDate').datepicker({
       format: 'mm-dd-yyyy', // Adjust format to your preference
       autoclose: true,      // Close the picker automatically after selecting a date

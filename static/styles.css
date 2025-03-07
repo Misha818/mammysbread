@@ -834,12 +834,13 @@ button[type="submit"]:hover {
 }
 
 /* Each parent option */
-.option {
+.option, .option-select {
   padding: 10px;
   cursor: pointer;
   border-bottom: 1px solid #eee;
   position: relative;
 }
+
 .option:hover {
   background-color: #ececec;
 }
@@ -897,6 +898,66 @@ button[type="submit"]:hover {
 .selected-child {
   background-color: #c3f7c3; /* Light green highlight */
 }
+
+    /* Hide default checkbox */
+    .parent-checkbox, .select-all-checkbox {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 1px solid #4CAF50;
+      border-radius: 5px;
+      position: relative;
+      cursor: pointer;
+      outline: none;
+      background-color: white;
+      transition: all 0.3s ease-in-out;
+      }
+  
+      /* Checked state */
+      .parent-checkbox:checked, .select-all-checkbox:checked {
+          background-color: #4CAF50;
+          border-color: #4CAF50;
+      }
+  
+      .child-checkbox {
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          position: relative;
+          cursor: pointer;
+          outline: none;
+          background-color: white;
+          transition: all 0.3s ease-in-out;
+      }
+  
+      /* Checked state */
+      .child-checkbox:checked {
+          background-color: #ccc;
+          border-color: #ccc;
+      }
+  
+      /* Add custom checkmark */
+      .child-checkbox:checked::after, .parent-checkbox:checked::after, .select-all-checkbox::after {
+      content: "\2713";
+      font-size: 14px;
+      color: white;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: bold;
+      }
+      
+      .revard-input-parent, .revard-input {
+          padding: 3px!important;
+          width: 50px!important;
+          height: 33px!important;
+          text-align: right;
+      }
+  
+  
 
 .no-pt-detected {
   margin-top: 20px;

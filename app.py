@@ -3365,7 +3365,7 @@ def create_promo_code():
     
     if request.method == "POST":
         if not request.form.get('products') or not request.form.get('expDate') or not request.form.get('promo'):
-            return jsonify({'status': "0", 'answer': smthWrong + '1st'})
+            return jsonify({'status': "0", 'answer': smthWrong})
         
         promo = request.form.get('promo')
 
@@ -3387,14 +3387,14 @@ def create_promo_code():
         for row in products:
             for key, value in row.items():
                 if value == '':
-                    return jsonify({'status': "0", 'answer': smthWrong + 'value'})    
+                    return jsonify({'status': "0", 'answer': smthWrong})    
 
             if int(row['discount']) > 99:
-                return jsonify({'status': "0", 'answer': smthWrong + 'discount'}) 
+                return jsonify({'status': "0", 'answer': smthWrong}) 
                 
             if row.get('revard_option') == '0':
                 if int(row['revard']) > 99:
-                    return jsonify({'status': "0", 'answer': smthWrong + 'revard_option'})    
+                    return jsonify({'status': "0", 'answer': smthWrong})    
 
         affiliate = 0
         columns = "(`promo_code_id`, `discount_status`, `ptID`, `discount`,  `Status`)"
@@ -3449,7 +3449,9 @@ def promo_codes():
                         `promo_code`.`Status` 
                     FROM `promo_code` 
                     LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`
-                    WHERE `promo_code`.`Status` = 1;
+                    WHERE `promo_code`.`Status` = 1
+                    ORDER BY `promo_code`.`ID` DESC
+                    ;
                 """
     result = sqlSelect(sqlQuery, (), True)
 
@@ -3458,6 +3460,49 @@ def promo_codes():
     return render_template('promo-codes.html', result=result, currentDate=date.today(), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
 
     
+@app.route('/edit-promo', methods=['POST'])
+# @login_required
+def edit_promo():
+    if not request.form.get('products') or not request.form.get('promoID') or not request.form.get('expDate') or not request.form.get('promo'):
+        return jsonify({'status': "0", 'answer': smthWrong + '1st'})
+    
+    promo = request.form.get('promo')
+    promoID = request.form.get('promoID')
+
+    sqlQuery = "SELECT `promo` FROM `promo_code` WHERE `promo` = %s AND `ID` != %s;"
+    sqlValTuple = (promo, promoID)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] > 0:
+        answer = promo + ' ' + gettext('code exists')
+        return jsonify({'status': '0', 'answer': answer})
+
+
+    json_str = request.form.get('products')
+    try:
+        products = json.loads(json_str)
+    except json.JSONDecodeError as e:
+        return jsonify({'status': "0", "error": "Invalid JSON data", "message": str(e)}), 400
+
+    # check products validity 
+    for row in products:
+        for key, value in row.items():
+            if value == '':
+                return jsonify({'status': "0", 'answer': smthWrong})    
+
+        if int(row['discount']) > 99:
+            return jsonify({'status': "0", 'answer': smthWrong}) 
+            
+        if row.get('revard_option') == '0':
+            if int(row['revard']) > 99:
+                return jsonify({'status': "0", 'answer': smthWrong})    
+    
+    
+    return jsonify({'status': "0", 'answer': 'Stic sksum a kinon'})    
+
+
+
+
+
 @app.route('/edit-promo-code/<promoID>', methods=['GET'])
 # @login_required
 def edit_promo_code(promoID):
@@ -3510,7 +3555,7 @@ def edit_promo_code(promoID):
 
     newCSRFtoken = generate_csrf()
     sideBar = side_bar_stuff()
-    return render_template('edit-promo-code.html', affiliateID=discountsResult['data'][0]['affiliateID'], promoCode=discountsResult['data'][0]['Promo'], expDate=discountsResult['data'][0]['expDate'], discounts=discounts,  affiliates=affiliates, prData=prData, dataLength=result['length'], sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
+    return render_template('edit-promo-code.html', affiliateID=discountsResult['data'][0]['affiliateID'], promoCode=discountsResult['data'][0]['Promo'], expDate=discountsResult['data'][0]['expDate'], discounts=discounts,  affiliates=affiliates, prData=prData, promoID=promoID, dataLength=result['length'], sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
 
     
 # Check weather promo code exists
