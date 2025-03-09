@@ -899,6 +899,10 @@ button[type="submit"]:hover {
   background-color: #c3f7c3; /* Light green highlight */
 }
 
+.red-placeholder::placeholder {
+  color: red!important;
+}
+
     /* Hide default checkbox */
     .parent-checkbox, .select-all-checkbox {
       appearance: none;

@@ -56,27 +56,40 @@ body {
                 </li> -->
               </ul>
                       
-              <form class="card p-2">
-                <ul class="list-group mb-3">
+              <div class="card p-2">
+                <ul class="list-group mb-3" style="gap: 2px">
                   
-                <li class="list-group-item d-flex justify-content-between bg-light" style="display: none!important;">
+                <li class="list-group-item d-flex justify-content-between bg-light" id="promo-value-parent" style="display: none!important;">
                   <div class="text-success">
-                    <h6 class="my-0">{{ _('Promo code') }}</h6>
+                    <h6 class="my-0" style="text-align: left;">{{ _('Promo code') }}</h6>
                     <small id="promo-code-value">Example</small>
                   </div>
                   <span class="text-success" id="promo-code-success">{{ mainCurrency|safe }} -5</span>
                 </li>
+
+
                   <li class="list-group-item d-flex justify-content-between" style="border-top-width: 1px; border-radius: inherit;">
                     <span>{{ _('Total') }} </span>
                     <strong id="checkout-total-price">{{ mainCurrency|safe }} 0</strong>
                   </li>
+                  <li class="list-group-item d-flex justify-content-between" id="discount-info" style="border-top-width: 1px; border-radius: inherit; display: none!important;">
+                    <span></span>
+                    <strong id="discount-total-price">{{ mainCurrency|safe }} 0</strong>
+                  </li>
                 </ul>
+
+                
+                <li class="list-group-item d-flex justify-content-between bg-light" id="invalid-promo" style="display: none!important; margin-bottom: 3px;">
+                  <div class="text-success">
+                    <h6 class="my-0" style="text-align: left; color: red;">{{ _('Invalid Promo Code') }}</h6>
+                  </div>
+                </li>
       
                 <div class="input-group">
-                  <input type="text" class="form-control" placeholder="Promo code">
-                  <button class="btn btn-secondary pay">{{ _('Redeem') }}</button>
+                  <input type="text" class="form-control" id="promo" placeholder="Promo code">
+                  <button class="btn btn-secondary submit-promo">{{ _('Submit') }}</button>
                 </div>
-              </form>
+              </div>
             </div>
           <div class="col-md-7 col-lg-8">
               <h4 class="mb-3">{{ _('Billing address') }}</h4>
@@ -326,7 +339,7 @@ if (addToCartButtons) {
               
               if (response.status === '1') {
                   // Handle success
-                  console.log(response.data);
+                  // console.log(response.data);
                   prData = response.data
                   
                   const newShoppingCartModal = createShoppingCartModal(response.data);
@@ -385,7 +398,7 @@ if (addToCartButtons) {
                               if (flag === true) {
                                 return;
                               }
-                              console.log('I am here')  
+                              // console.log('I am here')  
                               flag = true;
 
                               let ptID = clickedButton.dataset.value;
@@ -552,8 +565,8 @@ if (addToCartButtons) {
                 
             if (response.status === '0') {
               modal_message(response.answer)
-              console.log(response.answer);
-              console.log('response.answer');
+              // console.log(response.answer);
+              // console.log('response.answer');
             }
               
           } else {
@@ -572,6 +585,8 @@ if (addToCartButtons) {
   });
   
 }
+
+let prDataGlobal = [];
 
 async function get_pt_quantity(ptID, quantity) {
         let formData = new FormData();
@@ -625,7 +640,7 @@ async function get_pt_quantity(ptID, quantity) {
             get_cart_content(Cart).then(response => {
                 let prData = response.content.result.data;
 
-                console.log(prData)
+                // console.log(prData)
 
                 let arr = Cart.split('&');
                 let cartCount = 0;
@@ -639,9 +654,11 @@ async function get_pt_quantity(ptID, quantity) {
 
                     prData.forEach(row => {
                         if (parseInt(row['ptID']) === ptIDCookie) {
+
+                            prDataGlobal.push({'ptID': row['ptID'], 'quantity': countCookie});
                             let amount = countCookie;
                             if (countCookie > parseInt(row['quantity'])) {
-                                amount = parseInt(row['quantity'])
+                                amount = parseInt(row['quantity']);
                             }
                             cartCount = cartCount + amount;
 
@@ -655,7 +672,7 @@ async function get_pt_quantity(ptID, quantity) {
 
                             // Create the list item and assign classes
                             const li = document.createElement('li');
-                            li.className = "list-group-item d-flex justify-content-between lh-sm";
+                            li.className = "list-group-item d-flex justify-content-between lh-sm product-list";
 
                             // Create the inner div
                             const div = document.createElement('div');
@@ -663,6 +680,8 @@ async function get_pt_quantity(ptID, quantity) {
                             // Create the h6 element for the product name
                             const h6 = document.createElement('h6');
                             h6.className = "my-0";
+                            h6.id = "product_" + row['ptID'];
+                            h6.style.textAlign = "left";
                             h6.textContent = prName + ` (${amount})`;
 
                             // Append the h6 to the div
@@ -1073,7 +1092,127 @@ async function get_pt_quantity(ptID, quantity) {
       };
 
     headerScroll();
+
+   const promo = document.querySelector('#promo');
+   let promoFlag = 0;   
+   const submitPromo = document.querySelector('.submit-promo');
+   submitPromo.addEventListener('click', function(event) {
+      event.preventDefault;
+      if (promoFlag == 1) {
+        return;
+      }
+
+      promoFlag = 1;
+      if (document.querySelectorAll('.product-list h6')) {
+        document.querySelectorAll('.product-list h6').forEach(item => {
+          item.style.color = '#212529';
+        });
+      }
+
+      submitPromo.textContent = "{{ _('Louding...') }}";
+
+      
+      const promoCodeParent = document.querySelector('#promo-value-parent');
+      if (!promo.value) {
+          promo.placeholder = "{{ _('Enter Promo Code') }}";
+          promo.classList.add('red-placeholder'); 
+          promo.style.borderColor = 'red';
+          promoCodeParent.style.setProperty("display", "none", "important");
+          document.querySelector('#discount-info').style.setProperty("display", "none", "important");
+          document.querySelector('#checkout-total-price').style.setProperty('text-decoration', 'unset');
+
+          
+          submitPromo.textContent = "{{ _('Submit') }}";
+          promoFlag = 0;
+          return;
+        }
+
+                
+        let formData = new FormData();
+
+        formData.append('products', JSON.stringify(prDataGlobal));
+        formData.append('promo', promo.value);
+
+        // Create a new XMLHttpRequest object
+        let xhr = new XMLHttpRequest();
+
+        // Configure the request
+        xhr.open('POST', '/get-promo-discounts');
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+        // Define what happens on successful data submission
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText);
+
+                let mistakes = document.getElementById('invalid-promo');
+                mistakes.style.setProperty("display", "none", "important");
+
+                if (response.status === '1') {
+
+                    response.data.forEach(item => {
+                      if (document.querySelector('#product_' + item.ptID.toString())) {
+                        document.querySelector('#product_' + item.ptID.toString()).style.color = 'green';
+                      }
+                    });
+
+                    let totalPriceText = document.querySelector('#checkout-total-price').textContent;
+                    let arr = totalPriceText.split(' ');
+                    let totalPrice = parseFloat(arr[1]);
+                    let newTotalPrice = totalPrice - parseFloat(response.discountPrice)
+                    
+                    document.querySelector('#discount-total-price').textContent = "{{ mainCurrency }} " + newTotalPrice;
+                    document.querySelector('#checkout-total-price').style.setProperty('text-decoration', 'line-through', 'important');
+                    document.querySelector('#discount-info').style.display = 'block';
+                    document.querySelector('#promo-code-value').textContent = promo.value;
+                    document.querySelector('#promo-code-success').textContent = "{{ mainCurrency }} " + '-' + response.discountPrice;
+                    submitPromo.textContent = "{{ _('Submit') }}";
+                    promoCodeParent.style.display = 'block'; 
+                }
+
+                if (response.status === '0') {
+                    // Handle empty product name
+                    mistakes.querySelector('h6').textContent = response.answer;
+                    mistakes.style.setProperty("display", "block", "important");
+
+
+
+                    promoCodeParent.style.setProperty("display", "none", "important");
+                    document.querySelector('#discount-info').style.setProperty("display", "none", "important");
+                    document.querySelector('#checkout-total-price').style.setProperty('text-decoration', 'unset');
+
+                    submitPromo.textContent = "{{ _('Submit') }}";
+
+                } 
+
+            } else {
+                // Handle error response
+                submitPromo.textContent = "{{ _('Submit') }}";
+
+                console.error('Error adding category:', xhr.responseText);
+            }
+        };
+
+        // Send the request with the FormData object
+        xhr.send(formData);
+        
+        promoFlag = 0;
+        
+    });
+
+      
+  promo.addEventListener('input', function(event) {
+      event.preventDefault;
+      
+      promo.classList.remove('red-placeholder');
+      promo.style.borderColor = 'black';
+
   });
+
+
+
+
+});
 
   function change_modal_height() {
     if (document.querySelector('.farther-actions') && document.querySelector('.add-to-cart-modal')) {
@@ -1082,13 +1221,7 @@ async function get_pt_quantity(ptID, quantity) {
       const addToCartModalHeight = parseInt(document.querySelector('.add-to-cart-modal').offsetHeight, 10);
       const modalBackdropHeight = parseInt(document.querySelector('.modal-backdrop').offsetHeight, 10);
       const modalContentHeight = parseInt(document.querySelector('.modal-content').offsetHeight, 10);
-      
-      // console.log('fartherActionsHeight:', fartherActionsHeight);
-      // console.log('addToCartModalHeight:', addToCartModalHeight);
-      // console.log('modalBackdropHeight:', modalBackdropHeight);
-      // console.log('modalContentHeight:', modalContentHeight);
-      // console.log('Combined Height:', modalBackdropHeight - fartherActionsHeight);
-      
+            
       document.querySelector('.add-to-cart-modal').style.maxHeight = (modalBackdropHeight - fartherActionsHeight * 2).toString() + 'px'
     
       // 

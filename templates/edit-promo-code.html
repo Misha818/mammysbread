@@ -374,7 +374,7 @@ saveButton.addEventListener('click', function (event) {
         return;
     }
 
-    console.log(products);
+    // console.log(products);
 
     if (!document.querySelector('#expDate').value) {
         mistakeContainer.textContent = "{{ _('Please select expiration date!') }}"
@@ -1471,46 +1471,46 @@ saveButton.addEventListener('click', function (event) {
                     });
                     
                     
-                    if (ptQuantity == rowPtCount) { // This checks if the parent section should be manipulated
-                        if (document.querySelector('#parent_' + rowFlag))
-                            parentElement = document.querySelector('#parent_' + rowFlag);
+                    // if (ptQuantity == rowPtCount) { // This checks if the parent section should be manipulated
+                    //     if (document.querySelector('#parent_' + rowFlag))
+                    //         parentElement = document.querySelector('#parent_' + rowFlag);
                             
-                            parentCheckbox = parentElement.querySelector('.parent-checkbox');
-                            if (parentCheckbox) {
-                                parentCheckbox.checked = true;
-                            }
+                    //         parentCheckbox = parentElement.querySelector('.parent-checkbox');
+                    //         if (parentCheckbox) {
+                    //             parentCheckbox.checked = true;
+                    //         }
 
 
-                            parentTitle = parentElement.querySelector('.parent-title');
-                            if (parentTitle) {
-                                parentTitle.style.color = 'green';
-                            }
+                    //         parentTitle = parentElement.querySelector('.parent-title');
+                    //         if (parentTitle) {
+                    //             parentTitle.style.color = 'green';
+                    //         }
 
-                            parentDiscount = parentElement.querySelector('.parent-discount');
-                            if (parentDiscount) {
-                                parentDiscount.value = discount.discount
-                            }    
+                    //         parentDiscount = parentElement.querySelector('.parent-discount');
+                    //         if (parentDiscount) {
+                    //             parentDiscount.value = discount.discount
+                    //         }    
 
-                            if (discount.discount_status == 1) {
-                                parentElement.querySelector('.sliderA').classList.add('checked');
-                            }
+                    //         if (discount.discount_status == 1) {
+                    //             parentElement.querySelector('.sliderA').classList.add('checked');
+                    //         }
 
                             
-                            if ("{{ affiliateID }}" > 0) {
+                    //         if ("{{ affiliateID }}" > 0) {
 
-                                parentRevard = parentElement.querySelector('.revard-input-parent');
-                                if (parentRevard) {
-                                    parentRevard.value = discount.revard_value
-                                }  
+                    //             parentRevard = parentElement.querySelector('.revard-input-parent');
+                    //             if (parentRevard) {
+                    //                 parentRevard.value = discount.revard_value
+                    //             }  
                                 
-                                parentRevardSelect = parentElement.querySelector('.form-select-revard-parent');
-                                if (parentRevardSelect) {
-                                    parentRevardSelect.value = discount.revard_type
-                                }  
+                    //             parentRevardSelect = parentElement.querySelector('.form-select-revard-parent');
+                    //             if (parentRevardSelect) {
+                    //                 parentRevardSelect.value = discount.revard_type
+                    //             }  
                                 
-                            }
+                    //         }
 
-                    } else {
+                    // } else {
                         if (document.querySelector('#parent_' + rowFlag)) {
                             parentElement = document.querySelector('#parent_' + rowFlag);
                             
@@ -1817,7 +1817,7 @@ saveButton.addEventListener('click', function (event) {
                         
                         }
 
-                    }
+                    // }
                     
                 }
 

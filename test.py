@@ -1,3 +1,1 @@
-num = 554
-if float(num) >= float(num):
-    print('aaaa')
+print(13 * 23 *10 / 100)

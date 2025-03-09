@@ -346,7 +346,7 @@ CREATE TABLE `discount` (
     `promo_code_id` INT,
     `ptID` INT,
     `discount` INT,
-    `discount_status` INT, -- 0 = Disabled, 1 = Enabled | if 1 promo will work even aif product is at state of sale
+    `discount_status` INT, -- 0 = Disabled, 1 = Enabled | if 1 promo will work even if product is at state of sale
     `revard_value` INT,
     `revard_type` INT, -- 0 is % per sold product, 1 is speciified sum per sold product 
     `Status` INT,

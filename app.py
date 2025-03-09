@@ -12,7 +12,7 @@ from flask_wtf.csrf import CSRFError, generate_csrf
 from OpenSSL import SSL
 from flask_recaptcha import ReCaptcha
 from io import BytesIO
-from datetime import date
+from datetime import datetime, date
 import os
 import json
 import re
@@ -3381,7 +3381,8 @@ def create_promo_code():
         try:
             products = json.loads(json_str)
         except json.JSONDecodeError as e:
-            return jsonify({'status': "0", "error": "Invalid JSON data", "message": str(e)}), 400
+            # "error": "Invalid JSON data", "message": str(e),
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
 
         # check products validity 
         for row in products:
@@ -3463,44 +3464,145 @@ def promo_codes():
 @app.route('/edit-promo', methods=['POST'])
 # @login_required
 def edit_promo():
+    newCSRFtoken = generate_csrf()
     if not request.form.get('products') or not request.form.get('promoID') or not request.form.get('expDate') or not request.form.get('promo'):
-        return jsonify({'status': "0", 'answer': smthWrong + '1st'})
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
     
     promo = request.form.get('promo')
-    promoID = request.form.get('promoID')
+    promoID = int(request.form.get('promoID'))
 
     sqlQuery = "SELECT `promo` FROM `promo_code` WHERE `promo` = %s AND `ID` != %s;"
     sqlValTuple = (promo, promoID)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] > 0:
         answer = promo + ' ' + gettext('code exists')
-        return jsonify({'status': '0', 'answer': answer})
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
 
     json_str = request.form.get('products')
     try:
         products = json.loads(json_str)
     except json.JSONDecodeError as e:
-        return jsonify({'status': "0", "error": "Invalid JSON data", "message": str(e)}), 400
+        # "error": "Invalid JSON data", "message": str(e),
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
 
     # check products validity 
     for row in products:
         for key, value in row.items():
             if value == '':
-                return jsonify({'status': "0", 'answer': smthWrong})    
+                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
 
         if int(row['discount']) > 99:
-            return jsonify({'status': "0", 'answer': smthWrong}) 
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}) 
             
         if row.get('revard_option') == '0':
             if int(row['revard']) > 99:
-                return jsonify({'status': "0", 'answer': smthWrong})    
+                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
     
     
-    return jsonify({'status': "0", 'answer': 'Stic sksum a kinon'})    
+    sqlSelectOldData =  f"""
+                        SELECT 
+                            `promo_code`.`ID`, 
+                            `promo_code`.`Promo`,
+                            `promo_code`.`affiliateID`,
+                            `promo_code`.`expDate`, 
+                            `promo_code`.`Status`,
+                            `product`.`ID` AS `prID`,
+                            `product_type`.`ID` AS `ptID`,
+                            `product`.`Title` AS `prTitle`,
+                            `product_type`.`Title` AS `ptTitle`,
+                            `discount`.`ID` AS `discountID`,
+                            `discount`.`discount`,
+                            `discount`.`discount_status`,
+                            `discount`.`revard_value`,
+                            `discount`.`revard_type` 
+                        FROM `promo_code` 
+                            LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
+                            LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
+                            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                        WHERE `promo_code`.`ID` = %s;
+                        """
+    
+    resultOldData = sqlSelect(sqlSelectOldData, (promoID,), True)
 
+    promoCheck = resultOldData['data'][0]
+    # promoStatus = int(request.form.get('promo-status'))
+    promoStatus = 1
+    affiliateID = 0
+    if request.form.get('affiliate') and int(request.form.get('affiliate')) > 0:
+        affiliateID = int(request.form.get('affiliate'))
+    expDate = datetime.strptime(request.form.get('expDate'), "%m-%d-%Y").date()
+    
+    # Update for table `promo_code`
+    if promoCheck['Promo'] != promo or promoCheck['expDate'] != expDate or promoCheck['affiliateID'] != affiliateID or promoCheck['Status'] != promoStatus:
+        sqlPromoUpdate = "UPDATE `promo_code` SET `Promo` = %s, expDate = %s, affiliateID = %s, Status = %s WHERE `ID` = %s"
+        sqlValTuple = (promo, expDate, affiliateID, promoStatus, promoID)
+        sqlUpdate(sqlPromoUpdate, sqlValTuple)
 
+    sqlQueryUpdate =    """
+                        UPDATE `discount` SET
+                            `discount` = %s,
+                            `discount_status` = %s,
+                            `revard_value` = %s,
+                            `revard_type` = %s
+                        WHERE `promo_code_id` = %s AND `ptID` = %s
+                        """
+    for row in resultOldData['data'][:]:
+        for product in products[:]:
+            if row['ptID'] == int(product['ptID']):
 
+                productRevard = product.get('revard')
+                if productRevard is not None:
+                    productRevard = int(product.get('revard'))
+                
+                productRevardOption = product.get('revard_option')
+                if productRevardOption is not None:
+                    productRevardOption = int(product.get('revard_option'))
+
+                if row['discount'] != int(product['discount']) or row['discount_status'] != int(product['discount_status']) or row['revard_value'] != productRevard or row['revard_type'] != productRevardOption:
+                    # print(f"row['discount'] is {row['discount']} and product['discount'] is {product['discount']}")
+                    sqlValTuple = (int(product['discount']), int(product['discount_status']), productRevard, productRevardOption, promoID, row['ptID'])
+                    updateResult = sqlUpdate(sqlQueryUpdate, sqlValTuple)
+                    # print(updateResult['answer'])
+                products.remove(product)
+                resultOldData['data'].remove(row)
+
+    if len(resultOldData['data']) > 0:
+        placeholders = "%s," * len(resultOldData['data'])
+        placeholders = placeholders[:-1]
+
+        protoTuple = []
+        for row in resultOldData['data']:
+            protoTuple.append(row['discountID'])
+            
+        sqlValTuple = tuple(protoTuple)
+        sqlQueryDelete = f"DELETE FROM `discount` WHERE `ID` IN ({placeholders});"
+        sqlDelete(sqlQueryDelete, sqlValTuple)
+
+    if len(products) > 0:
+        affiliate = 0
+        columns = "(`promo_code_id`, `discount_status`, `ptID`, `discount`,  `Status`)"
+        values = "(%s, %s, %s, %s, %s)," * len(products)  
+        if request.form.get('affiliate'):
+            affiliate = request.form.get('affiliate')
+            columns = "(`promo_code_id`, `discount_status`, `ptID`, `discount`,  `revard_value`, `revard_type`, `Status`)"
+            values = "(%s, %s, %s, %s, %s, %s, %s)," * len(products)  
+        
+        protoTuple = []
+        for row in products:
+            protoTuple.append(promoID)
+            for key, value in row.items():                   
+                protoTuple.append(int(value))
+
+            protoTuple.append(1)
+     
+        valTuples = tuple(protoTuple)
+
+        sqlInsertDiscount = f"INSERT INTO `discount` {columns} VALUES {values[:-1]}"
+        
+        discountInsert = sqlInsert(sqlInsertDiscount, valTuples)  
+
+    return jsonify({'status': "1", 'answer': gettext('Promo Code updated successfully!') , 'newCSRFtoken': newCSRFtoken})    
 
 
 @app.route('/edit-promo-code/<promoID>', methods=['GET'])
@@ -3558,11 +3660,70 @@ def edit_promo_code(promoID):
     return render_template('edit-promo-code.html', affiliateID=discountsResult['data'][0]['affiliateID'], promoCode=discountsResult['data'][0]['Promo'], expDate=discountsResult['data'][0]['expDate'], discounts=discounts,  affiliates=affiliates, prData=prData, promoID=promoID, dataLength=result['length'], sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
 
     
+# Get Discounts With Promo Code
+@app.route('/get-promo-discounts', methods=['POST'])
+def get_promo_discounts():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('promo') or not request.form.get('products'):
+        return jsonify({'status': '0', 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+    
+    promo = request.form.get('promo', '').strip()
+    json_str = request.form.get('products')
+    try:
+        products = json.loads(json_str)
+    except json.JSONDecodeError as e:
+        # "error": "Invalid JSON data", "message": str(e),
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+
+    # check products validity 
+    ptIDs = ''
+    for row in products:
+        ptIDs = ptIDs + str(row['ptID']) + ','
+
+    ptIDs = ptIDs[:-1]
+    # print(f"ptIDs are {ptIDs}")
+    sqlQuery =  """
+                SELECT 
+                    `product_type`.`ID` AS `ptID`,
+                    `product_type`.`Price`,
+                    `discount`.`discount`
+                    -- `discount`.`discount_status`
+                FROM `promo_code` 
+                    LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
+                    LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                WHERE `promo_code`.`Promo` = %s 
+                    AND `promo_code`.`expDate` >= CURRENT_DATE() 
+                    AND `promo_code`.`Status` = 1
+                    AND `product`.`Product_Status` = 2
+                    AND FIND_IN_SET(`product_type`.`ID`, %s)
+                    AND `discount`.`Status` = 1
+                """
+    sqlValTuple = (promo, '11,1')
+    # sqlValTuple = (promo, ptIDs)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] == 0:
+        answer = gettext('Invalid Promo Code')
+        return jsonify({'status': "0", 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+    # Deside prices with discount
+    discountPrice = 0
+    totalPrice = 0
+    for row in result['data']:
+        for r in products:
+            if row['ptID'] == r['ptID']:
+                print(f"row['Price'] is {type(row['Price'])} and r['quantity'] is {type(r['quantity'])} AND row['discount'] is {type(row['discount'])}")
+                discountPrice = discountPrice + (row['Price'] * int(r['quantity']) * row['discount'] / 100)
+
+    return jsonify({'status': "1", 'data': result['data'], 'discountPrice': discountPrice, 'totalPrice': totalPrice, 'newCSRFtoken': newCSRFtoken})
+
+
 # Check weather promo code exists
 @app.route('/check-promo-code', methods=['POST'])
 def check_promo_code():
+    newCSRFtoken = generate_csrf()
     if not request.form.get('promo'):
-        return jsonify({'status': '0'})
+        return jsonify({'status': '0', 'newCSRFtoken': newCSRFtoken})
     
     # Check weather promo code exists in db
     promo = request.form.get('promo')
