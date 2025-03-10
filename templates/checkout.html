@@ -1,4 +1,5 @@
 {% extends 'public.html' %}
+
 {% block title %}
     {{ _("Checkout") }}
 {% endblock %}
@@ -6,8 +7,17 @@
 
 {% block head %}
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
+<!-- International Telephone Input JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.7/js/intlTelInput.js"></script>
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- International Telephone Input CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.6/css/intlTelInput.css" rel="stylesheet">
+  
 
 <style>
 
@@ -23,6 +33,41 @@ body {
     max-width: 960px;
 }
 .lh-condensed { line-height: 1.25; }
+
+/* Workaround styles */
+.intl-tel-input {
+  width: 100%;
+  display: table-cell;
+}
+.intl-tel-input .selected-flag {
+  z-index: 4;
+}
+.intl-tel-input .country-list {
+  z-index: 5;
+}
+.input-group .intl-tel-input .form-control {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 0;
+}
+
+.my-phone-control {
+  padding-top: 7px!important;
+  padding-bottom: 7px!important;
+  border-radius: 5px!important;
+}
+
+#cc-number {
+  -moz-appearance: textfield;
+}
+
+#cc-number::-webkit-outer-spin-button,
+#cc-number::-webkit-inner-spin-button {
+  
+  -webkit-appearance: none;
+  margin: 0;
+}
 
 
     </style>
@@ -93,49 +138,58 @@ body {
             </div>
           <div class="col-md-7 col-lg-8">
               <h4 class="mb-3">{{ _('Billing address') }}</h4>
+              <div id="mistakes"></div>
               <form class="needs-validation" novalidate>
                   <div class="row g-3">
                       <div class="col-sm-6">
-                          <label for="firstName" class="form-label">{{ _('First name') }}</label>
+                          <label for="firstName" class="form-label">{{ _('First name') }} *</label>
                           <input type="text" class="form-control" id="firstName" required>
                           <div class="invalid-feedback"> {{_('Valid first name is required.')}} </div>
                       </div>
                       <div class="col-sm-6">
-                          <label for="lastName" class="form-label">{{_('Last name')}}</label>
+                          <label for="lastName" class="form-label">{{_('Last name')}} *</label>
                           <input type="text" class="form-control" id="lastName" required>
                           <div class="invalid-feedback"> {{_('Valid last name is required.')}} </div>
                       </div>
+                      
+                      <!-- Phone Number Section -->
+                      <div class="col-sm-6">
+                        <label for="phone" class="form-label">{{ _('Phone Number') }} *</label>
+                        <div class="input-group">
+                          <input type="text" id="phone" class="form-control my-phone-control" required>
+                            <div class="invalid-feedback" > {{ _('Please enter valid phone number!')}} </div>
+                        </div>
+                      </div>
+
+                      <!-- Confirm Phone Number Section -->
+                      <div class="col-sm-6">
+                        <label for="confirm-phone" class="form-label">{{ _('Confirm Phone Number') }} *</label>
+                        <div class="input-group">
+                          <input type="text" id="confirm-phone" class="form-control my-phone-control" required>
+                          <div class="invalid-feedback"> {{ _('Please enter valid phone number!')}} </div>
+                          <div class="invalid-feedback" id="match-control"> {{ _('Phone numbers do not match!')}} </div>
+                        </div>
+                      </div>
+
                       <div class="col-12">
-                          <label for="email" class="form-label">{{_('Email')}} <span class="text-muted">( {{_('Optional')}} )</span></label>
+                          <label for="email" class="form-label">{{ _('Email') }} <span class="text-muted">( {{_('Optional')}} )</span></label>
                           <input type="email" class="form-control" id="email">
-                          <div class="invalid-feedback"> {{ _('Please enter a valid email address.')}} </div>
+                          <div class="invalid-feedback"> {{ _('Please enter a valid email address!')}} </div>
                       </div>
+                      
                       <div class="col-12">
-                          <label for="address" class="form-label">{{ _('Address')}}</label>
+                          <label for="address" class="form-label">{{ _('Address') }} *</label>
                           <input type="text" class="form-control" id="address" required>
-                          <div class="invalid-feedback"> {{ _('Please enter your shipping address.')}} </div>
+                          <div class="invalid-feedback"> {{ _('Please enter your shipping address!')}} </div>
                       </div>
-                      <!-- <div class="col-md-5">
-                          <label for="country" class="form-label">Country</label>
-                          <select class="form-select" id="country" required>
-                              <option value="">Choose...</option>
-                              <option>United States</option>
-                          </select>
-                          <div class="invalid-feedback"> Please select a valid country. </div>
-                      </div> -->
+
                       <div class="col-md-4">
-                          <label for="state" class="form-label">{{ _('City')}}</label>
+                          <label for="state" class="form-label">{{ _('City') }}</label>
                           <select class="form-select" id="state" required disabled>
                               <option value="">Choose...</option>
                               <option selected>{{ _('Yerevan')}}</option>
                           </select>
-                          <!-- <div class="invalid-feedback"> Please provide a valid state. </div> -->
                       </div>
-                      <!-- <div class="col-md-3">
-                          <label for="zip" class="form-label">Zip</label>
-                          <input type="text" class="form-control" id="zip" required>
-                          <div class="invalid-feedback"> Zip code required. </div>
-                      </div> -->
                   </div>
                   <hr class="my-4">
                   <h4 class="mb-3">{{ _('Payment')}}</h4>
@@ -155,28 +209,28 @@ body {
                   </div>
                   <div class="row gy-3">
                       <div class="col-md-6">
-                          <label for="cc-name" class="form-label">{{ _('Name on card')}}</label>
+                          <label for="cc-name" class="form-label">{{ _('Name on card')}} *</label>
                           <input type="text" class="form-control" id="cc-name" required>
                           <div class="invalid-feedback"> {{ _('Name on card is required.')}} </div>
                       </div>
                       <div class="col-md-6">
-                          <label for="cc-number" class="form-label">{{ _('Credit card number')}}</label>
-                          <input type="text" class="form-control" id="cc-number" required>
+                          <label for="cc-number" class="form-label">{{ _('Credit card number')}} *</label>
+                          <input type="number" class="form-control" id="cc-number" oninput="validateNumericInput(this)" inputmode="numeric"  required>
                           <div class="invalid-feedback"> {{ _('Credit card number is required.')}} </div>
                       </div>
                       <div class="col-md-3">
-                          <label for="cc-expiration" class="form-label">{{ _('Expiration')}}</label>
+                          <label for="cc-expiration" class="form-label">{{ _('Expiration')}} *</label>
                           <input type="text" class="form-control" id="cc-expiration" required>
                           <div class="invalid-feedback"> {{ _('Expiration date required.')}} </div>
                       </div>
                       <div class="col-md-3">
-                          <label for="cc-cvv" class="form-label">{{ _('CVV')}}</label>
+                          <label for="cc-cvv" class="form-label">{{ _('CVV') }} *</label>
                           <input type="text" class="form-control" id="cc-cvv" required>
                           <div class="invalid-feedback"> {{ _('Security code required.')}} </div>
                       </div>
                   </div>
                   <hr class="my-4">
-                  <button class="w-100 btn btn-primary btn-lg" type="submit">{{ _('Continue')}}</button>
+                  <div class="w-100 btn btn-primary btn-lg" >{{ _('Continue')}}</div>
               </form>
           </div>
       </div>
@@ -184,34 +238,22 @@ body {
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  (function () {
-      'use strict'
-      var forms = document.querySelectorAll('.needs-validation')
-      Array.prototype.slice.call(forms).forEach(function (form) {
-          form.addEventListener('submit', function (event) {
-              if (!form.checkValidity()) {
-                  event.preventDefault()
-                  event.stopPropagation()
-              }
-              form.classList.add('was-validated')
-          }, false)
-      })
-  })()
+
+
+    if (cookie.get('Cart', false) === false) {
+        // Construct the base URL
+        const mainUrl = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/cart`;
+
+        // Redirect to the base URL
+        window.location.href = mainUrl;
+
+    }
 
     let prData = []
     document.addEventListener('DOMContentLoaded', function() {
 
       basket();
 
-      // if (document.querySelector('.notification')) {
-
-      //   let prQountity = document.querySelector('.notification').textContent;
-      //   document.querySelector('.badge').innerHTML = prQountity;
-        
-      // }
-
-
-        
         const navBar = document.querySelector('.image-container');
         if (navBar) {
 
@@ -654,7 +696,6 @@ async function get_pt_quantity(ptID, quantity) {
 
                     prData.forEach(row => {
                         if (parseInt(row['ptID']) === ptIDCookie) {
-
                             prDataGlobal.push({'ptID': row['ptID'], 'quantity': countCookie});
                             let amount = countCookie;
                             if (countCookie > parseInt(row['quantity'])) {
@@ -1235,8 +1276,146 @@ async function get_pt_quantity(ptID, quantity) {
     }
     
   }
+ // Initialize intlTelInput on your tel inputs.
+ $("#phone, #confirm-phone").intlTelInput({
+    initialCountry: "am",
+    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.6/js/utils.js"
+  });
+  
+  // (function () {
+      // 'use strict'
+      // let forms = document.querySelectorAll('.needs-validation')
+      // Array.prototype.slice.call(forms).forEach(function (form) {
+      //     // console.log(form)
+      //     form.addEventListener('submit', function (event) {
+      //         if (!form.checkValidity()) {
+      //             event.preventDefault()
+      //             event.stopPropagation()
+      //             mistakes.textContent = "{{ _('Please improve all field marked in red') }}";
+      //             mistakes.style.display = 'block';
+      //         }
+      //         form.classList.add('was-validated')
+      //     }, false)
+      // })
+  // })()
 
+function validateNumericInput(input) {
+  // Remove any non-digit characters
+  input.value = input.value.replace(/\D/g, '');
+}  
+
+
+$(document).ready(function() {
+  phone_validation();
+  function phone_validation() {
+
+    const phones = document.querySelectorAll('.my-phone-control');
+    if (phones) {
+      
+      phones.forEach(phone => {
+        phone.addEventListener('input', function() {
+          console.log(phone.parentNode)
+          if (isValidPhoneString(phone.value) === false) {
+            phone.parentNode.parentNode.querySelector('.invalid-feedback').style.display = 'block'
+            phone.style.borderColor = 'red'
+          } else {
+            phone.parentNode.parentNode.querySelector('.invalid-feedback').style.display = 'none'
+            phone.style.borderColor = '#212529'
+          }
+
+          if (phones[0].value != phones[1].value) {
+            document.querySelector('#match-control').style.display = 'block';
+            document.querySelector('#phone').style.borderColor = 'red';
+            document.querySelector('#confirm-phone').style.borderColor = 'red';
+          } else {
+            document.querySelector('#match-control').style.display = 'none';
+            document.querySelector('#phone').style.borderColor = '#212529';
+            document.querySelector('#confirm-phone').style.borderColor = '#212529';
+          }
+        });
+      });
+      
+    }
+    
+  } 
+  
+
+function isValidPhoneString(str) {
+  // The regex explanation:
+  // ^            : start of string
+  // [0-9()+\-]   : allowed characters: digits, parentheses, plus, hyphen (hyphen is escaped)
+  // +            : one or more of the allowed characters
+  // $            : end of string
+  const regex = /^[0-9()+\-]+$/;
+  return regex.test(str);
+}
+
+
+document.querySelector('.btn-primary ').addEventListener('click', function(event) {
+  let mistakes = document.querySelector('#mistakes');
+  mistakes.style.display = 'none';
+
+  let forms = document.querySelectorAll('.needs-validation')
+  Array.prototype.slice.call(forms).forEach(function (form) {
+      if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+          mistakes.textContent = "{{ _('Please improve all field marked in red') }}";
+          mistakes.style.display = 'block';
+          mistakes.scrollIntoView({ behavior: 'smooth' });
+      }
+      form.classList.add('was-validated')
+  })
+
+
+  const phones = document.querySelectorAll('.my-phone-control');
+  let flag = true;
+    if (phones) {
+      phones.forEach(phone => {
+          if (isValidPhoneString(phone.value) === false) {
+            phone.parentNode.parentNode.querySelector('.invalid-feedback').style.display = 'block';
+            phone.style.setProperty("border-color", "red", "important");
+            flag = false;
+          } else {
+            phone.parentNode.parentNode.querySelector('.invalid-feedback').style.display = 'none';
+            phone.style.setProperty("border-color", "#212529", "important");
+          }
+          
+      });
+      if (phones[0].value == '' && phones[1].value == '') {
+        return;
+      } else {
+
+        if (phones[0].value != phones[1].value) {
+          console.log(`phones[1].value is ${phones[1].value}`)
+          document.querySelector('#match-control').style.display = 'block';
+          document.querySelector('#phone').style.borderColor = 'red';
+          document.querySelector('#confirm-phone').style.borderColor = 'red';
+          flag = false
+        } else {
+          document.querySelector('#match-control').style.display = 'none';
+          document.querySelector('#phone').style.borderColor = '#212529';
+          document.querySelector('#confirm-phone').style.borderColor = '#212529';
+        }
         
+      }
+    }
+
+
+
+    
+    if (flag === false) {
+      mistakes.textContent = "{{ _('Please improve all field marked in red') }}";
+      mistakes.style.display = 'block';
+      mistakes.scrollIntoView({ behavior: 'smooth' });
+
+      return;
+    }
+
+});
+
+});
+
 </script>
 
 {% endblock %}

@@ -3699,7 +3699,7 @@ def get_promo_discounts():
                     AND FIND_IN_SET(`product_type`.`ID`, %s)
                     AND `discount`.`Status` = 1
                 """
-    sqlValTuple = (promo, '11,1')
+    sqlValTuple = (promo, ptIDs)
     # sqlValTuple = (promo, ptIDs)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] == 0:
