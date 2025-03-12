@@ -35,7 +35,7 @@ ALTER TABLE `product` AUTO_INCREMENT = 1;
 DROP TABLE IF EXISTS `product_type`;
 CREATE TABLE `product_type` (
     `ID` INT AUTO_INCREMENT,
-    `Price` INT,
+    `Price` FLOAT,
     `Title` VARCHAR(255),
     `Description` TEXT,
     `Order` INT,
@@ -84,18 +84,17 @@ CREATE TABLE `product_relatives` (
 ) ENGINE=InnoDB;
 ALTER TABLE `product_relatives` AUTO_INCREMENT = 1;
 
-DROP TABLE IF EXISTS `sub_product`;
-CREATE TABLE `sub_product` (
-    `ID` INT AUTO_INCREMENT,
-    `Price` INT,
-    `Title` VARCHAR(255),
-    `Order` INT,
-    `Product_ID` INT,
-    `User_ID` INT,
-    `Status` INT,
-    PRIMARY KEY (`ID`)
-) ENGINE=InnoDB;
-ALTER TABLE `sub_product` AUTO_INCREMENT = 1;
+-- DROP TABLE IF EXISTS `sub_product`;
+-- CREATE TABLE `sub_product` (
+--     `ID` INT AUTO_INCREMENT,
+--     `Title` VARCHAR(255),
+--     `Order` INT,
+--     `Product_ID` INT,
+--     `User_ID` INT,
+--     `Status` INT,
+--     PRIMARY KEY (`ID`)
+-- ) ENGINE=InnoDB;
+-- ALTER TABLE `sub_product` AUTO_INCREMENT = 1;
 
 DROP TABLE IF EXISTS `sp_relatives`;
 CREATE TABLE `sp_relatives` (
@@ -366,6 +365,103 @@ CREATE TABLE `sale` (
 ) ENGINE=InnoDB;
 ALTER TABLE `sale` AUTO_INCREMENT = 1;
 
+
+-- billing tables
+DROP TABLE IF EXISTS `clients`;
+CREATE TABLE `clients` (
+    `ID` INT AUTO_INCREMENT,
+    `Firstname` VARCHAR(255),
+    `Lastname` VARCHAR(255),
+    `phone` VARCHAR(255),
+    `email` VARCHAR(255) NULL,
+    `addressIDs` INT,
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `clients` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `purchase_history`;
+CREATE TABLE `purchase_history` (
+    `ID` INT AUTO_INCREMENT,
+    `ptID` INT,
+    `quantity` INT,
+    `payment_details_id` INT,
+    `price` FLOAT,
+    `amount` FLOAT, -- paid amount of money for current product taking into consideration discounts if applied
+    `promo_code_id` INT,
+    `promo_code` VARCHAR(255),
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `purchase_history` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `payment_details`;
+CREATE TABLE `payment_details` (
+    `ID` INT AUTO_INCREMENT,
+    `purchase_history_id` INT,
+    `timestamp` DATETIME,
+    `TransactionID` VARCHAR(255),
+    `payment_status` INT,
+    `Currency` VARCHAR(255),
+    `payment_method` VARCHAR(255),
+    `CMD` INT, -- card masked number
+    `amount` FLOAT, -- Total paid amount of money
+    `notesID` INT,
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `payment_details` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `affiliate_history`;
+CREATE TABLE `affiliate_history` (
+    `ID` INT AUTO_INCREMENT,
+    `payment_details_id` INT,
+    `affiliateID` INT,
+    `discount_rate` INT,
+    `discount_type` INT,
+    `Status` INT, -- 0 == transaction cancellation; 1 == paid; 2 == panding
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `affiliate_history` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `address`;
+CREATE TABLE `address` (
+    `ID` INT AUTO_INCREMENT,
+    `address` VARCHAR(255),
+    `Status` INT, -- 1 == active, 0 == blacklisted
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `address` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `notes`;
+CREATE TABLE `notes` (
+    `ID` INT AUTO_INCREMENT,
+    `note` TEXT,
+    `type` INT, -- 1 == message; 2 == cancelation; 3 == note; 4 == blacklisting reason; 5 == email
+    `addresseeID` INT, 
+    `addressee_type` INT, -- 1 == stuff; 2 == client; 3 affiliate 
+    `add_user_id` INT NULL,
+    `Status` INT, -- 1 == active, 0 == blacklisted
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `notes` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `buffer`;
+CREATE TABLE `buffer` (
+    `ID` INT AUTO_INCREMENT,
+    `quantityID` INT,
+    `quantity` INT,
+    `payment_details_id` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `buffer` AUTO_INCREMENT = 1;
+-- End of billing tables
 
 
 

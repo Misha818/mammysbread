@@ -418,12 +418,123 @@ def pr_thumbnail(RefKey):
 
 
 
-@app.route('/checkout', methods=['GET'])
+@app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
-    mainCurrency = MAIN_CURRENCY
-    return render_template('checkout.html', mainCurrency=mainCurrency, current_locale=get_locale())
-
+    newCSRFtoken = generate_csrf()
+    if request.method == 'GET':
+        mainCurrency = MAIN_CURRENCY
+        return render_template('checkout.html', mainCurrency=mainCurrency, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
+    if request.method == 'POST':
+        if not request.form.get('data'):
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
+
+        json_str = request.form.get('data')
+
+        try:
+            data = json.loads(json_str)
+        except json.JSONDecodeError as e:
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+
+        # check data validity 
+
+        if data['confirm-phone'] != data['phone']:
+            answer = gettext('The phone numbers do not match')
+            return jsonify({'status': "0", 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+        paymentMethod = False
+        for key, value in data.items():
+            if key in ['credit', 'debit', 'paypal']:
+                if value == True:
+                    paymentMethod = key
+            if key != 'email' and key != 'promo' and key != 'ptData' and list != type(value) != bool and value.strip() == '':
+                answer = gettext('Invalid value for ') + key
+                return jsonify({'status': "0", 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
+
+        if len(data['ptData']) == 0:
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})   
+        
+        if paymentMethod == False:
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})   
+
+        # Also check product types, quantities and promo-code
+
+        # insert additional data into  payment_details table and get inserted id
+        pdID = 1 # change this to inserted id 
+
+        bufferInsertRows = ''
+        sqlInsertBuffer = f"INSERT INTO `buffer` (`quantityID`, `quantity`, `payment_details_id`) VALUES {bufferInsertRows};"
+        sqlUpdateQuantity = "UPDATE `quantity` SET `Quantity` = %s WHERE `ID` = %s;"
+        for row in data['ptData']:
+            ptID = row['ptID']
+            QUANTITY = row['quantity']
+
+            sqlQuaryStore = f"""
+                SELECT 
+                    `quantity`.`ID` AS `quantityID`,
+                    `quantity`.`Quantity`,
+                    `quantity`.`maxQuantity`,
+                    (SELECT SUM(`Quantity`) FROM `quantity` 
+                        WHERE `productTypeID` = %s 
+                        AND `Status` = '1'
+                        AND `expDate` >= CURDATE()) AS `totalQuantity`,
+                    `product_type`.`ID` AS `ptID`,
+                    `product_type`.`Price`,
+                    `store`.`Name`
+                FROM `quantity` 
+                    LEFT JOIN `store` ON `store`.`ID` = `quantity`.`storeID`
+                    LEFT JOIN `stuff` ON `stuff`.`ID` = `quantity`.`userID`
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                    LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
+                WHERE `quantity`.`productTypeID` = %s 
+                    AND `quantity`.`Quantity` > 0
+                    AND `quantity`.`Status` = '1'
+                    AND `quantity`.`expDate` >= CURDATE()
+                ORDER BY `quantity`.`ID` ASC 
+                ;
+            """
+            sqlValTuple = (ptID, ptID)
+            result = sqlSelect(sqlQuaryStore, sqlValTuple, True)
+            if result['length'] == 0:
+                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})  
+            
+            # This checks if there is corresponding amount of product in store
+            if result['data'][0]['totalQuantity'] < QUANTITY:  
+                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})  
+
+             
+            bufferQuantities = {}
+            flag = True
+            while flag:
+                for r in result['data']:
+                    print(QUANTITY)
+                    if flag != True:
+                        break
+                    if r['Quantity'] >= QUANTITY:
+                        # sql Update `quantity`
+                        # sqlUpdate(sqlUpdateQuantity, (r['Quantity']-QUANTITY, r['ID']))
+                        bufferQuantities['quantityID'] = r['quantityID']
+                        bufferQuantities['QUANTITY'] = QUANTITY
+                        # bufferQuantities['ptID'] = ptID
+
+                        flag = False
+                    if r['Quantity'] < QUANTITY:
+                        # sql Update `quantity`
+                        # sqlUpdate(sqlUpdateQuantity, (0, r['ID']))
+                        QUANTITY = QUANTITY - r['Quantity']
+                        bufferQuantities['quantityID'] = r['quantityID']
+                        bufferQuantities['QUANTITY'] = r['Quantity']
+                        # bufferQuantities['ptID'] = ptID
+
+            print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+            print(bufferQuantities)
+
+            # insert into `buffer` bufferQuantities
+
+        return jsonify({'status': "1", 'answer': 'Validation passed successfully', 'newCSRFtoken': newCSRFtoken})    
+        
+
+
     
 @app.route('/get_slides', methods=['POST'])
 @login_required
@@ -595,7 +706,7 @@ def editprice():
         answer = gettext('Please specify the price!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
   
-    if int(request.form.get('price')) <= 0:
+    if float(request.form.get('price')) <= 0:
         answer = gettext('The price should be higher then 0!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
   
@@ -741,7 +852,7 @@ def editprice():
     sqlValTuplePT = (ptID,)
     resultPT = sqlSelect(sqlQueryPT, sqlValTuplePT, True)
     title = request.form.get('title')
-    price = request.form.get('price')
+    price = float(request.form.get('price'))
     if not request.form.get('spsID'):
         spsID = 0
     else:
@@ -911,12 +1022,12 @@ def upload_slides():
             answer = gettext('At least one image should be uploaded')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
-        if int(request.form.get('price')) <= 0:
+        if float(request.form.get('price')) <= 0:
             answer = gettext('The price should be higher then 0!')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
         
         title = request.form.get('title')
-        price = request.form.get('price')
+        price = float(request.form.get('price'))
         spsID = 0
         if request.form.get('spsID'):
             spsID = int(request.form.get('spsID'))
@@ -962,7 +1073,7 @@ def upload_slides():
             order = 0
 
         sqlInsertQuery = "INSERT INTO `product_type` (`Price`, `Title`, `Order`, `Product_ID`, `User_Id`, `spsID`, `Status`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-        sqlInsertVals = (int(price), title, order, int(ProductID), session['user_id'], spsID, 1)
+        sqlInsertVals = (price, title, order, int(ProductID), session['user_id'], spsID, 1)
         insertedResult = sqlInsert(sqlInsertQuery, sqlInsertVals)
 
         if insertedResult['inserted_id']:
@@ -3388,14 +3499,14 @@ def create_promo_code():
         for row in products:
             for key, value in row.items():
                 if value == '':
-                    return jsonify({'status': "0", 'answer': smthWrong})    
+                    return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
 
             if int(row['discount']) > 99:
-                return jsonify({'status': "0", 'answer': smthWrong}) 
+                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}) 
                 
             if row.get('revard_option') == '0':
                 if int(row['revard']) > 99:
-                    return jsonify({'status': "0", 'answer': smthWrong})    
+                    return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
 
         affiliate = 0
         columns = "(`promo_code_id`, `discount_status`, `ptID`, `discount`,  `Status`)"
@@ -3411,7 +3522,7 @@ def create_promo_code():
         valTuplePromo = (promo, affiliate, expDate)
         resultInsert = sqlInsert(sqlinsertPromo, valTuplePromo)
         if resultInsert['status'] == 0:
-            return jsonify({'status': "0", 'answer': resultInsert['answer']}) 
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}) 
         
         # Create tuple prototype for db insert
         promoID = resultInsert['inserted_id']
@@ -3680,8 +3791,7 @@ def get_promo_discounts():
     for row in products:
         ptIDs = ptIDs + str(row['ptID']) + ','
 
-    ptIDs = ptIDs[:-1]
-    # print(f"ptIDs are {ptIDs}")
+    ptIDs = ptIDs[:-1]    
     sqlQuery =  """
                 SELECT 
                     `product_type`.`ID` AS `ptID`,
@@ -3712,7 +3822,7 @@ def get_promo_discounts():
     for row in result['data']:
         for r in products:
             if row['ptID'] == r['ptID']:
-                print(f"row['Price'] is {type(row['Price'])} and r['quantity'] is {type(r['quantity'])} AND row['discount'] is {type(row['discount'])}")
+                # print(f"row['Price'] is {type(row['Price'])} and r['quantity'] is {type(r['quantity'])} AND row['discount'] is {type(row['discount'])}")
                 discountPrice = discountPrice + (row['Price'] * int(r['quantity']) * row['discount'] / 100)
 
     return jsonify({'status': "1", 'data': result['data'], 'discountPrice': discountPrice, 'totalPrice': totalPrice, 'newCSRFtoken': newCSRFtoken})

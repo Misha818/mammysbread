@@ -142,13 +142,13 @@ body {
               <form class="needs-validation" novalidate>
                   <div class="row g-3">
                       <div class="col-sm-6">
-                          <label for="firstName" class="form-label">{{ _('First name') }} *</label>
-                          <input type="text" class="form-control" id="firstName" required>
+                          <label for="firstname" class="form-label">{{ _('First name') }} *</label>
+                          <input type="text" class="form-control" id="firstname" required>
                           <div class="invalid-feedback"> {{_('Valid first name is required.')}} </div>
                       </div>
                       <div class="col-sm-6">
-                          <label for="lastName" class="form-label">{{_('Last name')}} *</label>
-                          <input type="text" class="form-control" id="lastName" required>
+                          <label for="lastname" class="form-label">{{_('Last name')}} *</label>
+                          <input type="text" class="form-control" id="lastname" required>
                           <div class="invalid-feedback"> {{_('Valid last name is required.')}} </div>
                       </div>
                       
@@ -184,8 +184,8 @@ body {
                       </div>
 
                       <div class="col-md-4">
-                          <label for="state" class="form-label">{{ _('City') }}</label>
-                          <select class="form-select" id="state" required disabled>
+                          <label for="city" class="form-label">{{ _('City') }}</label>
+                          <select class="form-select" id="city" required disabled>
                               <option value="">Choose...</option>
                               <option selected>{{ _('Yerevan')}}</option>
                           </select>
@@ -238,7 +238,6 @@ body {
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-
 
     if (cookie.get('Cart', false) === false) {
         // Construct the base URL
@@ -470,7 +469,7 @@ if (addToCartButtons) {
                                   flag = false;
                               });
 
-                              } 
+                            } 
                           });
                       });
                     }
@@ -1314,7 +1313,6 @@ $(document).ready(function() {
       
       phones.forEach(phone => {
         phone.addEventListener('input', function() {
-          console.log(phone.parentNode)
           if (isValidPhoneString(phone.value) === false) {
             phone.parentNode.parentNode.querySelector('.invalid-feedback').style.display = 'block'
             phone.style.borderColor = 'red'
@@ -1387,7 +1385,6 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
       } else {
 
         if (phones[0].value != phones[1].value) {
-          console.log(`phones[1].value is ${phones[1].value}`)
           document.querySelector('#match-control').style.display = 'block';
           document.querySelector('#phone').style.borderColor = 'red';
           document.querySelector('#confirm-phone').style.borderColor = 'red';
@@ -1400,9 +1397,6 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
         
       }
     }
-
-
-
     
     if (flag === false) {
       mistakes.textContent = "{{ _('Please improve all field marked in red') }}";
@@ -1412,7 +1406,96 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
       return;
     }
 
-});
+
+    let countryCodes = document.querySelectorAll('.selected-flag');
+    if (countryCodes) {
+      // countryCodes.forEach(countryCode => {
+      // });
+      if (countryCodes[0].getAttribute('title') != countryCodes[1].getAttribute('title')) {
+        mistakes.textContent = "{{ _('Country codes of phone numbers do not match!') }}";
+        mistakes.style.display = 'block';
+        mistakes.scrollIntoView({ behavior: 'smooth' });
+
+        return;
+      }
+        
+    }
+
+
+    // Collect all input and select elements
+    let form = document.querySelector('form');
+    var elements = form.querySelectorAll('input, select');
+    var data = {};
+
+    // Iterate over each element and store its id and value (if it has an id)
+    elements.forEach(function(el) {
+      if (el.id) {
+        if (el.type === 'radio') {
+          if (el.checked === true) {
+            data[el.id] = true;
+          } else {
+            data[el.id] = false;
+          }
+        } else {
+          data[el.id] = el.value;
+        }
+      }
+    });
+
+    ccArr = countryCodes[0].getAttribute('title').split('+');
+    data['country-code'] = ccArr[1];
+    data['ptData'] = prDataGlobal;
+    let promo = '';
+    if (document.querySelector('#promo').value) {
+      promo = document.querySelector('#promo').value;
+    }
+    data['promo'] = promo;
+    
+
+    console.log(data)
+    
+    let formData = new FormData();
+
+    formData.append('data', JSON.stringify(data));
+
+    // Create a new XMLHttpRequest object
+    let xhr = new XMLHttpRequest();
+    
+    // Configure the request
+    xhr.open('POST', '/checkout');                   
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+    // Define what happens on successful data submission
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            let response = JSON.parse(xhr.responseText);
+          if (response.status === "0") {
+            mistakes.textContent = response.answer;
+            mistakes.style.display = 'block';
+            mistakes.scrollIntoView({ behavior: 'smooth' });
+            return;
+          }
+
+          if (response.status === "1") {
+            alert(response.answer)
+          }
+
+
+                
+        } else {
+            // Handle error response
+            console.error('Error adding category:', xhr.responseText);
+        }
+
+    };
+
+    // Send the request with the FormData object
+    xhr.send(formData);
+
+
+
+
+  });
 
 });
 
