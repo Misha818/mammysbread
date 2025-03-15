@@ -760,7 +760,285 @@ def checkSPSSDataLen(spsID, languageID):
         return [longData, spssAnswer]
 
 
+def clientID_contactID(data): # returns clientID from table `clients` and contactID from table `client_contacts` 
+    clientID, phoneID, emailID, addressID = [None, None, None, None]
+   
+    if data['email']:
+        sqlQuery = "SELECT * FROM `emails` WHERE `email` = %s;"
+        result = sqlSelect(sqlQuery, (data['email'].strip(),), True)
+        if result['length'] > 0:
+            email = data['email']
+            emailID = result['ID']
 
+    phone = data['phone'].strip()
+
+    # Remove all parentheses, hyphens, spaces and 0 at the beggining
+    phone = re.sub(r'[()\-\s]', '', phone)
+    phone = data['country-code'] + re.sub(r'^0', '', phone)
+
+    sqlQuery = "SELECT * FROM `phones` WHERE `phone` = %s;"
+    result = sqlSelect(sqlQuery, (phone.strip(),), True)
+    if result['length'] > 0:
+        clientID = result['data'][0]['clientID']
+        phoneID = result['data'][0]['ID']
+
+        sqlQueryClient = "UPDATE `clients` SET `Firstname` = %s, `Lastname` = %s WHERE `clientID` = %s;"
+        sqlValTupleClient = (data['firstname'].strip(), data['lastname'].strip(), clientID)
+        sqlUpdate(sqlQueryClient, sqlValTupleClient)
+    else:
+        sqlQueryInsert = "INSERT INTO `clients` (`Firstname`, `Lastname`) VALUES (%s, %s);"
+        sqlQueryTuple = (data['firstname'].strip(), data['lastname'].strip())
+        result = sqlInsert(sqlQueryInsert, sqlQueryTuple)
+        clientID = result['inserted_id']
+
+        sqlInsertPhone = "INSERT INTO `phones` (`phone`, `clientID`) VALUES (%s, %s);"
+        result = sqlInsert(sqlInsertPhone, (phone, clientID))
+        phoneID = result['inserted_id']
+
+    sqlQueryAddress = "SELECT * FROM `addresses` WHERE `address` = %s;"
+    result = sqlSelect(sqlQuery, (data['address'].strip(),), True)
+    if result['length'] > 0:
+        addressID = result['data'][0]['ID']
+    else:
+        sqlQueryInsert = "INSERT INTO `addresses` (`address`, `clientID`) VALUES (%s, %s);"
+        sqlQueryTuple = (data['address'].strip(), clientID)
+        result = sqlInsert(sqlQueryInsert, sqlQueryTuple)
+        addressID = result['inserted_id']
+
+
+    if data['email'] and emailID == None:
+        sqlQueryInsert = "INSERT INTO `emails` (`email`, `clientID`) VALUES (%s, %s);"
+        sqlQueryTuple = (data['email'].strip(), clientID)
+        result = sqlInsert(sqlQueryInsert, sqlQueryTuple)
+        emailID = result['inserted_id']
+
+    
+    sqlQueryContacts = "SELECT * FROM `client_contacts` WHERE `emailID` = %s AND `phoneID` = %s AND `addressID` = %s;"
+    sqlValTuple = (emailID, phoneID, addressID)
+    result = sqlSelect(sqlQueryContacts, sqlValTuple, True)
+    if result['length'] > 0:
+        contactID = result['data'][0]['ID']
+    else:
+        sqlQueryInsert = "INSERT INTO `client_contacts` (`emailID`, `phoneID`, `addressID`) VALUES (%s, %s, %s);"
+        sqlValTuple = (emailID, phoneID, addressID)
+        result = sqlInsert(sqlQueryInsert, sqlValTuple)
+        contactID = result['inserted_id']
+
+    return {'clientID': clientID, 'contactID': contactID}
+
+
+def calculate_price_promo(products, promo):
+    
+    if promo != '':
+        # check products and promo validity 
+        ptIDs = ''
+        for row in products:
+            ptIDs = ptIDs + str(row['ptID']) + ','
+
+        ptIDs = ptIDs[:-1]    
+        sqlQuery =  """
+                    SELECT 
+                        `product_type`.`ID` AS `ptID`,
+                        `product_type`.`Price`,
+                        `discount`.`discount`
+                        -- `discount`.`discount_status`
+                    FROM `promo_code` 
+                        LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
+                        LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                    WHERE `promo_code`.`Promo` = %s 
+                        AND `promo_code`.`expDate` >= CURRENT_DATE() 
+                        AND `promo_code`.`Status` = 1
+                        AND `product`.`Product_Status` = 2
+                        AND FIND_IN_SET(`product_type`.`ID`, %s)
+                        AND `discount`.`Status` = 1
+                    """
+        sqlValTuple = (promo, ptIDs)
+        # sqlValTuple = (promo, ptIDs)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        if result['length'] == 0:
+            return {'status': "0", 'answer': "Invalid Promo Code"}
+
+        # Deside prices with discount
+        discountPrice = 0
+        for row in result['data']:
+            for r in products:
+                if row['ptID'] == r['ptID']:
+                    discountPrice = discountPrice + (row['Price'] * int(r['quantity']) * row['discount'] / 100)
+        
+        return {'status': "1", 'answer': discountPrice}
+
+    else:
+        return calculate_price(products)    
+   
+
+def calculate_price(products):
+    ptIDs = ''
+    for row in products:
+        ptIDs = ptIDs + str(row['ptID']) + ','
+
+    ptIDs = ptIDs[:-1]    
+    sqlQuery =  """
+                SELECT 
+                    `product_type`.`ID` AS `ptID`,
+                    `product_type`.`Price`                    
+                FROM `product_type`
+                WHERE find_in_set(`product_type`.`ID`, %s)
+                    
+                """
+    sqlValTuple = (ptIDs,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] == 0:
+        return {'status': "2"}
+
+    # Calculate total price prices with discount
+    totalPrice = 0
+    for row in result['data']:
+        for r in products:
+            if row['ptID'] == r['ptID']:
+                totalPrice = totalPrice + row['Price'] * int(r['quantity'])
+    
+    return {'status': "1", 'answer': totalPrice}
+
+
+def insertIntoBuffer(data, pdID, smthWrong):
+    # IMPORTANT
+    # Do not forget to take into consideration the max quantity as well
+    bufferQuantities = []
+    bufferInsertRows = ''
+    sqlUpdateQuantity = "UPDATE `quantity` SET `Quantity` = %s WHERE `ID` = %s;"
+    ptIDs = ''
+    for row in data['ptData']:
+        ptIDs = ptIDs + str(row['ptID']) + ','
+
+        
+
+    ptIDs = ptIDs[:-1]    
+    sqlQuaryStore = f"""
+        SELECT 
+            `quantity`.`ID` AS `quantityID`,
+            `quantity`.`Quantity`,
+            `quantity`.`maxQuantity`,
+            (SELECT SUM(q.`Quantity`) FROM `quantity` `q`
+                WHERE find_in_set(`q`.`productTypeID`, `quantity`.`productTypeID`)
+            AND `Status` = '1'
+            AND `expDate` >= CURDATE()) AS `totalQuantity`,
+            `product_type`.`ID` AS `ptID`,
+            `product_type`.`Price`,
+            `promo_code`.`Promo`,
+            `promo_code`.`ID` AS `promoID`,
+            `discount`.`discount`,
+            `discount`.`revard_value`,
+            `discount`.`revard_type`,
+            `stuff`.`ID` AS `affiliateID`
+        FROM `quantity` 
+            LEFT JOIN `store` ON `store`.`ID` = `quantity`.`storeID`
+            LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+            LEFT JOIN `promo_code` ON `promo_code`.`Promo` = %s
+            LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID` 
+                AND `ptID` = `product_type`.`ID`
+            LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`
+        WHERE find_in_set(`productTypeID`, %s)
+            AND `quantity`.`Quantity` > 0
+            AND `quantity`.`Status` = '1'
+            AND `quantity`.`expDate` >= CURDATE()
+        ORDER BY  `product_type`.`ID`,  `quantity`.`expDate`, `quantity`.`Quantity` DESC, `quantity`.`maxQuantity` DESC
+        ;
+    """
+    sqlValTuple = (data['promo'], ptIDs)
+    result = sqlSelect(sqlQuaryStore, sqlValTuple, True)
+    if result['length'] == 0:
+        return {'status': "0", 'answer': smthWrong}  
+    
+    if data['promo'] != '' and result['data'][0]['promoID'] is None:
+        return {'status': "2"}
+
+    totalPrice = 0
+    for row in data['ptData']:
+        QUANTITY = row['quantity']
+        for r in result['data']:
+            if QUANTITY == 0:
+                break
+            
+            if row['ptID'] == r['ptID']:
+                # This checks if there is corresponding amount of product in store
+                maxAllowdQuantity = r['totalQuantity']
+                if r['maxQuantity'] is not None:
+                    maxAllowdQuantity = r['maxQuantity']
+
+                if maxAllowdQuantity < QUANTITY:  
+                    return {'status': "0", 'answer': smthWrong}  
+                
+                net = None
+                if r['Quantity'] >= QUANTITY:
+                    if r['discount'] is not None:
+                        net = r['Price'] - r['Price'] * QUANTITY * r['discount'] / 100
+
+                    if net is not None:
+                        totalPrice = totalPrice +  r['Price'] * QUANTITY - r['Price'] * QUANTITY * r['discount'] / 100
+                    else:
+                        totalPrice = totalPrice + r['Price'] * QUANTITY
+
+
+                    # sqlUpdate(sqlUpdateQuantity, (r['Quantity']-QUANTITY, r['ID']))
+                    bufferQuantities.append(
+                        {
+                            'quantityID': r['quantityID'],
+                            'quantity': QUANTITY, 
+                            'promo_code_id': r['promoID'], 
+                            'promo_code': r['Promo'], 
+                            'discount': r['discount'], 
+                            'net': net, 
+                            'affiliateID': r['affiliateID'], 
+                            'price': r['Price'], 
+                            'ptID': r['ptID'],
+                            'payment_details_id': pdID
+                        })
+                    break
+
+                if r['Quantity'] < QUANTITY:
+                    if r['discount'] is not None:
+                        net = r['Price'] - r['Price'] * r['Quantity'] * r['discount'] / 100
+                    
+                    if net is not None:
+                        totalPrice = totalPrice + r['Price'] * r['Quantity']  - r['Price'] * r['Quantity'] * r['discount'] / 100
+                    else:
+                        totalPrice = totalPrice + r['Price'] * r['Quantity']
+
+                    # sqlUpdate(sqlUpdateQuantity, (0, r['ID']))
+                    QUANTITY = QUANTITY - r['Quantity']
+
+                    bufferQuantities.append(
+                        {
+                            'quantityID': r['quantityID'],
+                            'quantity': QUANTITY, 
+                            'promo_code_id': r['promoID'], 
+                            'promo_code': r['Promo'], 
+                            'discount': r['discount'], 
+                            'net': net, 
+                            'affiliateID': r['affiliateID'], 
+                            'price': r['Price'], 
+                            'ptID': r['ptID'],
+                            'payment_details_id': pdID
+                        })
+
+    # insert into `buffer_store` bufferQuantities
+    bufferInsertRows = "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)," * len(bufferQuantities)
+    bufferValuePrototype = []
+    for row in bufferQuantities:
+        for key, val in row.items():
+            bufferValuePrototype.append(val)
+    
+    
+    sqlInsertBuffer = f"INSERT INTO `buffer_store` (`quantityID`, `quantity`,`promo_code_id`, `promo_code`,  `discount`, `net`, `affiliateID`, `price`, `ptID`,  `payment_details_id`) VALUES {bufferInsertRows[:-1]};"
+    sqlValTupleBuffer = tuple(bufferValuePrototype)
+    result = sqlInsert(sqlInsertBuffer, sqlValTupleBuffer)
+    
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    print(result['answer'])
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+
+    return {'status': '1', 'answer': bufferQuantities, 'totalPrice': totalPrice}
 
 # def replace_spaces_in_text_nodes(html_content):
 #     # This regex will match text between HTML tags while ignoring attributes and tags themselves

@@ -3,7 +3,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -425,7 +425,21 @@ def checkout():
         mainCurrency = MAIN_CURRENCY
         return render_template('checkout.html', mainCurrency=mainCurrency, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
+    # 1. Lock some tables, unlock at the end
+    # 2. check data validity
+    # 3. client detection by phone number or registration 
+    # 4. Calculate Total price to be purchased
+    # 5. insert additional data into  payment_details table and get inserted id
+    # 6. insert data into table buffer_store
+    # 7. Send data to bank api
+    # 8. recive answer from api 
+    # 9. if answer == 1
+        # insert data into purchase_history
+    # else -- update table quantity 
+    # 10. delete data from buffer_store
+    # 11. unlock locked tables
     if request.method == 'POST':
+        # Lock some tables, unlock at the end
         if not request.form.get('data'):
             return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
 
@@ -456,80 +470,82 @@ def checkout():
         
         if paymentMethod == False:
             return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})   
+        # End of Validation
 
-        # Also check product types, quantities and promo-code
+
+        # client detection || registration by phone number
+        # returns {'clientID': clientID, 'contactID': contactID}
+        ccIDs = clientID_contactID(data)
+        clientID = ccIDs['clientID']
+        contactID = ccIDs['contactID']
+        note = data.get('note')
+        notesID = None
+        if note is not None:
+            sqlQuery = "INSERT INTO `notes` (`note`, `type`, `addressee_type`, `add_user_id`) VALUES (%s, %s, %s, %s);"
+            sqlValTuple = (note, 3, 2, clientID)
+            result = sqlInsert(sqlQuery, sqlValTuple)
+            notesID = result['inserted_id']
+        # END of client detection || registration by phone number
+
+        # Calculate Total price to be purchased. This also checks promo code's validity 
+        # And 
+        # priceARR = calculate_price_promo(data['ptData'], data['promo'])
+        # if priceARR['status'] == "0":
+        #     answer = gettext(priceARR['answer'])
+        #     return jsonify({'status': "0", 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+        # if priceARR['status'] == "2":
+        #     return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})            
+        # if priceARR['status'] == "1":
+        #     amount = priceARR['answer']
+        # END of Calculate Total price to be purchased
+        
+        
+
 
         # insert additional data into  payment_details table and get inserted id
-        pdID = 1 # change this to inserted id 
+        # sqlQueryPD = "INSERT INTO `payment_details` (`notesID`, `clientID`, `contactID`) VALUES (%s, %s, %s);"
+        # sqlValTuplePD = (notesID, clientID, contactID)
+        # resultPD = sqlInsert(sqlQueryPD, sqlValTuplePD)
 
-        bufferInsertRows = ''
-        sqlInsertBuffer = f"INSERT INTO `buffer` (`quantityID`, `quantity`, `payment_details_id`) VALUES {bufferInsertRows};"
-        sqlUpdateQuantity = "UPDATE `quantity` SET `Quantity` = %s WHERE `ID` = %s;"
-        for row in data['ptData']:
-            ptID = row['ptID']
-            QUANTITY = row['quantity']
+        # print('PDPDPDPDPDPDPDPDPDPDPDPDPDPDPDP')
+        # print(resultPD['answer'])
+        # print('PDPDPDPDPDPDPDPDPDPDPDPDPDPDPDP')
+        # return
+    
+        # pdID = resultPD['inserted_id'] 
+        pdID = 1 
 
-            sqlQuaryStore = f"""
-                SELECT 
-                    `quantity`.`ID` AS `quantityID`,
-                    `quantity`.`Quantity`,
-                    `quantity`.`maxQuantity`,
-                    (SELECT SUM(`Quantity`) FROM `quantity` 
-                        WHERE `productTypeID` = %s 
-                        AND `Status` = '1'
-                        AND `expDate` >= CURDATE()) AS `totalQuantity`,
-                    `product_type`.`ID` AS `ptID`,
-                    `product_type`.`Price`,
-                    `store`.`Name`
-                FROM `quantity` 
-                    LEFT JOIN `store` ON `store`.`ID` = `quantity`.`storeID`
-                    LEFT JOIN `stuff` ON `stuff`.`ID` = `quantity`.`userID`
-                    LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
-                    LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
-                WHERE `quantity`.`productTypeID` = %s 
-                    AND `quantity`.`Quantity` > 0
-                    AND `quantity`.`Status` = '1'
-                    AND `quantity`.`expDate` >= CURDATE()
-                ORDER BY `quantity`.`ID` ASC 
-                ;
-            """
-            sqlValTuple = (ptID, ptID)
-            result = sqlSelect(sqlQuaryStore, sqlValTuple, True)
-            if result['length'] == 0:
-                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})  
-            
-            # This checks if there is corresponding amount of product in store
-            if result['data'][0]['totalQuantity'] < QUANTITY:  
-                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})  
+        # insert data into table buffer
+        # This also checks if specified amount of product exists
+        buffer = insertIntoBuffer(data, pdID, smthWrong)
+        if buffer['status'] == "0":
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        
+        if buffer['status'] == "2":
+            return jsonify({'status': "0", 'answer': gettext("Invalid Promo Code"), 'newCSRFtoken': newCSRFtoken})
+        
+        print(buffer['answer'])
+        print('totalPrice is ', buffer['totalPrice'])
 
-             
-            bufferQuantities = {}
-            flag = True
-            while flag:
-                for r in result['data']:
-                    print(QUANTITY)
-                    if flag != True:
-                        break
-                    if r['Quantity'] >= QUANTITY:
-                        # sql Update `quantity`
-                        # sqlUpdate(sqlUpdateQuantity, (r['Quantity']-QUANTITY, r['ID']))
-                        bufferQuantities['quantityID'] = r['quantityID']
-                        bufferQuantities['QUANTITY'] = QUANTITY
-                        # bufferQuantities['ptID'] = ptID
+        amount = buffer['totalPrice']
+        return
 
-                        flag = False
-                    if r['Quantity'] < QUANTITY:
-                        # sql Update `quantity`
-                        # sqlUpdate(sqlUpdateQuantity, (0, r['ID']))
-                        QUANTITY = QUANTITY - r['Quantity']
-                        bufferQuantities['quantityID'] = r['quantityID']
-                        bufferQuantities['QUANTITY'] = r['Quantity']
-                        # bufferQuantities['ptID'] = ptID
 
-            print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-            print(bufferQuantities)
 
-            # insert into `buffer` bufferQuantities
+        # Send data to bank api
+        # recive answer from api 
+        bank_answer_status = 1
+        # insert data to purchace_history
+
+        if bank_answer_status == 1:
+            sqlQuery = "SELECT * FROM `buffer_store` WHERE `payment_details_id` = %s;"
+            result = sqlSelect(sqlQuery, (pdID,), True)
+            for row in result['data']:
+                pass
+                
+        else:
+            pass # delete from bufer and update table quantity
+        # update payment_details with id pdID
 
         return jsonify({'status': "1", 'answer': 'Validation passed successfully', 'newCSRFtoken': newCSRFtoken})    
         

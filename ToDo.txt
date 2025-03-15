@@ -311,6 +311,50 @@ Functions to add to PERMISSIONS
 
 
 
+import mysql.connector
+
+def process_data():
+    conn = mysql.connector.connect(
+        host="your_host",
+        user="your_user",
+        password="your_password",
+        database="your_db"
+    )
+    cursor = conn.cursor()
+
+    try:
+        # Lock the tables you are working with (WRITE lock prevents reads/writes by others)
+        cursor.execute("LOCK TABLES table1 WRITE, table2 WRITE")
+
+        # Perform your operations (INSERT, UPDATE, DELETE, SELECT)
+        cursor.execute("INSERT INTO table1 (column1) VALUES ('value')")
+        cursor.execute("UPDATE table2 SET column2 = 'new_value' WHERE column1 = 'condition'")
+
+        # External API calls
+        data = get_data_from_api()
+        send_data_to_api(data)
+
+        # Commit the changes
+        conn.commit()
+    except Exception as e:
+        print(f"Error: {e}")
+        conn.rollback()
+    finally:
+        # Unlock the tables to allow other operations
+        cursor.execute("UNLOCK TABLES")
+        cursor.close()
+        conn.close()
+
+def get_data_from_api():
+    # Simulating an API call
+    return {"key": "value"}
+
+def send_data_to_api(data):
+    # Simulating sending data to API
+    print(f"Sending data: {data}")
+
+# Call the function
+process_data()
 
 
 

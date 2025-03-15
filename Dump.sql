@@ -372,9 +372,6 @@ CREATE TABLE `clients` (
     `ID` INT AUTO_INCREMENT,
     `Firstname` VARCHAR(255),
     `Lastname` VARCHAR(255),
-    `phone` VARCHAR(255),
-    `email` VARCHAR(255) NULL,
-    `addressIDs` INT,
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
@@ -388,9 +385,6 @@ CREATE TABLE `purchase_history` (
     `quantity` INT,
     `payment_details_id` INT,
     `price` FLOAT,
-    `amount` FLOAT, -- paid amount of money for current product taking into consideration discounts if applied
-    `promo_code_id` INT,
-    `promo_code` VARCHAR(255),
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
@@ -400,15 +394,16 @@ ALTER TABLE `purchase_history` AUTO_INCREMENT = 1;
 DROP TABLE IF EXISTS `payment_details`;
 CREATE TABLE `payment_details` (
     `ID` INT AUTO_INCREMENT,
-    `purchase_history_id` INT,
     `timestamp` DATETIME,
     `TransactionID` VARCHAR(255),
     `payment_status` INT,
     `Currency` VARCHAR(255),
     `payment_method` VARCHAR(255),
     `CMD` INT, -- card masked number
-    `amount` FLOAT, -- Total paid amount of money
+    `final_price` FLOAT, -- Total paid amount of money
     `notesID` INT,
+    `clientID` INT,
+    `contactID` INT, 
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
@@ -418,30 +413,56 @@ ALTER TABLE `payment_details` AUTO_INCREMENT = 1;
 DROP TABLE IF EXISTS `affiliate_history`;
 CREATE TABLE `affiliate_history` (
     `ID` INT AUTO_INCREMENT,
-    `payment_details_id` INT,
+    `purchase_history_id` INT,
     `affiliateID` INT,
-    `discount_rate` INT,
-    `discount_type` INT,
+    `promo_code_id` INT,
+    `promo_code` VARCHAR(255),
+    `revard_value` INT,
+    `revard_type` INT,
+    `net` FLOAT, -- paid amount of money for current product taking into consideration discounts if applied
     `Status` INT, -- 0 == transaction cancellation; 1 == paid; 2 == panding
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `affiliate_history` AUTO_INCREMENT = 1;
 
 
-DROP TABLE IF EXISTS `address`;
-CREATE TABLE `address` (
+DROP TABLE IF EXISTS `addresses`;
+CREATE TABLE `addresses` (
     `ID` INT AUTO_INCREMENT,
     `address` VARCHAR(255),
+    `clientID` INT,
     `Status` INT, -- 1 == active, 0 == blacklisted
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
-ALTER TABLE `address` AUTO_INCREMENT = 1;
+ALTER TABLE `addresses` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `phones`;
+CREATE TABLE `phones` (
+    `ID` INT AUTO_INCREMENT,
+    `phone` VARCHAR(255),
+    `clientID` INT,
+    `Status` INT, -- 1 == active, 0 == blacklisted
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `phones` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `emails`;
+CREATE TABLE `emails` (
+    `ID` INT AUTO_INCREMENT,
+    `email` VARCHAR(255),
+    `clientID` INT,
+    `Status` INT, -- 1 == active, 0 == blacklisted
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `emails` AUTO_INCREMENT = 1;
 
 
 DROP TABLE IF EXISTS `notes`;
 CREATE TABLE `notes` (
     `ID` INT AUTO_INCREMENT,
-    `note` TEXT,
+    `note` TEXT, 
     `type` INT, -- 1 == message; 2 == cancelation; 3 == note; 4 == blacklisting reason; 5 == email
     `addresseeID` INT, 
     `addressee_type` INT, -- 1 == stuff; 2 == client; 3 affiliate 
@@ -452,15 +473,34 @@ CREATE TABLE `notes` (
 ALTER TABLE `notes` AUTO_INCREMENT = 1;
 
 
-DROP TABLE IF EXISTS `buffer`;
-CREATE TABLE `buffer` (
+DROP TABLE IF EXISTS `buffer_store`;
+CREATE TABLE `buffer_store` (
     `ID` INT AUTO_INCREMENT,
+    `ptID` INT,
     `quantityID` INT,
     `quantity` INT,
     `payment_details_id` INT,
+    `promo_code_id` INT,
+    `promo_code` VARCHAR(255),
+    `discount` INT,
+    `net` FLOAT, -- paid amount of money for current product taking into consideration discounts if applied
+    `price` FLOAT,
+    `affiliateID` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
-ALTER TABLE `buffer` AUTO_INCREMENT = 1;
+ALTER TABLE `buffer_store` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `client_contacts`;
+CREATE TABLE `client_contacts` (
+    `ID` INT AUTO_INCREMENT,
+    `emailID` INT,
+    `phoneID` INT,
+    `addressID` INT,
+    `Status` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `client_contacts` AUTO_INCREMENT = 1;
 -- End of billing tables
 
 
