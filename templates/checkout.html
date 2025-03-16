@@ -672,6 +672,7 @@ async function get_pt_quantity(ptID, quantity) {
         let notification = document.querySelector('.notification');
         const aTag = notification.parentNode.parentNode;
         if (Cart === false) {
+            alert(Cart);
             document.querySelector('.basket').src = document.getElementById('empty-basket').value;
             notification.innerHtml = '';
             notification.style.display = 'none';
@@ -695,7 +696,6 @@ async function get_pt_quantity(ptID, quantity) {
 
                     prData.forEach(row => {
                         if (parseInt(row['ptID']) === ptIDCookie) {
-                            prDataGlobal.push({'ptID': row['ptID'], 'quantity': countCookie});
                             let amount = countCookie;
                             if (countCookie > parseInt(row['quantity'])) {
                                 amount = parseInt(row['quantity']);
@@ -706,6 +706,9 @@ async function get_pt_quantity(ptID, quantity) {
                             let prName = row.prTitle + ': ' + row.ptTitle
 
                             totlaPrice = totlaPrice + prPrice;
+
+                            prDataGlobal.push({'ptID': row['ptID'], 'quantity': amount});
+
 
                             // Get the container element
                             const checkoutBasket = document.getElementById('checkout-basket');
@@ -1477,7 +1480,45 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
           }
 
           if (response.status === "1") {
-            alert(response.answer)
+
+            let Cart = cookie.get('Cart', false);
+            if (Cart) {
+                let array = Cart.split('&');
+                array.forEach(item => {
+                    let arr = item.split('-');
+                    let ptID = parseInt(arr[0]);
+                    let quantity = parseInt(arr[1]);
+                    let newCart = false;
+                    
+                    
+                    let purchaseDataArray = JSON.parse(response.purchseData);
+
+                    purchaseDataArray.forEach(row => {
+                        if (row.ptID === ptID ) {
+                          if (quantity - row.quantity > 0) {
+                            newCart = newCart + '&' + ptID + '-' + quantity - row.quantity;
+                          } 
+                        } else {
+                            newCart = newCart + '&' + item;
+                        }
+                    });
+
+                     // Check if the first character of newCart is '&' and remove it if it is
+                    if (newCart !== false) {
+                      if (newCart.charAt(0) === '&') {
+                        newCart = newCart.substring(1);
+                      }
+                      cookie.set('Cart', newCart, { expires: 7, path: '/' });
+                    } else {
+                      cookie.remove('Cart', { path: '/' });
+                    }
+                      
+                    console.log(newCart)
+                    basket();
+                });
+            }
+            // console.log(response.purchseData);
+            // alert(response.answer)
           }
 
 

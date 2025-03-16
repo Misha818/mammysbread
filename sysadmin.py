@@ -827,6 +827,22 @@ def clientID_contactID(data): # returns clientID from table `clients` and contac
     return {'clientID': clientID, 'contactID': contactID}
 
 
+def get_promo_code_id_affiliateID(promo):
+    sqlQuery = """
+                    SELECT 
+                        `promo_code`.`ID`,
+                        `stuff`.`ID` AS `affiliateID`      
+                    FROM `promo_code`
+                        LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`
+                    WHERE `promo_code`.`Promo` = %s AND `promo_code`.`Status` = 1 AND `promo_code`.`expDate` >= CURRENT_DATE()      
+                ;"""
+    result = sqlSelect(sqlQuery, (promo,), True)
+    if result['length'] > 0:
+        return result['data'][0]
+    else:
+        return False
+    
+
 def calculate_price_promo(products, promo):
     
     if promo != '':
@@ -952,35 +968,40 @@ def insertIntoBuffer(data, pdID, smthWrong):
     
     if data['promo'] != '' and result['data'][0]['promoID'] is None:
         return {'status': "2"}
+    
+    # This checks if there is corresponding amount of product in store
+    for checkRow in data['ptData']:
+        for checkR in result['data']:
+            if checkRow['ptID'] == checkR['ptID']:
+                QUANTITY = checkRow['quantity']
+                maxAllowdQuantity = checkR['totalQuantity']
+                if checkR['maxQuantity'] is not None:
+                    maxAllowdQuantity = checkR['maxQuantity']
+
+                if maxAllowdQuantity < QUANTITY:  
+                    return {'status': "0", 'answer': smthWrong}  
+                    # return {'status': "0", 'answer': smthWrong + 'maxAllowdQuantity is ' + str(maxAllowdQuantity) + ' and QUANTITY is ' + str(QUANTITY) + ' and ptID is ' + str(checkRow['ptID'])}  
 
     totalPrice = 0
     for row in data['ptData']:
+        # print(f'showing row of ptData {row}')
         QUANTITY = row['quantity']
         for r in result['data']:
             if QUANTITY == 0:
                 break
             
             if row['ptID'] == r['ptID']:
-                # This checks if there is corresponding amount of product in store
-                maxAllowdQuantity = r['totalQuantity']
-                if r['maxQuantity'] is not None:
-                    maxAllowdQuantity = r['maxQuantity']
-
-                if maxAllowdQuantity < QUANTITY:  
-                    return {'status': "0", 'answer': smthWrong}  
-                
-                net = None
+                # print(f'quantity before: ptID is {r["ptID"]} quantity is {r["Quantity"]} and QUANTITY is {QUANTITY}')
+                                
                 if r['Quantity'] >= QUANTITY:
                     if r['discount'] is not None:
-                        net = r['Price'] - r['Price'] * QUANTITY * r['discount'] / 100
-
-                    if net is not None:
                         totalPrice = totalPrice +  r['Price'] * QUANTITY - r['Price'] * QUANTITY * r['discount'] / 100
                     else:
                         totalPrice = totalPrice + r['Price'] * QUANTITY
+                        
 
 
-                    # sqlUpdate(sqlUpdateQuantity, (r['Quantity']-QUANTITY, r['ID']))
+                    sqlUpdate(sqlUpdateQuantity, (r['Quantity']-QUANTITY, r['quantityID']))
                     bufferQuantities.append(
                         {
                             'quantityID': r['quantityID'],
@@ -988,7 +1009,6 @@ def insertIntoBuffer(data, pdID, smthWrong):
                             'promo_code_id': r['promoID'], 
                             'promo_code': r['Promo'], 
                             'discount': r['discount'], 
-                            'net': net, 
                             'affiliateID': r['affiliateID'], 
                             'price': r['Price'], 
                             'ptID': r['ptID'],
@@ -998,47 +1018,142 @@ def insertIntoBuffer(data, pdID, smthWrong):
 
                 if r['Quantity'] < QUANTITY:
                     if r['discount'] is not None:
-                        net = r['Price'] - r['Price'] * r['Quantity'] * r['discount'] / 100
-                    
-                    if net is not None:
                         totalPrice = totalPrice + r['Price'] * r['Quantity']  - r['Price'] * r['Quantity'] * r['discount'] / 100
                     else:
                         totalPrice = totalPrice + r['Price'] * r['Quantity']
+                        
 
-                    # sqlUpdate(sqlUpdateQuantity, (0, r['ID']))
+                    sqlUpdate(sqlUpdateQuantity, (0, r['quantityID']))
                     QUANTITY = QUANTITY - r['Quantity']
 
                     bufferQuantities.append(
                         {
                             'quantityID': r['quantityID'],
-                            'quantity': QUANTITY, 
+                            'quantity': r['Quantity'], 
                             'promo_code_id': r['promoID'], 
                             'promo_code': r['Promo'], 
                             'discount': r['discount'], 
-                            'net': net, 
                             'affiliateID': r['affiliateID'], 
                             'price': r['Price'], 
                             'ptID': r['ptID'],
                             'payment_details_id': pdID
                         })
+                    
+                # print(f'quantity after: ptID is {r["ptID"]} quantity is {r["Quantity"]} and QUANTITY is {QUANTITY}')
 
     # insert into `buffer_store` bufferQuantities
-    bufferInsertRows = "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)," * len(bufferQuantities)
+    bufferInsertRows = "(%s, %s, %s, %s, %s, %s, %s, %s, %s)," * len(bufferQuantities)
     bufferValuePrototype = []
     for row in bufferQuantities:
         for key, val in row.items():
             bufferValuePrototype.append(val)
     
     
-    sqlInsertBuffer = f"INSERT INTO `buffer_store` (`quantityID`, `quantity`,`promo_code_id`, `promo_code`,  `discount`, `net`, `affiliateID`, `price`, `ptID`,  `payment_details_id`) VALUES {bufferInsertRows[:-1]};"
+    sqlInsertBuffer = f"INSERT INTO `buffer_store` (`quantityID`, `quantity`,`promo_code_id`, `promo_code`,  `discount`, `affiliateID`, `price`, `ptID`,  `payment_details_id`) VALUES {bufferInsertRows[:-1]};"
     sqlValTupleBuffer = tuple(bufferValuePrototype)
     result = sqlInsert(sqlInsertBuffer, sqlValTupleBuffer)
     
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print(result['answer'])
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    # print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    # print(result['answer'])
+    # print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
 
     return {'status': '1', 'answer': bufferQuantities, 'totalPrice': totalPrice}
+
+# INSERT into purchase_histore
+# UPDATE payment_details
+def insertPUpdateP(pdID):
+    sqlQuery = """
+                SELECT 
+                `ptID`,
+                SUM(`quantity`) AS `quantity`,
+                `payment_details_id`,
+                `promo_code_id`,
+                `promo_code`,
+                `discount`,
+                `price`,
+                `affiliateID`
+            FROM `buffer_store` WHERE `payment_details_id` = %s 
+            GROUP BY `ptID`, `payment_details_id`, `promo_code_id`, `promo_code`, `discount`, `price`, `affiliateID`
+            ;"""
+    result = sqlSelect(sqlQuery, (pdID,), True)
+    if result['length'] == 0:
+        return {'status': '0'}
+    
+    promoID, promo, affiliateID = [None, None, None]
+    protoTuple = []
+    answer = []
+    for row in result['data']:
+        if row['promo_code_id'] is not None:
+            promoID = row['promo_code_id']
+            promo = row['promo_code']
+
+        if row['affiliateID'] is not None:    
+            affiliateID = row['affiliateID']
+
+        protoTuple.append(row['ptID'])
+        protoTuple.append(row['quantity'])
+        protoTuple.append(row['payment_details_id'])
+        protoTuple.append(row['price'])
+        protoTuple.append(row['discount'])
+        protoTuple.append(2)
+
+        answer.append({'ptID': int(row['ptID']), 'quantity': int(row['quantity'])})
+
+
+    
+    sqlValTuple = tuple(protoTuple)
+
+    values = "(%s, %s, %s, %s, %s, %s), " * len(result['data'])
+    sqlQueryInsert = f"""
+                    INSERT INTO `purchase_history` 
+                    (`ptID`, `quantity`, `payment_details_id`, `price`, `discount`, `Status`)
+                    VALUES {values[:-1]};
+                    """
+    result = sqlInsert(sqlQueryInsert, sqlValTuple)
+
+    sqlQueryPaymentD = """
+                        UPDATE `payment_details` SET 
+                            `promo_code_id` = %s,
+                            `promo_code` = %s,
+                            `affiliateID` = %s,
+                            `Status` = 1 
+                        WHERE `ID` = %s
+                        ;"""
+    sqlUpdate(sqlQueryPaymentD, (promoID, promo, affiliateID, pdID))
+    return {'status': '1', 'answer': answer}
+
+
+# delete from bufer and update table quantity
+# update payment_details with id pdID
+def deletePUpdateP(pdID):
+    sqlQuery = """"
+            SELECT 
+                `quantityID`,
+                `quantity`
+        FROM `buffer_store` WHERE `payment_details_id` = %s 
+        ;"""
+    result = sqlSelect(sqlQuery, (pdID,), True)
+    if result['length'] == 0:
+        return {'status': '0'}
+    
+    for row in result['data']:
+        sqlUpdateQuantity = "UPDATE `quantity` SET `Quantity` = `Quantity` + %s WHERE `ID` = %s;"
+        sqlUpdate(sqlUpdateQuantity, (row['quantity'], row['quantityID']))
+    
+    sqlQueryDelete = "DELETE FROM `buffer_store` WHERE `payment_details_id` = %s;"
+    sqlDelete(sqlQueryDelete, (pdID,))
+    
+    sqlQueryPaymentD = """
+                        UPDATE `payment_details` SET
+                            `Status` = 3 -- 3 means canceled
+                        WHERE `ID` = %s
+                        ;"""
+    sqlUpdate(sqlQueryPaymentD, (pdID,))
+    return {'status': '1'}
+
+
+
+
 
 # def replace_spaces_in_text_nodes(html_content):
 #     # This regex will match text between HTML tags while ignoring attributes and tags themselves

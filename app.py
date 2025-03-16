@@ -3,7 +3,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -499,55 +499,53 @@ def checkout():
         #     amount = priceARR['answer']
         # END of Calculate Total price to be purchased
         
-        
-
-
         # insert additional data into  payment_details table and get inserted id
-        # sqlQueryPD = "INSERT INTO `payment_details` (`notesID`, `clientID`, `contactID`) VALUES (%s, %s, %s);"
-        # sqlValTuplePD = (notesID, clientID, contactID)
-        # resultPD = sqlInsert(sqlQueryPD, sqlValTuplePD)
-
-        # print('PDPDPDPDPDPDPDPDPDPDPDPDPDPDPDP')
-        # print(resultPD['answer'])
-        # print('PDPDPDPDPDPDPDPDPDPDPDPDPDPDPDP')
-        # return
+        sqlQueryPD = "INSERT INTO `payment_details` (`notesID`, `clientID`, `contactID`, `Status`) VALUES (%s, %s, %s, %s);"
+        sqlValTuplePD = (notesID, clientID, contactID, 2)
+        resultPD = sqlInsert(sqlQueryPD, sqlValTuplePD)
     
-        # pdID = resultPD['inserted_id'] 
-        pdID = 1 
+        pdID = resultPD['inserted_id'] 
+        # pdID = 1 
 
         # insert data into table buffer
         # This also checks if specified amount of product exists
         buffer = insertIntoBuffer(data, pdID, smthWrong)
+        # print('AAAAAAAAAAAAAAAAAAAAAAA')
+        # print(buffer)
+        # print('AAAAAAAAAAAAAAAAAAAAAAA')
         if buffer['status'] == "0":
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': "0", 'answer': smthWrong + 'sdsds', 'newCSRFtoken': newCSRFtoken})
         
         if buffer['status'] == "2":
             return jsonify({'status': "0", 'answer': gettext("Invalid Promo Code"), 'newCSRFtoken': newCSRFtoken})
         
-        print(buffer['answer'])
-        print('totalPrice is ', buffer['totalPrice'])
+        # print(buffer['answer'])
+        # print('totalPrice is ', buffer['totalPrice'])
 
         amount = buffer['totalPrice']
-        return
-
-
-
+        
         # Send data to bank api
         # recive answer from api 
         bank_answer_status = 1
         # insert data to purchace_history
 
         if bank_answer_status == 1:
-            sqlQuery = "SELECT * FROM `buffer_store` WHERE `payment_details_id` = %s;"
-            result = sqlSelect(sqlQuery, (pdID,), True)
-            for row in result['data']:
-                pass
-                
-        else:
-            pass # delete from bufer and update table quantity
-        # update payment_details with id pdID
+            purchseData = insertPUpdateP(pdID)
 
-        return jsonify({'status': "1", 'answer': 'Validation passed successfully', 'newCSRFtoken': newCSRFtoken})    
+            print('SFSFSDFSDfsdFdsFsdfSDFsdfdsfdsf')
+            print(purchseData['answer'])
+            print('SFSFSDFSDfsdFdsFsdfSDFsdfdsfdsf')
+
+            answer = gettext('Payment passed successfully') + ' ' + str(amount) + ' ' + MAIN_CURRENCY
+            purchseData = json.dumps(purchseData['answer'])
+            return jsonify({'status': "1", 'answer': answer, 'purchseData': purchseData, 'newCSRFtoken': newCSRFtoken})    
+                
+
+        # delete from bufer and update table quantity
+        # update payment_details with id pdID
+        deletePUpdateP(pdID)        
+        answer = gettext('Payment failed')
+        return jsonify({'status': "0", 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
         
 
 
@@ -2279,6 +2277,7 @@ def store():
                             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
                         WHERE `quantity`.`Status` = 1
                         GROUP BY `product`.`ID`, `product`.`Title`, `product`.`Thumbnail`
+                        ORDER BY `product`.`Order` ASC  
                     ;               
                     """
         
@@ -3176,7 +3175,9 @@ def get_pt_quantities():
                     LEFT JOIN `stuff` ON `stuff`.`ID` = `quantity`.`userID`
                     LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
                     LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
-                WHERE `quantity`.`productTypeID` = %s AND `quantity`.`Status` = '1' {filters}
+                WHERE `quantity`.`productTypeID` = %s 
+                    AND `quantity`.`Quantity` > 0
+                    AND `quantity`.`Status` = '1' {filters}
                 ;
             """
     

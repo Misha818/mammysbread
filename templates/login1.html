@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ _('Login') }}
+{% endblock %}
+
+{% block content %}
+<form class="containerS" style="width: auto">
+        <div id="mistakes" style="width: 90%;"></div>
+        <div class="mb-3">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="username" placeholder="{{ _('Username') }}" type="text">
+        </div>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="password" name="password" placeholder="{{ _('Password') }}" type="password">
+        </div>
+        <div class="pcButtonS" id="login" style="width: 90%; text-align: center;">{{ _('Log In') }}</div>
+        <div id="saving" class="pcButtonS margin10 hidden">{{ _('Saving...') }}</div>
+    </form>
+    
+    <script>
+        let csrfToken = "{{ csrf_token() }}"
+        let saveButton = document.getElementById('login');
+
+        saveButton.addEventListener('click', function(event) {
+            let saving = document.getElementById('saving');
+
+            let username = document.getElementById('username').value;
+            let password = document.getElementById('password').value;
+
+            let formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+            
+            // Create a new XMLHttpRequest object
+            let xhr = new XMLHttpRequest();
+            
+            // Configure the request
+            xhr.open('POST', '/login');
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+            // Define what happens on successful data submission
+            xhr.onload = function () {
+                if (xhr.status === 200 || xhr.status === 429) {
+                    let response = JSON.parse(xhr.responseText);
+
+                    let mistakesDiv = document.getElementById('mistakes');
+                    mistakesDiv.innerHTML = ''; // Clear previous messages
+
+                    if (response.status === '0') {
+                        // Handle empty product name
+                        mistakesDiv.innerHTML = response.answer;
+                        mistakesDiv.style.color = 'red';
+                        mistakesDiv.style.display = 'flex';
+
+                        csrfToken = response.newCSRFtoken;
+                        
+                        // Scroll the window to the mistakesDiv with smooth behavior
+                        mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                        saveButton.classList.remove('hidden');
+                        saving.classList.add('hidden');
+
+                    } 
+                    
+                    if (response.status === '1') {
+                        // Handle success
+                        let stuffURL = window.location.origin  + '/stuff';
+                        location.href = stuffURL;
+                    }
+                } else {
+                    // Handle error response
+                    saveButton.classList.remove('hidden');
+                    saving.classList.add('hidden');
+
+                    console.error('Error adding category:', xhr.responseText);
+                }
+            };
+
+            // Send the request with the FormData object
+            xhr.send(formData);
+        });
+
+    </script>
+
+{% endblock %}

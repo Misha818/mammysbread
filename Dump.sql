@@ -344,7 +344,7 @@ CREATE TABLE `discount` (
     `ID` INT AUTO_INCREMENT,
     `promo_code_id` INT,
     `ptID` INT,
-    `discount` INT,
+    `discount` FLOAT,
     `discount_status` INT, -- 0 = Disabled, 1 = Enabled | if 1 promo will work even if product is at state of sale
     `revard_value` INT,
     `revard_type` INT, -- 0 is % per sold product, 1 is speciified sum per sold product 
@@ -385,6 +385,7 @@ CREATE TABLE `purchase_history` (
     `quantity` INT,
     `payment_details_id` INT,
     `price` FLOAT,
+    `discount` FLOAT,
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
@@ -403,8 +404,11 @@ CREATE TABLE `payment_details` (
     `final_price` FLOAT, -- Total paid amount of money
     `notesID` INT,
     `clientID` INT,
-    `contactID` INT, 
-    `Status` INT,
+    `contactID` INT,
+    `promo_code_id` INT,
+    `promo_code` VARCHAR(255),
+    `affiliateID` INT, 
+    `Status` INT, -- 0 == transaction cancellation; 1 == paid; 2 == panding
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `payment_details` AUTO_INCREMENT = 1;
@@ -482,8 +486,7 @@ CREATE TABLE `buffer_store` (
     `payment_details_id` INT,
     `promo_code_id` INT,
     `promo_code` VARCHAR(255),
-    `discount` INT,
-    `net` FLOAT, -- paid amount of money for current product taking into consideration discounts if applied
+    `discount` FLOAT,
     `price` FLOAT,
     `affiliateID` INT,
     PRIMARY KEY (`ID`)
