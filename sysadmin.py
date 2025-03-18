@@ -1061,7 +1061,7 @@ def insertIntoBuffer(data, pdID, smthWrong):
 
 # INSERT into purchase_histore
 # UPDATE payment_details
-def insertPUpdateP(pdID):
+def insertPUpdateP(pdID, paymentData):
     sqlQuery = """
                 SELECT 
                 `ptID`,
@@ -1103,23 +1103,30 @@ def insertPUpdateP(pdID):
     
     sqlValTuple = tuple(protoTuple)
 
-    values = "(%s, %s, %s, %s, %s, %s), " * len(result['data'])
+    values = "(%s, %s, %s, %s, %s, %s)," * len(result['data'])
     sqlQueryInsert = f"""
                     INSERT INTO `purchase_history` 
                     (`ptID`, `quantity`, `payment_details_id`, `price`, `discount`, `Status`)
                     VALUES {values[:-1]};
                     """
+    
     result = sqlInsert(sqlQueryInsert, sqlValTuple)
-
+    if result['status'] == 0:
+        return {'status': '0', 'answer': result['answer']}
+    
     sqlQueryPaymentD = """
                         UPDATE `payment_details` SET 
                             `promo_code_id` = %s,
                             `promo_code` = %s,
                             `affiliateID` = %s,
+                            `final_price` = %s,
+                            `payment_method` = %s,
+                            `CMD` = %s,
+                            `payment_status` = %s,
                             `Status` = 1 
                         WHERE `ID` = %s
                         ;"""
-    sqlUpdate(sqlQueryPaymentD, (promoID, promo, affiliateID, pdID))
+    sqlUpdate(sqlQueryPaymentD, (promoID, promo, affiliateID, paymentData['finalPrice'], paymentData['paymentMethod'], paymentData['CMD'], paymentData['paymentStatus'], pdID))
     return {'status': '1', 'answer': answer}
 
 

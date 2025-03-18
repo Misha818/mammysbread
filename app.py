@@ -530,15 +530,21 @@ def checkout():
         # insert data to purchace_history
 
         if bank_answer_status == 1:
-            purchseData = insertPUpdateP(pdID)
+            paymentData = {
+                'finalPrice': amount,
+                'paymentMethod': 'Visa',
+                'CMD': 4242,
+                'paymentStatus': 1
+            }
+            purchseData = insertPUpdateP(pdID, paymentData)
 
             print('SFSFSDFSDfsdFdsFsdfSDFsdfdsfdsf')
-            print(purchseData['answer'])
+            print(purchseData['status'])
             print('SFSFSDFSDfsdFdsFsdfSDFsdfdsfdsf')
 
-            answer = gettext('Payment passed successfully') + ' ' + str(amount) + ' ' + MAIN_CURRENCY
+            # answer = gettext('Payment passed successfully') + ' ' + str(amount) + ' ' + MAIN_CURRENCY
             purchseData = json.dumps(purchseData['answer'])
-            return jsonify({'status': "1", 'answer': answer, 'purchseData': purchseData, 'newCSRFtoken': newCSRFtoken})    
+            return jsonify({'status': "1", 'pdID': pdID, 'purchseData': purchseData, 'newCSRFtoken': newCSRFtoken})    
                 
 
         # delete from bufer and update table quantity
@@ -548,6 +554,45 @@ def checkout():
         return jsonify({'status': "0", 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
         
 
+@app.route('/confirmation-page/<pdID>', methods=['GET'])
+def confirmation_page(pdID):
+    newCSRFtoken = generate_csrf()
+    
+    sqlQuery = f"""
+    SELECT 
+        `payment_details`.`ID`,
+        `payment_details`.`payment_method`,
+        `payment_details`.`CMD`,
+        `payment_details`.`promo_code`,   
+        `payment_details`.`final_price`,   
+        `clients`.`FirstName`,
+        `clients`.`LastName`,
+        `phones`.`phone`,
+        `emails`.`email`,
+        `addresses`.`address`,    
+        `notes`.`note`,
+        `product`.`Title` AS `prTitle`,
+        `product_type`.`Title` AS `ptTitle`,
+        `purchase_history`.`quantity`,
+        `purchase_history`.`price`,
+        `purchase_history`.`discount`
+    FROM `payment_details` 
+            LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+            LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+            LEFT JOIN `phones` ON `client_contacts`.`phoneID` = `phones`.`ID`
+            LEFT JOIN `emails` ON `client_contacts`.`emailID` = `emails`.`ID`
+            LEFT JOIN `addresses` ON `client_contacts`.`addressID` = `addresses`.`ID`
+            LEFT JOIN `notes` ON `payment_details`.`notesID` = `notes`.`ID`
+            LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+            LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
+    WHERE `payment_details`.`ID` = %s;
+"""
+    result = sqlSelect(sqlQuery, (pdID,), True)
+    if result['length'] == 0:
+        return render_template('error.html')
+    
+    return render_template('confirmation-page.html', result=result['data'], mainCurrency = MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
 
     
 @app.route('/get_slides', methods=['POST'])
