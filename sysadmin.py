@@ -763,6 +763,18 @@ def checkSPSSDataLen(spsID, languageID):
 def clientID_contactID(data): # returns clientID from table `clients` and contactID from table `client_contacts` 
     clientID, phoneID, emailID, addressID = [None, None, None, None]
    
+    sqlQuery = "SELECT * FROM `clients` WHERE `Firstname` = %s AND `Lastname` = %s;"
+    result = sqlSelect(sqlQuery, (data['firstname'].strip(), data['lastname'].strip()), True)
+    if result['length'] > 0:
+        clientID = result['data'][0]['ID']
+    else:
+        sqlQueryInsert = "INSERT INTO `clients` (`Firstname`, `Lastname`) VALUES (%s, %s);"
+        sqlQueryTuple = (data['firstname'].strip(), data['lastname'].strip())
+        result = sqlInsert(sqlQueryInsert, sqlQueryTuple)
+        clientID = result['inserted_id']
+
+    phone = data['phone'].strip()
+    
     if data['email']:
         sqlQuery = "SELECT * FROM `emails` WHERE `email` = %s;"
         result = sqlSelect(sqlQuery, (data['email'].strip(),), True)
@@ -779,18 +791,8 @@ def clientID_contactID(data): # returns clientID from table `clients` and contac
     sqlQuery = "SELECT * FROM `phones` WHERE `phone` = %s;"
     result = sqlSelect(sqlQuery, (phone.strip(),), True)
     if result['length'] > 0:
-        clientID = result['data'][0]['clientID']
         phoneID = result['data'][0]['ID']
-
-        sqlQueryClient = "UPDATE `clients` SET `Firstname` = %s, `Lastname` = %s WHERE `clientID` = %s;"
-        sqlValTupleClient = (data['firstname'].strip(), data['lastname'].strip(), clientID)
-        sqlUpdate(sqlQueryClient, sqlValTupleClient)
     else:
-        sqlQueryInsert = "INSERT INTO `clients` (`Firstname`, `Lastname`) VALUES (%s, %s);"
-        sqlQueryTuple = (data['firstname'].strip(), data['lastname'].strip())
-        result = sqlInsert(sqlQueryInsert, sqlQueryTuple)
-        clientID = result['inserted_id']
-
         sqlInsertPhone = "INSERT INTO `phones` (`phone`, `clientID`) VALUES (%s, %s);"
         result = sqlInsert(sqlInsertPhone, (phone, clientID))
         phoneID = result['inserted_id']
@@ -1123,6 +1125,7 @@ def insertPUpdateP(pdID, paymentData):
                             `payment_method` = %s,
                             `CMD` = %s,
                             `payment_status` = %s,
+                            `timestamp` = NOW(),
                             `Status` = 1 
                         WHERE `ID` = %s
                         ;"""

@@ -101,7 +101,7 @@ input[type=submit]:hover {
 
 {% block content %}
 
-<input type="hidden" id="inBasketText" value="{{ _('In Basket') }}">
+<input type="hidden" id="inBasketText" value="{{ _('Added') }}">
   <!-- Hero Section -->
   <section class="hero-section">
     <!-- Replace with your actual hero image file -->
@@ -347,7 +347,7 @@ function createShoppingCartModal(prData) {
       let addToCartContent = "{{ _('Add To Cart') }}";
       let dataState = "0"
       if (quantityState.status === true) {
-        addToCartContent = "{{ _('In Basket') }}";
+        addToCartContent = "{{ _('Added') }}";
         dataState = "1"
       }
 
@@ -671,7 +671,7 @@ if (addToCartButtons) {
                                     
                               addToCart(ptID, quantity, clickedButton).then(() => {
                                   gearElement.remove();
-                                  clickedButton.textContent = "{{ _('In Basket') }}";
+                                  clickedButton.textContent = "{{ _('Added') }}";
                                   clickedButton.dataset.state = "1";
                                   flag = false;
                               });
@@ -785,23 +785,29 @@ if (addToCartButtons) {
                                     if (response.status === 1) {
                                         parentDiv.querySelector('.quantity').value = newQuantity;
                                         change_price(plusBtn, response.data.price, '+')
-                                        let dataState = grandPa.parentNode.parentNode.querySelector('.add-to-cart-modal-home').dataset.state;
-                                        if (dataState === "1") {
-                                          addToCart(ptID, newQuantity, clickedButton).then(() => {
-                                            gearElement.remove();
-                                            clickedButton.textContent = '+';
-                                            clickedButton.style.padding = '10px 15px';
-                                            flag = false;
-                                          });
-                                        } else {
+                                        let addeeButton = grandPa.parentNode.parentNode.querySelector('.add-to-cart-modal-home');
+                                        let dataState = addeeButton.dataset.state;
+                                        addToCart(ptID, newQuantity, clickedButton).then(() => {
                                           gearElement.remove();
                                           clickedButton.textContent = '+';
                                           clickedButton.style.padding = '10px 15px';
+                                          addeeButton.textContent = "{{ _('Added') }}";
                                           flag = false;
-                                        }
-                                    } 
-
-                                    
+                                        });
+                                        
+                                        // if (dataState === "1") {
+                                        // } else {
+                                        //   gearElement.remove();
+                                        //   clickedButton.textContent = '+';
+                                        //   clickedButton.style.padding = '10px 15px';
+                                        //   flag = false;
+                                        // }
+                                      } else {
+                                        gearElement.remove();
+                                        clickedButton.textContent = '+';
+                                        clickedButton.style.padding = '10px 15px';
+                                        flag = false;
+                                      }                                     
                                   }) 
                                   .catch(error => console.error(error));
                             }  
@@ -979,7 +985,7 @@ async function get_pt_quantity(ptID, quantity) {
             if (textContent) {
                 modal_message(textContent);
             } else {
-                modal_message("You have already added this product to the basket. You can change the quantity.");
+                modal_message("You have already Added this product to the basket. You can change the quantity.");
             }
             return true;
         } else {

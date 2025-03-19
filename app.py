@@ -594,6 +594,92 @@ def confirmation_page(pdID):
     
     return render_template('confirmation-page.html', result=result['data'], mainCurrency = MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
 
+
+
+@app.route('/orders', methods=['GET', 'POST'])
+# @login_required
+def orders():
+    newCSRFtoken = generate_csrf()
+    
+    sqlQuery = f"""
+    SELECT 
+        `payment_details`.`ID`,
+        `payment_details`.`promo_code`,   
+        `payment_details`.`final_price`,   
+        `clients`.`FirstName`,
+        `clients`.`LastName`,
+        `phones`.`phone`,
+        `emails`.`email`
+    FROM `payment_details` 
+        LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+        LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+        LEFT JOIN `phones` ON `client_contacts`.`phoneID` = `phones`.`ID`
+        LEFT JOIN `emails` ON `client_contacts`.`emailID` = `emails`.`ID`
+        LEFT JOIN `addresses` ON `client_contacts`.`addressID` = `addresses`.`ID`
+        LEFT JOIN `notes` ON `payment_details`.`notesID` = `notes`.`ID`
+        LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+    WHERE `payment_details`.`Status` = %s
+        GROUP BY `payment_details`.`ID`
+        ORDER BY `payment_details`.`ID` DESC
+    ;
+"""
+    result = sqlSelect(sqlQuery, (1,), True)
+    
+    sideBar = side_bar_stuff()
+    return render_template('orders.html', result=result, sideBar=sideBar, mainCurrency=MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
+
+
+@app.route('/send-email/<email>', methods=['GET'])
+# @login_required
+def send_email(email):
+    newCSRFtoken = generate_csrf()
+    return 1
+
+@app.route('/order-details/<pdID>', methods=['GET'])
+# @login_required
+def order_details(pdID):
+    newCSRFtoken = generate_csrf()
+    
+    sqlQuery = f"""
+    SELECT 
+        `payment_details`.`ID`,
+        `payment_details`.`payment_method`,
+        `payment_details`.`CMD`,
+        `payment_details`.`promo_code`,   
+        `payment_details`.`promo_code_id`,   
+        `payment_details`.`final_price`,   
+        `payment_details`.`timestamp`,   
+        `payment_details`.`Status`,   
+        `clients`.`FirstName`,
+        `clients`.`LastName`,
+        `phones`.`phone`,
+        `emails`.`email`,
+        `addresses`.`address`,    
+        `notes`.`note`,
+        `product`.`Title` AS `prTitle`,
+        `product_type`.`Title` AS `ptTitle`,
+        `purchase_history`.`quantity`,
+        `purchase_history`.`price`,
+        `purchase_history`.`discount`
+    FROM `payment_details` 
+            LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+            LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+            LEFT JOIN `phones` ON `client_contacts`.`phoneID` = `phones`.`ID`
+            LEFT JOIN `emails` ON `client_contacts`.`emailID` = `emails`.`ID`
+            LEFT JOIN `addresses` ON `client_contacts`.`addressID` = `addresses`.`ID`
+            LEFT JOIN `notes` ON `payment_details`.`notesID` = `notes`.`ID`
+            LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+            LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
+    WHERE `payment_details`.`ID` = %s;
+"""
+    result = sqlSelect(sqlQuery, (pdID,), True)
+    if result['length'] == 0:
+        return render_template('error.html')
+    
+    sideBar = side_bar_stuff()
+    return render_template('order-details.html', sideBar=sideBar, result=result['data'], mainCurrency = MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
+    
     
 @app.route('/get_slides', methods=['POST'])
 @login_required
@@ -4106,7 +4192,7 @@ def get_available_pts():
                 WHERE `product`.`ID` = %s 
                     AND `product`.`Language_ID` = %s 
                     AND (SELECT SUM(`Quantity`) FROM `quantity` 
-                        WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) IS NOT NULL
+                        WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) > 0
                 ORDER BY `product`.`ID`, `product_type`.`Order`;            
                 """
     sqlValTuple = (prID, langID)

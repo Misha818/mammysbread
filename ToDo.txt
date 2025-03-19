@@ -270,6 +270,9 @@ create_promo_code()
 promo_codes
 edit_promo_code
 edit_promo
+orders
+order_details
+
 
 
 add_sps_view

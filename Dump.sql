@@ -408,7 +408,7 @@ CREATE TABLE `payment_details` (
     `promo_code_id` INT,
     `promo_code` VARCHAR(255),
     `affiliateID` INT, 
-    `Status` INT, -- 0 == transaction cancellation; 1 == paid; 2 == panding
+    `Status` INT, -- 0 == transaction cancellation; 1 == paid; 2 == panding, 3 == preparing; 4 == ready for delivery; 5 == delivered
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `payment_details` AUTO_INCREMENT = 1;

@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% block title %}
+{{ _('Orders') }}
+{% endblock %}
+
+
+{% block head %}
+
+{% endblock %}
+
+{% block content %}
+
+{{ sideBar | safe }}
+<div class="container" >
+<div class="table-container toRight" id="tableDaddy">
+  <table id="myTable">
+    <thead>
+      <tr>
+
+      <th>
+        <div style="display: flex; align-items: center;">
+         {{ _('Order ID') }} 
+
+          <div class="sort-icons" style="margin-left: 5px;">
+            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+          </div>
+        </div>
+      </th>
+
+      <th>
+        <div style="display: flex; align-items: center;">
+         {{ _('Client') }} 
+
+          <div class="sort-icons" style="margin-left: 5px;">
+            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+          </div>
+        </div>
+      </th>
+      
+      <th>
+        <div style="display: flex; align-items: center;">
+         {{ _('Phone') }} 
+
+          <div class="sort-icons" style="margin-left: 5px;">
+            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+          </div>
+        </div>
+      </th>
+
+      <th>
+        <div style="display: flex; align-items: center;">
+         {{ _('Email') }} 
+
+          <div class="sort-icons" style="margin-left: 5px;">
+            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+          </div>
+        </div>
+      </th>
+
+      <th>
+        <div style="display: flex; align-items: center;">
+         {{ _('Net') }} 
+
+          <div class="sort-icons" style="margin-left: 5px;">
+            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+          </div>
+        </div>
+      </th>
+
+      <th>
+        <div style="display: flex; align-items: center;">
+         {{ _('Promo Code') }} 
+
+          <div class="sort-icons" style="margin-left: 5px;">
+            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+          </div>
+        </div>
+      </th>
+
+      <th> 
+        <div style="display: flex; align-items: center;">
+          {{ _('Status') }}
+
+          <div class="sort-icons" style="margin-left: 5px;">
+            <i class="fas fa-sort-up myup" onclick="sortTable(this, 2, 'up')"></i>
+            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 2, 'down')"></i>
+          </div>
+        </div>
+    </th>
+    
+      <th></th>
+      </tr>
+    </thead>
+  {% if result.length > 0 %}
+    <tbody>
+      {% for row in result.data %}
+      {% set status = _('Purchased') %}
+      {% set statusStyle = 'status-open' %}
+      {% if row['Status'] == 0 %}
+        {% set status = _('Cancelled') %}
+        {% set statusStyle = 'status-on-hold' %}
+      {% endif %}
+      
+      {% set phone = row['phone'] %}
+      {% if phone == none %}
+        {% set phone = _('N/A') %}
+      {% endif %}
+      
+      {% set email = row['email'] %}
+      {% if email == none %}
+        {% set email = _('N/A') %}
+      {% endif %}
+      
+      {% set promo = row['promo_code'] %}
+      {% if promo == none %}
+        {% set promo = _('N/A') %}
+      {% endif %}
+
+      <tr>
+        <td data-label="{{ _('Order ID') }}" class="flex" style="display: table-cell;">
+          {{ row['ID'] }}
+        </td>
+        
+        <td data-label="{{ _('Client') }}" class="flex" style="display: table-cell;">
+          {{ row['FirstName'] + ' ' + row['LastName'] }}
+        </td>
+        
+        <td data-label="{{ _('Phone') }}" class="flex" style="display: table-cell;">
+          {{ phone }}
+        </td>
+        
+        <td data-label="{{ _('Email') }}" class="flex" style="display: table-cell;">
+          {{ email }}
+        </td>
+        
+        <td data-label="{{ _('Net') }}" class="flex" style="display: table-cell;">
+          {{ row['final_price'] }}
+        </td>
+        
+        <td data-label="{{ _('Promo Code') }}" class="flex" style="display: table-cell;">
+          {{ promo }}
+        </td>
+
+        <td data-label="{{ _('Status') }}"><span class="status-label {{ statusStyle }}">{{ status }}</span></td>
+
+        <td class="edit-user">
+          <a href="{{ url_for('order_details', pdID=row['ID'], _external=True) }}" target="_blank" title="{{ _('Order Details') }}" style="color:#6be6b2">
+            <i class="fas fa-eye"></i>
+            <!-- <i class="fas fa-pencil"></i> -->
+          </a>
+        </td>
+
+      </tr>
+      {% endfor %}
+      
+      {% else %}
+      <tr><td><p style="padding: 15px; font-size: 26px;">{{ _('No orders found.') }}</p></td></tr>  
+    {% endif %}
+  </tbody>
+  </table>
+
+  {% if result.length == -1 %}
+
+<!-- <div class="pagination">
+  {%if page > 1 %}
+  {% set urlPrev = '/' + (page - 1) | string %}
+  <a href="{{ url_for('pt_specifications', _external=True) + urlPrev }}">&laquo;</a>
+  {% endif %}
+  {% for i in range(1, (numRows // pagination) + 1 + (1 * ( (numRows % pagination) // (numRows % pagination) ) )) %}
+  
+  {% set urlPage = '/' ~ i %}
+  <a {% if i == page %} class="active" {% endif %} href="{{ url_for('pt_specifications', _external=True) + urlPage }}">{{ i }}</a>
+  {% endfor %}
+  
+  {% if page < (numRows // pagination) + (1 * ( (numRows % pagination) // (numRows % pagination) )) %}
+  {% set urlNext = '/' + (page + 1) | string %}
+  <a href="{{ url_for('pt_specifications', _external=True) + urlNext }}">&raquo;</a>
+  {% endif %}
+  
+</div>
+ -->
+
+
+  {% endif %}
+
+
+<script>
+
+window.addEventListener('load', () => {
+  document.querySelector('body').classList.add('loaded');
+});
+
+let trace;
+
+function sortTable(arrowElement, n, direction) {
+  
+  // console.log(n);
+  if (trace === String(n) + direction) {
+    return;
+  }
+
+  trace = String(n) + direction;
+  
+  document.querySelectorAll('.sort-icons i').forEach(icon => icon.style.color = '#fff');
+  arrowElement.style.color = '#ff0000';
+
+  let table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById("myTable");
+  switching = true;
+  //Set the sorting direction to ascending:
+  dir = "asc"; 
+  /*Make a loop that will continue until
+  no switching has been done:*/
+  while (switching) {
+    //start by saying: no switching is done:
+    switching = false;
+    rows = table.rows;
+    /*Loop through all table rows (except the
+    first, which contains table headers):*/
+    for (i = 1; i < (rows.length - 1); i++) {
+      //start by saying there should be no switching:
+      shouldSwitch = false;
+      /*Get the two elements you want to compare,
+      one from current row and one from the next:*/
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      /*check if the two rows should switch place,
+      based on the direction, asc or desc:*/
+      if (!isNaN(x.innerHTML) && !isNaN(y.innerHTML)) {
+        // Compare as numbers
+        if (dir == "asc") {
+          if (parseFloat(x.innerHTML) > parseFloat(y.innerHTML)) {
+            shouldSwitch = true;
+            break;
+          }
+        } else if (dir == "desc") {
+          if (parseFloat(x.innerHTML) < parseFloat(y.innerHTML)) {
+            shouldSwitch = true;
+            break;
+          }
+        }
+      } else {
+        // Compare as strings
+        if (dir == "asc") {
+          if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+            shouldSwitch = true;
+            break;
+          }
+        } else if (dir == "desc") {
+          if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+            shouldSwitch = true;
+            break;
+          }
+        }
+      }
+    }
+    if (shouldSwitch) {
+      /*If a switch has been marked, make the switch
+      and mark that a switch has been done:*/
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      //Each time a switch is done, increase this count by 1:
+      switchcount ++;      
+    } else {
+      /*If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again.*/
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+
+</script>
+
+
+{% endblock %}

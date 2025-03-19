@@ -1,7 +1,7 @@
-{% extends 'public.html' %}
+{% extends 'base.html' %}
 
 {% block title %}
-    {{ _("Confirmation Page") }}
+    {{ _("Order Details") }}
 {% endblock %}
 
 
@@ -74,8 +74,7 @@
             color: black;
             text-decoration: none;
         }
-
-        
+  
         /* Remove all borders except the bottom border of rows */
         table {
             border-collapse: collapse;
@@ -98,7 +97,7 @@
             border-top: unset;
         }
 
-        a {
+        table a {
             text-decoration: none;
             color: #333;
         }
@@ -106,61 +105,82 @@
 {% endblock %}
 
 {% block content %} 
-
+{{ sideBar | safe }}
 <div class="container py-5">
     <div class="card p-5 text-center">
-        <h2 class="mb-3 text-success">🎉 {{ _('Order Confirmed!') }} 🎉</h2>
-        <p class="mb-4">{{ _('Thank you for shopping with us. We are preparing your order now!') }}</p>
-        <h6 class="text-muted">{{ _('Order') }} #{{ result[0]['ID']}}</h6>
+        <h4 class="text-muted">{{ _('Order') }} #{{ result[0]['ID']}}</h4>
 
         <div class="row my-4">
             <div class="col-md-8 text-start">
                 <h5 class="mb-3">{{ _('Order Details') }}</h5>
                 <span id="products">
 
-                    <!-- <div class="summary-item d-flex justify-content-between">
-                        <span>Product 1</span>
-                        <span>$25.00</span>
-                    </div>
-                    <div class="summary-item d-flex justify-content-between">
-                        <span>Product 2</span>
-                        <span>$15.00</span>
-                    </div>
-                    <div class="summary-item summary-total d-flex justify-content-between mt-3">
-                        <span>Total</span>
-                        <span>$40.00</span>
-                    </div> -->
                 </span>
             </div>
 
             <div class="col-md-4 text-start">
-                <h5 class="mb-3">{{ _('Delivery Information') }}</h5>
+                <h5 class="mb-3">{{ _('Client Information') }}</h5>
                 <p>
                     <strong>{{ result[0].FirstName + ' ' + result[0].LastName}}</strong><br>
                     {{ result[0].address }}<br>
                     {{ _('Yerevan') }}, {{ _('Armenia') }}<br>
                     <!-- <br> -->
                 {% if result[0].email %}     
-                    {{ _('Email') }}: {{ result[0].email }}<br>
+                    <a href="{{ url_for('send_email', email=result[0].email) }}" target="_blank">{{ _('Email') }}: {{ result[0].email }}</a> <br>
                 {% endif %}
                     <span id="phone"></span> 
                 </p>
-                <!-- <h6 class="mt-3">📦 Expected Delivery:</h6> -->
-                <!-- <p>March 25, 2025 (Standard Shipping)</p> -->
                 <h6>💳 {{ _('Payment Method') }}:</h6>
                 {% if (result[0].payment_method == 'Visa') %}
                 <p>Visa ending **** {{ result[0].CMD }}</p>
                 {% endif %}
+                               
+                {% if (result[0].note) %}
+                <h6>🗓️ {{ _('Note') }}:</h6>
+                <p>{{ result[0].note }}</p>
+                {% endif %}
+                
+                {% if (result[0].promo_code) %}
+                <h6>🗓️ {{ _('Promo Code') }}:</h6>
+                <p>{{ _('Promo Code') }}: {{ result[0].promo_code }}</p>
+                <p>{{ _('Promo Code ID') }}: {{ result[0].promo_code_id }}</p>
+                {% endif %}
+
+                <h6>🗓️ {{ _('Order Date') }}:</h6>
+                {% if (result[0].timestamp) %}
+                <p>{{ result[0].timestamp }}</p>
+                {% endif %}
+                
+                {% if (result[0].Status == 5) %}
+                <h6>🗓️ {{ _('Delivery Date') }}:</h6>
+                <p>{{ result[0].deliveryDate }}</p>
+                {% endif %}
+
+                <h6>🗓️ {{ _('Status') }}:</h6>
+                {% set statusStyle = 'status-open' %}
+                {% set status = _('Purchased') %}
+                {% if result[0].Status == 0 %}
+                    {% set status = _('Cancelled') %}
+                    {% set statusStyle = 'status-closed' %}
+                {% elif result[0].Status == 2 %}
+                    {% set status = _('Panding') %}
+                    {% set statusStyle = 'status-on-hold' %}
+                {% elif result[0].Status == 3 %}
+                    {% set status = _('Preparing') %}
+                    {% set statusStyle = 'status-preparing' %}
+                {% elif result[0].Status == 4 %}
+                    {% set status = _('Ready for delivery') %}
+                    {% set statusStyle = 'status-ready' %}
+                {% elif result[0].Status == 5 %}
+                    {% set status = _('Delivered') %}
+                    {% set statusStyle = 'status-delivered' %}
+                {% endif %}
+                <p style="width: 40%;" class="status-label {{statusStyle}}">{{ status }}</p>
+                
             </div>
         </div>
 
-        <div class="mt-4">
-            <a href="{{ url_for('home') }}" class="btn btn-primary me-2">{{ _('Continue Shopping') }}</a>
-            <a href="{{ url_for('contacts') }}" class="btn btn-primary me-2">{{ _('Contact us') }}</a>
-            <a href="" class="btn btn-outline-secondary">{{ _('Track Your Order') }}</a>
-        </div>
 
-        <!-- <p class="text-muted mt-4">We've emailed your receipt and tracking information.</p> -->
 
     </div>
 
@@ -212,7 +232,7 @@
 
         productRows += `
             <tr>
-                <td style="width: 55%;"><a href="${productURL}" target="_BLANK">${productTitle}</a></td>
+                <td style="width: 55%"><a href="${productURL}" target="_BLANK">${productTitle}</a></td>
                 <td class="${cpPrice}">{{ mainCurrency }} ${price}</td>
                 <td style="${display}">${discount}</td>
                 <td class="discountPrice" style="${display}">{{ mainCurrency }} ${discountPrice}</td>
@@ -247,52 +267,10 @@
     // Combine the table and the total summary
     document.getElementById('products').innerHTML = tableHTML + totalHTML;
 
-    // const result = {{ result | tojson }};
-    // let product = '';
-    // let hidden = 'hidden';
-    // let cpPrice = '';
-    // const mainURL = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/`;
-                
-
-    // result.forEach(row => {
-    //     let productTitle = row.prTitle + ' ' + row.ptTitle;
-    //     let productURL = mainURL + hyphen(row.prTitle) + '&' + hyphen(row.ptTitle);
-    //     let price = row.price * row.quantity;        
-    //     let discountPrice = 0;
-    //     if (row.discount != null) {
-    //         discountPrice = row.price * row.quantity - row.price * row.quantity * row.discount / 100;
-    //         hidden = '';
-    //         cpPrice = 'cp-price';
-    //     }
-
-    //     if (row.quantity > 1) {
-    //         productTitle = row.prTitle + ' ' + row.ptTitle + ' (' + row.quantity + ')';
-    //     }
-    //     product = product + `
-    //         <div class="summary-item d-flex justify-content-between">
-    //             <span><a href="${productURL}" target="_BLANK">${productTitle}</a></span>
-    //             <span class="${cpPrice}">{{ mainCurrency }} ${price.toFixed(2)}</span>
-    //             <span class="discountPrice ${hidden}">{{ mainCurrency }} ${discountPrice.toFixed(2)}</span>
-    //         </div>
-    //     `;
-
-    // });
-
-    // product = product + `
-    //     <div class="summary-item summary-total d-flex justify-content-between mt-3">
-    //         <span>{{ _('Total') }}</span>
-    //         <span class="price">{{ mainCurrency }} ${result[0].final_price}</span>
-    //     </div>
-    // `;
-
-    // document.getElementById('products').innerHTML = product;
-    // // console.log(result[0].CMD);
-
-
-function hyphen(str) {
-    return str.replace(/\s+/g, '-');
-}
-
+    // Helper function to convert spaces to hyphens
+    function hyphen(str) {
+        return str.replace(/\s+/g, '-');
+    }
 
 function formatInternationalNumber(phoneNumber) {
     // Remove any non-digit characters
@@ -323,7 +301,7 @@ function formatInternationalNumber(phoneNumber) {
 
 let phone = formatInternationalNumber(result[0].phone);
 
-document.getElementById('phone').innerHTML = "{{ _('phone') }} : " + phone;
+document.getElementById('phone').innerHTML = `<a href="tel:${phone}">{{ _('Phone') }}: ${phone}</a>`;
 
 // Examples:
 // console.log(formatInternationalNumber("37433151580"));  // +374 (33) 151-580 (Armenia)
