@@ -650,6 +650,7 @@ def order_details(pdID):
         `payment_details`.`final_price`,   
         `payment_details`.`timestamp`,   
         `payment_details`.`Status`,   
+        `delivered`.`timestamp` AS `deliveryDate`,
         `clients`.`FirstName`,
         `clients`.`LastName`,
         `phones`.`phone`,
@@ -662,6 +663,7 @@ def order_details(pdID):
         `purchase_history`.`price`,
         `purchase_history`.`discount`
     FROM `payment_details` 
+            LEFT JOIN `delivered` ON `delivered`.`pdID` = `payment_details`.`ID`
             LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
             LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
             LEFT JOIN `phones` ON `client_contacts`.`phoneID` = `phones`.`ID`
@@ -681,6 +683,165 @@ def order_details(pdID):
     return render_template('order-details.html', sideBar=sideBar, result=result['data'], mainCurrency = MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
     
     
+@app.route('/get-order-details', methods=['POST'])
+# @login_required
+def get_order_details():
+    if not request.form.get('orderID'):
+        return jsonify({'status': "0", 'answer': smthWrong})
+    
+    pdID = request.form.get('orderID')
+
+    sqlQuery = f"""
+                    SELECT 
+                        `payment_details`.`ID`,
+                        `payment_details`.`promo_code`,   
+                        `payment_details`.`final_price`,   
+                        `payment_details`.`Status`,   
+                        `clients`.`FirstName`,
+                        `clients`.`LastName`,
+                        `phones`.`phone`,
+                        `addresses`.`address`,
+                        `emails`.`email`
+                    FROM `payment_details` 
+                        LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+                        LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+                        LEFT JOIN `phones` ON `client_contacts`.`phoneID` = `phones`.`ID`
+                        LEFT JOIN `emails` ON `client_contacts`.`emailID` = `emails`.`ID`
+                        LEFT JOIN `addresses` ON `client_contacts`.`addressID` = `addresses`.`ID`
+                        LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                    WHERE `payment_details`.`ID` = %s
+                        GROUP BY `payment_details`.`ID`
+                        ORDER BY `payment_details`.`ID` DESC
+                    ;
+                """
+    result = sqlSelect(sqlQuery, (pdID,), True)
+    statusList = {
+                '0': gettext('Cancelled'),
+                '1': gettext('Purchased'),
+                '2': gettext('Panding'),
+                '3': gettext('Preparing'),
+                '4': gettext('Ready'),
+                '5': gettext('Delivered')
+            }
+
+    return jsonify({'status': "1", 'data': result['data'], "statusList": statusList, "newCSRFtoken": generate_csrf()})
+
+@app.route('/edit-order-details', methods=['POST'])
+# @login_required
+def edit_order_details():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('orderID') or not request.form.get('firstname') or not request.form.get('lastname') or not request.form.get('phone') or not request.form.get('address') or not request.form.get('status'):
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+
+    phone = request.form.get('phone')
+    phone = ''.join(filter(str.isdigit, phone))
+
+    Email = ''
+    if request.form.get('email'):
+        Email = request.form.get('email').strip()
+        # Validate email
+        emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        # Check if the email matches the pattern
+        if not re.match(emailPattern, Email):
+            answer = gettext('Invalid email format')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
+
+
+    pdID = request.form.get('orderID')
+    firstname = request.form.get('firstname')
+    lastname = request.form.get('lastname')
+    address = request.form.get('address')
+    status = request.form.get('status')    
+
+    sqlQuery = "SELECT * FROM `emails` WHERE `email` = %s;"
+    sqlValTuple = (Email,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] == 0:
+        sqlQuery = "INSERT INTO `emails` (`email`) VALUES (%s);"
+        sqlValTuple = (Email,)
+        result = sqlInsert(sqlQuery, sqlValTuple)
+        emailID = result['inserted_id']
+    else:
+        emailID = result['data'][0]['ID']
+
+    sqlQuery = "SELECT * FROM `clients` WHERE `FirstName` = %s AND `LastName` = %s;"
+    sqlValTuple = (firstname, lastname)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] == 0:
+        sqlQuery = "INSERT INTO `clients` (`FirstName`, `LastName`) VALUES (%s, %s);"
+        sqlValTuple = (firstname, lastname)
+        result = sqlInsert(sqlQuery, sqlValTuple)
+        clientID = result['inserted_id']
+    else:
+        clientID = result['data'][0]['ID']
+
+    sqlQuery = "SELECT * FROM `phones` WHERE `phone` = %s;"
+    sqlValTuple = (phone,)  
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] == 0:
+        sqlQuery = "INSERT INTO `phones` (`phone`) VALUES (%s);"
+        sqlValTuple = (phone,)
+        result = sqlInsert(sqlQuery, sqlValTuple)
+        phoneID = result['inserted_id']
+    else:
+        phoneID = result['data'][0]['ID']
+    
+    sqlQuery = "SELECT * FROM `addresses` WHERE `address` = %s;"
+    sqlValTuple = (address,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] == 0:
+        sqlQuery = "INSERT INTO `addresses` (`address`) VALUES (%s);"
+        sqlValTuple = (address,)
+        result = sqlInsert(sqlQuery, sqlValTuple)
+        addressID = result['inserted_id']
+    else:
+        addressID = result['data'][0]['ID']
+
+    sqlQuery = "SELECT `clientID`, `contactID`, `Status` FROM `payment_details` WHERE `ID` = %s;"
+    result = sqlSelect(sqlQuery, (pdID,), True)
+    if result['length'] == 0:
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+    clientID = result['data'][0]['clientID']
+    contactID = result['data'][0]['contactID']
+    Status = result['data'][0]['Status']
+
+    sqlQuery = "UPDATE `clients` SET `FirstName` = %s, `LastName` = %s WHERE `ID` = %s;"
+    sqlValTuple = (firstname, lastname, clientID)
+    result = sqlUpdate(sqlQuery, sqlValTuple)
+    if result['status'] == '-1':
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+    
+    sqlQuery = "UPDATE `client_contacts` SET `phoneID` = %s, `emailID` = %s, `addressID` = %s WHERE `ID` = %s;"
+    sqlValTuple = (phoneID, emailID, addressID, contactID)
+    result = sqlUpdate(sqlQuery, sqlValTuple)
+    if result['status'] == '-1':
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+
+    if Status != int(status):
+        sqlQuery = "UPDATE `payment_details` SET `Status` = %s WHERE `ID` = %s;"
+        sqlValTuple = (status, pdID)
+        result = sqlUpdate(sqlQuery, sqlValTuple)
+        if result['status'] == '-1':
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+
+        if status == '5':
+            sqlQuery = "SELECT * FROM `delivered` WHERE `pdID` = %s;"
+            result = sqlSelect(sqlQuery, (pdID,), True)
+            if result['length'] == 0:
+                sqlQurty = "INSERT INTO `delivered` (`pdID`, `timestamp`) VALUES (%s, NOW());"
+                result = sqlInsert(sqlQurty, (pdID,))
+                if result['status'] == '-1':
+                    return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+            else:
+                sqlQuery = "UPDATE `delivered` SET `timestamp` = NOW() WHERE `pdID` = %s;"
+                result = sqlUpdate(sqlQuery, (pdID,))
+                if result['status'] == '-1':
+                    return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+
+    return jsonify({'status': "1", "newCSRFtoken": generate_csrf()})
+
+
 @app.route('/get_slides', methods=['POST'])
 @login_required
 def get_slides():
@@ -692,6 +853,7 @@ def get_slides():
     result = slidesToEdit(PrID)
 
     return result
+
 
 @app.route('/add-price/<prID>', methods=["GET"])
 @login_required

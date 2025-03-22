@@ -773,8 +773,7 @@ def clientID_contactID(data): # returns clientID from table `clients` and contac
         result = sqlInsert(sqlQueryInsert, sqlQueryTuple)
         clientID = result['inserted_id']
 
-    phone = data['phone'].strip()
-    
+        
     if data['email']:
         sqlQuery = "SELECT * FROM `emails` WHERE `email` = %s;"
         result = sqlSelect(sqlQuery, (data['email'].strip(),), True)

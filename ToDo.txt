@@ -272,6 +272,8 @@ edit_promo_code
 edit_promo
 orders
 order_details
+get_order_details
+edit_order_details
 
 
 
