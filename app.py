@@ -66,6 +66,15 @@ MAIN_CURRENCY = os.getenv('MAIN_CURRENCY')
 key_file = os.path.join(basedir, 'certs', 'private.key')
 cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 
+orderStatusList = {
+            '0': gettext('Cancelled'),
+            '1': gettext('Purchased'),
+            '2': gettext('Panding'),
+            '3': gettext('Preparing'),
+            '4': gettext('Ready'),
+            '5': gettext('Delivered')
+        }
+
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
     return render_template('csrf_error.html', reason=e.description), 400
@@ -600,12 +609,15 @@ def confirmation_page(pdID):
 # @login_required
 def orders():
     newCSRFtoken = generate_csrf()
+    where = 'WHERE `payment_details`.`Status` = %s'
+    sqlValTuple = (1,)
     
     sqlQuery = f"""
     SELECT 
         `payment_details`.`ID`,
         `payment_details`.`promo_code`,   
         `payment_details`.`final_price`,   
+        `payment_details`.`Status`,   
         `clients`.`FirstName`,
         `clients`.`LastName`,
         `phones`.`phone`,
@@ -618,16 +630,73 @@ def orders():
         LEFT JOIN `addresses` ON `client_contacts`.`addressID` = `addresses`.`ID`
         LEFT JOIN `notes` ON `payment_details`.`notesID` = `notes`.`ID`
         LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
-    WHERE `payment_details`.`Status` = %s
-        GROUP BY `payment_details`.`ID`
+    {where}
+    GROUP BY `payment_details`.`ID`
         ORDER BY `payment_details`.`ID` DESC
-    ;
+    LIMIT 0, {int(PAGINATION)};
 """
-    result = sqlSelect(sqlQuery, (1,), True)
+    
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
     
     sideBar = side_bar_stuff()
-    return render_template('orders.html', result=result, sideBar=sideBar, mainCurrency=MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
+    numRows = totalNumRows('payment_details', where, sqlValTuple)
+    # numRows = totalNumRows('payment_details')
 
+    print('FFFFFFFFFFFFFFFFFFFFFFFFFFF')
+    print(numRows)
+    print(int(PAGINATION))
+    print(int(PAGINATION_BUTTONS_COUNT))
+    print('FFFFFFFFFFFFFFFFFFFFFFFFFFF')
+    return render_template('orders.html', result=result, sideBar=sideBar, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT),  mainCurrency=MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
+
+
+
+@app.route('/orders/<page>', methods=['Get'])
+# @login_required
+def orderspage(page): 
+    languageID = getLangID()
+    newCSRFtoken = generate_csrf()
+    rowsToSelect = (int(page) - 1) * int(PAGINATION)
+
+    filters = {
+        'status': 1
+    }
+    where = 'WHERE `payment_details`.`Status` = %s'
+    sqlValTuple = (filters['status'],)
+
+
+
+    sqlQuery = f"""
+            SELECT 
+                `payment_details`.`ID`,
+                `payment_details`.`promo_code`,   
+                `payment_details`.`final_price`,   
+                `payment_details`.`Status`,   
+                `clients`.`FirstName`,
+                `clients`.`LastName`,
+                `phones`.`phone`,
+                `emails`.`email`
+            FROM `payment_details` 
+                LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+                LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+                LEFT JOIN `phones` ON `client_contacts`.`phoneID` = `phones`.`ID`
+                LEFT JOIN `emails` ON `client_contacts`.`emailID` = `emails`.`ID`
+                LEFT JOIN `addresses` ON `client_contacts`.`addressID` = `addresses`.`ID`
+                LEFT JOIN `notes` ON `payment_details`.`notesID` = `notes`.`ID`
+                LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+            {where}
+                GROUP BY `payment_details`.`ID`
+                ORDER BY `payment_details`.`ID` DESC
+                LIMIT {rowsToSelect}, {int(PAGINATION)}; 
+               """
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    sideBar = side_bar_stuff()
+
+    numRows = totalNumRows('payment_details', where, sqlValTuple)
+    # numRows = totalNumRows('payment_details')
+
+    return render_template('orders.html', result=result, filters=filters, orderStatusList=orderStatusList, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+    
 
 @app.route('/send-email/<email>', methods=['GET'])
 # @login_required
@@ -715,16 +784,8 @@ def get_order_details():
                     ;
                 """
     result = sqlSelect(sqlQuery, (pdID,), True)
-    statusList = {
-                '0': gettext('Cancelled'),
-                '1': gettext('Purchased'),
-                '2': gettext('Panding'),
-                '3': gettext('Preparing'),
-                '4': gettext('Ready'),
-                '5': gettext('Delivered')
-            }
 
-    return jsonify({'status': "1", 'data': result['data'], "statusList": statusList, "newCSRFtoken": generate_csrf()})
+    return jsonify({'status': "1", 'data': result['data'], "statusList": orderStatusList, "newCSRFtoken": generate_csrf()})
 
 @app.route('/edit-order-details', methods=['POST'])
 # @login_required
@@ -1915,7 +1976,7 @@ def team():
                     `rol`.`Rol`
                 FROM `stuff`
                 LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID` 
-                LIMIT 0, {PAGINATION}
+                LIMIT 0, {int(PAGINATION)}
                 ; 
                """
     sqlValTuple = ()

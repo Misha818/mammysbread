@@ -6,13 +6,110 @@
 
 {% block head %}
 
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<!-- International Telephone Input JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.7/js/intlTelInput.js"></script>
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- International Telephone Input CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.6/css/intlTelInput.css" rel="stylesheet">
+
+<style>
+#orderStatus {
+  background-color: white;
+  color: #333;
+  padding: 10px 20px;
+  border: 1px solid #333;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.my-phone-control {
+  padding-top: 7px!important;
+  padding-bottom: 7px!important;
+  border-radius: 5px!important;
+}
+
+.filter-inputs {
+  background-color: white;
+  color: #333;
+  padding: 10px 20px;
+  border: 1px solid #333;
+  font-size: 16px;
+  border-radius: 5px;
+  /* margin-right: 1px; */
+}
+
+.dropbtn, .filter {
+  background-color: #6be6b2; 
+  color: white; 
+  padding: 10px 20px; 
+  border: none; 
+  cursor: pointer; 
+  font-size: 16px; 
+  border-radius: 5px; 
+  flex: 1; 
+  min-width: 50px;
+}
+
+</style>
+
 {% endblock %}
 
 {% block content %}
 
 {{ sideBar | safe }}
 <div class="container" >
-<div class="table-container toRight" id="tableDaddy">
+  <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <select id="orderStatus" style="flex: 1; max-width: 135px;">
+      <option value="all">{{ _('All Orders') }}</option>
+      
+      {% for key, val in orderStatusList.items() %}
+      
+        {% set selected = '' %}
+        {% if key | int == filters['status'] %}
+          {% set selected = 'selected' %}
+        {% endif %}
+
+        <option value="{{ key }}"  {{ selected }}>{{ val }}</option>
+      {% endfor %}
+
+    </select>
+    <input type="text" id="Firstname" placeholder="Firstname" class="filter-inputs" style="flex: 1; min-width: 120px;">
+    <input type="text" id="Lastname" placeholder="Lastname" class="filter-inputs" style="flex: 1; min-width: 120px;">
+    <input type="text" id="phone" class="filter-inputs" style="flex: 1; min-width: 120px;">
+    <input type="email" id="Email" placeholder="Email" class="filter-inputs" style="flex: 1; min-width: 120px;">
+    <input type="text" id="PromoCode" placeholder="Promo Code" class="filter-inputs" style="flex: 1; min-width: 120px;">
+    
+    <button class="filter" style="flex: 0 0 auto;">
+      <i class="fas fa-search" style="margin-right: 5px;"></i>
+    </button>
+    
+    <button class="dropbtn" style="flex: 0 0 auto;">
+      <i class="fas fa-chevron-down" style="margin-right: 5px;"></i>
+    </button>
+  </div>
+  
+  <div class="table-container toRight" id="tableDaddy" style="max-width: 1320px;">
+  <script>
+    document.querySelector('.dropbtn').addEventListener('click', function() {
+      const dropdownContent = document.querySelector('.dropdown-content');
+      dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+    });
+
+    window.addEventListener('click', function(event) {
+      if (!event.target.matches('.dropbtn')) {
+        const dropdownContent = document.querySelector('.dropdown-content');
+        if (dropdownContent && dropdownContent.style.display === 'block') {
+          dropdownContent.style.display = 'none';
+        }
+      }
+    });
+  </script>
   <table id="myTable">
     <thead>
       <tr>
@@ -100,12 +197,27 @@
   {% if result.length > 0 %}
     <tbody>
       {% for row in result.data %}
-      {% set status = _('Purchased') %}
       {% set statusStyle = 'status-open' %}
-      {% if row['Status'] == 0 %}
-        {% set status = _('Cancelled') %}
-        {% set statusStyle = 'status-on-hold' %}
+      {% set status = _('Purchased') %}
+      {% if row.Status == 0 %}
+          {% set status = _('Cancelled') %}
+          {% set statusStyle = 'status-closed' %}
+      {% elif row.Status == 2 %}
+          {% set status = _('Panding') %}
+          {% set statusStyle = 'status-on-hold' %}
+      {% elif row.Status == 3 %}
+          {% set status = _('Preparing') %}
+          {% set statusStyle = 'status-preparing' %}
+      {% elif row.Status == 4 %}
+          {% set status = _('Ready for delivery') %}
+          {% set statusStyle = 'status-ready' %}
+      {% elif row.Status == 5 %}
+          {% set status = _('Delivered') %}
+          {% set statusStyle = 'status-delivered' %}
       {% endif %}
+
+
+
       
       {% set phone = row['phone'] %}
       {% if phone == none %}
@@ -165,27 +277,36 @@
   </tbody>
   </table>
 
-  {% if result.length == -1 %}
+  <p>{{ numRows }} // {{ pagination }}</p>
+  <p>'numRows // pagination is ' {{ numRows // pagination }}</p>
+  <p>'numRows % pagination is ' {{ numRows % pagination }}</p>
 
-<!-- <div class="pagination">
-  {%if page > 1 %}
-  {% set urlPrev = '/' + (page - 1) | string %}
-  <a href="{{ url_for('pt_specifications', _external=True) + urlPrev }}">&laquo;</a>
-  {% endif %}
-  {% for i in range(1, (numRows // pagination) + 1 + (1 * ( (numRows % pagination) // (numRows % pagination) ) )) %}
-  
-  {% set urlPage = '/' ~ i %}
-  <a {% if i == page %} class="active" {% endif %} href="{{ url_for('pt_specifications', _external=True) + urlPage }}">{{ i }}</a>
-  {% endfor %}
-  
-  {% if page < (numRows // pagination) + (1 * ( (numRows % pagination) // (numRows % pagination) )) %}
-  {% set urlNext = '/' + (page + 1) | string %}
-  <a href="{{ url_for('pt_specifications', _external=True) + urlNext }}">&raquo;</a>
-  {% endif %}
-  
-</div>
- -->
+  {% if numRows > pagination %}
 
+  <div class="pagination">
+    {% set additionalPage = 0 %}
+    {% if numRows % pagination > 0 %}
+      {% set additionalPage = 1 %}
+    {% endif %}
+
+    {% if page > 1 %}
+    {% set urlPrev = '/' + (page - 1) | string %}
+    <a href="{{ url_for('orders', _external=True) + urlPrev }}">&laquo;</a>
+    {% endif %}
+    {% for i in range(1, (numRows // pagination) + additionalPage + 1) %}
+    
+    {% set urlPage = '/' ~ i %}
+    <a {% if i == page %} class="active" {% endif %} href="{{ url_for('orders', _external=True) + urlPage }}">{{ i }}</a>
+    {% endfor %}
+    
+
+    {% if page < (numRows // pagination) + additionalPage  %}
+    {% set urlNext = '/' + (page + 1) | string %}
+    <a href="{{ url_for('orders', _external=True) + urlNext }}">&raquo;</a>
+    {% endif %}
+    
+  </div>
+  
 
   {% endif %}
 
@@ -277,6 +398,13 @@ function sortTable(arrowElement, n, direction) {
     }
   }
 }
+
+
+$("#phone").intlTelInput({
+    initialCountry: "am",
+    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.6/js/utils.js"
+});
+
 
 </script>
 

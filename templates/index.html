@@ -139,8 +139,7 @@ input[type=submit]:hover {
     </div>
     <div class="card-buttons">
       <a href="{{ url_for('home', _external=True) + row['Url'] }}" class="btn_landing">{{ _('See Details') }}</a>
-      <div data-value="{{ row['ID'] }}" class="btn_landing add-to-cart-home">{{ _('Add To Cart') }}</div>
-      <a href="#" class="btn_landing btn-highlight">{{ _('Buy Now') }}</a>
+      <div data-value="{{ row['ID'] }}" class="btn_landing btn-highlight add-to-cart-home">{{ _('Add To Cart') }}</div>
     </div>
   </div>
   {% endfor %}

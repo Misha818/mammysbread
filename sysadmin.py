@@ -689,9 +689,9 @@ def filter_multy_dict(data, filter):
     return arr
 
 
-def totalNumRows(tableName):
-    sqlQuery = f""" SELECT * FROM {tableName};"""
-    sqlValTuple = ()
+def totalNumRows(tableName, where='', sqlValTuple=()):
+    sqlQuery = f""" SELECT * FROM {tableName} {where};"""
+    # sqlValTuple = ()
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
     return result['length']

@@ -274,6 +274,7 @@ orders
 order_details
 get_order_details
 edit_order_details
+orderspage
 
 
 
