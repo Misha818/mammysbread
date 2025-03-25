@@ -6177,7 +6177,7 @@ tr:nth-child(even) {
   color: #666;
 }
 
-.pagination a {
+.pagination div {
   margin: 0 4px;
   padding: 6px 12px;
   color: #4e73df;
@@ -6185,7 +6185,16 @@ tr:nth-child(even) {
   text-decoration: none;
 }
 
-.pagination a.active {
+.pagination div {
+  margin: 0 4px;
+  padding: 6px 12px;
+  color: #4e73df;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.pagination a.active, div.active {
   background-color: #4e73df;
   color: #fff;
 }

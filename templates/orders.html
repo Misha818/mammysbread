@@ -56,6 +56,14 @@
   min-width: 50px;
 }
 
+.filter-container {
+  margin-bottom: 20px; 
+  display: flex; 
+  gap: 10px; 
+  align-items: center; 
+  flex-wrap: wrap;
+}
+
 </style>
 
 {% endblock %}
@@ -64,14 +72,14 @@
 
 {{ sideBar | safe }}
 <div class="container" >
-  <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+  <div class="filter-container">
     <select id="orderStatus" style="flex: 1; max-width: 135px;">
       <option value="all">{{ _('All Orders') }}</option>
       
       {% for key, val in orderStatusList.items() %}
       
         {% set selected = '' %}
-        {% if key | int == filters['status'] %}
+        {% if key | string == filters['status'] | string %}
           {% set selected = 'selected' %}
         {% endif %}
 
@@ -79,19 +87,21 @@
       {% endfor %}
 
     </select>
-    <input type="text" id="Firstname" placeholder="Firstname" class="filter-inputs" style="flex: 1; min-width: 120px;">
-    <input type="text" id="Lastname" placeholder="Lastname" class="filter-inputs" style="flex: 1; min-width: 120px;">
-    <input type="text" id="phone" class="filter-inputs" style="flex: 1; min-width: 120px;">
-    <input type="email" id="Email" placeholder="Email" class="filter-inputs" style="flex: 1; min-width: 120px;">
-    <input type="text" id="PromoCode" placeholder="Promo Code" class="filter-inputs" style="flex: 1; min-width: 120px;">
+    <input type="text" id="Firstname" placeholder="{{ _('Firstname') }}" value="{{ filters.Firstname if filters.Firstname else '' }}" class="filter-inputs" style="flex: 1; min-width: 120px;">
+    <input type="text" id="Lastname" placeholder="{{ _('Lastname') }}" value="{{ filters.Lastname if filters.Lastname else '' }}" class="filter-inputs" style="flex: 1; min-width: 120px;">
+    <input type="text" id="phone" class="filter-inputs" value="{{ filters.phone if filters.phone else '' }}" style="flex: 1; min-width: 120px;">
+    <input type="email" id="email" placeholder="{{ _('Email') }}" value="{{ filters.email if filters.email else '' }}" class="filter-inputs" style="flex: 1; min-width: 120px;">
+    <input type="text" id="promoCode" placeholder="{{ _('Promo Code') }}" value="{{ filters.promoCode if filters.promoCode else '' }}" class="filter-inputs" style="flex: 1; min-width: 120px;">
     
     <button class="filter" style="flex: 0 0 auto;">
       <i class="fas fa-search" style="margin-right: 5px;"></i>
     </button>
     
-    <button class="dropbtn" style="flex: 0 0 auto;">
-      <i class="fas fa-chevron-down" style="margin-right: 5px;"></i>
-    </button>
+    <a  
+      href="{{ url_for('orders', filter='page=1') }}"
+      class="dropbtn" style="flex: 0 0 auto;">
+        <i class="fas fa-chevron-down" style="margin-right: 5px;"></i>
+  </a>
   </div>
   
   <div class="table-container toRight" id="tableDaddy" style="max-width: 1320px;">
@@ -272,7 +282,7 @@
       {% endfor %}
       
       {% else %}
-      <tr><td><p style="padding: 15px; font-size: 26px;">{{ _('No orders found.') }}</p></td></tr>  
+      <tr><td><p style="padding: 15px; font-size: 26px;">{{ _('Nothing found.') }}</p></td></tr>  
     {% endif %}
   </tbody>
   </table>
@@ -291,18 +301,18 @@
 
     {% if page > 1 %}
     {% set urlPrev = '/' + (page - 1) | string %}
-    <a href="{{ url_for('orders', _external=True) + urlPrev }}">&laquo;</a>
+    <div data-value="{{ page - 1 }}">❮</div>
     {% endif %}
     {% for i in range(1, (numRows // pagination) + additionalPage + 1) %}
     
     {% set urlPage = '/' ~ i %}
-    <a {% if i == page %} class="active" {% endif %} href="{{ url_for('orders', _external=True) + urlPage }}">{{ i }}</a>
+    <div {% if i == page %} class="active" {% endif %} data-value="{{ i }}">{{ i }}</div>
     {% endfor %}
     
 
     {% if page < (numRows // pagination) + additionalPage  %}
     {% set urlNext = '/' + (page + 1) | string %}
-    <a href="{{ url_for('orders', _external=True) + urlNext }}">&raquo;</a>
+    <div data-value="{{ page + 1 }}">❯</div>
     {% endif %}
     
   </div>
@@ -405,6 +415,53 @@ $("#phone").intlTelInput({
     utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.6/js/utils.js"
 });
 
+
+document.querySelector('.filter').addEventListener('click', function() {
+
+  let filterURL = constract_filter_url('1');
+  window.location.href = filterURL
+
+});
+
+if (document.querySelectorAll('.pagination div')) {
+  paginationDivs = document.querySelectorAll('.pagination div');
+  paginationDivs.forEach(div => {
+    div.addEventListener('click', function() {
+      let page = div.getAttribute('data-value');
+      let filterURL = constract_filter_url(page);
+      window.location.href = filterURL;
+      
+    });
+  });
+}
+
+
+
+function constract_filter_url(page) {
+  let filterURL = 'page='+page;
+  
+  let orderStatus = document.getElementById('orderStatus').value;
+  filterURL += '&status=' + orderStatus
+
+  let counteryCodeStr = document.querySelector('.selected-flag').getAttribute('title');
+  let counteryCodeArr = counteryCodeStr.split('+');
+  let countryCode = counteryCodeArr[1];
+
+  
+  const filters = document.querySelectorAll('.filter-container input');
+  filters.forEach(input => {
+    console.log(input.value)
+    if (input.value != '') {
+      if (input.id == 'phone') {
+        filterURL += '&' + input.id + '=' + countryCode + input.value;
+      } else {
+        filterURL += '&' + input.id + '=' + input.value;
+      }
+    }
+  });
+  
+  return filterURL
+}
 
 </script>
 

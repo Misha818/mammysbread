@@ -604,67 +604,63 @@ def confirmation_page(pdID):
     return render_template('confirmation-page.html', result=result['data'], mainCurrency = MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
 
 
-
-@app.route('/orders', methods=['GET', 'POST'])
+@app.route('/orders/<filter>', methods=['Get'])
 # @login_required
-def orders():
+def orders(filter): 
     newCSRFtoken = generate_csrf()
-    where = 'WHERE `payment_details`.`Status` = %s'
-    sqlValTuple = (1,)
+    filters = {}
     
-    sqlQuery = f"""
-    SELECT 
-        `payment_details`.`ID`,
-        `payment_details`.`promo_code`,   
-        `payment_details`.`final_price`,   
-        `payment_details`.`Status`,   
-        `clients`.`FirstName`,
-        `clients`.`LastName`,
-        `phones`.`phone`,
-        `emails`.`email`
-    FROM `payment_details` 
-        LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
-        LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
-        LEFT JOIN `phones` ON `client_contacts`.`phoneID` = `phones`.`ID`
-        LEFT JOIN `emails` ON `client_contacts`.`emailID` = `emails`.`ID`
-        LEFT JOIN `addresses` ON `client_contacts`.`addressID` = `addresses`.`ID`
-        LEFT JOIN `notes` ON `payment_details`.`notesID` = `notes`.`ID`
-        LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
-    {where}
-    GROUP BY `payment_details`.`ID`
-        ORDER BY `payment_details`.`ID` DESC
-    LIMIT 0, {int(PAGINATION)};
-"""
+    protoTuple = []
+    where = ''
+
+    if '&' in filter:
+        array = filter.split('&')
+        for linkStr in array:
+            key, val = linkStr.split('=')
+            filters[key] = val
+            if key != 'page':
+                if key == 'Firstname' or key == 'Lastname':
+                    protoTuple.append(f"%{val}%")
+                else:    
+                    if key == 'status' and val == 'all':
+                        pass
+                    else:
+                        protoTuple.append(val)
+
+
+    else:
+        key, val = filter.split('=')
+        filters[key] = val
+        filters['status'] = '1'
+        protoTuple.append(1)
+
+    where = 'WHERE `payment_details`.`Status` = %s '    
     
-    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if filters.get('Firstname') is not None:
+        where += f"""AND `clients`.`FirstName` LIKE '%' %s """
+
+    if filters.get('Lastname') is not None:
+        where += f"""AND `clients`.`LastName` LIKE '%' %s """
     
-    sideBar = side_bar_stuff()
-    numRows = totalNumRows('payment_details', where, sqlValTuple)
-    # numRows = totalNumRows('payment_details')
+    if filters.get('phone') is not None:
+        where += f"""AND `phones`.`phone` = %s """
+    
+    if filters.get('email') is not None:
+        where += f"""AND `emails`.`email` = %s """
 
-    print('FFFFFFFFFFFFFFFFFFFFFFFFFFF')
-    print(numRows)
-    print(int(PAGINATION))
-    print(int(PAGINATION_BUTTONS_COUNT))
-    print('FFFFFFFFFFFFFFFFFFFFFFFFFFF')
-    return render_template('orders.html', result=result, sideBar=sideBar, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT),  mainCurrency=MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
+    if filters.get('promoCode') is not None:
+        where += f"""AND `payment_details`.`promo_code` = %s """
 
+    if filters.get('status') == 'all':
+        if len(filters) > 2:
+            where = 'WHERE ' + where[37:]
+        else:
+            where = ''
 
-
-@app.route('/orders/<page>', methods=['Get'])
-# @login_required
-def orderspage(page): 
-    languageID = getLangID()
-    newCSRFtoken = generate_csrf()
+    page = filters['page']
     rowsToSelect = (int(page) - 1) * int(PAGINATION)
 
-    filters = {
-        'status': 1
-    }
-    where = 'WHERE `payment_details`.`Status` = %s'
-    sqlValTuple = (filters['status'],)
-
-
+    sqlValTuple = tuple(protoTuple)
 
     sqlQuery = f"""
             SELECT 
