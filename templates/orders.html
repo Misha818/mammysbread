@@ -287,10 +287,6 @@
   </tbody>
   </table>
 
-  <p>{{ numRows }} // {{ pagination }}</p>
-  <p>'numRows // pagination is ' {{ numRows // pagination }}</p>
-  <p>'numRows % pagination is ' {{ numRows % pagination }}</p>
-
   {% if numRows > pagination %}
 
   <div class="pagination">
@@ -410,16 +406,21 @@ function sortTable(arrowElement, n, direction) {
 }
 
 
-$("#phone").intlTelInput({
-    initialCountry: "am",
-    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.6/js/utils.js"
-});
+// $("#phone").intlTelInput({
+//     initialCountry: "am",
+//     utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.6/js/utils.js"
+// });
 
 
 document.querySelector('.filter').addEventListener('click', function() {
 
   let filterURL = constract_filter_url('1');
-  window.location.href = filterURL
+  if (filterURL.status == 1) {
+    window.location.href = filterURL.message;
+  } else {
+    alert(filterURL.message)
+  }
+
 
 });
 
@@ -429,8 +430,11 @@ if (document.querySelectorAll('.pagination div')) {
     div.addEventListener('click', function() {
       let page = div.getAttribute('data-value');
       let filterURL = constract_filter_url(page);
-      window.location.href = filterURL;
-      
+      if (filterURL.status == 1) {
+        window.location.href = filterURL.message;
+      } else {
+        alert(filterURL.message)
+      } 
     });
   });
 }
@@ -443,25 +447,52 @@ function constract_filter_url(page) {
   let orderStatus = document.getElementById('orderStatus').value;
   filterURL += '&status=' + orderStatus
 
-  let counteryCodeStr = document.querySelector('.selected-flag').getAttribute('title');
-  let counteryCodeArr = counteryCodeStr.split('+');
-  let countryCode = counteryCodeArr[1];
+  // let counteryCodeStr = document.querySelector('.selected-flag').getAttribute('title');
+  // let counteryCodeArr = counteryCodeStr.split('+');
+  // let countryCode = counteryCodeArr[1];
 
   
   const filters = document.querySelectorAll('.filter-container input');
+  let flag = 0;
   filters.forEach(input => {
-    console.log(input.value)
     if (input.value != '') {
       if (input.id == 'phone') {
-        filterURL += '&' + input.id + '=' + countryCode + input.value;
+        if (isValidPhoneString(input.value) === false) {
+          flag = 1;
+        }   
+        
+        let phoneVal = input.value;
+        if (phoneVal.startsWith('+')) {
+            phoneVal = phoneVal.replace('+', '');
+        }
+          
+        filterURL += '&' + input.id + '=' + phoneVal;
+          
       } else {
         filterURL += '&' + input.id + '=' + input.value;
       }
     }
   });
+
+  if (flag === 1) {
+    return {'status': 0, 'message': "{{ _('Invalid phone number') }}"};
+  }
   
-  return filterURL
+  return {'status': 1, 'message': filterURL}
+  
 }
+
+
+function isValidPhoneString(str) {
+  // The regex explanation:
+  // ^            : start of string
+  // [0-9()+\-]   : allowed characters: digits, parentheses, plus, hyphen (hyphen is escaped)
+  // +            : one or more of the allowed characters
+  // $            : end of string
+  const regex = /^[0-9()+\-]+$/;
+  return regex.test(str);
+}
+
 
 </script>
 

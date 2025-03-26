@@ -618,14 +618,11 @@ def orders(filter):
         for linkStr in array:
             key, val = linkStr.split('=')
             filters[key] = val
-            if key != 'page':
+            if key != 'page' and key != 'status':
                 if key == 'Firstname' or key == 'Lastname':
                     protoTuple.append(f"%{val}%")
                 else:    
-                    if key == 'status' and val == 'all':
-                        pass
-                    else:
-                        protoTuple.append(val)
+                    protoTuple.append(val)
 
 
     else:
@@ -634,7 +631,7 @@ def orders(filter):
         filters['status'] = '1'
         protoTuple.append(1)
 
-    where = 'WHERE `payment_details`.`Status` = %s '    
+    where = ''    
     
     if filters.get('Firstname') is not None:
         where += f"""AND `clients`.`FirstName` LIKE '%' %s """
@@ -651,11 +648,11 @@ def orders(filter):
     if filters.get('promoCode') is not None:
         where += f"""AND `payment_details`.`promo_code` = %s """
 
-    if filters.get('status') == 'all':
-        if len(filters) > 2:
-            where = 'WHERE ' + where[37:]
-        else:
-            where = ''
+    if filters.get('status') != 'all':
+        where = where + 'AND `payment_details`.`Status` = %s '
+        protoTuple.append(filters.get('status'))
+    
+    where = 'WHERE ' + where[3:]
 
     page = filters['page']
     rowsToSelect = (int(page) - 1) * int(PAGINATION)
@@ -686,6 +683,8 @@ def orders(filter):
                 LIMIT {rowsToSelect}, {int(PAGINATION)}; 
                """
     result = sqlSelect(sqlQuery, sqlValTuple, True)
+    print(result['error'])
+    print(sqlValTuple)
     sideBar = side_bar_stuff()
 
     numRows = totalNumRows('payment_details', where, sqlValTuple)
