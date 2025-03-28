@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}
+{{ _('Affiliates') }}
+{% endblock %}
+
+
+{% block head %}
+
+{% endblock %}
+
+{% block content %}
+
+{{ sideBar | safe }}
+<div class="container" >
+{% if result.length > 0 %}
+<div class="table-container toRight" id="tableDaddy">
+  <table id="myTable">
+    <thead>
+      <tr>
+
+      <th>
+        <div style="display: flex; align-items: center;">
+         {{ _('Name') }} 
+
+          <div class="sort-icons" style="margin-left: 5px;">
+            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+          </div>
+        </div>
+      </th>
+
+        <th>
+          <div style="display: flex; align-items: center;">
+            {{ _('Position') }} 
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 1, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 1, 'down')"></i>
+            </div>
+          </div>
+        </th>
+
+        <th> 
+          <div style="display: flex; align-items: center;">
+            {{ _('Status') }}
+
+            <div class="sort-icons" style="margin-left: 5px;">
+              <i class="fas fa-sort-up myup" onclick="sortTable(this, 2, 'up')"></i>
+              <i class="fas fa-sort-down mydown" onclick="sortTable(this, 2, 'down')"></i>
+            </div>
+          </div>
+
+      </th>
+      <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in result.data %}
+      {% set status = _('Active') %}
+      {% set statusStyle = 'status-open' %}
+      {% if row['Status'] == 0 %}
+        {% set status = _('Disabled') %}
+        {% set statusStyle = 'status-on-hold' %}
+      {% endif %}
+      {% set editUrl = 'edit-teammate/' + row['ID']|string %}
+      <tr>
+        {% if row['Avatar'] %}
+        <td data-label="{{ _('Name') }}" class="flex">
+          <img src="{{ url_for('static', filename='images/stuff/') + row['Avatar'] }}" class="avatar" alt="{{ row['AltText'] }}">
+          {{ row['Firstname'] + ' ' + row['Lastname'] }} &nbsp; <br><small>{{ row['Email'] }}</small>
+        </td>
+        {% else %}
+        {% set initial_1 =  row['Firstname'] %}
+        {% set initial_2 =  row['Lastname'] %}
+        <td data-label="{{ _('Name') }}" class="flex">
+          <div class="avatar" style="background-color: #e3e6f0; color: #333; text-align: center; line-height: 80px; font-weight: bold; font-size: 17pt;">{{ initial_1[0] + initial_2[0] }}</div>
+          {{ row['Firstname'] + ' ' + row['Lastname'] }} &nbsp; <br><small>{{ row['Email'] }}</small>
+        </td>
+
+        {% endif %}
+        <td data-label="{{ _('Position') }}">
+          {{ row['Rol'] }}
+        </td>
+        <td data-label="{{ _('Status') }}"><span class="status-label {{ statusStyle }}">{{ status }}</span></td>
+
+        <td class="edit-user">
+          <a href="{{ url_for('home', _external=True) + editUrl }}">
+            <i class="fas fa-pencil"></i>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+      
+      
+    </tbody>
+  </table>
+  {% if numRows > pagination %}
+
+  <div class="pagination">
+    {% set additionalPage = 0 %}
+    {% if numRows % pagination > 0 %}
+      {% set additionalPage = 1 %}
+    {% endif %}
+
+    {% if page > 1 %}
+    {% set urlPrev = '/' + (page - 1) | string %}
+    <a href="{{ url_for('orders', _external=True) + urlPrev }}">&laquo;</a>
+    {% endif %}
+    {% for i in range(1, (numRows // pagination) + additionalPage + 1) %}
+    
+    {% set urlPage = '/' ~ i %}
+    <a {% if i == page %} class="active" {% endif %} href="{{ url_for('orders', _external=True) + urlPage }}">{{ i }}</a>
+    {% endfor %}
+    
+
+    {% if page < (numRows // pagination) + additionalPage  %}
+    {% set urlNext = '/' + (page + 1) | string %}
+    <a href="{{ url_for('orders', _external=True) + urlNext }}">&raquo;</a>
+    {% endif %}
+    
+  </div>
+  
+
+  {% endif %}
+
+
+
+
+  {% endif %}
+
+<script>
+
+
+// function toggleSort(th) {
+//   // Toggle colors on the clicked header's icons
+//   const icons = th.querySelectorAll('.sort-icons i');
+//   if (icons[0].style.color === 'rgb(88, 86, 214)') {
+//     alert('0');
+//     icons[0].style.color = '#fff';
+//     icons[1].style.color = '#5856d6';
+//   } else {
+//     alert('1');
+//     icons[0].style.color = '#5856d6';
+//     icons[1].style.color = '#fff';
+//   }
+// }
+
+// Reset all headers and icons to default color
+// document.querySelectorAll('th').forEach(header => {
+//   // header.classList.remove('active');
+//   header.querySelectorAll('.sort-icons i').forEach(icon => icon.style.color = '#fff');
+// });
+
+
+function toggleSort(th) {
+  // Reset all headers and icons to default color
+  // console.log(th.getAttribute('data-active'));
+  // document.querySelectorAll('th').forEach(header => {
+  //   // console.log(header);
+  //   header.querySelectorAll('.sort-icons i').forEach(icon => icon.style.color = '#fff');
+  //   header.removeAttribute('data-active'); // Remove active attribute for all
+  // });
+
+  // // Toggle colors on the clicked header's icons
+  // const icons = th.querySelectorAll('.sort-icons i');
+  // const isAscending = th.getAttribute('data-active') === 'asc';
+  // if (isAscending) {
+  //   // If ascending, switch to descending
+  //   icons[0].style.color = '#fff';
+  //   icons[1].style.color = '#5856d6';
+  //   th.setAttribute('data-active', 'desc');
+  // } else {
+  //   // If descending or unset, switch to ascending
+  //   icons[0].style.color = '#5856d6';
+  //   icons[1].style.color = '#fff';
+  //   th.setAttribute('data-active', 'asc');
+  // }
+}
+
+</script>
+
+
+{% endblock %}

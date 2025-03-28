@@ -101,9 +101,18 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
         Prosede to checkout
     
     Mobile friendly styling
+    buy now
 ===========================================================
 
     TO DO
+
+    Footer
+    about 
+    contacts
+    affiliate page
+
+    bug
+        0 in basket
 
     Fix scrolling in team.view
 
@@ -274,7 +283,9 @@ orders
 order_details
 get_order_details
 edit_order_details
-
+affiliates
+promo_code_details
+affiliate_orders
 
 
 

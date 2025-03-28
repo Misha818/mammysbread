@@ -111,7 +111,7 @@
     <div class="card p-5 text-center">
         <h2 class="mb-3 text-success">🎉 {{ _('Order Confirmed!') }} 🎉</h2>
         <p class="mb-4">{{ _('Thank you for shopping with us. We are preparing your order now!') }}</p>
-        <h6 class="text-muted">{{ _('Order') }} #{{ result[0]['ID']}}</h6>
+        <h6 class="text-muted">{{ _('Order') }} #{{ result[0]['ID'] }}</h6>
 
         <div class="row my-4">
             <div class="col-md-8 text-start">
@@ -157,7 +157,7 @@
         <div class="mt-4">
             <a href="{{ url_for('home') }}" class="btn btn-primary me-2">{{ _('Continue Shopping') }}</a>
             <a href="{{ url_for('contacts') }}" class="btn btn-primary me-2">{{ _('Contact us') }}</a>
-            <a href="" class="btn btn-outline-secondary">{{ _('Track Your Order') }}</a>
+            <a href="{{ url_for('order_tracker', pdID=result[0]['ID']) }}" class="btn btn-outline-secondary">{{ _('Track Your Order') }}</a>
         </div>
 
         <!-- <p class="text-muted mt-4">We've emailed your receipt and tracking information.</p> -->

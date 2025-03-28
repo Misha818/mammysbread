@@ -69,10 +69,10 @@ cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 orderStatusList = {
             '0': gettext('Cancelled'),
             '1': gettext('Purchased'),
-            '2': gettext('Panding'),
-            '3': gettext('Preparing'),
-            '4': gettext('Ready'),
-            '5': gettext('Delivered')
+            # '2': gettext('Panding'),
+            '2': gettext('Preparing'),
+            '3': gettext('Ready'),
+            '4': gettext('Delivered')
         }
 
 @app.errorhandler(CSRFError)
@@ -365,6 +365,21 @@ def products_client():
     return render_template('index.html', result=result, scrollTo='card-container-user', current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
 
+@app.route('/order-tracker/<pdID>')
+def order_tracker(pdID):
+    languageID = getLangID()
+    sqlQuery =  f"""SELECT `ID`, `Status` FROM `payment_details` 
+                    WHERE `ID` = %s
+                """
+    
+    sqlValTuple = (pdID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] == 0:
+        return render_template('error.html', current_locale=get_locale())
+
+    return render_template('order-tracker.html', row=result['data'][0], orderStatusList=json.dumps(orderStatusList),  current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+
+
 @app.route('/other-products', methods=['POST'])
 def other_products():
     if request.form.get('prID'):
@@ -426,6 +441,15 @@ def pr_thumbnail(RefKey):
 # End of edit product's thumbnail image
 
 
+
+@app.route('/buy-now/<surl>', methods=['GET'])
+def buy_now(surl):
+    newCSRFtoken = generate_csrf()
+    mainCurrency = MAIN_CURRENCY
+    key, val = surl.split('-')
+    prDataGlobal = {'ptID': int(key), 'quantity': int(val) }
+    return render_template('buy-now.html', prDataGlobal=prDataGlobal, mainCurrency=mainCurrency, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+    
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
@@ -652,7 +676,8 @@ def orders(filter):
         where = where + 'AND `payment_details`.`Status` = %s '
         protoTuple.append(filters.get('status'))
     
-    where = 'WHERE ' + where[3:]
+    if len(where) > 0:
+        where = 'WHERE ' + where[3:]
 
     page = filters['page']
     rowsToSelect = (int(page) - 1) * int(PAGINATION)
@@ -683,14 +708,91 @@ def orders(filter):
                 LIMIT {rowsToSelect}, {int(PAGINATION)}; 
                """
     result = sqlSelect(sqlQuery, sqlValTuple, True)
-    print(result['error'])
-    print(sqlValTuple)
     sideBar = side_bar_stuff()
 
     numRows = totalNumRows('payment_details', where, sqlValTuple)
     # numRows = totalNumRows('payment_details')
 
     return render_template('orders.html', result=result, filters=filters, orderStatusList=orderStatusList, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+    
+
+@app.route('/affiliate-orders/<filter>', methods=['Get'])
+# @login_required
+def affiliate_orders(filter): 
+    newCSRFtoken = generate_csrf()
+    filters = {}
+    
+    protoTuple = [session['user_id']]
+
+    if '&' in filter:
+        array = filter.split('&')
+        for linkStr in array:
+            key, val = linkStr.split('=')
+            filters[key] = val
+            if key != 'page' and key != 'status':
+                if key == 'Firstname' or key == 'Lastname':
+                    protoTuple.append(f"%{val}%")
+                else:    
+                    protoTuple.append(val)
+
+
+    else:
+        key, val = filter.split('=')
+        filters[key] = val
+        filters['status'] = '1'
+        protoTuple.append(1)
+
+    where = 'WHERE `payment_details`.`affiliateID` = %s '
+    
+    if filters.get('Firstname') is not None:
+        where += f"""AND `clients`.`FirstName` LIKE '%' %s """
+
+    if filters.get('Lastname') is not None:
+        where += f"""AND `clients`.`LastName` LIKE '%' %s """
+    
+    if filters.get('phone') is not None:
+        where += f"""AND `phones`.`phone` = %s """
+    
+    if filters.get('email') is not None:
+        where += f"""AND `emails`.`email` = %s """
+
+    if filters.get('promoCode') is not None:
+        where += f"""AND `payment_details`.`promo_code` = %s """
+
+    if filters.get('status') != 'all':
+        where = where + 'AND `payment_details`.`Status` = %s '
+        protoTuple.append(filters.get('status'))
+    
+
+    page = filters['page']
+    rowsToSelect = (int(page) - 1) * int(PAGINATION)
+
+    sqlValTuple = tuple(protoTuple)
+
+    sqlQuery = f"""
+            SELECT 
+                `payment_details`.`ID`,
+                `payment_details`.`promo_code`,   
+                `payment_details`.`final_price`,   
+                `payment_details`.`Status`,   
+                `clients`.`FirstName`,
+                `clients`.`LastName`
+            FROM `payment_details` 
+                LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+                LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+                LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+            {where}
+                GROUP BY `payment_details`.`ID`
+                ORDER BY `payment_details`.`ID` DESC
+                LIMIT {rowsToSelect}, {int(PAGINATION)}; 
+               """
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    sideBar = side_bar_stuff()
+
+    numRows = totalNumRows('payment_details', where, sqlValTuple)
+    # numRows = totalNumRows('payment_details')
+
+    return render_template('affiliate-orders.html', result=result, filters=filters, orderStatusList=orderStatusList, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
 
 @app.route('/send-email/<email>', methods=['GET'])
@@ -1982,6 +2084,36 @@ def team():
     return render_template('team.html', result=result, sideBar=sideBar, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), current_locale=get_locale())
 
 
+@app.route('/affiliates', methods=['GET'])
+# @login_required
+def affiliates():
+    
+    where = "WHERE `rol`.`Rol` = 'Affiliate'"
+    sqlQuery = f"""
+                SELECT 
+                    `stuff`.`ID`,
+                    `stuff`.`Firstname`,
+                    `stuff`.`Lastname`,
+                    `stuff`.`Email`,
+                    `stuff`.`Status`,
+                    `stuff`.`Avatar`,
+                    `stuff`.`AltText`,
+                    `rol`.`Rol`
+                FROM `stuff`
+                    LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID` 
+                {where} 
+                LIMIT 0, {int(PAGINATION)}
+                ; 
+               """
+    sqlValTuple = ()
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    numRows = totalNumRows('payment_details', where, sqlValTuple)
+    # numRows = totalNumRows('stuff')
+    sideBar = side_bar_stuff()
+
+    return render_template('affiliates.html', result=result, sideBar=sideBar, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), current_locale=get_locale())
+
+
 
 @app.route('/team/<page>', methods=['Get'])
 @login_required
@@ -2583,10 +2715,71 @@ def stuff():
 
     sqlValTuple = (stuffID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
-
-    supportedLangsData = supported_langs()
     
-    return render_template('admin_panel.html', result=result, supportedLangsData=supportedLangsData, current_locale=get_locale())
+    if result['length'] == 0:
+        return render_template('error.html', current_locale=get_locale())
+
+        
+    supportedLangsData = supported_langs()
+    view = 'admin_panel.html'
+    if result['data'][0]['Rol'] == 'Affiliate':
+        sqlQueryPromo = f"""
+                    SELECT 
+                        `promo_code`.`Promo`,
+                        `promo_code`.`expDate`,
+                        `promo_code`.`Status`
+                    FROM `promo_code`
+                        
+                    WHERE `promo_code`.`affiliateID` = %s;    
+                    """
+
+        sqlValTuplePromo = (stuffID,)
+        resultP = sqlSelect(sqlQueryPromo, sqlValTuplePromo, True)
+        
+        view = 'affiliate.html'
+
+    
+    return render_template(view, result=result, resultP=resultP, supportedLangsData=supportedLangsData, currentDate=date.today(), current_locale=get_locale())
+
+
+@app.route('/promo-code-details/<promo>', methods=['GET'])
+# @login_required
+def promo_code_details(promo):
+    sqlQuery = """
+        SELECT 
+            `promo_code`.`Promo`,
+            `promo_code`.`affiliateID`,
+            DATE_FORMAT(`promo_code`.`expDate`, '%m-%d-%Y') AS `expDate`, 
+            `promo_code`.`Status`,
+            `product`.`ID` AS `prID`,
+            `product_type`.`ID` AS `ptID`,
+            `product`.`Title` AS `prTitle`,
+            `product_type`.`Title` AS `ptTitle`,
+            `discount`.`ID` AS `discountID`,
+            `discount`.`discount`,
+            `discount`.`discount_status`,
+            `discount`.`revard_value`,
+            `discount`.`revard_type` 
+        FROM `promo_code` 
+            LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
+            LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
+            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+        WHERE `promo_code`.`Promo` = %s AND `promo_code`.`affiliateID` = %s
+        ORDER BY `product`.`Order` ASC, `product_type`.`Order` ASC;
+    """
+
+    userID = session.get('user_id')
+    result = sqlSelect(sqlQuery, (promo, userID), True)
+
+    if result['length'] == 0:
+        return render_template('error.html', current_locale=get_locale())
+    
+    discounts = json.dumps(result['data']) 
+
+
+    sideBar = side_bar_stuff()
+
+    return render_template('promo-code-details.html', discounts=discounts, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
 
 
 @app.route('/products', methods=['GET'])
@@ -3402,7 +3595,8 @@ def analyse_cart_data(cartData):
     cartMessage = [ 
                 gettext("You have already added this product to the basket. You can change the quantity if You would like to."),
                 generate_csrf(),
-                gettext("In Basket")
+                gettext("In Basket"),
+                gettext("The seller doesn't have that many left."),
     ]
 
     content = {
@@ -4106,7 +4300,8 @@ def edit_promo_code(promoID):
                         LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
                         LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
                         LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-                    WHERE `promo_code`.`ID` = %s;
+                    WHERE `promo_code`.`ID` = %s
+                    ORDER BY `product`.`Order` ASC, `product_type`.`Order` ASC; 
                 """
     discountsResult = sqlSelect(sqlQuery, (promoID,), True)
     discounts = json.dumps(discountsResult['data']) 
@@ -4125,7 +4320,7 @@ def edit_promo_code(promoID):
                     LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
                 WHERE `product`.`Language_ID` = %s 
                     -- AND `product_type`.`Status` = 1
-                ORDER BY `product`.`ID`, `product_type`.`Order` 
+                ORDER BY `product`.`Order`, `product_type`.`Order` 
                 ;
                 """
     sqlValTuple = (languageID,)
@@ -4242,6 +4437,12 @@ def check_pt_quantity():
             answer = gettext("Maximum available quantity for single purchase is ") + str(maxQuantity)
             return jsonify({'status': '2', 'max': maxQuantity, 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
+    if int(result['data'][0]['Quantity']) == 0:
+        maxQuantity = result['data'][0]['Quantity']
+
+        answer = gettext("Out of stock") 
+        return jsonify({'status': '2', 'max': maxQuantity, 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
     if int(result['data'][0]['Quantity']) < int(num):
         maxQuantity = result['data'][0]['Quantity']
 

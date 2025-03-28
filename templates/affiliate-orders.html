@@ -90,8 +90,6 @@
     </select>
     <input type="text" id="Firstname" placeholder="{{ _('Firstname') }}" value="{{ filters.Firstname if filters.Firstname else '' }}" class="filter-inputs" style="flex: 1; min-width: 120px;">
     <input type="text" id="Lastname" placeholder="{{ _('Lastname') }}" value="{{ filters.Lastname if filters.Lastname else '' }}" class="filter-inputs" style="flex: 1; min-width: 120px;">
-    <input type="text" id="phone" class="filter-inputs" value="{{ filters.phone if filters.phone else '' }}" style="flex: 1; min-width: 120px;">
-    <input type="email" id="email" placeholder="{{ _('Email') }}" value="{{ filters.email if filters.email else '' }}" class="filter-inputs" style="flex: 1; min-width: 120px;">
     <input type="text" id="promoCode" placeholder="{{ _('Promo Code') }}" value="{{ filters.promoCode if filters.promoCode else '' }}" class="filter-inputs" style="flex: 1; min-width: 120px;">
     
     <button class="filter" style="flex: 0 0 auto;">
@@ -146,29 +144,7 @@
           </div>
         </div>
       </th>
-      
-      <th>
-        <div style="display: flex; align-items: center;">
-         {{ _('Phone') }} 
-
-          <div class="sort-icons" style="margin-left: 5px;">
-            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
-            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
-          </div>
-        </div>
-      </th>
-
-      <th>
-        <div style="display: flex; align-items: center;">
-         {{ _('Email') }} 
-
-          <div class="sort-icons" style="margin-left: 5px;">
-            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
-            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
-          </div>
-        </div>
-      </th>
-
+ 
       <th>
         <div style="display: flex; align-items: center;">
          {{ _('Net') }} 
@@ -253,15 +229,7 @@
         <td data-label="{{ _('Client') }}" class="flex" style="display: table-cell;">
           {{ row['FirstName'] + ' ' + row['LastName'] }}
         </td>
-        
-        <td data-label="{{ _('Phone') }}" class="flex" style="display: table-cell;">
-          {{ phone }}
-        </td>
-        
-        <td data-label="{{ _('Email') }}" class="flex" style="display: table-cell;">
-          {{ email }}
-        </td>
-        
+   
         <td data-label="{{ _('Net') }}" class="flex" style="display: table-cell;">
           {{ row['final_price'] }}
         </td>

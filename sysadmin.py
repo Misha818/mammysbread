@@ -779,7 +779,7 @@ def clientID_contactID(data): # returns clientID from table `clients` and contac
         result = sqlSelect(sqlQuery, (data['email'].strip(),), True)
         if result['length'] > 0:
             email = data['email']
-            emailID = result['ID']
+            emailID = result['data'][0]['ID']
 
     phone = data['phone'].strip()
 
@@ -925,6 +925,11 @@ def insertIntoBuffer(data, pdID, smthWrong):
     bufferInsertRows = ''
     sqlUpdateQuantity = "UPDATE `quantity` SET `Quantity` = %s WHERE `ID` = %s;"
     ptIDs = ''
+
+    print('AAAAAAAAAAAAAAAAAAAAa')
+    print(data['ptData'])
+    # print(type(data['ptData']['ptID']))
+    print('AAAAAAAAAAAAAAAAAAAAa')
     for row in data['ptData']:
         ptIDs = ptIDs + str(row['ptID']) + ','
 

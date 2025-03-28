@@ -361,16 +361,35 @@
 
 // Prevent numbers less then 1 in .quantity input
 document.addEventListener("DOMContentLoaded", function() {
+
+    
     
     const inputs = document.querySelectorAll(".quantity");
 
-    inputs.forEach(input => {
-        input.addEventListener("input", () => {
-        if (input.value !== "" && input.value < 1) {
-            input.value = 1;
-        }
-        });
-    });
+    // inputs.forEach(input => {
+    //     input.addEventListener("input", () => {
+    //     if (input.value == "") {
+    //         input.value = 0;
+    //         return;
+    //     }    
+
+    //     let quantity = 0;
+    //     if (input.value !== "" && input.value < 1) {
+    //         input.value = 1;
+    //     } else {
+    //         quantity = input.value.replace(/^0+/, ''); // Remove leading zeros
+    //         input.value = quantity;
+
+    //     }
+
+    //     clickedBotton = input.parentNode.querySelector('.add-to-cart-btn');
+    //     ptID = clickedBotton.value;   
+    //     addToCart(ptID, quantity, clickedBotton);
+
+    //     console.log(quantity)
+        
+    //     });
+    // });
 
     const hiddenPtID = document.getElementById('hiddenPtID').value;
 

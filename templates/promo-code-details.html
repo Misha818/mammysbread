@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}
+{{ _('Promo Code Details') }}
+{% endblock %}
+{% block head %}
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <style>
+    .card-header {
+      cursor: pointer;
+    }
+    /* Optional: style anchors */
+    a {
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .collapsed {
+        transform: unset!important;
+        width: inherit!important;
+        padding: unset!important;
+    }
+
+  </style>  
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container my-5">
+    <div id="accordion"></div>
+</div>
+
+<script>
+    
+    function hyphen(str) {
+        return str.replace(/\s+/g, '-');
+    }
+
+
+    const data = JSON.parse('{{ discounts|safe }}');
+
+    // Group data by parent title (prTitle)
+    const groupedData = {};
+    data.forEach(item => {
+      if (!groupedData[item.prTitle]) {
+        groupedData[item.prTitle] = [];
+      }
+      groupedData[item.prTitle].push(item);
+    });
+
+    // Build the accordion HTML
+    const accordion = document.getElementById('accordion');
+    
+    // Header row for the card body
+    const headerRow = `
+      <div  class="row font-weight-bold border-bottom pb-2 mb-2"
+            style="width: 100%;"
+      >
+        <div class="col">Product</div>
+        <div class="col">Discount (%)</div>
+        <div class="col">Revard</div>
+      </div>
+    `;
+    let accordionHTML = '';
+    let index = 0;
+    for (const prTitle in groupedData) {
+      const collapseId = 'collapse' + index;
+      const headingId = 'heading' + index;
+
+     
+
+      // Build child rows for each item in the group
+      let childRows = '';
+      groupedData[prTitle].forEach(item => {
+        // Compute revard text: append italicized "%" if revard_type is 0, or italicized "fx" if revard_type is 1
+        
+        let revardText = '';
+        if(item.revard_type === 0) {
+          revardText = item.revard_value + ' <i>%</i>';
+        } else if(item.revard_type === 1) {
+          revardText = item.revard_value + ' <i>fx</i>';
+        }
+
+        if (item.ptTitle) {
+            let ptUrl = "{{ url_for('home') }}" + hyphen(prTitle) + '&' + item.ptTitle
+
+            childRows += `
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col">
+                        <a href="${ptUrl}" target="_blank" onclick="event.stopPropagation();">${item.ptTitle}</a>
+                    </div>
+                <div class="col">${item.discount}</div>
+                <div class="col">${revardText}</div>
+                </div>
+            </li>
+            `;
+        }
+    });
+
+      
+      // Assemble each accordion card
+     
+      accordionHTML += `
+        <div class="card" style="cursor:pointer;">
+          <div class="card-header" id="${headingId}">
+            <span  class="d-block" data-toggle="collapse" data-target="#${collapseId}" aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="${collapseId}">
+              ${prTitle}
+            </span>
+          </div>
+          <div id="${collapseId}" class="collapse ${index === 0 ? 'show' : ''}" aria-labelledby="${headingId}" data-parent="#accordion">
+            <div class="card-body">
+              
+              <ul class="list-group list-group-flush">
+                ${childRows}
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+      index++;
+    }
+
+    accordion.innerHTML = headerRow + accordionHTML;
+
+    // Attach an event listener to the entire card to toggle the collapse on card click.
+    // (Inner anchor clicks have event.stopPropagation() so they won't trigger this.)
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', function(e) {
+        const collapseElement = card.querySelector('.collapse');
+        // Use jQuery's collapse toggle method (Bootstrap relies on jQuery)
+        $(collapseElement).collapse('toggle');
+      });
+    });
+  </script>
+
+  <!-- jQuery, Popper.js, and Bootstrap JS for accordion functionality -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+{% endblock %}
+
+

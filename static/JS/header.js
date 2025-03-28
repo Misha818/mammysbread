@@ -313,12 +313,79 @@ document.addEventListener('DOMContentLoaded', function() {
             cartState = false;
         };
     }
+
+    // Array.from(quantity).forEach(input => {
+    //     input.addEventListener('keyup', function(e) {
+    //         if (e.target === input && e.target.value !== undefined) {
+    //             let quantity = e.target.value.replace(/^0+/, ''); // Remove leading zeros
+    //             quantity = parseInt(quantity, 10) || 0; // Convert to numeric, default to 0 if invalid
+    //             e.target.value = quantity; // Update the input value
+
+                
+                
+    //     // clickedBotton = input.parentNode.querySelector('.add-to-cart-btn');
+    //     // ptID = clickedBotton.value;   
+    //     // addToCart(ptID, quantity, clickedBotton);
+
+    //     // console.log(quantity)
+    //         }
+
+    //     });
+    // });
+
+
+    const inputs = document.querySelectorAll(".quantity");
+    inputs.forEach(input => {
+        input.addEventListener("keyup", (e) => {
+            console.log(input);
+            if (e.target) {
+
+                if (input.value == "") {
+                    input.value = 1;
+                }    
+                
+                let quantity = 0;
+                if (input.value !== "" && input.value < 1) {
+                    input.value = 1;
+                } else {
+                    quantity = input.value.replace(/^0+/, ''); // Remove leading zeros
+                    input.value = quantity;
+                    
+                }
+                
+                clickedBotton = input.parentNode.querySelector('.add-to-cart-btn');
+                ptID = clickedBotton.value;   
+                addToCart(ptID, quantity, clickedBotton);
+                
+                console.log(quantity)
+            }    
+        
+        });
+    });
+
     
     // Buy now
     let buyNowBtns = document.getElementsByClassName('buy-btn');
     for (let i = 0; i < buyNowBtns.length; i++) {
         buyNowBtns[i].onclick = function() {
-            alert('Buy Now clicked!');
+            const quantity = document.querySelector('.quantity').value;
+            if (parseInt(quantity) < 1) {
+                return;
+            }
+
+            check_pt_quantity(this.value, quantity).then(response => {
+
+                if (response.status === '1') {
+                    window.location.href = `/buy-now/${this.value}-${quantity}`;
+                    // console.log(`/buy-now/${this.value}-${quantity}`)
+                } else {
+                    modal_message(response.answer);
+                }  
+
+            }).catch(error => {
+                console.error(error);
+            });
+
         };
     }
 
