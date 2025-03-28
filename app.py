@@ -27,6 +27,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
 
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.utcnow().year}
+
 # app.config['RECAPTCHA_SITE_KEY'] = os.getenv('SECRET_KEY')
 # app.config['RECAPTCHA_SECRET_KEY'] = os.getenv('SECRET_KEY')
 # recaptcha = ReCaptcha(app)
@@ -2722,6 +2726,7 @@ def stuff():
         
     supportedLangsData = supported_langs()
     view = 'admin_panel.html'
+    resultP = ''
     if result['data'][0]['Rol'] == 'Affiliate':
         sqlQueryPromo = f"""
                     SELECT 

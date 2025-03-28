@@ -105,21 +105,18 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
 ===========================================================
 
     TO DO
+    affiliate pages
 
     Footer
     about 
     contacts
-    affiliate page
+    translate
 
-    bug
-        0 in basket
 
-    Fix scrolling in team.view
 
     BUGS
     ete nkar chka teammatum cropi het miasin done - n el a cuyc talis
     Password, email change
-    Write table creaing function
 
     Docker
     Add/Edit Sliders for product
@@ -136,10 +133,6 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
 
     Deside what to do whith articles category of which is disabled
 
-    Quill.JS issues
-        More then one spaces disappear on edit mode
-        </> sign does not work on view mode but shows when turn to view mode 
-        Same issue is with ""
 
 - Add user function for superuser (serveri vren es testavorelu, qani vor mutqagrelu es rol, email, ayd mailin gnum a jamanakavor hghum vorov nor employeen mutq a gorcum)
 
