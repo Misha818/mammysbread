@@ -102,13 +102,13 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
     
     Mobile friendly styling
     buy now
+    Footer
 ===========================================================
 
     TO DO
     affiliate pages
-
-    Footer
     about 
+
     contacts
     translate
 
@@ -279,7 +279,7 @@ edit_order_details
 affiliates
 promo_code_details
 affiliate_orders
-
+affiliate_order_details
 
 
 add_sps_view

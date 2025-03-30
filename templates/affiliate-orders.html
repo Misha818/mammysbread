@@ -97,7 +97,7 @@
     </button>
     
     <a  
-      href="{{ url_for('orders', filter='page=1&status=1') }}"
+      href="{{ url_for('affiliate_orders', filter='page=1&status=all') }}"
       class="dropbtn" style="flex: 0 0 auto;">
         <i class="fas fa-chevron-down" style="margin-right: 5px;"></i>
   </a>
@@ -189,9 +189,12 @@
       {% if row.Status == 0 %}
           {% set status = _('Cancelled') %}
           {% set statusStyle = 'status-closed' %}
-      {% elif row.Status == 2 %}
+      {% elif row.Status == 1 %}
           {% set status = _('Panding') %}
           {% set statusStyle = 'status-on-hold' %}
+      {% elif row.Status == 2 %}
+          {% set status = _('Purchased') %}
+          {% set statusStyle = 'status-open' %}
       {% elif row.Status == 3 %}
           {% set status = _('Preparing') %}
           {% set statusStyle = 'status-preparing' %}
@@ -203,9 +206,6 @@
           {% set statusStyle = 'status-delivered' %}
       {% endif %}
 
-
-
-      
       {% set phone = row['phone'] %}
       {% if phone == none %}
         {% set phone = _('N/A') %}
@@ -241,7 +241,7 @@
         <td data-label="{{ _('Status') }}"><span class="status-label {{ statusStyle }}">{{ status }}</span></td>
 
         <td class="edit-user">
-          <a href="{{ url_for('order_details', pdID=row['ID'], _external=True) }}" target="_blank" title="{{ _('Order Details') }}" style="color:#6be6b2">
+          <a href="{{ url_for('affiliate_order_details', pdID=row['ID'], _external=True) }}" target="_blank" title="{{ _('Order Details') }}" style="color:#6be6b2">
             <i class="fas fa-eye"></i>
             <!-- <i class="fas fa-pencil"></i> -->
           </a>

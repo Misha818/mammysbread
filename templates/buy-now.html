@@ -230,7 +230,11 @@ body {
                       </div>
                   </div>
                   <hr class="my-4">
-                  <div class="w-100 btn btn-primary btn-lg" >{{ _('Continue')}}</div>
+                  <div  class="w-100 btn btn-primary btn-lg" 
+                        style="background-color: white;
+                        color: #FCC628;
+                        border-color: #FCC628;"
+                  >{{ _('Continue')}}</div>
               </form>
           </div>
       </div>
@@ -1178,7 +1182,7 @@ async function get_pt_quantity(ptID, quantity) {
                 
         let formData = new FormData();
 
-        formData.append('products', JSON.stringify(prDataGlobal));
+        formData.append('products', JSON.stringify([prDataGlobal]));
         formData.append('promo', promo.value);
 
         // Create a new XMLHttpRequest object

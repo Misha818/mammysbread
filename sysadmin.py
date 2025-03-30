@@ -926,14 +926,8 @@ def insertIntoBuffer(data, pdID, smthWrong):
     sqlUpdateQuantity = "UPDATE `quantity` SET `Quantity` = %s WHERE `ID` = %s;"
     ptIDs = ''
 
-    print('AAAAAAAAAAAAAAAAAAAAa')
-    print(data['ptData'])
-    # print(type(data['ptData']['ptID']))
-    print('AAAAAAAAAAAAAAAAAAAAa')
     for row in data['ptData']:
         ptIDs = ptIDs + str(row['ptID']) + ','
-
-        
 
     ptIDs = ptIDs[:-1]    
     sqlQuaryStore = f"""
@@ -964,9 +958,9 @@ def insertIntoBuffer(data, pdID, smthWrong):
             AND `quantity`.`Quantity` > 0
             AND `quantity`.`Status` = '1'
             AND `quantity`.`expDate` >= CURDATE()
-        ORDER BY  `product_type`.`ID`,  `quantity`.`expDate`, `quantity`.`Quantity` DESC, `quantity`.`maxQuantity` DESC
-        ;
+        ORDER BY  `product_type`.`ID`,  `quantity`.`expDate`, `quantity`.`Quantity` DESC, `quantity`.`maxQuantity` DESC;
     """
+
     sqlValTuple = (data['promo'], ptIDs)
     result = sqlSelect(sqlQuaryStore, sqlValTuple, True)
     if result['length'] == 0:
@@ -1058,10 +1052,6 @@ def insertIntoBuffer(data, pdID, smthWrong):
     sqlInsertBuffer = f"INSERT INTO `buffer_store` (`quantityID`, `quantity`,`promo_code_id`, `promo_code`,  `discount`, `affiliateID`, `price`, `ptID`,  `payment_details_id`) VALUES {bufferInsertRows[:-1]};"
     sqlValTupleBuffer = tuple(bufferValuePrototype)
     result = sqlInsert(sqlInsertBuffer, sqlValTupleBuffer)
-    
-    # print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    # print(result['answer'])
-    # print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
 
     return {'status': '1', 'answer': bufferQuantities, 'totalPrice': totalPrice}
 
@@ -1083,7 +1073,11 @@ def insertPUpdateP(pdID, paymentData):
             ;"""
     result = sqlSelect(sqlQuery, (pdID,), True)
     if result['length'] == 0:
-        return {'status': '0'}
+
+        print('FFFFFFFFFFFFFFFFFFFFFFFFFFFF')
+        print(result['error'])
+        print('FFFFFFFFFFFFFFFFFFFFFFFFFFFF')
+        return {'status': '0', 'answer': result['error']}
     
     promoID, promo, affiliateID = [None, None, None]
     protoTuple = []
@@ -1104,8 +1098,6 @@ def insertPUpdateP(pdID, paymentData):
         protoTuple.append(2)
 
         answer.append({'ptID': int(row['ptID']), 'quantity': int(row['quantity'])})
-
-
     
     sqlValTuple = tuple(protoTuple)
 
@@ -1120,6 +1112,41 @@ def insertPUpdateP(pdID, paymentData):
     if result['status'] == 0:
         return {'status': '0', 'answer': result['answer']}
     
+
+    if affiliateID is not None:
+        sqlQueryAff = """SELECT
+                            `purchase_history`.`ID`,	
+                            `purchase_history`.`ptID`,	
+                            `purchase_history`.`quantity`,		
+                            `purchase_history`.`price`,	
+                            -- `purchase_history`.`discount`,
+                            `discount`.`promo_code_id`,
+                            `promo_code`.`Promo` AS `promo_code`,
+                            `discount`.`revard_value`,
+                            `discount`.`revard_type`
+                        FROM `purchase_history` 
+                            LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                            LEFT JOIN `discount` ON `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                            LEFT JOIN `promo_code` ON `discount`.`promo_code_id` = `promo_code`.`ID`
+                        WHERE `payment_details_id` = %s AND `purchase_history`.`discount` is not null;"""
+        
+        resultAff = sqlSelect(sqlQueryAff, (pdID,), True)
+        values = "(%s, %s, %s, %s, %s, %s)," * resultAff['length']
+        protoTupleAff = []
+        sqlQueryInsertAFF = f"INSERT INTO `affiliate_history` (`purchase_history_id`, `affiliateID`, `promo_code_id`, `promo_code`, `revard_value`, `revard_type`) VALUES{values[:-1]}"
+        for row in resultAff['data']:
+            protoTupleAff.append(row['ID'])
+            protoTupleAff.append(affiliateID)
+            protoTupleAff.append(row['promo_code_id'])
+            protoTupleAff.append(row['promo_code'])
+            protoTupleAff.append(row['revard_value'])
+            protoTupleAff.append(row['revard_type'])
+        
+        sqlVTAff = tuple(protoTupleAff)
+        resultInsertAff = sqlInsert(sqlQueryInsertAFF, sqlVTAff)
+        if resultInsertAff['status'] == 0:
+            return {'status': '0', 'answer': resultInsertAff['answer']}
+    
     sqlQueryPaymentD = """
                         UPDATE `payment_details` SET 
                             `promo_code_id` = %s,
@@ -1130,7 +1157,7 @@ def insertPUpdateP(pdID, paymentData):
                             `CMD` = %s,
                             `payment_status` = %s,
                             `timestamp` = NOW(),
-                            `Status` = 1 
+                            `Status` = 2 
                         WHERE `ID` = %s
                         ;"""
     sqlUpdate(sqlQueryPaymentD, (promoID, promo, affiliateID, paymentData['finalPrice'], paymentData['paymentMethod'], paymentData['CMD'], paymentData['paymentStatus'], pdID))

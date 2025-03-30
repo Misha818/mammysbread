@@ -215,35 +215,39 @@
                 {% endif %}
                                
                 {% if (result[0].note) %}
-                <h6>🗓️ {{ _('Note') }}:</h6>
+                <h6>📝 {{ _('Note') }}:</h6>
                 <p>{{ result[0].note }}</p>
                 {% endif %}
                 
                 {% if (result[0].promo_code) %}
-                <h6>🗓️ {{ _('Promo Code') }}:</h6>
-                <p>{{ _('Promo Code') }}: {{ result[0].promo_code }}</p>
-                <p>{{ _('Promo Code ID') }}: {{ result[0].promo_code_id }}</p>
+                <h6>🏷️ {{ _('Promo Code') }}:</h6>
+                <p>{{ result[0].promo_code }}</p>
+                <h6>🔑 {{ _('Promo Code ID') }}:</h6>
+                <p>{{ result[0].promo_code_id }}</p>
                 {% endif %}
 
-                <h6>🗓️ {{ _('Order Date') }}:</h6>
+                <h6>🗓️ {{ _('Ordered') }}:</h6>
                 {% if (result[0].timestamp) %}
                 <p>{{ result[0].timestamp }}</p>
                 {% endif %}
                 
                 {% if (result[0].Status == 5) %}
-                <h6>🗓️ {{ _('Delivery Date') }}:</h6>
+                <h6>🗓️ {{ _('Delivered') }}:</h6>
                 <p>{{ result[0].deliveryDate }}</p>
                 {% endif %}
 
-                <h6>🗓️ {{ _('Status') }}:</h6>
+                <h6>📋 {{ _('Status') }}:</h6>
                 {% set statusStyle = 'status-open' %}
                 {% set status = _('Purchased') %}
                 {% if result[0].Status == 0 %}
                     {% set status = _('Cancelled') %}
                     {% set statusStyle = 'status-closed' %}
-                {% elif result[0].Status == 2 %}
+                {% elif result[0].Status == 1 %}
                     {% set status = _('Panding') %}
                     {% set statusStyle = 'status-on-hold' %}
+                {% elif result[0].Status == 2 %}
+                    {% set status = _('Purchased') %}
+                    {% set statusStyle = 'status-open' %}
                 {% elif result[0].Status == 3 %}
                     {% set status = _('Preparing') %}
                     {% set statusStyle = 'status-preparing' %}
@@ -316,7 +320,7 @@
                     <th>{{ _('Product') }}</th>
                     <th>{{ _('Price') }}</th>
                     <th style="${display}">{{ _('Discount') }}</th>
-                    <th style="${display}">{{ _('Discounted Price') }}</th>
+                    <th style="${display}">{{ _('Discounted') }}</th>
                 </tr>
             </thead>
             <tbody>

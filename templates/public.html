@@ -7,7 +7,7 @@
 
     <!-- ICO format -->
     
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}" >
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}" >
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -74,19 +74,14 @@
 
       <footer style="background-color: #fdf6ec; padding: 40px 60px; text-align: left; width: 100%; margin-top: 40px;">
       <div style="display: flex; justify-content: space-between; flex-wrap: wrap; max-width: 1720px; margin: 0 auto;">
-      <!-- <div style="flex: 1; min-width: 200px; padding: 20px;">
-      <h3 style="color: #007bff; margin-bottom: 20px;">Services</h3>
-      <ul style="list-style-type: none; padding: 0;">
-      <li><a href="#service1" style="color: #007bff; text-decoration: none;">Service 1</a></li>
-      <li><a href="#service2" style="color: #007bff; text-decoration: none;">Service 2</a></li>
-      <li><a href="#service3" style="color: #007bff; text-decoration: none;">Service 3</a></li>
-      </ul>
-      </div> -->
 
       <div style="flex: 1; min-width: 200px; padding: 20px;">
       <h3 style="color: #333333bd; margin-bottom: 20px; text-align: left;" id="contacts">{{ _('Contact') }}</h3>
-      <span style="color: #6c757d;" class="social-media">{{ _('123 Street Name') }}<br>{{ _('City, State, 12345') }}<br>{{ _('Email') }}: info@mammysbreat.am</span>
-      <div style="margin-top: 20px;" class="social-media">
+      <span style="color: #6c757d;" class="social-media"><!-- {{ _('123 Street Name') }}<br>{{ _('City, State, 12345') }}<br>-->
+        {{ _('Email') }}: info@mammysbreat.am <br>
+        {{ _('Phone') }}: <a href="tel:37495151580" style="text-decoration: none; color: #6c757d;">+374(95) 15-15-80</a>
+      </span>
+      <div style="margin-top: 10px;" class="social-media">
             <a href="https://facebook.com" class="fa fa-facebook" target="_blank"></a>
             <a href="https://instagram.com" class="fa fa-instagram" target="_blank"></a>
             <a href="https://youtube.com" class="fa fa-youtube" target="_blank"></a>
@@ -100,8 +95,8 @@
       <h3 style="color: #333333bd; margin-bottom: 20px; text-align: left;">{{ _('Subscribe to us!') }}</h3>
       <span style="color: #6c757d;">{{ _('Be the first to know about discounts and promotions.') }}</span>
       <div>
-      <input type="text" name="email" id="email" style="width: 90%"/>
-      <div class="pcButtonS" id="subscribe" style="margin-top: unset;">{{ _('Submit') }}</div>
+      <input type="text" name="email" id="email" style="width: 90%; margin-bottom: 10px;"/>
+      <div class="pcButtonS" id="subscribe" style="margin-top: unset; background-color: #FCC628;">{{ _('Submit') }}</div>
       </div>
       </div>
     </div>

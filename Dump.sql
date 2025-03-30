@@ -432,7 +432,7 @@ CREATE TABLE `affiliate_history` (
     `promo_code_id` INT,
     `promo_code` VARCHAR(255),
     `revard_value` INT,
-    `revard_type` INT,
+    `revard_type` INT, -- 0 is % per sold product, 1 is speciified sum per sold product 
     `net` FLOAT, -- paid amount of money for current product taking into consideration discounts if applied
     `Status` INT, -- 0 == transaction cancellation; 1 == paid; 2 == panding
     PRIMARY KEY (`ID`)

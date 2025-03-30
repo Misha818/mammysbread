@@ -209,13 +209,19 @@
         if (row.quantity > 1) {
             productTitle = row.prTitle + ' ' + row.ptTitle + ' (' + row.quantity + ')';
         }
+        let discountedPriceVal = '';
+        console.log(discountPrice)
+        console.log(typeof(discountPrice))
+        if (discountPrice > 0) {
+            discountedPriceVal = "{{ mainCurrency }} " + discountPrice.toString();
+        }
 
         productRows += `
             <tr>
                 <td style="width: 55%;"><a href="${productURL}" target="_BLANK">${productTitle}</a></td>
                 <td class="${cpPrice}">{{ mainCurrency }} ${price}</td>
                 <td style="${display}">${discount}</td>
-                <td class="discountPrice" style="${display}">{{ mainCurrency }} ${discountPrice}</td>
+                <td class="discountPrice" style="${display}">${discountedPriceVal}</td>
             </tr>
         `;
     });

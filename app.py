@@ -3,7 +3,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -72,11 +72,11 @@ cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 
 orderStatusList = {
             '0': gettext('Cancelled'),
-            '1': gettext('Purchased'),
-            # '2': gettext('Panding'),
-            '2': gettext('Preparing'),
-            '3': gettext('Ready'),
-            '4': gettext('Delivered')
+            '1': gettext('Panding'),
+            '2': gettext('Purchased'),
+            '3': gettext('Preparing'),
+            '4': gettext('Ready'),
+            '5': gettext('Delivered')
         }
 
 @app.errorhandler(CSRFError)
@@ -536,10 +536,23 @@ def checkout():
         #     amount = priceARR['answer']
         # END of Calculate Total price to be purchased
         
+        # Get Promo Code ID
+        promoID, affiliateID = [None, None]
+        if data['promo'] is not None:
+            promodict = get_promo_code_id_affiliateID(data['promo'])
+            if len(promodict) > 0:
+                promoID = promodict['ID']
+                affiliateID = promodict['affiliateID']
+            
+
+
         # insert additional data into  payment_details table and get inserted id
-        sqlQueryPD = "INSERT INTO `payment_details` (`notesID`, `clientID`, `contactID`, `Status`) VALUES (%s, %s, %s, %s);"
-        sqlValTuplePD = (notesID, clientID, contactID, 2)
+        sqlQueryPD = "INSERT INTO `payment_details` (`promo_code_id`, `promo_code`, `affiliateID`, `notesID`, `clientID`, `contactID`, `Status`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        sqlValTuplePD = (promoID, data['promo'], affiliateID, notesID, clientID, contactID, 1)
         resultPD = sqlInsert(sqlQueryPD, sqlValTuplePD)
+        if resultPD['status'] == 0:
+            return jsonify({'status': "0", 'answer': resultPD['answer'], 'newCSRFtoken': newCSRFtoken})
+
     
         pdID = resultPD['inserted_id'] 
         # pdID = 1 
@@ -574,10 +587,9 @@ def checkout():
                 'paymentStatus': 1
             }
             purchseData = insertPUpdateP(pdID, paymentData)
-
-            print('SFSFSDFSDfsdFdsFsdfSDFsdfdsfdsf')
-            print(purchseData['status'])
-            print('SFSFSDFSDfsdFdsFsdfSDFsdfdsfdsf')
+            if purchseData['status'] == 0:
+                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        
 
             # answer = gettext('Payment passed successfully') + ' ' + str(amount) + ' ' + MAIN_CURRENCY
             purchseData = json.dumps(purchseData['answer'])
@@ -623,7 +635,8 @@ def confirmation_page(pdID):
             LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
             LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
-    WHERE `payment_details`.`ID` = %s;
+    WHERE `payment_details`.`ID` = %s
+    ORDER BY `product`.`Order`, `product_type`.`Order`;
 """
     result = sqlSelect(sqlQuery, (pdID,), True)
     if result['length'] == 0:
@@ -790,6 +803,10 @@ def affiliate_orders(filter):
                 ORDER BY `payment_details`.`ID` DESC
                 LIMIT {rowsToSelect}, {int(PAGINATION)}; 
                """
+    
+    print('AAAAAAAAAAAAAAAAAAAAAAA')
+    print(sqlQuery)
+    print('AAAAAAAAAAAAAAAAAAAAAAA')
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     sideBar = side_bar_stuff()
 
@@ -843,7 +860,9 @@ def order_details(pdID):
             LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
             LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
-    WHERE `payment_details`.`ID` = %s;
+    WHERE `payment_details`.`ID` = %s
+    ORDER BY `product`.`Order`, `product_type`.`Order`
+    ;
 """
     result = sqlSelect(sqlQuery, (pdID,), True)
     if result['length'] == 0:
@@ -851,6 +870,84 @@ def order_details(pdID):
     
     sideBar = side_bar_stuff()
     return render_template('order-details.html', sideBar=sideBar, result=result['data'], mainCurrency = MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
+    
+
+@app.route('/affiliate-order-details/<pdID>', methods=['GET'])
+# @login_required
+def affiliate_order_details(pdID):
+    newCSRFtoken = generate_csrf()
+    
+#     sqlQuery = f"""
+#     SELECT 
+#         `payment_details`.`ID`,
+#         `payment_details`.`payment_method`,
+#         `payment_details`.`CMD`,
+#         `payment_details`.`promo_code`,   
+#         `payment_details`.`promo_code_id`,   
+#         `payment_details`.`final_price`,   
+#         `payment_details`.`timestamp`,   
+#         `payment_details`.`Status`,   
+#         `delivered`.`timestamp` AS `deliveryDate`,
+#         `clients`.`FirstName`,
+#         `clients`.`LastName`,
+#         `product`.`Title` AS `prTitle`,
+#         `product_type`.`Title` AS `ptTitle`,
+#         `purchase_history`.`quantity`,
+#         `purchase_history`.`price`,
+#         `purchase_history`.`discount`
+#     FROM `payment_details` 
+#             LEFT JOIN `delivered` ON `delivered`.`pdID` = `payment_details`.`ID`
+#             LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+#             LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+#             LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+#             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
+#             LEFT JOIN `promo_code` ON `promo_code`.`ID` = `payment_details`.`promo_code_id`
+#     WHERE `payment_details`.`ID` = %s AND `promo_code`.`affiliateID` = %s;
+# """
+
+    sqlQuery = f"""
+                    SELECT 
+                        `payment_details`.`ID`,
+                        `payment_details`.`promo_code_id`,
+                        `payment_details`.`timestamp`, 
+                        `payment_details`.`Status`,
+                        `delivered`.`timestamp` AS `deliveryDate`,
+                        -- `purchase_history`.`ID`,	
+                        `purchase_history`.`ptID`,	
+                        `purchase_history`.`quantity`,		
+                        `purchase_history`.`price`,	
+                        `purchase_history`.`discount`,
+                        `product`.`Title` AS `prTitle`,
+                        `product_type`.`Title` AS `ptTitle`,
+                        `discount`.`promo_code_id`,
+                        `promo_code`.`Promo` AS `promo_code`,
+                        `discount`.`revard_value`,
+                        `discount`.`revard_type`,
+                        `clients`.`FirstName`,
+                        `clients`.`LastName`
+                    FROM `purchase_history` 
+                       LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                        LEFT JOIN `delivered` ON `delivered`.`pdID` = `payment_details`.`ID`
+                        LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+                        LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
+                        LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+                        LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
+                        LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID` 
+                            AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                    WHERE `purchase_history`.`payment_details_id` = %s
+                        AND `promo_code`.`affiliateID` = %s
+                        AND `purchase_history`.`discount` is not null;
+                """
+
+    result = sqlSelect(sqlQuery, (pdID, session.get('user_id')), True)
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    print(result['error'])
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    if result['length'] == 0:
+        return render_template('error.html')
+    
+    sideBar = side_bar_stuff()
+    return render_template('affiliate-order-details.html', sideBar=sideBar, result=result['data'], mainCurrency = MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
     
     
 @app.route('/get-order-details', methods=['POST'])

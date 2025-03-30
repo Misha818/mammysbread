@@ -92,6 +92,8 @@ tr:nth-child(even) {
   {% set status = _('Active') %}
   {% if row['Status'] == 0 %}
     {% set status = _('Inactive') %}
+  {% elif row['expDate'] < currentDate %}
+    {% set status = _('Expired') %}
   {% endif %}
   {% set expDateStyle = '' %}
   {% if row['expDate'] is not none and row['expDate'] < currentDate %}
@@ -108,7 +110,7 @@ tr:nth-child(even) {
         <a href="{{ url_for('promo_code_details', promo=row['Promo']) }}" target="_blank" title="{{ _('Details') }}"><i class="fas fa-eye" style="font-size: 20px; color: #fe7166;"></i></a>
       </td>
       <td>
-        <a href="{{ url_for('home') }}affiliate-orders/page=1&status=1&promoCode={{ row['Promo'] }}" target="_blank" title="{{ _('Purchase History') }}"><i class="fas fa-info-circle" style="font-size: 20px; color: #fe7166;"></i></a>
+        <a href="{{ url_for('home') }}affiliate-orders/page=1&status=all&promoCode={{ row['Promo'] }}" target="_blank" title="{{ _('Purchase History') }}"><i class="fas fa-info-circle" style="font-size: 20px; color: #fe7166;"></i></a>
       </td>
     </tr>
     
