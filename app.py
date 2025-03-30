@@ -3,7 +3,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -739,7 +739,7 @@ def affiliate_orders(filter):
     newCSRFtoken = generate_csrf()
     filters = {}
     
-    protoTuple = [session['user_id']]
+    protoTuple = [session['user_id'], session['user_id'], session['user_id']]
 
     if '&' in filter:
         array = filter.split('&')
@@ -776,9 +776,13 @@ def affiliate_orders(filter):
     if filters.get('promoCode') is not None:
         where += f"""AND `payment_details`.`promo_code` = %s """
 
-    if filters.get('status') != 'all':
+    if filters.get('status') != 'all' and filters.get('status') != 'pending':
         where = where + 'AND `payment_details`.`Status` = %s '
         protoTuple.append(filters.get('status'))
+
+
+    if filters.get('status') == 'pending':
+        where = where + 'AND `payment_details`.`Status` in (2,3,4) '
     
 
     page = filters['page']
@@ -787,25 +791,76 @@ def affiliate_orders(filter):
     sqlValTuple = tuple(protoTuple)
 
     sqlQuery = f"""
-            SELECT 
+             SELECT
                 `payment_details`.`ID`,
-                `payment_details`.`promo_code`,   
-                `payment_details`.`final_price`,   
-                `payment_details`.`Status`,   
+                `payment_details`.`ID` AS `pdID`,
+                `payment_details`.`promo_code`,
+                `payment_details`.`final_price`,
+                `payment_details`.`Status`,
                 `clients`.`FirstName`,
-                `clients`.`LastName`
-            FROM `payment_details` 
+                `clients`.`LastName`,
+
+                -- count affiliate revard
+                (SELECT 
+                    SUM(CASE 
+                        WHEN `discount`.`revard_type` =  1 
+                            THEN `discount`.`revard_value` * `purchase_history`.`quantity` 
+                        ELSE  `purchase_history`.`quantity` * `purchase_history`.`price` * `discount`.`revard_value` / 100
+                    END) 
+                FROM `purchase_history` 
+                    LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                    LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
+                    LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+                    LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID` 
+                        AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                WHERE `payment_details`.`ID` = `pdID`     
+                    AND `payment_details`.`affiliateID` = %s
+                    AND `purchase_history`.`discount` is not null
+                GROUP BY `payment_details`.`ID`) AS `RV`,
+                -- COUNT NET
+                (SELECT 
+                    SUM(`purchase_history`.`quantity` * `purchase_history`.`price` - `purchase_history`.`quantity` * `purchase_history`.`price` * `purchase_history`.`discount` / 100) AS `net`
+                FROM `purchase_history` 
+                    LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                    LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
+                    LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+                    LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID` 
+                        AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                WHERE `payment_details`.`ID` = `pdID`  
+                    AND `payment_details`.`affiliateID` = %s
+                    AND `purchase_history`.`discount` is not null
+                GROUP BY `payment_details`.`ID`) AS `Discounted_Price`
+            FROM `payment_details`
                 LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
                 LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
-                LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
-            {where}
-                GROUP BY `payment_details`.`ID`
-                ORDER BY `payment_details`.`ID` DESC
-                LIMIT {rowsToSelect}, {int(PAGINATION)}; 
+                LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`            
+                {where}
+            GROUP BY `payment_details`.`ID`
+            ORDER BY `payment_details`.`ID` DESC
+            LIMIT {rowsToSelect}, {int(PAGINATION)}; 
                """
+    
+    # sqlQuery = f"""
+    #         SELECT 
+    #             `payment_details`.`ID`,
+    #             `payment_details`.`promo_code`,   
+    #             `payment_details`.`final_price`,   
+    #             `payment_details`.`Status`,   
+    #             `clients`.`FirstName`,
+    #             `clients`.`LastName`
+    #         FROM `payment_details` 
+    #             LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+    #             LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+    #             LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+    #         {where}
+    #             GROUP BY `payment_details`.`ID`
+    #             ORDER BY `payment_details`.`ID` DESC
+    #             LIMIT {rowsToSelect}, {int(PAGINATION)}; 
+    #            """
     
     print('AAAAAAAAAAAAAAAAAAAAAAA')
     print(sqlQuery)
+    print(filters.get('status'))
     print('AAAAAAAAAAAAAAAAAAAAAAA')
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     sideBar = side_bar_stuff()
@@ -2839,9 +2894,21 @@ def stuff():
         resultP = sqlSelect(sqlQueryPromo, sqlValTuplePromo, True)
         
         view = 'affiliate.html'
+        resultRevards = get_affiliate_reward_progress(stuffID)
+
+        row = {}
+        if resultRevards['length'] > 0:
+            row = resultRevards['data'][0]
+    
+        resultRevardsList = {
+            '0': ['Voided', row.get('Voided') or 0, 'Voided', 'affiliate-orders/page=1&status=0'],
+            '1': ['Pending', row.get('Pending') or 0, 'Pending', 'affiliate-orders/page=1&status=pending'],
+            '2': ['Approved', row.get('Approved') or 0, 'Approved', 'affiliate-orders/page=1&status=5'],
+            '3': ['Settled', row.get('Settled') or 0, 'Settled', 'partner-payments/' + str(stuffID)]
+        }
 
     
-    return render_template(view, result=result, resultP=resultP, supportedLangsData=supportedLangsData, currentDate=date.today(), current_locale=get_locale())
+    return render_template(view, result=result, resultP=resultP, resultRevardsList=json.dumps(resultRevardsList), supportedLangsData=supportedLangsData, currentDate=date.today(), current_locale=get_locale())
 
 
 @app.route('/promo-code-details/<promo>', methods=['GET'])

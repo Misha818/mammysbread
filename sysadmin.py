@@ -1193,6 +1193,81 @@ def deletePUpdateP(pdID):
     return {'status': '1'}
 
 
+def get_affiliate_reward_progress(affiliateID):
+    sqlQuery = f"""
+                SELECT
+                    `payment_details`.`affiliateID`,
+
+                    -- SUM UP Voided Revards
+                    (SELECT
+                        SUM(CASE
+                            WHEN `discount`.`revard_type` =  1
+                                THEN `discount`.`revard_value` * `purchase_history`.`quantity`
+                            ELSE  `purchase_history`.`quantity` * `purchase_history`.`price` * `discount`.`revard_value` / 100
+                        END)
+                    FROM `purchase_history`
+                        LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                        LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
+                        LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+                        LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID`
+                            AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                    WHERE `payment_details`.`affiliateID` = %s
+                        AND `payment_details`.`Status` = 0
+                        AND `purchase_history`.`discount` is not null
+                    GROUP BY `payment_details`.`Status`) AS `Voided`,
+
+                    -- SUM UP Pending Revards
+                    (SELECT
+                        SUM(CASE
+                            WHEN `discount`.`revard_type` =  1
+                                THEN `discount`.`revard_value` * `purchase_history`.`quantity`
+                            ELSE  `purchase_history`.`quantity` * `purchase_history`.`price` * `discount`.`revard_value` / 100
+                        END)
+                    FROM `purchase_history`
+                        LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                        LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
+                        LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+                        LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID`
+                            AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                    WHERE `payment_details`.`affiliateID` = %s
+                        AND `payment_details`.`Status` in (2,3,4)
+                        AND `purchase_history`.`discount` is not null
+                    GROUP BY `payment_details`.`affiliateID`) AS `Pending`,
+
+                    -- SUM UP Approved Revards
+                    (SELECT
+                        SUM(CASE
+                            WHEN `discount`.`revard_type` =  1
+                                THEN `discount`.`revard_value` * `purchase_history`.`quantity`
+                            ELSE  `purchase_history`.`quantity` * `purchase_history`.`price` * `discount`.`revard_value` / 100
+                        END)
+                    FROM `purchase_history`
+                        LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                        LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
+                        LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+                        LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID`
+                            AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                    WHERE `payment_details`.`affiliateID` = %s
+                        AND `payment_details`.`Status` = 5
+                        AND `purchase_history`.`discount` is not null
+                    GROUP BY `payment_details`.`Status`) AS `Approved`,
+
+                    -- SUM UP Settled Revards
+                    (SELECT SUM(`value`) FROM `partner_payments` WHERE `affiliateID` = %s AND `type` = 1) AS `Settled` 
+
+                FROM `payment_details`
+                    LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+                    LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+                    LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                WHERE `payment_details`.`affiliateID` = %s 
+                GROUP BY `payment_details`.`affiliateID`;
+                """
+    sqlValTuple = (affiliateID,) * 5
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    return result
+
+
 
 
 

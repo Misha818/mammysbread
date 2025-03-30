@@ -5,6 +5,7 @@
 {% block head %}
 
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+
   <style>
     .card-header {
       cursor: pointer;
@@ -17,7 +18,7 @@
       text-decoration: underline;
     }
 
-    .collapsed {
+    .collapsed-accordion {
         transform: unset!important;
         width: inherit!important;
         padding: unset!important;
@@ -28,6 +29,8 @@
 {% endblock %}
 
 {% block content %}
+
+{{ sideBar | safe }}
 
 <div class="container my-5">
     <div id="accordion"></div>
@@ -107,11 +110,11 @@
       accordionHTML += `
         <div class="card" style="cursor:pointer;">
           <div class="card-header" id="${headingId}">
-            <span  class="d-block" data-toggle="collapse" data-target="#${collapseId}" aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="${collapseId}">
+            <span  class="d-block" data-toggle="collapse-accordion" data-target="#${collapseId}" aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="${collapseId}">
               ${prTitle}
             </span>
           </div>
-          <div id="${collapseId}" class="collapse ${index === 0 ? 'show' : ''}" aria-labelledby="${headingId}" data-parent="#accordion">
+          <div id="${collapseId}" class="collapse-accordion ${index === 0 ? 'show' : 'collapse'}" aria-labelledby="${headingId}" data-parent="#accordion">
             <div class="card-body">
               
               <ul class="list-group list-group-flush">
@@ -130,7 +133,7 @@
     // (Inner anchor clicks have event.stopPropagation() so they won't trigger this.)
     document.querySelectorAll('.card').forEach(card => {
       card.addEventListener('click', function(e) {
-        const collapseElement = card.querySelector('.collapse');
+        const collapseElement = card.querySelector('.collapse-accordion');
         // Use jQuery's collapse toggle method (Bootstrap relies on jQuery)
         $(collapseElement).collapse('toggle');
       });

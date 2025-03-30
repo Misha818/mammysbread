@@ -64,6 +64,10 @@
   flex-wrap: wrap;
 }
 
+.cancelled {
+  text-decoration: line-through !important;
+}
+
 </style>
 
 {% endblock %}
@@ -75,7 +79,8 @@
 <div class="container" >
   <div class="filter-container">
     <select id="orderStatus" style="flex: 1; max-width: 135px;">
-      <option value="all">{{ _('All Orders') }}</option>
+      <option value="" {% if filters['status'] != 'pending' %}disabled{% endif %}>{{ _('Chose Order Status') }}</option>
+      <option value="all" {% if filters['status'] == 'all' %}selected{% endif %}>{{ _('All Orders') }}</option>
       
       {% for key, val in orderStatusList.items() %}
       
@@ -144,6 +149,19 @@
           </div>
         </div>
       </th>
+
+      
+      <th>
+        <div style="display: flex; align-items: center;">
+         {{ _('Promo Code') }} 
+
+          <div class="sort-icons" style="margin-left: 5px;">
+            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+          </div>
+        </div>
+      </th>
+
  
       <th>
         <div style="display: flex; align-items: center;">
@@ -155,10 +173,21 @@
           </div>
         </div>
       </th>
+      
+      <th>
+        <div style="display: flex; align-items: center;">
+         {{ _('Discounted Price') }} 
+
+          <div class="sort-icons" style="margin-left: 5px;">
+            <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
+            <i class="fas fa-sort-down mydown" onclick="sortTable(this, 0, 'down')"></i>
+          </div>
+        </div>
+      </th>
 
       <th>
         <div style="display: flex; align-items: center;">
-         {{ _('Promo Code') }} 
+         {{ _('Revard') }} 
 
           <div class="sort-icons" style="margin-left: 5px;">
             <i class="fas fa-sort-up myup" onclick="sortTable(this, 0, 'up')"></i>
@@ -186,8 +215,10 @@
       {% for row in result.data %}
       {% set statusStyle = 'status-open' %}
       {% set status = _('Purchased') %}
+      {% set cancelled = '' %}
       {% if row.Status == 0 %}
           {% set status = _('Cancelled') %}
+          {% set cancelled = 'cancelled' %}
           {% set statusStyle = 'status-closed' %}
       {% elif row.Status == 1 %}
           {% set status = _('Panding') %}
@@ -229,13 +260,21 @@
         <td data-label="{{ _('Client') }}" class="flex" style="display: table-cell;">
           {{ row['FirstName'] + ' ' + row['LastName'] }}
         </td>
+        
+        <td data-label="{{ _('Promo Code') }}" class="flex" style="display: table-cell;">
+          {{ promo }}
+        </td>
    
         <td data-label="{{ _('Net') }}" class="flex" style="display: table-cell;">
           {{ row['final_price'] }}
         </td>
-        
-        <td data-label="{{ _('Promo Code') }}" class="flex" style="display: table-cell;">
-          {{ promo }}
+   
+        <td data-label="{{ _('Discounted Price') }}" class="flex" style="display: table-cell;">
+          {{ row['Discounted_Price'] }}
+        </td>
+   
+        <td data-label="{{ _('Revard') }}" class="flex" style="display: table-cell;">
+          <span class="{{ cancelled }}">{{ row['RV'] }}</span>
         </td>
 
         <td data-label="{{ _('Status') }}"><span class="status-label {{ statusStyle }}">{{ status }}</span></td>

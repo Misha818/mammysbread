@@ -1,3 +1,3 @@
-where = "AND `phones`.`phone` = %s AND `emails`.`email` = %s"
+row = {}
 
-print(where[4:])
+print(row.get('Voided', 0))

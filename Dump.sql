@@ -414,6 +414,18 @@ CREATE TABLE `payment_details` (
 ALTER TABLE `payment_details` AUTO_INCREMENT = 1;
 
 
+DROP TABLE IF EXISTS `partner_payments`;
+CREATE TABLE `partner_payments` (
+    `ID` INT AUTO_INCREMENT,
+    `affiliateID` INT,
+    `value` float,
+    `type` INT, -- 1 == revard
+    `timestamp` DATETIME,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `partner_payments` AUTO_INCREMENT = 1;
+
+
 DROP TABLE IF EXISTS `delivered`;
 CREATE TABLE `delivered` (
     `ID` INT AUTO_INCREMENT,
