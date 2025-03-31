@@ -6807,6 +6807,51 @@ tr:nth-child(even) {
   white-space: nowrap;  
 }
 
+.transfer-funds {
+  width: 1000px; 
+  margin: 15px auto;
+  border: 1px solid black;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+/* Quill.JS fonts */
+.ql-font-roboto { font-family: 'Roboto', sans-serif; }
+.ql-font-montserrat { font-family: 'Montserrat', sans-serif; }
+.ql-font-lato { font-family: 'Lato', sans-serif; }
+.ql-font-oswald { font-family: 'Oswald', sans-serif; }
+.ql-font-playfair { font-family: 'Playfair Display', serif; }
+.ql-font-raleway { font-family: 'Raleway', sans-serif; }
+
+
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="roboto"]::before {
+  content: 'Roboto';
+  font-family: 'Roboto', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="montserrat"]::before {
+  content: 'Montserrat';
+  font-family: 'Montserrat', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="lato"]::before {
+  content: 'Lato';
+  font-family: 'Lato', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="oswald"]::before {
+  content: 'Oswald';
+  font-family: 'Oswald', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="playfair-display"]::before {
+  content: 'Playfair Display';
+  font-family: 'Playfair Display', serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="raleway"]::before {
+  content: 'Raleway';
+  font-family: 'Raleway', sans-serif;
+}
+
+/* End of Quill.JS fonts */
+
+
 /* .cart-container {
   flex-direction: row;
   position: fixed;

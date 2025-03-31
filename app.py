@@ -739,7 +739,7 @@ def affiliate_orders(filter):
     newCSRFtoken = generate_csrf()
     filters = {}
     
-    protoTuple = [session['user_id'], session['user_id'], session['user_id']]
+    protoTuple = [session['user_id']] * 3
 
     if '&' in filter:
         array = filter.split('&')
@@ -869,6 +869,127 @@ def affiliate_orders(filter):
     # numRows = totalNumRows('payment_details')
 
     return render_template('affiliate-orders.html', result=result, filters=filters, orderStatusList=orderStatusList, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+
+
+@app.route('/stuff-affiliate-orders/<filter>', methods=['Get'])
+# @login_required
+def stuff_affiliate_orders(filter): 
+    newCSRFtoken = generate_csrf()
+    filters = {}
+    
+    protoTuple = []
+
+    if '&' in filter:
+        array = filter.split('&')
+        for linkStr in array:
+            key, val = linkStr.split('=')
+            filters[key] = val
+            if key != 'page' and key != 'status' and key != 'affiliate':
+                if key == 'Firstname' or key == 'Lastname':
+                    protoTuple.append(f"%{val}%")
+                else:    
+                    protoTuple.append(val)
+
+
+    else:
+        key, val = filter.split('=')
+        filters[key] = val
+        filters['status'] = '1'
+        protoTuple.append(1)
+
+    where = 'WHERE `payment_details`.`affiliateID` = %s '
+    
+    if filters.get('Firstname') is not None:
+        where += f"""AND `clients`.`FirstName` LIKE '%' %s """
+
+    if filters.get('Lastname') is not None:
+        where += f"""AND `clients`.`LastName` LIKE '%' %s """
+    
+    if filters.get('phone') is not None:
+        where += f"""AND `phones`.`phone` = %s """
+    
+    if filters.get('email') is not None:
+        where += f"""AND `emails`.`email` = %s """
+
+    if filters.get('promoCode') is not None:
+        where += f"""AND `payment_details`.`promo_code` = %s """
+
+    if filters.get('status') != 'all' and filters.get('status') != 'pending':
+        where = where + 'AND `payment_details`.`Status` = %s '
+        protoTuple.append(filters.get('status'))
+
+
+    if filters.get('status') == 'pending':
+        where = where + 'AND `payment_details`.`Status` in (2,3,4) '
+    
+    if filters.get('affiliate') is None or filters.get('affiliate') == '':
+        return render_template('error.html', current_locale=get_locale())
+
+    page = filters['page']
+    rowsToSelect = (int(page) - 1) * int(PAGINATION)
+
+    protoTuple = [filters['affiliate']] * 3 + protoTuple
+    sqlValTuple = tuple(protoTuple)
+
+    sqlQuery = f"""
+             SELECT
+                `payment_details`.`ID`,
+                `payment_details`.`ID` AS `pdID`,
+                `payment_details`.`promo_code`,
+                `payment_details`.`final_price`,
+                `payment_details`.`Status`,
+                `clients`.`FirstName`,
+                `clients`.`LastName`,
+                CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `affiliate`,
+
+                -- count affiliate revard
+                (SELECT 
+                    SUM(CASE 
+                        WHEN `discount`.`revard_type` =  1 
+                            THEN `discount`.`revard_value` * `purchase_history`.`quantity` 
+                        ELSE  `purchase_history`.`quantity` * `purchase_history`.`price` * `discount`.`revard_value` / 100
+                    END) 
+                FROM `purchase_history` 
+                    LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                    LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
+                    LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+                    LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID` 
+                        AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                WHERE `payment_details`.`ID` = `pdID`     
+                    AND `payment_details`.`affiliateID` = %s
+                    AND `purchase_history`.`discount` is not null
+                GROUP BY `payment_details`.`ID`) AS `RV`,
+                -- COUNT NET
+                (SELECT 
+                    SUM(`purchase_history`.`quantity` * `purchase_history`.`price` - `purchase_history`.`quantity` * `purchase_history`.`price` * `purchase_history`.`discount` / 100) AS `net`
+                FROM `purchase_history` 
+                    LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                    LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
+                    LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+                    LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID` 
+                        AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                WHERE `payment_details`.`ID` = `pdID`  
+                    AND `payment_details`.`affiliateID` = %s
+                    AND `purchase_history`.`discount` is not null
+                GROUP BY `payment_details`.`ID`) AS `Discounted_Price`
+            FROM `payment_details`
+                LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+                LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+                LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                LEFT JOIN `stuff` ON `stuff`.`ID` = `payment_details`.`affiliateID`            
+                {where}
+            GROUP BY `payment_details`.`ID`
+            ORDER BY `payment_details`.`ID` DESC
+            LIMIT {rowsToSelect}, {int(PAGINATION)}; 
+               """
+    
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    sideBar = side_bar_stuff()
+
+    numRows = totalNumRows('payment_details', where, sqlValTuple)
+    # numRows = totalNumRows('payment_details')
+
+    return render_template('affiliate-orders.html', result=result, filters=filters, affID=filters['affiliate'], orderStatusList=orderStatusList, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
 
 @app.route('/send-email/<email>', methods=['GET'])
@@ -2848,7 +2969,7 @@ def edit_role(RoleID):
 def stuff():
 
     stuffID = session['user_id']
-    # stuffID = 1
+    
 
     sqlQuery = f"""
     SELECT 
@@ -2878,7 +2999,7 @@ def stuff():
         
     supportedLangsData = supported_langs()
     view = 'admin_panel.html'
-    resultP = ''
+    resultP, resultRevardsList = ['', '']
     if result['data'][0]['Rol'] == 'Affiliate':
         sqlQueryPromo = f"""
                     SELECT 
@@ -2911,6 +3032,49 @@ def stuff():
     return render_template(view, result=result, resultP=resultP, resultRevardsList=json.dumps(resultRevardsList), supportedLangsData=supportedLangsData, currentDate=date.today(), current_locale=get_locale())
 
 
+@app.route('/affiliate/<affID>', methods=['GET'])
+# @login_required
+def affiliate(affID):
+    supportedLangsData = supported_langs()
+    
+    sqlQuery = f"""
+                SELECT
+                    `stuff`.`Firstname`,
+                    `stuff`.`Lastname`,
+                    `promo_code`.`Promo`,
+                    `promo_code`.`expDate`,
+                    `promo_code`.`Status`
+                FROM `promo_code`
+                    LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`                    
+                WHERE `promo_code`.`affiliateID` = %s;    
+                """
+
+    sqlValTuple = (affID,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    print(result['data'])
+    print(result['error'])
+
+    if result['length'] == 0:
+        return render_template('error.html')
+    
+    resultRevards = get_affiliate_reward_progress(affID)
+
+    row = {}
+    if resultRevards['length'] > 0:
+        row = resultRevards['data'][0]
+
+    resultRevardsList = {
+        '0': ['Voided', row.get('Voided') or 0, 'Voided', 'stuff-affiliate-orders/page=1&status=0&affiliate='+affID],
+        '1': ['Pending', row.get('Pending') or 0, 'Pending', 'stuff-affiliate-orders/page=1&status=pending&affiliate='+affID],
+        '2': ['Approved', row.get('Approved') or 0, 'Approved', 'stuff-affiliate-orders/page=1&status=5&affiliate='+affID],
+        '3': ['Settled', row.get('Settled') or 0, 'Settled', 'stuff-partner-payments/' + affID]
+    }
+
+    sideBar = side_bar_stuff()
+    return render_template('affiliate.html', resultP=result, result=result, stuff=True, affID=affID, resultRevardsList=json.dumps(resultRevardsList), sideBar=sideBar, supportedLangsData=supportedLangsData, currentDate=date.today(), current_locale=get_locale())
+
+
 @app.route('/promo-code-details/<promo>', methods=['GET'])
 # @login_required
 def promo_code_details(promo):
@@ -2928,11 +3092,13 @@ def promo_code_details(promo):
             `discount`.`discount`,
             `discount`.`discount_status`,
             `discount`.`revard_value`,
-            `discount`.`revard_type` 
+            `discount`.`revard_type`,
+            CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `affiliate` 
         FROM `promo_code` 
             LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
             LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+            LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`
         WHERE `promo_code`.`Promo` = %s AND `promo_code`.`affiliateID` = %s
         ORDER BY `product`.`Order` ASC, `product_type`.`Order` ASC;
     """
@@ -2944,11 +3110,55 @@ def promo_code_details(promo):
         return render_template('error.html', current_locale=get_locale())
     
     discounts = json.dumps(result['data']) 
+    headings = [result['data'][0]['affiliate'], result['data'][0]['Promo']]
+
+    sideBar = side_bar_stuff()
+
+    return render_template('promo-code-details.html', discounts=discounts, headings=headings, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
+
+
+@app.route('/stuff-promo-code-details/<filters>', methods=['GET'])
+# @login_required
+def stuff_promo_code_details(filters):
+
+    promo, affID = (item.split('=')[1] for item in filters.split('&'))
+
+    sqlQuery = """
+        SELECT 
+            `promo_code`.`Promo`,
+            `promo_code`.`affiliateID`,
+            DATE_FORMAT(`promo_code`.`expDate`, '%m-%d-%Y') AS `expDate`, 
+            `promo_code`.`Status`,
+            `product`.`ID` AS `prID`,
+            `product_type`.`ID` AS `ptID`,
+            `product`.`Title` AS `prTitle`,
+            `product_type`.`Title` AS `ptTitle`,
+            `discount`.`ID` AS `discountID`,
+            `discount`.`discount`,
+            `discount`.`discount_status`,
+            `discount`.`revard_value`,
+            `discount`.`revard_type`,
+            CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `affiliate`
+        FROM `promo_code` 
+            LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
+            LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
+            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+            LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`
+        WHERE `promo_code`.`Promo` = %s AND `promo_code`.`affiliateID` = %s
+        ORDER BY `product`.`Order` ASC, `product_type`.`Order` ASC;
+    """
+    result = sqlSelect(sqlQuery, (promo, affID), True)
+
+    if result['length'] == 0:
+        return render_template('error.html', current_locale=get_locale())
+    
+    discounts = json.dumps(result['data']) 
+    headings = [result['data'][0]['affiliate'], result['data'][0]['Promo']]
 
 
     sideBar = side_bar_stuff()
 
-    return render_template('promo-code-details.html', discounts=discounts, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
+    return render_template('promo-code-details.html', discounts=discounts, headings=headings, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
 
 
 @app.route('/products', methods=['GET'])
@@ -3305,6 +3515,23 @@ def edit_pts():
 def add_sps_view():
     sideBar = side_bar_stuff()
     return render_template('sp-specifications.html', sideBar=sideBar, current_locale=get_locale())
+
+
+@app.route("/transfer-funds/<stuffID>", methods=['GET'])
+# @login_required
+def transfer_funds(stuffID):
+    sqlQuery =  """SELECT 
+                        `stuff`.`ID`,
+                        CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`, 
+                        `rol`.`Rol`
+                    FROM `stuff`
+                        LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID`
+                    WHERE `stuff`.`Status` = %s; 
+                """
+    result = sqlSelect(sqlQuery, (1,), True)
+    sideBar = side_bar_stuff()
+    return render_template('transfer-funds.html', result=result, stuffID=int(stuffID), sideBar=sideBar, current_locale=get_locale())
+
 
 # Subproduct situation and situations adding function
 @app.route("/add_sps", methods=['POST'])

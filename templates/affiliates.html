@@ -83,9 +83,12 @@
         <td data-label="{{ _('Status') }}"><span class="status-label {{ statusStyle }}">{{ status }}</span></td>
 
         <td class="edit-user">
+          <a href="{{ url_for('affiliate', affID=row['ID']) }}" target="_blank" title="{{ _('Affiliate Details') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2; margin-right: 20px;"></i></a>
+          
           <a href="{{ url_for('home', _external=True) + editUrl }}">
-            <i class="fas fa-pencil"></i>
+            <i class="fas fa-pencil" style=" color: #6be6b2;"></i>
           </a>
+
         </td>
       </tr>
       {% endfor %}

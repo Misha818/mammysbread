@@ -144,8 +144,15 @@ tr:nth-child(even) {
 {{ sideBar | safe }}
 
 <div class="container">
-  <h2 class="text-center mt-2">{{ _('Welcome dear') }} {{ result['data'][0].Firstname + ' ' + result['data'][0].Lastname }}!</h2>
-  <p class="text-center mt-1">{{ _('Below is the summary of your payment and reward progress.') }}</p>
+  {% set welcome = _('Welcome dear') %}
+  {% set welcome2 = _('Below is the summary of your payment and reward progress.') %}
+  {% if stuff == True %}
+    {% set welcome = _('Window for') %}
+    {% set welcome2 = _('Below is the summary of payment and reward progress of the current affiliate.') %}
+  
+  {% endif %}
+  <h2 class="text-center mt-2">{{ welcome }} {{ result['data'][0].Firstname + ' ' + result['data'][0].Lastname }}!</h2>
+  <p class="text-center mt-1">{{ welcome2 }}</p>
   <!-- Stepper container -->
   <div id="stepper" class="stepper"></div>
 </div>
@@ -227,10 +234,17 @@ tr:nth-child(even) {
       <td style="{{ expDateStyle }}">{{ row['expDate'] }}</td>
       <td>{{ status }}</td>
       <td>
-        <a href="{{ url_for('promo_code_details', promo=row['Promo']) }}" target="_blank" title="{{ _('Details') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2;"></i></a>
+        {% set promoDetailsUrl = url_for('promo_code_details', promo=row['Promo']) %}
+        {% set affiliateOrdersUrl = url_for('home') + 'affiliate-orders/page=1&status=all&promoCode=' + row['Promo'] %}
+        
+        {% if stuff == True %}
+          {% set promoDetailsUrl = url_for('home') + 'stuff-promo-code-details/promoCode=' + row['Promo'] + '&affiliate=' + affID %}
+          {% set affiliateOrdersUrl = url_for('home') + 'stuff-affiliate-orders/page=1&status=all&promoCode=' + row['Promo'] + '&affiliate=' + affID %}
+        {% endif %}
+        <a href="{{ promoDetailsUrl }}" target="_blank" title="{{ _('Details') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2;"></i></a>
       </td>
       <td>
-        <a href="{{ url_for('home') }}affiliate-orders/page=1&status=all&promoCode={{ row['Promo'] }}" target="_blank" title="{{ _('Purchase History') }}"><i class="fas fa-info-circle" style="font-size: 20px; color: #6be6b2;"></i></a>
+        <a href="{{ affiliateOrdersUrl }}" target="_blank" title="{{ _('Purchase History') }}"><i class="fas fa-info-circle" style="font-size: 20px; color: #6be6b2;"></i></a>
       </td>
     </tr>
     

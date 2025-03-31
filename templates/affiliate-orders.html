@@ -75,8 +75,12 @@
 {% block content %}
 
 {{ sideBar | safe }}
-
 <div class="container" >
+{% if affID and result['length'] > 0 %}
+  <h2 style="text-align: center; margin: 20px auto;">{{ _('Purchase history related to promo code of') + ' ' + result['data'][0]['affiliate'] }} </h2>
+{% else %}
+  <h2 style="text-align: center; margin: 20px auto;">{{ _('Purchase history related to promo code') }} </h2>
+{% endif %}
   <div class="filter-container">
     <select id="orderStatus" style="flex: 1; max-width: 135px;">
       <option value="" {% if filters['status'] != 'pending' %}disabled{% endif %}>{{ _('Chose Order Status') }}</option>
@@ -280,7 +284,11 @@
         <td data-label="{{ _('Status') }}"><span class="status-label {{ statusStyle }}">{{ status }}</span></td>
 
         <td class="edit-user">
-          <a href="{{ url_for('affiliate_order_details', pdID=row['ID'], _external=True) }}" target="_blank" title="{{ _('Order Details') }}" style="color:#6be6b2">
+          {% set orderDetailsUrl = url_for('affiliate_order_details', pdID=row['ID'], _external=True) %}
+          {% if affID %}
+            {% set orderDetailsUrl = url_for('order_details', pdID=row['ID'], _external=True) %}
+          {% endif %}
+          <a href="{{ orderDetailsUrl }}" target="_blank" title="{{ _('Order Details') }}" style="color:#6be6b2">
             <i class="fas fa-eye"></i>
             <!-- <i class="fas fa-pencil"></i> -->
           </a>
@@ -421,10 +429,16 @@ function sortTable(arrowElement, n, direction) {
 
 
 document.querySelector('.filter').addEventListener('click', function() {
-
+  
   let filterURL = constract_filter_url('1');
   if (filterURL.status == 1) {
-    window.location.href = filterURL.message;
+    let affID = "{{ affID | safe}}";
+    let filterAff = '';
+    if (affID) {
+      filterAff = '&affiliate=' + affID;
+    }
+    window.location.href = filterURL.message + filterAff;
+
   } else {
     alert(filterURL.message)
   }
