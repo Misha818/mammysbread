@@ -9,11 +9,9 @@
 <!-- jQuery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
-<!-- International Telephone Input JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.7/js/intlTelInput.js"></script>
 
+<!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">   -->
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <!-- International Telephone Input CSS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.6/css/intlTelInput.css" rel="stylesheet">
 
@@ -101,11 +99,12 @@
 {% block content %}
 
 {{ sideBar | safe }}
+
 <div class="container" >
   <h2 style="text-align: center; margin: 20px auto;">{{ _("Transfers' history") }} </h2>
   
-  <div class="table-container toRight tableDaddy" style="max-width: 1320px; box-shadow: unset;">
-    <div class="filter-container" style="margin: 5px auto 5px 69%;">
+  <div class="table-container toRight tableDaddy" style="max-width: 1320px; box-shadow: unset; background-color: unset">
+    <div class="filter-container" style="margin: 5px auto 5px 70%;">
       <select id="affiliates" style="flex: 1; max-width: 250px;">
         <option value="" >{{ _('Filter by staff member') }}</option>
         
