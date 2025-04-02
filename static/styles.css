@@ -629,8 +629,8 @@ button[type="submit"]:hover {
 }
 #cancelHeaderEdit {
     position: absolute;
-    top: -15px;
-    right: -15px;
+    top: 25px;
+    right: 15px;
     background-color: red;
     color: white;
     border: none;
@@ -1038,7 +1038,18 @@ button[type="submit"]:hover {
 }
 
 
-    /* Modal container for product type quantities */
+.transfer-details-modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Modal container for product type quantities */
     .pt-quantity-modal {
       display: none; /* Hidden by default */
       position: fixed;
@@ -6721,7 +6732,7 @@ tr:nth-child(even) {
     margin: 5px auto 15px auto;
   }
 
-  .product-details h2, p {
+  .product-details h2, p:not(.ql-editor p)  {
     text-align: center;
   }
 
@@ -6808,11 +6819,12 @@ tr:nth-child(even) {
 }
 
 .transfer-funds {
-  width: 1000px; 
+  width: 90%; 
   margin: 15px auto;
   border: 1px solid black;
   padding: 10px;
   background-color: #f9f9f9;
+  border-radius: 5px;
 }
 
 /* Quill.JS fonts */

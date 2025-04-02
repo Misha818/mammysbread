@@ -1253,7 +1253,7 @@ def get_affiliate_reward_progress(affiliateID):
                     GROUP BY `payment_details`.`Status`) AS `Approved`,
 
                     -- SUM UP Settled Revards
-                    (SELECT SUM(`value`) FROM `partner_payments` WHERE `affiliateID` = %s AND `type` = 1) AS `Settled` 
+                    (SELECT SUM(`amount`) FROM `partner_payments` WHERE `affiliateID` = %s AND `type` = 1) AS `Settled` 
 
                 FROM `payment_details`
                     LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
@@ -1268,6 +1268,18 @@ def get_affiliate_reward_progress(affiliateID):
     return result
 
 
+def get_affiliates(filters=''):
+
+
+    sqlQuery =  f"""SELECT 
+                            `stuff`.`ID`,
+                            CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`, 
+                            `rol`.`Rol`
+                        FROM `stuff`
+                            LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID`
+                        WHERE `stuff`.`Status` = %s {filters}; 
+                    """
+    return sqlSelect(sqlQuery, (1,), True) 
 
 
 

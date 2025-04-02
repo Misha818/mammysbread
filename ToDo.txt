@@ -285,7 +285,10 @@ stuff_affiliate_orders
 stuff_partner_payments
 stuff_promo_code_details
 transfer_funds
-
+affiliate_transfers
+get_affiliate_transfer_details
+get_transfer_details
+transfers
 
 
 add_sps_view

@@ -81,7 +81,7 @@
 {% else %}
   <h2 style="text-align: center; margin: 20px auto;">{{ _('Purchase history related to promo code') }} </h2>
 {% endif %}
-  <div class="filter-container">
+  <div class="filter-container toRight">
     <select id="orderStatus" style="flex: 1; max-width: 135px;">
       <option value="" {% if filters['status'] != 'pending' %}disabled{% endif %}>{{ _('Chose Order Status') }}</option>
       <option value="all" {% if filters['status'] == 'all' %}selected{% endif %}>{{ _('All Orders') }}</option>

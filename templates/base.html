@@ -47,6 +47,7 @@
         const closeWith = "0";
         
         let myTable = document.getElementById("tableDaddy");
+        let myTables = document.querySelectorAll(".tableDaddy");
         let sidebar = document.getElementById("sidebar");
         
         toggleSidebar();
@@ -64,6 +65,12 @@
               myTable.style.marginLeft = '0%';
             }
             
+            if (myTables) {
+              myTables.forEach(table => {
+                table.style.marginLeft = '0%';
+              });
+            }
+            
             closedNav = false;
           } else {
             
@@ -72,6 +79,11 @@
               myTable.style.marginLeft = '11%';
             }
             
+            if (myTables) {
+              myTables.forEach(table => {
+                table.style.marginLeft = '11%';
+              });
+            }
             
             closedNav = true;
           }

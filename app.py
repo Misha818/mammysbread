@@ -2,8 +2,8 @@ from flask import Flask, render_template, request, jsonify, session, redirect, g
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from products import get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
+from sysadmin import get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -13,6 +13,7 @@ from OpenSSL import SSL
 from flask_recaptcha import ReCaptcha
 from io import BytesIO
 from datetime import datetime, date
+from bs4 import BeautifulSoup
 import os
 import json
 import re
@@ -1116,14 +1117,51 @@ def affiliate_order_details(pdID):
                 """
 
     result = sqlSelect(sqlQuery, (pdID, session.get('user_id')), True)
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print(result['error'])
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
     if result['length'] == 0:
         return render_template('error.html')
     
     sideBar = side_bar_stuff()
     return render_template('affiliate-order-details.html', sideBar=sideBar, result=result['data'], mainCurrency = MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
+    
+    
+
+@app.route('/get-affiliate-transfer-details', methods=['POST'])
+# @login_required
+def get_affiliate_transfer_details():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('notesID'):
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+    
+    notesID = request.form.get('notesID')
+    sqlQuery = """SELECT 
+                    `notes`.`ID`, 
+                    `notes`.`note` 
+                FROM `notes` 
+                LEFT JOIN `partner_payments` ON `partner_payments`.`ID` = `notes`.`refID`
+                WHERE  `notes`.`ID` = %s AND `partner_payments`.`affiliateID` = %s;"""
+
+    result = sqlSelect(sqlQuery, (notesID, session['user_id']), True)
+    if result['length'] == 0:
+        return jsonify({'status': "0", 'answer': result['error'], 'newCSRFtoken': newCSRFtoken})
+
+    return jsonify({'status': "1", 'row': result['data'][0], 'newCSRFtoken': newCSRFtoken})
+        
+
+@app.route('/get-transfer-details', methods=['POST'])
+# @login_required
+def get_transfer_details():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('notesID'):
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+    
+    notesID = request.form.get('notesID')
+    sqlQuery = "SELECT  `notes`.`ID`, `notes`.`note` FROM `notes` WHERE  `notes`.`ID` = %s"
+
+    result = sqlSelect(sqlQuery, (notesID,), True)
+    if result['length'] == 0:
+        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+
+    return jsonify({'status': "1", 'row': result['data'][0], 'newCSRFtoken': newCSRFtoken})
     
     
 @app.route('/get-order-details', methods=['POST'])
@@ -3025,7 +3063,7 @@ def stuff():
             '0': ['Voided', row.get('Voided') or 0, 'Voided', 'affiliate-orders/page=1&status=0'],
             '1': ['Pending', row.get('Pending') or 0, 'Pending', 'affiliate-orders/page=1&status=pending'],
             '2': ['Approved', row.get('Approved') or 0, 'Approved', 'affiliate-orders/page=1&status=5'],
-            '3': ['Settled', row.get('Settled') or 0, 'Settled', 'partner-payments/' + str(stuffID)]
+            '3': ['Settled', row.get('Settled') or 0, 'Settled', 'affiliate-transfers/page=1']
         }
 
     
@@ -3068,7 +3106,7 @@ def affiliate(affID):
         '0': ['Voided', row.get('Voided') or 0, 'Voided', 'stuff-affiliate-orders/page=1&status=0&affiliate='+affID],
         '1': ['Pending', row.get('Pending') or 0, 'Pending', 'stuff-affiliate-orders/page=1&status=pending&affiliate='+affID],
         '2': ['Approved', row.get('Approved') or 0, 'Approved', 'stuff-affiliate-orders/page=1&status=5&affiliate='+affID],
-        '3': ['Settled', row.get('Settled') or 0, 'Settled', 'stuff-partner-payments/' + affID]
+        '3': ['Settled', row.get('Settled') or 0, 'Settled', 'transfers/page=1&affiliate=' + affID]
     }
 
     sideBar = side_bar_stuff()
@@ -3517,21 +3555,159 @@ def add_sps_view():
     return render_template('sp-specifications.html', sideBar=sideBar, current_locale=get_locale())
 
 
-@app.route("/transfer-funds/<stuffID>", methods=['GET'])
+@app.route("/transfers/<filters>", methods=['GET'])
 # @login_required
-def transfer_funds(stuffID):
-    sqlQuery =  """SELECT 
-                        `stuff`.`ID`,
-                        CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`, 
-                        `rol`.`Rol`
-                    FROM `stuff`
-                        LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID`
-                    WHERE `stuff`.`Status` = %s; 
-                """
-    result = sqlSelect(sqlQuery, (1,), True)
-    sideBar = side_bar_stuff()
-    return render_template('transfer-funds.html', result=result, stuffID=int(stuffID), sideBar=sideBar, current_locale=get_locale())
+def transfers(filters):
+    if request.method == "GET":
+        newCSRFtoken = generate_csrf()
 
+        page = filters
+        affiliateID, where = ['', '']
+        sqlValTuple = ()
+
+        if '&' in filters:
+            page = filters.split('&')[0]
+            affStr = filters.split('&')[1]
+            affiliateID = affStr.split('=')[1]
+
+            if not affiliateID.isdigit():
+                return render_template('error.html', current_locale=get_locale())
+            
+            affiliateID = int(affiliateID)
+            where = "WHERE `partner_payments`.`affiliateID` = %s"
+            sqlValTuple = (affiliateID,)
+
+
+        if not page or not '=' in page:
+            return render_template('error.html', current_locale=get_locale())
+        page = page.split('=')[1]
+
+        if not page.isdigit():
+            return render_template('error.html', current_locale=get_locale())
+
+        rowsToSelect = (int(page) - 1) * int(PAGINATION)
+
+             
+        sqlQuery =  f"""SELECT 
+                        `partner_payments`.`ID` AS `transactionID`,    
+                        `partner_payments`.`amount`,
+                        `partner_payments`.`type`,
+                        `partner_payments`.`timestamp`,
+                        `notes`.`ID` AS `notesID`,
+                        `notes`.`note`,
+                        CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`,
+                        `rol`.`Rol`
+                    FROM `partner_payments`
+                        LEFT JOIN `notes` ON `notes`.`refID` = `partner_payments`.`ID`
+                        LEFT JOIN `stuff` ON `stuff`.`ID` = `partner_payments`.`affiliateID`
+                        LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`rolID`
+                    {where}
+                    ORDER BY `partner_payments`.`ID` DESC
+                    LIMIT {rowsToSelect}, {int(PAGINATION)};
+                    """
+        
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        # if result['length'] == 0:
+        #     return render_template('error.html', current_locale=get_locale())
+        
+        # resultAff = get_affiliates('AND `rol`.`ID` = 2')
+        resultAff = get_affiliates()
+        
+        numRows = totalNumRows('partner_payments', where, sqlValTuple)
+        
+
+        sideBar = side_bar_stuff()
+        return render_template('transfers.html', result=result, resultAff=resultAff, affID=affiliateID, sideBar=sideBar, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+
+
+@app.route("/affiliate-transfers/<page>", methods=['GET'])
+# @login_required
+def affiliate_transfers(page):
+    if request.method == "GET":
+        newCSRFtoken = generate_csrf()
+
+        if not page or not '=' in page:
+            return render_template('error.html', current_locale=get_locale())
+        page = page.split('=')[1]
+
+        if not page.isdigit():
+            return render_template('error.html', current_locale=get_locale())
+
+        rowsToSelect = (int(page) - 1) * int(PAGINATION)
+        where = "WHERE `partner_payments`.`affiliateID` = %s"
+
+             
+        sqlQuery =  f"""SELECT 
+                        `partner_payments`.`ID` AS `transactionID`,    
+                        `partner_payments`.`amount`,
+                        `partner_payments`.`type`,
+                        `partner_payments`.`timestamp`,
+                        `notes`.`ID` AS `notesID`,
+                        `notes`.`note`
+                    FROM `partner_payments`
+                        LEFT JOIN `notes` ON `notes`.`refID` = `partner_payments`.`ID`
+                    {where}
+                    LIMIT {rowsToSelect}, {int(PAGINATION)};
+                    """
+        
+        sqlValTuple = (session['user_id'],)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        if result['length'] == 0:
+            return render_template('error.html', current_locale=get_locale())
+        
+        numRows = totalNumRows('partner_payments', where, sqlValTuple)
+        
+
+        sideBar = side_bar_stuff()
+        return render_template('affiliate-transfers.html', result=result, sideBar=sideBar, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+
+
+
+@app.route("/transfer-funds/<stuffID>", methods=['GET', 'POST'])
+@app.route("/transfer-funds", methods=['GET', 'POST'])
+# @login_required
+def transfer_funds(stuffID=0):
+    newCSRFtoken = generate_csrf()
+    if request.method == "GET":
+
+        result = get_affiliates()
+        sideBar = side_bar_stuff()
+        return render_template('transfer-funds.html', result=result, stuffID=int(stuffID), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+    else:
+        invalid = False
+        if not request.form.get('recipient') or not request.form.get('amount') or not request.form.get('type'):
+            invalid = True
+
+        amount = request.form.get('amount')
+        num = amount.count(',') + amount.count('.')
+
+        if num > 1 or invalid == True or bool(re.match(r'^[0-9.,]+$', amount)) == False:
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}) 
+
+        recipient = request.form.get('recipient')
+        sqlQuery =  "SELECT `ID` FROM `stuff` WHERE `ID` = %s;"
+        result = sqlSelect(sqlQuery, (recipient,), True)
+        if result['length'] == 0:
+            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}) 
+
+        type = request.form.get('type')
+
+        sqlQuery = """INSERT INTO `partner_payments` (`affiliateID`, `type`, `amount`, `timestamp`) VALUES (%s, %s, %s, NOW())"""
+        sqlValTuple = (recipient, type, amount)
+        result = sqlInsert(sqlQuery, sqlValTuple)
+        insertedID = result['inserted_id']
+        if insertedID is None:
+            return jsonify({'status': "0", 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken}) 
+
+        # print('Content After', content)
+        content = request.form.get('content', '').strip()
+        if content != '<p><br></p>':
+            print('Content Before', content)
+            # submit_product_text(content, insertedID)
+            
+            submit_notes_text(content, type, insertedID, 3)
+
+        return jsonify({'status': "1", 'answer': 'Cool!', 'newCSRFtoken': newCSRFtoken})
 
 # Subproduct situation and situations adding function
 @app.route("/add_sps", methods=['POST'])

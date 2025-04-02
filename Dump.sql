@@ -418,8 +418,8 @@ DROP TABLE IF EXISTS `partner_payments`;
 CREATE TABLE `partner_payments` (
     `ID` INT AUTO_INCREMENT,
     `affiliateID` INT,
-    `value` float,
-    `type` INT, -- 1 == revard
+    `amount` float,
+    `type` INT, -- 1 = revard, 2 = Compensation
     `timestamp` DATETIME,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
@@ -489,13 +489,13 @@ DROP TABLE IF EXISTS `notes`;
 CREATE TABLE `notes` (
     `ID` INT AUTO_INCREMENT,
     `note` TEXT, 
-    `type` INT, -- 1 == message; 2 == cancelation; 3 == note; 4 == blacklisting reason; 5 == email
-    `addresseeID` INT, 
+    `type` INT, -- 1 = revard; 2 = cancelation; 3 = note; 4 = blacklisting reason; 5 = email, 6 = message;
+    `refID` INT, -- refers to the id of the corresponding table
     `addressee_type` INT, -- 1 == stuff; 2 == client; 3 affiliate 
     `add_user_id` INT NULL,
-    `Status` INT, -- 1 == active, 0 == blacklisted
+    `Status` INT, 
     PRIMARY KEY (`ID`)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB;  
 ALTER TABLE `notes` AUTO_INCREMENT = 1;
 
 

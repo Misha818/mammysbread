@@ -34,7 +34,7 @@ def submit_product_text(html_content, productID):
     # Regular expression to extract the base64 string from the <img> tag
     pattern = r'<img\s+[^>]*src="data:image/([^;]+);filename=([^;]+);base64,([^"]+)"[^>]*>'
     matches = re.findall(pattern, html_content)
-    target_directory = os.path.join(static_folder_path, 'images\products')
+    target_directory = os.path.join(static_folder_path, 'images\\products')
     os.makedirs(target_directory, exist_ok=True)
 
     # Placeholder for the modified HTML content
@@ -117,6 +117,72 @@ def submit_product_text(html_content, productID):
 
     return resultRT
 
+
+def submit_notes_text(html_content, type, refID, addresseeType):
+    # Regular expression to extract the base64 string from the <img> tag
+    pattern = r'<img\s+[^>]*src="data:image/([^;]+);filename=([^;]+);base64,([^"]+)"[^>]*>'
+    matches = re.findall(pattern, html_content)
+    target_directory = os.path.join(static_folder_path, r'images\documents')
+    os.makedirs(target_directory, exist_ok=True)
+
+    # Placeholder for the modified HTML content
+    modified_html = html_content
+    
+    for idx, match in enumerate(matches):
+        # Match contains (image_type, base64_string)
+        image_type, filename, base64_string = match
+
+        # Check if the filename already exists
+        image_filename = filename
+        old_file_name = filename
+        
+        # Check if the filename exists and create a unique filename if it does
+        file_path = os.path.join(target_directory, image_filename)
+        while os.path.exists(file_path):
+            name, ext = os.path.splitext(filename)
+            if '_' in name: # Check if the name contains an underscore
+                arr = name.rsplit('_', 1)  # Split the name from the last underscore
+                if arr[-1].isdigit(): # Check if the part after the underscore is a digit
+                    # Increment the number and create a new unique filename
+                    last_num = int(arr[-1]) + 1
+                    unique_filename = f"{arr[0]}_{last_num}{ext}"
+                   
+                else:
+                    unique_filename = f"{name}_1{ext}" # Append '_1' to the name to create a new unique filename
+            else:
+                unique_filename = f"{name}_1{ext}"  # Append '_1' to the name to create a new unique filename
+            
+            filename = unique_filename
+            image_filename = unique_filename
+            
+            # Update the file path with the new unique filename
+            file_path = os.path.join(target_directory, unique_filename)
+
+        # Create the image path
+        image_path = os.path.join(target_directory, image_filename)
+        
+        # Decode the base64 string and write the image file
+        image_data = base64.b64decode(base64_string)
+        with open(image_path, 'wb') as image_file:
+            image_file.write(image_data)
+        
+        
+        # image_url = os.path.join(target_directory, image_filename)
+        image_url = f'/static/images/documents/{image_filename}'
+        
+        base64_pattern = re.escape(f'data:image/{image_type};filename={old_file_name};base64,') + '([^"]+)'
+        modified_html = re.sub(base64_pattern, image_url, modified_html, 1)
+    
+    img_src_pattern = r'<img[^>]+src="([^">]+)"'
+
+    new_img_urls = set(re.findall(img_src_pattern, modified_html))
+
+    sqlInsertQuery =   "INSERT INTO `notes` (`note`, `type`, `refID`, `addressee_type`, `add_user_id`, `Status`) VALUES (%s, %s, %s, %s, %s, %s)"
+    sqlInsertValTuple = (modified_html, type, refID, addresseeType, session['user_id'], 1)
+    result = sqlInsert(sqlInsertQuery, sqlInsertValTuple)
+
+    return result
+    
 
 def submit_reach_text(html_content, productID):
     

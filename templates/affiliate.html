@@ -260,8 +260,8 @@ tr:nth-child(even) {
 </div>
 
 
-
 <script>
+
 
   const resultRevardsList = JSON.parse('{{ resultRevardsList|safe }}');
 
@@ -300,33 +300,6 @@ stepsKeys.forEach(key => {
   stepper.appendChild(stepDiv);
 });
 
-// Function to update the stepper classes based on currentStatus
-// const updateStepper = () => {
-//   const steps = document.querySelectorAll(".step");
-//   steps.forEach(step => {
-//     const status = parseInt(step.getAttribute("data-status"));
-//     // If order is cancelled, remove all active1/completed classes.
-//     if (currentStatus === 0) {
-//       step.classList.remove("active1", "completed");
-//     } else if (status < currentStatus) {
-//       step.classList.add("completed");
-//       step.classList.remove("active1");
-//     } else if (status === currentStatus) {
-//       step.classList.add("active1");
-//       step.classList.remove("completed");
-//     } else {
-//       step.classList.remove("active1", "completed");
-//     }
-//   });
-// };
-
-// Event handler for advancing the order status
-// document.getElementById("nextBtn").addEventListener("click", () => {
-//   if (currentStatus < 5) {
-//     currentStatus++;
-//     updateStepper();
-//   }
-// });
 
 // Event handler for canceling the order
 if (document.getElementById("cancelBtn")) {
