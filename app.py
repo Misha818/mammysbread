@@ -3,7 +3,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -12,7 +12,7 @@ from flask_wtf.csrf import CSRFError, generate_csrf
 from OpenSSL import SSL
 from flask_recaptcha import ReCaptcha
 from io import BytesIO
-from datetime import datetime, date
+from datetime import datetime, date, UTC
 from bs4 import BeautifulSoup
 import os
 import json
@@ -30,7 +30,8 @@ app = Flask(__name__)
 
 @app.context_processor
 def inject_current_year():
-    return {'current_year': datetime.utcnow().year}
+    return {'current_year': datetime.now(UTC).year}
+
 
 # app.config['RECAPTCHA_SITE_KEY'] = os.getenv('SECRET_KEY')
 # app.config['RECAPTCHA_SECRET_KEY'] = os.getenv('SECRET_KEY')
@@ -71,20 +72,28 @@ MAIN_CURRENCY = os.getenv('MAIN_CURRENCY')
 key_file = os.path.join(basedir, 'certs', 'private.key')
 cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 
-orderStatusList = {
-            '0': gettext('Cancelled'),
-            '1': gettext('Panding'),
-            '2': gettext('Purchased'),
-            '3': gettext('Preparing'),
-            '4': gettext('Ready'),
-            '5': gettext('Delivered')
-        }
+
+# return = {
+#             '0': gettext('Cancelled'),
+#             '1': gettext('Panding'),
+#             '2': gettext('Purchased'),
+#             '3': gettext('Preparing'),
+#             '4': gettext('Ready'),
+#             '5': gettext('Delivered')
+#         }
+
+
+orderStatusList = get_order_status_list()
 
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
     return render_template('csrf_error.html', reason=e.description), 400
 
-smthWrong = gettext('Something went wrong. Please try again!')
+smthWrong = _l('Something went wrong. Please try again!')
+
+print('AAAAAAAAAAAAAAAAAAAAAAA')
+print(smthWrong)
+print('AAAAAAAAAAAAAAAAAAAAAAA')
 
 def side_bar_stuff():
     stuffID = session.get("user_id")
@@ -381,6 +390,8 @@ def order_tracker(pdID):
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] == 0:
         return render_template('error.html', current_locale=get_locale())
+    
+    orderStatusList = get_order_status_list()
 
     return render_template('order-tracker.html', row=result['data'][0], orderStatusList=json.dumps(orderStatusList),  current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
@@ -539,7 +550,11 @@ def checkout():
         
         # Get Promo Code ID
         promoID, affiliateID = [None, None]
-        if data['promo'] is not None:
+        print('AAAAAAAAAAAAAAAAAAAA')
+        print(data['promo'])
+        print(type(data['promo']))
+        print('AAAAAAAAAAAAAAAAAAAA')
+        if data['promo'] != '':
             promodict = get_promo_code_id_affiliateID(data['promo'])
             if len(promodict) > 0:
                 promoID = promodict['ID']
@@ -729,7 +744,8 @@ def orders(filter):
     sideBar = side_bar_stuff()
 
     numRows = totalNumRows('payment_details', where, sqlValTuple)
-    # numRows = totalNumRows('payment_details')
+    
+    orderStatusList = get_order_status_list()
 
     return render_template('orders.html', result=result, filters=filters, orderStatusList=orderStatusList, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
@@ -859,10 +875,8 @@ def affiliate_orders(filter):
     #             LIMIT {rowsToSelect}, {int(PAGINATION)}; 
     #            """
     
-    print('AAAAAAAAAAAAAAAAAAAAAAA')
-    print(sqlQuery)
-    print(filters.get('status'))
-    print('AAAAAAAAAAAAAAAAAAAAAAA')
+    orderStatusList = get_order_status_list()
+
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     sideBar = side_bar_stuff()
 
@@ -988,7 +1002,8 @@ def stuff_affiliate_orders(filter):
     sideBar = side_bar_stuff()
 
     numRows = totalNumRows('payment_details', where, sqlValTuple)
-    # numRows = totalNumRows('payment_details')
+
+    orderStatusList = get_order_status_list()
 
     return render_template('affiliate-orders.html', result=result, filters=filters, affID=filters['affiliate'], orderStatusList=orderStatusList, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
@@ -1196,6 +1211,7 @@ def get_order_details():
                     ;
                 """
     result = sqlSelect(sqlQuery, (pdID,), True)
+    orderStatusList = get_order_status_list()
 
     return jsonify({'status': "1", 'data': result['data'], "statusList": orderStatusList, "newCSRFtoken": generate_csrf()})
 
@@ -1332,7 +1348,7 @@ def get_slides():
 @login_required
 def add_price(prID):
 
-    answer = gettext('Something is wrong! 0')
+    answer = gettext('Something is wrong!')
     # newCSRFtoken = generate_csrf()
     mainCurrency = MAIN_CURRENCY
     languageID = getLangID()
@@ -3060,13 +3076,12 @@ def stuff():
             row = resultRevards['data'][0]
     
         resultRevardsList = {
-            '0': ['Voided', row.get('Voided') or 0, 'Voided', 'affiliate-orders/page=1&status=0'],
-            '1': ['Pending', row.get('Pending') or 0, 'Pending', 'affiliate-orders/page=1&status=pending'],
-            '2': ['Approved', row.get('Approved') or 0, 'Approved', 'affiliate-orders/page=1&status=5'],
-            '3': ['Settled', row.get('Settled') or 0, 'Settled', 'affiliate-transfers/page=1']
+            '0': [gettext('Voided'),    row.get('Voided') or 0, 'Voided', 'affiliate-orders/page=1&status=0'],
+            '1': [gettext('Pending'),   row.get('Pending') or 0, 'Pending', 'affiliate-orders/page=1&status=pending'],
+            '2': [gettext('Approved'),  row.get('Approved') or 0, 'Approved', 'affiliate-orders/page=1&status=5'],
+            '3': [gettext('Settled'),   row.get('Settled') or 0, 'Settled', 'affiliate-transfers/page=1']
         }
 
-    
     return render_template(view, result=result, resultP=resultP, resultRevardsList=json.dumps(resultRevardsList), supportedLangsData=supportedLangsData, currentDate=date.today(), current_locale=get_locale())
 
 
@@ -3103,10 +3118,10 @@ def affiliate(affID):
         row = resultRevards['data'][0]
 
     resultRevardsList = {
-        '0': ['Voided', row.get('Voided') or 0, 'Voided', 'stuff-affiliate-orders/page=1&status=0&affiliate='+affID],
-        '1': ['Pending', row.get('Pending') or 0, 'Pending', 'stuff-affiliate-orders/page=1&status=pending&affiliate='+affID],
-        '2': ['Approved', row.get('Approved') or 0, 'Approved', 'stuff-affiliate-orders/page=1&status=5&affiliate='+affID],
-        '3': ['Settled', row.get('Settled') or 0, 'Settled', 'transfers/page=1&affiliate=' + affID]
+        '0': [gettext('Voided'), row.get('Voided') or 0, 'Voided', 'stuff-affiliate-orders/page=1&status=0&affiliate='+affID],
+        '1': [gettext('Pending'), row.get('Pending') or 0, 'Pending', 'stuff-affiliate-orders/page=1&status=pending&affiliate='+affID],
+        '2': [gettext('Approved'), row.get('Approved') or 0, 'Approved', 'stuff-affiliate-orders/page=1&status=5&affiliate='+affID],
+        '3': [gettext('Settled'), row.get('Settled') or 0, 'Settled', 'transfers/page=1&affiliate=' + affID]
     }
 
     sideBar = side_bar_stuff()
@@ -3191,7 +3206,7 @@ def stuff_promo_code_details(filters):
         return render_template('error.html', current_locale=get_locale())
     
     discounts = json.dumps(result['data']) 
-    headings = [result['data'][0]['affiliate'], result['data'][0]['Promo']]
+    headings = [result['data'][0]['affiliate'], result['data'][0]['Promo'], str(result['data'][0]['affiliateID'])]
 
 
     sideBar = side_bar_stuff()
@@ -3230,7 +3245,14 @@ def store():
                             `product`.`ID`,
                             `product`.`Title` AS `prTitle`,
                             `product`.`Thumbnail`,
-                            SUM(`quantity`.`Quantity`) AS `TotalQuantity`
+                            SUM(`quantity`.`Quantity`) AS `TotalQuantity`,
+                            (SELECT 
+                                SUM(`quantity`.`Quantity`)
+                                FROM `Quantity`
+                                    LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                                    LEFT JOIN `product` p ON `product_type`.`Product_ID` = `p`.`ID`
+                                WHERE `Quantity`.`expDate` < CURRENT_DATE() AND `p`.`ID` = `product`.`ID`) 
+                            AS `expired`
                         FROM `quantity`
                             LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
                             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
@@ -3293,7 +3315,14 @@ def store():
                             `product`.`ID`,
                             `product`.`Title` AS `prTitle`,
                             `product`.`Thumbnail`,
-                            SUM(`quantity`.`Quantity`) AS `TotalQuantity`
+                            SUM(`quantity`.`Quantity`) AS `TotalQuantity`,
+                            (SELECT 
+                                SUM(`quantity`.`Quantity`)
+                                FROM `Quantity`
+                                    LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                                    LEFT JOIN `product` p ON `product_type`.`Product_ID` = `p`.`ID`
+                                WHERE `Quantity`.`expDate` < CURRENT_DATE() AND `p`.`ID` = `product`.`ID`) 
+                            AS `expired`
                         FROM `quantity`
                             LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
                             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
@@ -4076,6 +4105,9 @@ def get_product_types_quantity():
                             (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
                             (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
                             SUM(`quantity`.`Quantity`) AS `Quantity`,
+                            (SELECT SUM(`q`.`Quantity`) FROM `Quantity` as q
+                                WHERE `q`.`expDate` < CURRENT_DATE() AND `q`.`productTypeID` = `quantity`.`productTypeID`
+                            ) AS `expired`,
                             `product_type`.`Status`
                     FROM `quantity`
                         LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
@@ -4494,7 +4526,7 @@ def add_to_store(ptID=None):
                     FROM `product` 
                         LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
                     WHERE `product`.`Language_ID` = %s 
-                    ORDER BY `product`.`ID`, `product_type`.`Order` 
+                    ORDER BY `product`.`Order`, `product_type`.`Order` 
                     -- LIMIT 2
                     ;
                     """
@@ -4995,7 +5027,7 @@ def check_pt_quantity():
     sqlValTuple = (ptID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     
-    if result['data'][0]['Quantity'] == None:
+    if result['data'][0]['Quantity'] == None or result['data'][0]['Quantity'] == 0:
         answer = gettext("The seller doesn't have that many left.")
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
@@ -5026,8 +5058,10 @@ def check_pt_quantity():
 
 @app.route('/<myLinks>')
 def index(myLinks):
+    print('Inside index')
+    print(myLinks)
+    print('Inside index')
     content = get_RefKey_LangID_by_link(myLinks)
-
     slideShow = []
     supportedLangsData = []
     metaTags = ''
@@ -5039,7 +5073,7 @@ def index(myLinks):
 
         if content['ptID']:
             ptID = content['ptID']
-
+        
         if content['Type'] == 'product':
             productStatus = ' AND `product`.`Product_Status` = 2; '
             prData = constructPrData(content['RefKey'], productStatus)
@@ -5083,51 +5117,7 @@ def index(myLinks):
                                 supportedLangsData.append(arr)
                                     
             else:
-                myHtml = 'error.html'
-
-        # if content['Type'] == 'article':            
-        #     articleStatus = ' AND `article`.`Article_Status` = 2; '
-        #     prData = constructPrData(content['RefKey'], articleStatus)
-        #     articleStatusResult = prData.get('Status', 1)
-
-        #     if articleStatusResult == 2:
-        #         myHtml = 'article_client.html'
-                            
-        #         metaContent = prData
-        #         metaContent['SiteName'] = request.host
-        #         metaContent['Url'] = request.host + '/' + prData['Url']
-        #         imageDir = 'images/thumbnails/' + prData['Thumbnail']
-        #         metaContent['ImageUrl'] = url_for('static', filename=imageDir)
-
-        #         prData['test'] = metaContent['ImageUrl']
-        #         metaTags = get_meta_tags(prData)
-
-        #         # Get active languages
-        #         RefKey = content['RefKey']
-        #         # sqlQueryL = "SELECT `Language_ID` FROM `article_relatives` WHERE `A_Ref_Key` = %s;"
-        #         sqlQueryL = """
-        #                     SELECT 
-        #                         `article_relatives`.`Language_ID`,
-        #                         `Url`
-        #                     FROM `article_relatives`
-        #                     LEFT JOIN `article` ON `article`.`ID` = `article_relatives`.`A_ID`
-        #                     WHERE `A_Ref_Key` = %s AND `article`.`Article_Status` = 2;
-        #                     """
-        #         sqlValL = (RefKey,)
-        #         resultL = sqlSelect(sqlQueryL, sqlValL, False)
-
-        #         supportedLangsData = []
-        #         if resultL['length'] > 1:
-        #             langueges = supported_langs()
-
-        #             for langdata in resultL['data']:                        
-        #                 for lang in langueges:
-        #                     if lang['Language_ID'] == langdata[0]:
-        #                         arr = (langdata[1], lang['Language'], lang['Prefix'])
-        #                         supportedLangsData.append(arr)                        
-        #     else:
-        #         myHtml = 'error.html'            
-            
+                myHtml = 'error.html'            
     else:
         myHtml = 'error.html'
         prData = ''
@@ -5155,6 +5145,44 @@ def get_langs():
         langData.append(childDict)
         
     return langData
+
+
+@app.route("/subscribe", methods=["POST"])
+def subscribe():
+    newCSRFtoken = generate_csrf()
+    # Check if email exists
+    if not request.form.get('Email'):
+        answer = gettext('Please specify email!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+    
+    Email = request.form.get('Email').strip()
+
+    # Validate email
+    emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+    # Check if the email matches the pattern
+    if not re.match(emailPattern, Email):
+        answer = gettext('Invalid email format')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
+    sqlQuery = "SELECT `email` FROM `emails` WHERE `email` = %s;"
+    result = sqlSelect(sqlQuery, (Email,), True)
+    if result['length'] > 0:
+        sqlQueryUpdate = "UPDATE `emails` SET `Status` = 2 WHERE `email` = %s;"
+        resultUpdate = sqlUpdate(sqlQueryUpdate, (Email,))
+        if resultUpdate['status'] == '-1':
+            return jsonify({'status': '0', 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+
+    else:
+        sqlQueryInsert = "INSERT INTO `emails` (`email`, `Status`) VALUES (%s, %s)"
+        sqlValTuple = (Email, 2)
+        resultInsert = sqlInsert(sqlQueryInsert, sqlValTuple)
+        if resultInsert['status'] == 0:
+            return jsonify({'status': '0', 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+
+
+    answer = gettext("You have subscribed successfully!")
+    return jsonify({'status': '1', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
 
 @app.route("/get-available-pts", methods=["POST"])
@@ -5197,6 +5225,7 @@ def get_available_pts():
 # @app.route("/timer", methods=["GET"])
 # def random_reminder():
 #     return render_template('random-reminder.html')
+
 
 
 if __name__ == '__main__':

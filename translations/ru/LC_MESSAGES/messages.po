@@ -5,8 +5,8 @@ msgstr ""
 "POT-Creation-Date: 2024-05-18 01:00+0400\n"
 "PO-Revision-Date: 2024-05-17 21:44+0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
-"Language-Team: en <LL@li.org>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -14,121 +14,121 @@ msgstr ""
 "Generated-By: Babel 2.15.0\n"
 
 msgid "Unpublished"
-msgstr "Unpublished"
+msgstr "Неопубликовано"
 
 #: templates/article-categories.html:61
 #: templates/product-categories-copy.html:61
 #: templates/product-categories.html:82
 msgid "Empty"
-msgstr "Empty"
+msgstr "Пусто"
 
 #: templates/article-categories.html:67 templates/order-details.html:189
 #: templates/product-categories-copy.html:67
 #: templates/product-categories.html:88 templates/products.html:169
 #: templates/products.html:397 templates/promo-codes.html:106
 msgid "Edit"
-msgstr "Edit"
+msgstr "Редактировать"
 
 #: templates/buy-now.html:4 templates/index.html:461
 msgid "Buy Now"
-msgstr "Buy Now"
+msgstr "Купить сейчас"
 
 #: templates/buy-now.html:87
 msgid "Items in Cart"
-msgstr "Items in Cart"
+msgstr "Товары в корзине"
 
 #: templates/buy-now.html:109 templates/checkout.html:109
 msgid "Promo code"
-msgstr "Promo code"
+msgstr "Промокод"
 
 #: templates/buy-now.html:117 templates/checkout.html:117
 #: templates/confirmation-page.html:248 templates/confirmation-page.html:289
 #: templates/order-details.html:334
 msgid "Total"
-msgstr "Total"
+msgstr "Итого"
 
 #: templates/buy-now.html:140 templates/checkout.html:140
 #: templates/order-details.html:435
 msgid "Billing address"
-msgstr "Billing address"
+msgstr "Платежный адрес"
 
 #: templates/buy-now.html:145 templates/checkout.html:145
 #: templates/order-details.html:445
 msgid "First name"
-msgstr "First name"
+msgstr "Имя"
 
 #: templates/buy-now.html:147 templates/checkout.html:147
 msgid "Valid first name is required."
-msgstr "Valid first name is required."
+msgstr "Требуется действительное имя."
 
 #: templates/buy-now.html:150 templates/checkout.html:150
 #: templates/order-details.html:459
 msgid "Last name"
-msgstr "Last name"
+msgstr "Фамилия"
 
 #: templates/buy-now.html:152 templates/checkout.html:152
 msgid "Valid last name is required."
-msgstr "Valid last name is required."
+msgstr "Требуется действительная фамилия."
 
 #: templates/buy-now.html:157 templates/checkout.html:157
 #: templates/order-details.html:473
 msgid "Phone Number"
-msgstr "Phone Number"
+msgstr "Номер телефона"
 
 #: templates/buy-now.html:160 templates/buy-now.html:169
 #: templates/checkout.html:160 templates/checkout.html:169
 msgid "Please enter valid phone number!"
-msgstr "Please enter valid phone number!"
+msgstr "Пожалуйста, введите действительный номер телефона!"
 
 #: templates/buy-now.html:166 templates/checkout.html:166
 msgid "Confirm Phone Number"
-msgstr "Confirm Phone Number"
+msgstr "Подтвердите номер телефона"
 
 #: templates/buy-now.html:170 templates/checkout.html:170
 msgid "Phone numbers do not match!"
-msgstr "Phone numbers do not match!"
+msgstr "Номера телефонов не совпадают!"
 
 #: templates/buy-now.html:175 templates/checkout.html:175
 msgid "Optional"
-msgstr "Optional"
+msgstr "Необязательно"
 
 #: templates/buy-now.html:177 templates/checkout.html:177
 msgid "Please enter a valid email address!"
-msgstr "Please enter a valid email address!"
+msgstr "Пожалуйста, введите действительный адрес электронной почты!"
 
 #: templates/buy-now.html:181 templates/checkout.html:181
 #: templates/order-details.html:501
 msgid "Address"
-msgstr "Address"
+msgstr "Адрес"
 
 #: templates/buy-now.html:183 templates/checkout.html:183
 msgid "Please enter your shipping address!"
-msgstr "Please enter your shipping address!"
+msgstr "Пожалуйста, введите адрес доставки!"
 
 #: templates/buy-now.html:187 templates/checkout.html:187
 msgid "City"
-msgstr "City"
+msgstr "Город"
 
 #: templates/buy-now.html:189 templates/checkout.html:189
 msgid "Choose..."
-msgstr "Choose..."
+msgstr "Выберите..."
 
 #: templates/buy-now.html:190 templates/checkout.html:190
 #: templates/confirmation-page.html:141 templates/order-details.html:205
 msgid "Yerevan"
-msgstr "Yerevan"
+msgstr "Ереван"
 
 #: templates/buy-now.html:195 templates/checkout.html:195
 msgid "Payment"
-msgstr "Payment"
+msgstr "Оплата"
 
 #: templates/buy-now.html:199 templates/checkout.html:199
 msgid "Credit card"
-msgstr "Credit card"
+msgstr "Кредитная карта"
 
 #: templates/buy-now.html:203 templates/checkout.html:203
 msgid "Debit card"
-msgstr "Debit card"
+msgstr "Дебетовая карта"
 
 #: templates/buy-now.html:207 templates/checkout.html:207
 msgid "PayPal"
@@ -136,27 +136,27 @@ msgstr "PayPal"
 
 #: templates/buy-now.html:212 templates/checkout.html:212
 msgid "Name on card"
-msgstr "Name on card"
+msgstr "Имя на карте"
 
 #: templates/buy-now.html:214 templates/checkout.html:214
 msgid "Name on card is required."
-msgstr "Name on card is required."
+msgstr "Имя на карте обязательно."
 
 #: templates/buy-now.html:217 templates/checkout.html:217
 msgid "Credit card number"
-msgstr "Credit card number"
+msgstr "Номер кредитной карты"
 
 #: templates/buy-now.html:219 templates/checkout.html:219
 msgid "Credit card number is required."
-msgstr "Credit card number is required."
+msgstr "Номер кредитной карты обязателен."
 
 #: templates/buy-now.html:222 templates/checkout.html:222
 msgid "Expiration"
-msgstr "Expiration"
+msgstr "Срок действия"
 
 #: templates/buy-now.html:224 templates/checkout.html:224
 msgid "Expiration date required."
-msgstr "Expiration date required."
+msgstr "Требуется срок действия."
 
 #: templates/buy-now.html:227 templates/checkout.html:227
 msgid "CVV"
@@ -164,734 +164,734 @@ msgstr "CVV"
 
 #: templates/buy-now.html:229 templates/checkout.html:229
 msgid "Security code required."
-msgstr "Security code required."
+msgstr "Требуется код безопасности."
 
 #: templates/buy-now.html:237 templates/checkout.html:237
 msgid "Continue"
-msgstr "Continue"
+msgstr "Продолжить"
 
 #: templates/buy-now.html:614 templates/checkout.html:621
 #: templates/index.html:143 templates/index.html:351 templates/index.html:834
 msgid "Add To Cart"
-msgstr "Add To Cart"
+msgstr "В корзину"
 
 #: templates/buy-now.html:1164 templates/checkout.html:1159
 msgid "Louding..."
-msgstr "Loading..."
+msgstr "Загрузка..."
 
 #: templates/buy-now.html:1169 templates/checkout.html:1164
 msgid "Enter Promo Code"
-msgstr "Enter Promo Code"
+msgstr "Введите промокод"
 
 #: templates/buy-now.html:1305 templates/buy-now.html:1373
 #: templates/buy-now.html:1414 templates/checkout.html:1300
 #: templates/checkout.html:1368 templates/checkout.html:1409
 msgid "Please improve all field marked in red"
-msgstr "Please improve all fields marked in red"
+msgstr "Пожалуйста, исправьте все поля, отмеченные красным"
 
 #: templates/buy-now.html:1427 templates/checkout.html:1422
 msgid "Country codes of phone numbers do not match!"
-msgstr "Country codes of phone numbers do not match!"
+msgstr "Коды стран в номерах телефонов не совпадают!"
 
 #: templates/cart.html:3 templates/cart.html:28 templates/cart.html:40
 msgid "Shopping Cart"
-msgstr "Shopping Cart"
+msgstr "Корзина"
 
 #: templates/cart.html:29 templates/cart.html:41
 #: templates/confirmation-page.html:235 templates/index.html:334
 #: templates/order-details.html:321
 msgid "Price"
-msgstr "Price"
+msgstr "Цена"
 
 #: templates/cart.html:32 templates/cart.html:310
 msgid "You don’t have any items in your cart."
-msgstr "You don’t have any items in your cart."
+msgstr "В вашей корзине нет товаров."
 
 #: templates/cart.html:33 templates/cart.html:314
 msgid "Start shopping"
-msgstr "Start shopping"
+msgstr "Начать покупки"
 
 #: templates/cart.html:120
 msgid "Subtotal"
-msgstr "Subtotal"
+msgstr "Промежуточный итог"
 
 #: templates/cart.html:120
 msgid "items"
-msgstr "items"
+msgstr "товаров"
 
 #: templates/cart.html:122 templates/index.html:488
 msgid "Proceed to Checkout"
-msgstr "Proceed to Checkout"
+msgstr "Перейти к оформлению заказа"
 
 #: templates/checkout.html:4
 msgid "Checkout"
-msgstr "Checkout"
+msgstr "Оформление заказа"
 
 #: templates/checkout.html:87
 msgid "Your cart"
-msgstr "Your cart"
+msgstr "Ваша корзина"
 
 #: templates/confirmation-page.html:4
 msgid "Confirmation Page"
-msgstr "Confirmation Page"
+msgstr "Страница подтверждения"
 
 #: templates/confirmation-page.html:112
 msgid "Order Confirmed!"
-msgstr "Order Confirmed!"
+msgstr "Заказ подтвержден!"
 
 #: templates/confirmation-page.html:113
 msgid "Thank you for shopping with us. We are preparing your order now!"
-msgstr "Thank you for shopping with us. We are preparing your order now!"
+msgstr "Спасибо за покупку. Мы готовим ваш заказ!"
 
 #: templates/confirmation-page.html:137
 msgid "Delivery Information"
-msgstr "Delivery Information"
+msgstr "Информация о доставке"
 
 #: templates/confirmation-page.html:141 templates/order-details.html:205
 msgid "Armenia"
-msgstr "Armenia"
+msgstr "Армения"
 
 #: templates/confirmation-page.html:150 templates/order-details.html:212
 msgid "Payment Method"
-msgstr "Payment Method"
+msgstr "Способ оплаты"
 
 #: templates/confirmation-page.html:158 templates/index.html:493
 msgid "Continue Shopping"
-msgstr "Continue Shopping"
+msgstr "Продолжить покупки"
 
 #: templates/confirmation-page.html:159
 msgid "Contact us"
-msgstr "Contact us"
+msgstr "Контакты"
 
 #: templates/confirmation-page.html:160
 msgid "Track Your Order"
-msgstr "Track Your Order"
+msgstr "Отслеживать ваш заказ"
 
 #: templates/confirmation-page.html:332
 msgid "phone"
-msgstr "phone"
+msgstr "телефон"
 
 #: templates/create-promo-code.html:3 templates/create-promo-code.html:92
 msgid "Create Promo Code"
-msgstr "Create Promo Code"
+msgstr "Создать промокод"
 
 #: templates/create-promo-code.html:99 templates/edit-promo-code.html:155
 msgid "Select an affiliate"
-msgstr "Select an affiliate"
+msgstr "Выберите аффилиата"
 
 #: templates/create-promo-code.html:105 templates/edit-promo-code.html:161
 msgid "You do not have any affiliate yet"
-msgstr "You do not have any affiliate yet"
+msgstr "У вас еще нет аффилиата"
 
 #: templates/create-promo-code.html:110 templates/edit-promo-code.html:166
 #: templates/products.html:3 templates/public.html:122
 msgid "Products"
-msgstr "Products"
+msgstr "Продукты"
 
 #: templates/create-promo-code.html:145 templates/create-promo-code.html:1569
 #: templates/edit-promo-code.html:202 templates/edit-promo-code.html:1979
 msgid "Auto Genarate"
-msgstr "Auto Generate"
+msgstr "Автогенерация"
 
 #: templates/create-promo-code.html:350 templates/edit-promo-code.html:362
 msgid "Please improve all fields marked with red in products!"
-msgstr "Please improve all fields marked with red in products!"
+msgstr "Пожалуйста, исправьте все поля, отмеченные красным, в продуктах!"
 
 #: templates/create-promo-code.html:358 templates/edit-promo-code.html:370
 msgid "Please select at least one product type!"
-msgstr "Please select at least one product type!"
+msgstr "Пожалуйста, выберите хотя бы один тип продукта!"
 
 #: templates/create-promo-code.html:368 templates/edit-promo-code.html:380
 msgid "Please select expiration date!"
-msgstr "Please select expiration date!"
+msgstr "Пожалуйста, выберите дату истечения срока!"
 
 #: templates/create-promo-code.html:377 templates/edit-promo-code.html:389
 msgid "Please create promo code!"
-msgstr "Please create promo code!"
+msgstr "Пожалуйста, создайте промокод!"
 
 #: templates/create-promo-code.html:495 templates/edit-promo-code.html:515
 msgid "Select All"
-msgstr "Select All"
+msgstr "Выбрать всё"
 
 #: templates/create-promo-code.html:534 templates/create-promo-code.html:552
 #: templates/edit-promo-code.html:554 templates/edit-promo-code.html:572
 msgid "All discount values will be changed to"
-msgstr "All discount values will be changed to"
+msgstr "Все значения скидок будут изменены на"
 
 #: templates/create-promo-code.html:625 templates/create-promo-code.html:930
 #: templates/create-promo-code.html:1240 templates/edit-promo-code.html:649
 #: templates/edit-promo-code.html:959 templates/edit-promo-code.html:1276
 msgid "All revard values in Product Type fields will be changed to"
-msgstr "All reward values in Product Type fields will be changed to"
+msgstr "Все значения вознаграждений в полях типа продукта будут изменены на"
 
 #: templates/create-promo-code.html:684 templates/edit-promo-code.html:708
 msgid "All revard options will be changed to"
-msgstr "All reward options will be changed to"
+msgstr "Все варианты вознаграждения будут изменены на"
 
 #: templates/create-promo-code.html:684 templates/create-promo-code.html:990
 #: templates/create-promo-code.html:1300 templates/edit-promo-code.html:708
 #: templates/edit-promo-code.html:1019 templates/edit-promo-code.html:1336
 msgid "And all corresponding reward values will be removed"
-msgstr "And all corresponding reward values will be removed"
+msgstr "И все соответствующие значения вознаграждений будут удалены"
 
 #: templates/create-promo-code.html:719 templates/create-promo-code.html:1025
 #: templates/edit-promo-code.html:743 templates/edit-promo-code.html:1054
 msgid "Discount state is disabled"
-msgstr "Discount state is disabled"
+msgstr "Состояние скидки отключено"
 
 #: templates/create-promo-code.html:839 templates/create-promo-code.html:857
 #: templates/create-promo-code.html:1149 templates/create-promo-code.html:1167
 #: templates/edit-promo-code.html:863 templates/edit-promo-code.html:881
 #: templates/edit-promo-code.html:1181 templates/edit-promo-code.html:1199
 msgid "All discount values in current Product Type fields will be changed to"
-msgstr "All discount values in current Product Type fields will be changed to"
+msgstr "Все значения скидок в текущих полях типа продукта будут изменены на"
 
 #: templates/create-promo-code.html:990 templates/create-promo-code.html:1300
 #: templates/edit-promo-code.html:1019 templates/edit-promo-code.html:1336
 msgid "All revard options in current Product Type fields will be changed to"
-msgstr "All reward options in current Product Type fields will be changed to"
+msgstr "Все варианты вознаграждения в текущих полях типа продукта будут изменены на"
 
 #: templates/create-promo-code.html:1560 templates/edit-promo-code.html:1970
 msgid "Loading ......"
-msgstr "Loading..."
+msgstr "Загрузка ......"
 
 #: templates/edit-price.html:3
 msgid "Edit Price"
-msgstr "Edit Price"
+msgstr "Редактировать цену"
 
 #: templates/edit-price.html:48
 msgid "Edit Product Type Title"
-msgstr "Edit Product Type Title"
+msgstr "Редактировать заголовок типа продукта"
 
 #: templates/edit-price.html:50
 msgid "Edit Product Type Price"
-msgstr "Edit Product Type Price"
+msgstr "Редактировать цену типа продукта"
 
 #: templates/edit-promo-code.html:3 templates/edit-promo-code.html:148
 msgid "Edit Promo Code"
-msgstr "Edit Promo Code"
+msgstr "Редактировать промокод"
 
 #: templates/edit-pts.html:4
 msgid "Edit Product Type Specifications"
-msgstr "Edit Product Type Specifications"
+msgstr "Редактировать характеристики типа продукта"
 
 #: templates/edit-pts.html:15 templates/sp-specifications.html:15
 msgid "Product Type Situation name"
-msgstr "Product Type Situation name"
+msgstr "Название состояния типа продукта"
 
 #: templates/edit-pts.html:165 templates/sp-specifications.html:159
 msgid "Please improve all red fields!"
-msgstr "Please improve all red fields!"
+msgstr "Пожалуйста, исправьте все поля, отмеченные красным!"
 
 #: templates/edit-role.html:27 templates/edit-role.html:37
 msgid "Edit Role"
-msgstr "Edit Role"
+msgstr "Редактировать роль"
 
 #: templates/edit-teammate.html:32 templates/edit-teammate.html:44
 msgid "Edit Teammate"
-msgstr "Edit Teammate"
+msgstr "Редактировать коллегу"
 
 #: templates/edit-teammate.html:64
 msgid "Avatar"
-msgstr "Avatar"
+msgstr "Аватар"
 
 #: templates/edit-teammate.html:70 templates/edit_article_category.html:86
 #: templates/edit_product_category.html:119
 msgid "Passive"
-msgstr "Passive"
+msgstr "Пассивный"
 
 #: templates/edit_article_category.html:3
 msgid "Edit Article Category"
-msgstr "Edit Article Category"
+msgstr "Редактировать категорию статей"
 
 #: templates/edit_article_category.html:40
 #: templates/edit_product_category.html:40 templates/pr_thumbnail.html:43
 #: templates/thumbnail.html:39
 msgid "Something went wrong."
-msgstr "Something went wrong."
+msgstr "Что-то пошло не так."
 
 #: templates/edit_article_category.html:80
 #: templates/edit_product_category.html:113 templates/pr_thumbnail.html:83
 #: templates/thumbnail.html:79
 msgid "Image"
-msgstr "Image"
+msgstr "Изображение"
 
 #: templates/edit_product_category.html:3
 #: templates/edit_product_category.html:70
 msgid "Edit Product Category"
-msgstr "Edit Product Category"
+msgstr "Редактировать категорию продуктов"
 
 #: templates/edit_store.html:3 templates/edit_store.html:54
 msgid "Edit Store"
-msgstr "Edit Store"
+msgstr "Редактировать магазин"
 
 #: templates/error.html:3
 msgid "Something is wrong"
-msgstr "Something is wrong"
+msgstr "Что-то не так"
 
 #: templates/error.html:9
 msgid "Something went wrong!"
-msgstr "Something went wrong!"
+msgstr "Что-то пошло не так!"
 
 #: templates/index.html:3
 msgid "Mammy's Bread"
-msgstr "Mammy's Bread"
+msgstr "Хлеб Мамми"
 
 #: templates/index.html:17 templates/public.html:120
 msgid "Home"
-msgstr "Home"
+msgstr "Главная"
 
 #: templates/index.html:105 templates/index.html:354 templates/index.html:678
 #: templates/index.html:798
 msgid "Added"
-msgstr "Added"
+msgstr "Добавлено"
 
 #: templates/index.html:109
 msgid "Fresh Sourdough Bread"
-msgstr "Fresh Sourdough Bread"
+msgstr "Свежий хлеб на закваске"
 
 #: templates/index.html:114
 msgid "Contact US"
-msgstr "Contact US"
+msgstr "Контакты"
 
 #: templates/index.html:115
 msgid "Order Now!"
-msgstr "Order Now!"
+msgstr "Заказать!"
 
 #: templates/index.html:116 templates/public.html:123
 msgid "Our History"
-msgstr "Our History"
+msgstr "О нас"
 
 #: templates/index.html:142 templates/product_client.html:156
 msgid "See Details"
-msgstr "See Details"
+msgstr "Детали"
 
 #: templates/index.html:155
 msgid "About"
-msgstr "About"
+msgstr "О нас"
 
 #: templates/login.html:83 templates/login1.html:4
 msgid "Login"
-msgstr "Login"
+msgstr "Войти"
 
 #: templates/login.html:86 templates/login1.html:11
 #: templates/teammate-signup.html:44
 msgid "Username"
-msgstr "Username"
+msgstr "Имя пользователя"
 
 #: templates/login.html:88 templates/login1.html:14
 #: templates/teammate-signup.html:45
 msgid "Password"
-msgstr "Password"
+msgstr "Пароль"
 
 #: templates/login.html:90 templates/login1.html:16
 msgid "Log In"
-msgstr "Log In"
+msgstr "Войти"
 
 #: templates/login.html:91
 msgid "Saveing"
-msgstr "Saving"
+msgstr "Сохранение"
 
 #: templates/order-details.html:192 templates/order-details.html:549
 #: templates/product.html:1108 templates/store.html:737
 msgid "Loading..."
-msgstr "Loading..."
+msgstr "Загрузка..."
 
 #: templates/order-details.html:201
 msgid "Client Information"
-msgstr "Client Information"
+msgstr "Информация о клиенте"
 
 #: templates/order-details.html:218
 msgid "Note"
-msgstr "Note"
+msgstr "Примечание"
 
 #: templates/order-details.html:225
 msgid "Promo Code ID"
-msgstr "Promo Code ID"
+msgstr "ID промокода"
 
 #: templates/order-details.html:376 templates/orders.html:152
 #: templates/orders.html:261 templates/public.html:85
 msgid "Phone"
-msgstr "Phone"
+msgstr "Телефон"
 
 #: templates/order-details.html:409 templates/order-details.html:644
 #: templates/store.html:707 templates/store.html:864 templates/store.html:1068
 msgid "Something Went Wrong!"
-msgstr "Something Went Wrong!"
+msgstr "Что-то пошло не так!"
 
 #: templates/order-details.html:578
 msgid "First name is required."
-msgstr "First name is required."
+msgstr "Имя обязательно."
 
 #: templates/order-details.html:583
 msgid "Last name is required."
-msgstr "Last name is required."
+msgstr "Фамилия обязательна."
 
 #: templates/order-details.html:589
 msgid "Valid phone number is required."
-msgstr "Valid phone number is required."
+msgstr "Требуется действительный номер телефона."
 
 #: templates/order-details.html:595
 msgid "Valid email is required."
-msgstr "Valid email is required."
+msgstr "Требуется действительный адрес электронной почты."
 
 #: templates/order-details.html:601
 msgid "Address is required."
-msgstr "Address is required."
+msgstr "Адрес обязателен."
 
 #: templates/order-details.html:607
 msgid "Status is required."
-msgstr "Status is required."
+msgstr "Статус обязателен."
 
 #: templates/order-details.html:640
 msgid "Form submitted successfully!"
-msgstr "Form submitted successfully!"
+msgstr "Форма успешно отправлена!"
 
 #: templates/order-tracker.html:3
 msgid "Order Tracker"
-msgstr "Order Tracker"
+msgstr "Отслеживание заказа"
 
 #: templates/order-tracker.html:110
 msgid "Cancel Order"
-msgstr "Cancel Order"
+msgstr "Отменить заказ"
 
 #: templates/pr_thumbnail.html:3
 msgid "Product Thumbnail"
-msgstr "Product Thumbnail"
+msgstr "Миниатюра продукта"
 
 #: templates/pr_thumbnail.html:47 templates/thumbnail.html:43
 msgid "Images from other language(s)"
-msgstr "Images from other language(s)"
+msgstr "Изображения на других языках"
 
 #: templates/product-categories-copy.html:12
 msgid "Product Categories"
-msgstr "Product Categories"
+msgstr "Категории продуктов"
 
 #: templates/product-categories.html:3 templates/roles.html:3
 msgid "Roles"
-msgstr "Roles"
+msgstr "Роли"
 
 #: templates/product-type-specifications.html:3
 msgid "Product Type Specifications"
-msgstr "Product Type Specifications"
+msgstr "Характеристики типа продукта"
 
 #: templates/product.html:115 templates/product.html:130
 #: templates/side-bar-stuff.html:4
 msgid "Dashboard"
-msgstr "Dashboard"
+msgstr "Панель управления"
 
 #: templates/product.html:133 templates/product.html:1187
 msgid "Slider"
-msgstr "Slider"
+msgstr "Слайдер"
 
 #: templates/product.html:134
 msgid "Header"
-msgstr "Header"
+msgstr "Заголовок"
 
 #: templates/product.html:135
 msgid "Editor"
-msgstr "Editor"
+msgstr "Редактор"
 
 #: templates/product.html:143 templates/products.html:357
 msgid "Add Product Type"
-msgstr "Add Product Type"
+msgstr "Добавить тип продукта"
 
 #: templates/product.html:155 templates/products.html:167
 msgid "View"
-msgstr "View"
+msgstr "Просмотр"
 
 #: templates/product.html:209
 msgid "Cencel"
-msgstr "Cancel"
+msgstr "Отмена"
 
 #: templates/product.html:530
 msgid "Edit Header"
-msgstr "Edit Header"
+msgstr "Редактировать заголовок"
 
 #: templates/product.html:538
 msgid "Product name"
-msgstr "Product name"
+msgstr "Название продукта"
 
 #: templates/product.html:551
 msgid "Short Description"
-msgstr "Short Description"
+msgstr "Краткое описание"
 
 #: templates/product.html:558
 msgid "Long Description"
-msgstr "Long Description"
+msgstr "Подробное описание"
 
 #: templates/products.html:95 templates/store.html:196
 msgid "Title"
-msgstr "Title"
+msgstr "Название"
 
 #: templates/products.html:105
 msgid "Published Date"
-msgstr "Published Date"
+msgstr "Дата публикации"
 
 #: templates/products.html:115
 msgid "Modified Date"
-msgstr "Modified Date"
+msgstr "Дата изменения"
 
 #: templates/products.html:125
 msgid "Product Category"
-msgstr "Product Category"
+msgstr "Категория продукта"
 
 #: templates/products.html:174 templates/store.html:237
 #: templates/store.html:846
 msgid "View Types"
-msgstr "View Types"
+msgstr "Просмотреть типы"
 
 #: templates/products.html:356
 msgid "No Product Type Detected"
-msgstr "No Product Type Detected"
+msgstr "Тип продукта не обнаружен"
 
 #: templates/products.html:381
 msgid "Disable"
-msgstr "Disable"
+msgstr "Отключить"
 
 #: templates/products.html:383
 msgid "Enable"
-msgstr "Enable"
+msgstr "Включить"
 
 #: templates/products.html:410 templates/store.html:428
 msgid "Save Changes"
-msgstr "Save Changes"
+msgstr "Сохранить изменения"
 
 #: templates/promo-code-details.html:3
 msgid "Promo Code Details"
-msgstr "Promo Code Details"
+msgstr "Детали промокода"
 
 #: templates/promo-code-details.html:39 templates/promo-code-details.html:42
 #: templates/promo-codes.html:53
 msgid "Affiliate"
-msgstr "Affiliate"
+msgstr "Партнер"
 
 #: templates/promo-codes.html:3
 msgid "Promo Codes"
-msgstr "Promo Codes"
+msgstr "Промокоды"
 
 #: templates/public.html:51
 msgid "Mammys Bread Logo"
-msgstr "Mammys Bread Logo"
+msgstr "Логотип Хлеба Мамми"
 
 #: templates/public.html:82
 msgid "Contact and Follow"
-msgstr "Contact and Follow"
+msgstr "Контакты и подписка"
 
 #: templates/public.html:83
 msgid "123 Street Name"
-msgstr "123 Street Name"
+msgstr "Улица 123"
 
 #: templates/public.html:83
 msgid "City, State, 12345"
-msgstr "City, State, 12345"
+msgstr "Город, область, 12345"
 
 #: templates/public.html:98
 msgid "Subscribe to us!"
-msgstr "Subscribe to us!"
+msgstr "Подпишитесь на нас!"
 
 #: templates/public.html:99
 msgid "Be the first to know about discounts and promotions."
-msgstr "Be the first to know about discounts and promotions."
+msgstr "Будьте первыми, кто узнает о скидках и акциях."
 
 #: templates/public.html:100
 msgid "Please specify valid email address!"
-msgstr "Please specify valid email address!"
+msgstr "Пожалуйста, укажите действительный адрес электронной почты!"
 
 #: templates/public.html:111
 msgid "Your Company. All rights reserved."
-msgstr "Your Company. All rights reserved."
+msgstr "Ваша компания. Все права защищены."
 
 #: templates/public.html:121
 msgid "Favorites"
-msgstr "Favorites"
+msgstr "Избранное"
 
 #: templates/public.html:124
 msgid "Contacts"
-msgstr "Contacts"
+msgstr "Контакты"
 
 #: templates/roles.html:73
 msgid "View/Edit"
-msgstr "View/Edit"
+msgstr "Просмотр/Редактирование"
 
 #: templates/side-bar-stuff-1.html:41
 msgid "Dashboards"
-msgstr "Dashboards"
+msgstr "Панели управления"
 
 #: templates/slideshow.html:104 templates/slideshow.html:161
 #: templates/slideshow.html:208
 msgid "Click me to edit this price"
-msgstr "Click me to edit this price"
+msgstr "Нажмите, чтобы редактировать эту цену"
 
 #: templates/slideshow.html:104 templates/slideshow.html:161
 #: templates/slideshow.html:208
 msgid "Click me to add quantity"
-msgstr "Click me to add quantity"
+msgstr "Нажмите, чтобы добавить количество"
 
 #: templates/slideshow.html:168 templates/slideshow.html:214
 msgid "left in stock"
-msgstr "left in stock"
+msgstr "осталось на складе"
 
 #: templates/slideshow.html:176 templates/slideshow.html:222
 msgid "Add to cart"
-msgstr "Add to cart"
+msgstr "В корзину"
 
 #: templates/slideshow.html:180
 msgid "Adding"
-msgstr "Adding"
+msgstr "Добавление"
 
 #: templates/slideshow.html:184 templates/slideshow.html:226
 msgid "Buy now"
-msgstr "Buy now"
+msgstr "Купить сейчас"
 
 #: templates/sp-specifications.html:4
 msgid "Create Specifications for Product Type"
-msgstr "Create Specifications for Product Type"
+msgstr "Создать характеристики для типа продукта"
 
 #: templates/store.html:3 templates/store.html:1006
 msgid "Store"
-msgstr "Store"
+msgstr "Магазин"
 
 #: templates/store.html:122
 msgid "Filters"
-msgstr "Filters"
+msgstr "Фильтры"
 
 #: templates/store.html:163 templates/store.html:1012
 msgid "Add Date"
-msgstr "Add Date"
+msgstr "Добавить дату"
 
 #: templates/store.html:202
 msgid "Full Quantity"
-msgstr "Full Quantity"
+msgstr "Полное количество"
 
 #: templates/store.html:208
 msgid "Outdated Quantity"
-msgstr "Outdated Quantity"
+msgstr "Устаревшее количество"
 
 #: templates/store.html:370
 msgid "No Product Type Detected In Store"
-msgstr "No Product Type Detected In Store"
+msgstr "Тип продукта в магазине не обнаружен"
 
 #: templates/store.html:386
 msgid "in stock"
-msgstr "in stock"
+msgstr "в наличии"
 
 #: templates/store.html:387
 msgid "expired"
-msgstr "expired"
+msgstr "истекший"
 
 #: templates/store.html:415
 msgid "More"
-msgstr "More"
+msgstr "Еще"
 
 #: templates/store.html:620
 msgid "Shows From All Stores"
-msgstr "Shows From All Stores"
+msgstr "Показывать из всех магазинов"
 
 #: templates/store.html:621
 msgid "Shows All Products"
-msgstr "Shows All Products"
+msgstr "Показывать все продукты"
 
 #: templates/store.html:701
 msgid "Product Types"
-msgstr "Product Types"
+msgstr "Типы продукта"
 
 #: templates/store.html:704
 msgid "No Types For Specified Product"
-msgstr "No Types For Specified Product"
+msgstr "Нет типов для указанного продукта"
 
 #: templates/store.html:857
 msgid "No Data"
-msgstr "No Data"
+msgstr "Нет данных"
 
 #: templates/store.html:1007
 msgid "Submitted By"
-msgstr "Submitted By"
+msgstr "Отправлено"
 
 #: templates/store.html:1009
 msgid "Max Quantity"
-msgstr "Max Quantity"
+msgstr "Максимальное количество"
 
 #: templates/store.html:1013
 msgid "Action"
-msgstr "Action"
+msgstr "Действие"
 
 #: templates/store.html:1062
 msgid "Nothing was found"
-msgstr "Nothing was found"
+msgstr "Ничего не найдено"
 
 #: templates/stuff-signup.html:27
 msgid "Stuff sign up"
-msgstr "Stuff sign up"
+msgstr "Регистрация сотрудников"
 
 #: templates/stuff-signup.html:35
 msgid "Welcome Dear Teammate!"
-msgstr "Welcome Dear Teammate!"
+msgstr "Добро пожаловать, дорогой коллега!"
 
 #: templates/team.html:3
 msgid "Team"
-msgstr "Team"
+msgstr "Команда"
 
 #: templates/teammate-signup.html:27 templates/teammate-signup.html:35
 msgid "Teammate Signup"
-msgstr "Teammate Signup"
+msgstr "Регистрация коллеги"
 
 #: templates/teammate-signup.html:46
 msgid "Confirm assword"
-msgstr "Confirm password"
+msgstr "Подтвердите пароль"
 
 #: templates/teammate-signup.html:270
 msgid "Preferred language"
-msgstr "Preferred language"
+msgstr "Предпочитаемый язык"
 
 #: templates/transfer-funds.html:4
 msgid "Transfer funds"
-msgstr "Transfer funds"
+msgstr "Перевести средства"
 
 #: templates/transfer-funds.html:41
 msgid "Choose recipient"
-msgstr "Choose recipient"
+msgstr "Выберите получателя"
 
 #: templates/transfer-funds.html:59
 msgid "Choose transaction type"
-msgstr "Choose transaction type"
+msgstr "Выберите тип транзакции"
 
 #: templates/transfer-funds.html:163
 msgid "Additional notes"
-msgstr "Additional notes"
+msgstr "Дополнительные примечания"
 
 #: templates/transfer-funds.html:244
 msgid "Please specify the recipient!"
-msgstr "Please specify the recipient!"
+msgstr "Пожалуйста, укажите получателя!"
 
 #: templates/transfer-funds.html:252
 msgid "Please specify the type!"
-msgstr "Please specify the type!"
+msgstr "Пожалуйста, укажите тип!"
 
 #: templates/transfer-funds.html:260
 msgid "Please specify the amount!"
-msgstr "Please specify the amount!"
+msgstr "Пожалуйста, укажите сумму!"
 
 #: templates/transfers.html:3
 msgid "Transfares"
-msgstr "Transfers"
+msgstr "Переводы"
 
 #: templates/transfers.html:104
 msgid "Transfers' history"
-msgstr "Transfers' history"
+msgstr "История переводов"
 
 #: templates/transfers.html:109
 msgid "Filter by staff member"
-msgstr "Filter by staff member"
+msgstr "Фильтр по сотруднику"
 
 #: templates/transfers.html:156
 msgid "Staff member"
-msgstr "Staff member"
+msgstr "Сотрудник"
 
 #: app.py:5210
 msgid "Out of stock."
-msgstr "Out of stock."
+msgstr "Нету в наличии."
 
 #: templates/public.html:640
 msgid "Submit"
-msgstr "Submit"
+msgstr "Отправить"

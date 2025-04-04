@@ -40,6 +40,7 @@
     <div class="cart-header">{{ _('Shopping Cart') }}</div>
     <div class="price-header">{{ _('Price') }}</div>
   </div>
+  <div class="shopping-cart-container">
 
 {% set ns = namespace(index=0, subtotal=0, itemLen=0) %}
   
@@ -79,46 +80,46 @@
       {% endif %}
 
       {% set prUrl = url_for('index', myLinks=row['url']) %}
-      <div class="cart-item">
-          <div class="item-details">
-              <div class="item-image">
-                  <a href="{{ prUrl }}&{{ row['ptTitle'] | replace(' ', '-') }}">
-                      <img src="{{ url_for('static', filename='images/sub_product_slider/' + row['imgName']) }}" alt="{{ row['AltText'] }}">
-                  </a>
-              </div>
-              <div class="item-info">
-                  <div class="item-title">
-                      <a href="{{ prUrl }}&{{ row['ptTitle'] | replace(' ', '-') }}">
-                          {{ row['prTitle'] }} : {{ row['ptTitle'] }}
-                      </a>
-                  </div>
-                  <div class="item-controls" data-value="{{ row['ptID'] }}">
-                      <button class="delete-button"><i class="fa-solid fa-trash-can"></i></button>
-                      <div class="quantity-controls">
-                          <button class="minus-btn">-</button>
-                          <input type="number" class="quantity" name="quantity" value="{{ qs.quantity }}" min="1" 
-                              style=" margin-right: 0px;
-                                      width: 40px;
-                                      height: 40px;"
-                              disabled        
-                          >
-                          <button class="plus-btn">+</button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-          {% set ns.subtotal = ns.subtotal + row['Price'] * qs.quantity %}
-          <div class="item-price">{{ MAIN_CURRENCY }} <span style="font-weight: 600">{{ row['Price'] * qs.quantity }}</span></div>
-      </div>
+        <div class="cart-item">
+            <div class="item-details">
+                <div class="item-image">
+                    <a href="{{ prUrl }}&{{ row['ptTitle'] | replace(' ', '-') }}">
+                        <img src="{{ url_for('static', filename='images/sub_product_slider/' + row['imgName']) }}" alt="{{ row['AltText'] }}">
+                    </a>
+                </div>
+                <div class="item-info">
+                    <div class="item-title-cart">
+                        <a href="{{ prUrl }}&{{ row['ptTitle'] | replace(' ', '-') }}">
+                            {{ row['prTitle'] }} : {{ row['ptTitle'] }}
+                        </a>
+                    </div>
+                    <div class="item-controls" data-value="{{ row['ptID'] }}">
+                        <button class="delete-button"><i class="fa-solid fa-trash-can"></i></button>
+                        <div class="quantity-controls">
+                            <button class="minus-btn">-</button>
+                            <input type="number" class="quantity" name="quantity" value="{{ qs.quantity }}" min="1" 
+                                style=" margin-right: 0px;
+                                        width: 40px;
+                                        height: 40px;"
+                                disabled        
+                            >
+                            <button class="plus-btn">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% set ns.subtotal = ns.subtotal + row['Price'] * qs.quantity %}
+            <div class="item-price">{{ MAIN_CURRENCY }} <span style="font-weight: 600">{{ row['Price'] * qs.quantity }}</span></div>
+        </div>
       {% endif %}
       {% set ns.index = ns.index + 1 %}
 
 {% endfor %}
 
-
-  <div class="subtotal">{{ _('Subtotal') }} ({{ ns.itemLen }} {{ _('items') }}): {{ MAIN_CURRENCY }} {{ ns.subtotal }}</div>
-  <div class="farther-actions">
-    <a href="{{ url_for('checkout') }}" class="checkout-button">{{ _('Proceed to Checkout') }}</a>
+  </div>      
+  <div class="subtotal subtotal-cart">{{ _('Subtotal') }} ({{ ns.itemLen }} {{ _('items') }}): {{ MAIN_CURRENCY }} {{ ns.subtotal }}</div>
+  <div class="farther-actions-cart">
+    <a href="{{ url_for('checkout') }}" class="checkout-button-cart">{{ _('Proceed to Checkout') }}</a>
   </div>
 
 
@@ -274,7 +275,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     deleteButtons.forEach(deleteBtn => {
       deleteBtn.addEventListener('click', () => {
-        const parent = deleteBtn.parentNode; 
+        delete_cart(deleteBtn);
+      });
+    }); 
+
+
+    function delete_cart(deleteBtn) {
+      const parent = deleteBtn.parentNode; 
         ptID = parent.dataset.value;
         
         // ************* IMPORTANT **************
@@ -322,14 +329,7 @@ document.addEventListener("DOMContentLoaded", function() {
           remove_from_cart(ptID);
           
         }
-
-
-        
-      });
-    }); 
-
-
-
+    }
       
   
       
@@ -557,7 +557,7 @@ document.addEventListener("DOMContentLoaded", function() {
             minusBtn.addEventListener('click', () => {
             const parentDiv = minusBtn.parentNode;
             let quantity = parentDiv.querySelector('.quantity').value;
-            if (quantity <= 1 || quantity == 'undefinied') {
+            if (quantity == 'undefinied') {
                 return;
             }
 
@@ -582,6 +582,12 @@ document.addEventListener("DOMContentLoaded", function() {
             const grandPa = parentDiv.parentNode; 
             let ptID = grandPa.dataset.value;
             let newQuantity = quantity - 1;
+            if (newQuantity == 0) {
+              const deleteBtn = minusBtn.parentNode.parentNode.querySelector('.delete-button');
+              delete_cart(deleteBtn);
+            }
+
+        
     
             
             get_pt_quantity(ptID, newQuantity)

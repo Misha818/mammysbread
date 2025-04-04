@@ -199,7 +199,13 @@
 
             <th>
               <div style="display: flex; align-items: center;">
-                {{ _('Quantity') }} 
+                {{ _('Full Quantity') }} 
+              </div>
+            </th>
+
+            <th>
+              <div style="display: flex; align-items: center;">
+                {{ _('Outdated Quantity') }} 
               </div>
             </th>
 
@@ -215,10 +221,15 @@
           {% else %}
             {% set trBorderTop = '' %}
           {% endif %}
+          {% set expQuantity = '' %}
+          {% if row['expired'] is not none %}
+            {% set expQuantity = row['expired'] %}
+          {% endif %}
             <tr {{ trBorderTop }}>
               <td style="padding: 16px;"><img src="{{ url_for('static', filename='images/pr_thumbnails/' + row['Thumbnail']) }}" style="width: 100px;"/></td>
               <td style="padding: 16px;">{{ row['prTitle'] }}</td>
               <td style="padding: 16px;">{{ row['TotalQuantity'] }}</td>
+              <td style="padding: 16px; color: red;">{{ expQuantity }}</td>
 
             </tr>
             <tr class="extra-row">
@@ -373,6 +384,7 @@ function getProductTypes(prID) {
                   let dataArray = Object.entries(response.data);
                   let rows = '';
                   let inStock = "{{ _('in stock') }}"
+                  let expiredText = "{{ _('expired') }}"
                   dataArray.forEach(function(list) {
                     let imgUrl = mainUrl + '/static/images/sub_product_slider/' + list[1]['imgName']
                     let checked = '';
@@ -381,12 +393,24 @@ function getProductTypes(prID) {
                       checked = 'checked'
                     }
 
+                    console.log(list[1]['expired'])
+                    console.log(typeof(list[1]['expired']))
+                    let expired = ''
+                    if (list[1]['expired'] !== null && parseInt(list[1]['expired']) !== 0) {
+                      expired = `<p class="store-quantity-span" style="color: red;">${list[1]['expired']} ${expiredText} </p>`;
+                    } 
+
                     let perRow = `<div class="child" draggable="false" style="cursor: auto;">
                                     <input type="hidden" name="TypeID" value="${list[1]['ID']}">
                                     <img src="${imgUrl}" alt="${list[1]['AltText']}" class="" style="width: 150px;">
                                     <div><p style="justify-content: left; font-weight: 600;">${list[1]['Title']}</p></div>
                                     <div><p><span style="font-weight: 600; margin-right: 3px;">${list[1]['Price']}</span> {{ mainCurrency }}</p></div>
-                                    <div><p><span style="font-weight: 600; margin-right: 3px;">${list[1]['Quantity']}</span> ${inStock}</p></div>
+                                    <div>
+                                      <p>
+                                        <p class="store-quantity-span">${list[1]['Quantity']}  ${inStock}</p> 
+                                        ${expired}
+                                      </p>
+                                    </div>
 
                                     <p data-id="${list[1]['ID']}" class="more-on-quantity" >{{ _('More') }}</p>
                                 </div>`;
@@ -811,6 +835,7 @@ function myLoader(color) {
                 </td>
                 <td style="padding: 16px;">${row.prTitle}</td>
                 <td style="padding: 16px;">${row.TotalQuantity}</td>
+                <td style="padding: 16px; color: red;">${row.expired}</td>
               `;
 
               // Create the extra row with the button

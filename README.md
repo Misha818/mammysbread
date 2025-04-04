@@ -19,7 +19,7 @@ Create /LC_MESSAGES folder under each supported language add & configure babel.c
 [python: **.py]
 
 Extract text strings from our HTML templates and .py files
-pybabel extract -F babel.cfg -o messages.pot .
+pybabel extract -F babel.cfg -o messages.pot . 
 It creates a messages.pot file
 
 Then initialize language translation files, it will create a .po file, here for Armenian (hy)

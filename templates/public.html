@@ -71,17 +71,20 @@
     {% block content %}
 
     {% endblock %}
-
-      <footer style="background-color: #fdf6ec; padding: 40px 60px; text-align: left; width: 100%; margin-top: 40px;">
+      <div style="background-color: #ffffff;
+                  padding: 3px 0px;
+                  width: 100%;
+                  margin-top: 10px;"></div>
+      <footer class="public-footer">
       <div style="display: flex; justify-content: space-between; flex-wrap: wrap; max-width: 1720px; margin: 0 auto;">
 
-      <div style="flex: 1; min-width: 200px; padding: 20px;">
-      <h3 style="color: #333333bd; margin-bottom: 20px; text-align: left;" id="contacts">{{ _('Contact') }}</h3>
-      <span style="color: #6c757d;" class="social-media"><!-- {{ _('123 Street Name') }}<br>{{ _('City, State, 12345') }}<br>-->
-        {{ _('Email') }}: info@mammysbreat.am <br>
-        {{ _('Phone') }}: <a href="tel:37495151580" style="text-decoration: none; color: #6c757d;">+374(95) 15-15-80</a>
+      <div class="contact-follow">
+      <h3 style="color: #333333bd; margin-bottom: 20px; text-align: left;" id="contacts">{{ _('Contact and Follow') }}</h3>
+      <span style="color: #6c757d;" class="social-media footer-contacts"><!-- {{ _('123 Street Name') }}<br>{{ _('City, State, 12345') }}<br>-->
+        <div><span>{{ _('Email') }}:</span> <span>info@mammysbreat.am</span></div>
+        <div><span>{{ _('Phone') }}:</span> <span><a href="tel:37495151580" style="text-decoration: none; color: #6c757d;">+374(95) 15-15-80</a></span></div>
       </span>
-      <div style="margin-top: 10px;" class="social-media">
+      <div style="margin-top: 10px;" class="social-media sm-buttons">
             <a href="https://facebook.com" class="fa fa-facebook" target="_blank"></a>
             <a href="https://instagram.com" class="fa fa-instagram" target="_blank"></a>
             <a href="https://youtube.com" class="fa fa-youtube" target="_blank"></a>
@@ -94,8 +97,9 @@
       <div style="flex: 1; min-width: 200px; padding: 20px;">
       <h3 style="color: #333333bd; margin-bottom: 20px; text-align: left;">{{ _('Subscribe to us!') }}</h3>
       <span style="color: #6c757d;">{{ _('Be the first to know about discounts and promotions.') }}</span>
+      <p class="hidden" id="subscribe-message" style="color: #f54242; text-align: left;">{{ _('Please specify valid email address!') }}</p>
       <div>
-      <input type="text" name="email" id="email" style="width: 90%; margin-bottom: 10px;"/>
+      <input type="text" name="subscribe-email" id="subscribe-email" style="width: 90%; margin-bottom: 10px;"/>
       <div class="pcButtonS" id="subscribe" style="margin-top: unset; background-color: #FCC628;">{{ _('Submit') }}</div>
       </div>
       </div>
@@ -222,6 +226,54 @@
         // Close the overlay when the close button is clicked
         mobileMenuCloseButton.addEventListener('click', () => {
           mobileNavOverlay.classList.remove('open');
+        });
+
+
+        document.getElementById('subscribe').addEventListener('click', function() {
+          document.getElementById('subscribe-message').classList.add('hidden')
+          let Email = document.getElementById('subscribe-email').value;
+          // if (Email === '') {
+          //   document.getElementById('subscribe-message').classList.remove('hidden');
+          //   return;
+          // }
+
+          let formData = new FormData();
+
+          formData.append('Email', Email)     
+
+          // Create a new XMLHttpRequest object
+          let xhr = new XMLHttpRequest();
+
+          // Configure the request
+          xhr.open('POST', '/subscribe');
+          xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+          // Define what happens on successful data submission
+          xhr.onload = function () {
+              if (xhr.status === 200) {
+                  const response = JSON.parse(xhr.responseText);
+                  if (response.status === '1') {
+                      let content = response.answer;
+                      document.querySelector('#subscribe-message').innerHTML = content;
+                      document.querySelector('#subscribe-message').style.color = 'green';
+                  }
+                  
+                  if (response.status === '0') {
+                    let content = response.answer;
+                    document.querySelector('#subscribe-message').innerHTML = content;
+                  }
+                    
+                    document.querySelector('#subscribe-message').classList.remove('hidden');
+              } 
+          };
+
+          // Define what happens in case of error
+          xhr.onerror = function () {
+              console.error('Request failed.');
+          };
+
+          // Send the request with the JSON data
+          xhr.send(formData);
         });
 
       </script>

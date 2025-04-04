@@ -239,10 +239,10 @@ th, td {
           {% set promoDetailsUrl = url_for('home') + 'stuff-promo-code-details/promoCode=' + row['Promo'] + '&affiliate=' + affID %}
           {% set affiliateOrdersUrl = url_for('home') + 'stuff-affiliate-orders/page=1&status=all&promoCode=' + row['Promo'] + '&affiliate=' + affID %}
         {% endif %}
-        <a href="{{ promoDetailsUrl }}" target="_blank" title="{{ _('Details') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2;"></i></a>
+        <a href="{{ promoDetailsUrl }}" title="{{ _('Details') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2;"></i></a>
       </td>
       <td>
-        <a href="{{ affiliateOrdersUrl }}" target="_blank" title="{{ _('Purchase History') }}"><i class="fas fa-info-circle" style="font-size: 20px; color: #6be6b2;"></i></a>
+        <a href="{{ affiliateOrdersUrl }}" title="{{ _('Purchase History') }}"><i class="fas fa-info-circle" style="font-size: 20px; color: #6be6b2;"></i></a>
       </td>
     </tr>
     
@@ -260,7 +260,6 @@ th, td {
 
 <script>
 
-
   const resultRevardsList = JSON.parse('{{ resultRevardsList|safe }}');
 
 // Set the initial order status (starting at "Purchased")
@@ -272,6 +271,7 @@ const stepper = document.getElementById("stepper");
 const stepsKeys = Object.keys(resultRevardsList);
   // .filter(key => key !== "0")
   // .sort((a, b) => a - b);
+
 
 stepsKeys.forEach(key => {
   // Create a step container
@@ -287,7 +287,7 @@ stepsKeys.forEach(key => {
   // Create the label for the status
   const label = document.createElement("a");
   label.classList.add("mt-2");
-  label.target = "_BLANK";
+  // label.target = "_BLANK";
   label.href = "{{ url_for('home', _external=True) }}" + resultRevardsList[key][3];
   label.innerText = resultRevardsList[key][0];
 

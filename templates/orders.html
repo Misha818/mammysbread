@@ -212,10 +212,14 @@
       {% set status = _('Purchased') %}
       {% if row.Status == 0 %}
           {% set status = _('Cancelled') %}
+          {% set cancelled = 'cancelled' %}
           {% set statusStyle = 'status-closed' %}
-      {% elif row.Status == 2 %}
+      {% elif row.Status == 1 %}
           {% set status = _('Panding') %}
           {% set statusStyle = 'status-on-hold' %}
+      {% elif row.Status == 2 %}
+          {% set status = _('Purchased') %}
+          {% set statusStyle = 'status-open' %}
       {% elif row.Status == 3 %}
           {% set status = _('Preparing') %}
           {% set statusStyle = 'status-preparing' %}

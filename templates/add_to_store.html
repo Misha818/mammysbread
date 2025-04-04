@@ -199,7 +199,7 @@ saveButton.addEventListener('click', function (event) {
 
             if (response.status === '1') {
                 alert('Done!');
-                window.close();
+                window.location.reload();
             }
 
             if (response.status === '0') {

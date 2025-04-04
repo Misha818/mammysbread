@@ -277,18 +277,22 @@ order_details
 get_order_details
 edit_order_details
 affiliates
-promo_code_details
-affiliate_orders
-affiliate_order_details
-affiliate
 stuff_affiliate_orders
 stuff_partner_payments
 stuff_promo_code_details
 transfer_funds
-affiliate_transfers
-get_affiliate_transfer_details
 get_transfer_details
 transfers
+
+
+affiliate
+affiliate_orders
+affiliate_order_details
+affiliate_transfers
+promo_code_details
+get_affiliate_transfer_details
+
+
 
 
 add_sps_view

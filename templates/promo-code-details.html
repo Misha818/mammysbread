@@ -35,8 +35,13 @@
 
 {{ sideBar | safe }}
 <div class="container my-5">
-<h2>{{ _('Affiliate') + ': ' + headings[0] }}</h2>
-<h4>{{ _('Promo Code') + ': ' + headings[1] }}</h4>
+{% if headings[2] %}  
+<h2>{{ _('Affiliate') + ': ' }}  <a href="{{ url_for('affiliate', affID=headings[2]) }}" >{{ headings[0] }}</a></h2>
+<h4>{{ _('Promo Code') + ': ' }}  <a href="{{ url_for('home') + 'stuff-affiliate-orders/page=1&status=all&promoCode=' + headings[1] + '&affiliate=' + headings[2] }}" >{{ headings[1] }}</a></h4>
+{% else %}
+<h2>{{ _('Affiliate') + ': ' }}  <a href="{{ url_for('stuff') }}" >{{ headings[0] }}</a></h2>
+<h4>{{ _('Promo Code') + ': ' }}  <a href="{{ url_for('home') + 'affiliate-orders/page=1&status=all&promoCode=' + headings[1]}}" >{{ headings[1] }}</a></h4>
+{% endif %}
 <br>
     <div id="accordion"></div>
 </div>
@@ -93,7 +98,7 @@
         }
 
         if (item.ptTitle) {
-            let ptUrl = "{{ url_for('home') }}" + hyphen(prTitle) + '&' + item.ptTitle
+            let ptUrl = "{{ url_for('home') }}" + hyphen(prTitle) + '&' + hyphen(item.ptTitle)
 
             childRows += `
             <li class="list-group-item">

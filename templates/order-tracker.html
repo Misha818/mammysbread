@@ -157,7 +157,7 @@ body {
       // If order is cancelled, remove all active1/completed classes.
       if (currentStatus === 0) {
         step.classList.remove("active1", "completed");
-      } else if (status < currentStatus) {
+      } else if (status < currentStatus+1) {
         step.classList.add("completed");
         step.classList.remove("active1");
       } else if (status === currentStatus) {
@@ -166,6 +166,17 @@ body {
       } else {
         step.classList.remove("active1", "completed");
       }
+      // if (currentStatus === 0) {
+      //   step.classList.remove("active1", "completed");
+      // } else if (status < currentStatus) {
+      //   step.classList.add("completed");
+      //   step.classList.remove("active1");
+      // } else if (status === currentStatus) {
+      //   step.classList.add("active1");
+      //   step.classList.remove("completed");
+      // } else {
+      //   step.classList.remove("active1", "completed");
+      // }
     });
   };
 

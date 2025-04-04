@@ -1237,34 +1237,6 @@ def get_RefKey_LangID_by_link(myLink):
     sqlValTuple = (prUrl,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     
-    # look url in articles
-    # if result['length'] == 0:
-        # sqlQuery = "SELECT `ID`, `Language_ID` FROM `article` WHERE `Url` = %s;"
-        # sqlValTuple = (prUrl,)
-        # result = sqlSelect(sqlQuery, sqlValTuple, True)
-
-        # if result['length'] == 0:
-        #     return None
-        
-        # articleID = result['data'][0]['ID']
-
-        # sqlQueryRef = "SELECT `A_Ref_Key` FROM `article_relatives` WHERE `A_ID` = %s;"
-        # sqlValRef = (articleID,)
-        # resultRef = sqlSelect(sqlQueryRef, sqlValRef, True)
-
-        # if result['length'] == 0:
-        #     return None
-        
-        # content = {
-        #     'RefKey': resultRef['data'][0]['A_Ref_Key'],
-        #     'LanguageID': result['data'][0]['Language_ID'],
-        #     'Type': 'article'
-        # }
-
-        # return content
-    
-    # End of looking url in articles
-    
     if result['length'] == 0:
         return None
     

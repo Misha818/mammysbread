@@ -479,7 +479,7 @@ CREATE TABLE `emails` (
     `ID` INT AUTO_INCREMENT,
     `email` VARCHAR(255),
     `clientID` INT,
-    `Status` INT, -- 1 == active, 0 == blacklisted
+    `Status` INT, -- 1 == active, 0 == blacklisted, 2 = subscribe, 3 = ansubscribed
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `emails` AUTO_INCREMENT = 1;

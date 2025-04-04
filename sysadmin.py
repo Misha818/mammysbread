@@ -1282,6 +1282,17 @@ def get_affiliates(filters=''):
     return sqlSelect(sqlQuery, (1,), True) 
 
 
+def get_order_status_list():
+    return {
+        '0': gettext('Cancelled'),
+        '1': gettext('Pending'),
+        '2': gettext('Purchased'),
+        '3': gettext('Preparing'),
+        '4': gettext('Ready'),
+        '5': gettext('Delivered')
+    }
+
+
 
 # def replace_spaces_in_text_nodes(html_content):
 #     # This regex will match text between HTML tags while ignoring attributes and tags themselves

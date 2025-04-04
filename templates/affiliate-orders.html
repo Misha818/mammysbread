@@ -80,7 +80,7 @@
 {{ sideBar | safe }}
 <div class="container" >
 {% if affID and result['length'] > 0 %}
-  <h2 style="text-align: center; margin: 20px auto;">{{ _('Purchase history related to promo code of') + ' ' + result['data'][0]['affiliate'] }} </h2>
+  <h2 style="text-align: center; margin: 20px auto;">{{ _('Purchase history related to promo code of') }}  <a href="{{ url_for('affiliate', affID=affID) }}">{{ result['data'][0]['affiliate'] }}</a> </h2>
 {% else %}
   <h2 style="text-align: center; margin: 20px auto;">{{ _('Purchase history related to promo code') }} </h2>
 {% endif %}
@@ -291,7 +291,7 @@
           {% if affID %}
             {% set orderDetailsUrl = url_for('order_details', pdID=row['ID'], _external=True) %}
           {% endif %}
-          <a href="{{ orderDetailsUrl }}" target="_blank" title="{{ _('Order Details') }}" style="color:#6be6b2">
+          <a href="{{ orderDetailsUrl }}" title="{{ _('Order Details') }}" style="color:#6be6b2">
             <i class="fas fa-eye"></i>
             <!-- <i class="fas fa-pencil"></i> -->
           </a>
