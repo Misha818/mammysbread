@@ -2818,7 +2818,7 @@ def stuff_signup(uniqueURL):
         Firstname = request.form.get('Firstname').strip()
 
         if len(request.form.get('Lastname')) == 0:
-            answer = gettext('Please specify lastname')
+            answer = gettext('Please specify the last name')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Lastname = request.form.get('Lastname').strip()
@@ -2953,7 +2953,7 @@ def edit_role(RoleID):
         RoleID  = request.form.get('RoleID')
         
         if len(request.form.get('languageID')) == 0:
-            answer = gettext('Something wrongdfd!')
+            answer = gettext('Something wrong!')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
         
         languageID  = request.form.get('languageID')

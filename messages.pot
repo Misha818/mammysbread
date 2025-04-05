@@ -285,7 +285,7 @@ msgid "The URL is expired"
 msgstr ""
 
 #: app.py:2945
-msgid "Something wrongdfd!"
+msgid "Something wrong!"
 msgstr ""
 
 #: app.py:3068
@@ -445,15 +445,11 @@ msgid "Category Exists!"
 msgstr ""
 
 #: products.py:844
-msgid "Something Wrong! First"
+msgid "Something Wrong!"
 msgstr ""
 
 #: products.py:863
-msgid "Something Wrong! Second"
-msgstr ""
-
-#: products.py:868
-msgid "Something Wrong! Third"
+msgid "Something Wrong!"
 msgstr ""
 
 #: products.py:925 products.py:930

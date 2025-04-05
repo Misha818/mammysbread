@@ -841,7 +841,7 @@ def add_product(productName, productLink, languageID, CategoryID, file, AltText,
 
             if resultRelAction['inserted_id'] is None:
                 myResponse['status'] = '0'     
-                myResponse['answer'] = gettext('Something Wrong! First')  
+                myResponse['answer'] = gettext('Something Wrong!')  
  
 
         else:
@@ -860,12 +860,12 @@ def add_product(productName, productLink, languageID, CategoryID, file, AltText,
 
             if resultRelAction['inserted_id'] is None:
                 myResponse['status'] = '0'     
-                myResponse['answer'] = gettext('Something Wrong! Second')  
+                myResponse['answer'] = gettext('Something Wrong!')  
 
             myResponse['Ref_Key'] = PR_Ref_Key
     else:
         myResponse['status'] = '0'     
-        myResponse['answer'] = gettext('Something Wrong! Third')  
+        myResponse['answer'] = gettext('Something Wrong!')  
 
     return myResponse
 
