@@ -103,14 +103,21 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
     Mobile friendly styling
     buy now
     Footer
+    affiliate pages
+    contacts
+
+        Fix translation on language change
+        add prefared language id on subscribtion/on checkout 
 ===========================================================
 
     TO DO
-    affiliate pages
+    translate
+        product_type_relatives
+        store
+        Logo in current language
+
     about 
 
-    contacts
-    translate
 
 
 
@@ -292,6 +299,8 @@ affiliate_transfers
 promo_code_details
 get_affiliate_transfer_details
 
+
+// To continue, please, add at least one product category.
 
 
 

@@ -151,7 +151,12 @@
 
       // Add an event listener for the change event
       select.addEventListener("change", function() {
-        window.location.href = '/setlang?lang=' + this.value;
+        let refKey = '';
+        if (document.getElementById('RefKey')) {
+          refKey = document.getElementById('RefKey').value;
+        }
+        window.location.href = '/setlang?lang=' + this.value + '&RefKey=' + refKey;
+
       });
 
       // Configure the request

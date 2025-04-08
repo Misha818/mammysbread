@@ -226,21 +226,23 @@ def getLangID():
     return langID
 
 
-# def getLangdata(Prefix):
+def getLangdata(Prefix):
 
-#     sqlQuery = "SELECT * FROM `languages` WHERE `Prefix` = %s"
+    # sqlQuery = "SELECT * FROM `languages` WHERE `Prefix` = %s"
     
-#     sqlValueTuple = (Prefix,)
+    # sqlValueTuple = (Prefix,)
 
-#     result = sqlSelect(sqlQuery, sqlValueTuple, True)
+    # result = sqlSelect(sqlQuery, sqlValueTuple, True)
 
-#     content = {}
-    
-#     content['ID'] = result['data'][0]['Language_ID']
-#     content['Language'] = result['data'][0]['Language']
-#     content['Prefix'] = result['data'][0]['Prefix']
+    content = {}
+    supportedLangs = supported_langs()
+    for lang in supportedLangs:
+        if Prefix == lang['Prefix']:
+            content['ID'] = lang['Language_ID']
+            content['Language'] = lang['Language']
+            content['Prefix'] = lang['Prefix']
 
-#     return content
+    return content
 
 
 
@@ -632,10 +634,10 @@ def supportedLangsValues():
     
     supportedLangsData = supported_langs()
     if len(supportedLangsData) > 1:
-        for prefix in supportedLangs:
+        for prefix in supported_langs:
             supportedLangsData.append(getLangdata(prefix))
     else:
-        supportedLangsData = getLangdata(supportedLangs[0])
+        supportedLangsData = getLangdata(supported_langs[0])
 
     return supportedLangsData
 
@@ -808,8 +810,9 @@ def clientID_contactID(data): # returns clientID from table `clients` and contac
 
 
     if data['email'] and emailID == None:
-        sqlQueryInsert = "INSERT INTO `emails` (`email`, `clientID`) VALUES (%s, %s);"
-        sqlQueryTuple = (data['email'].strip(), clientID)
+        langID = getLangdata(session['lang'])['ID']
+        sqlQueryInsert = "INSERT INTO `emails` (`email`, `clientID`, `langID`) VALUES (%s, %s, %s);"
+        sqlQueryTuple = (data['email'].strip(), clientID, langID)
         result = sqlInsert(sqlQueryInsert, sqlQueryTuple)
         emailID = result['inserted_id']
 
@@ -1282,6 +1285,20 @@ def get_affiliates(filters=''):
     return sqlSelect(sqlQuery, (1,), True) 
 
 
+def check_alias(alias, languageID):
+    sqlQuery = f""" SELECT `url` FROM `product`
+                    WHERE `ID` = (SELECT `P_ID` FROM `product_relatives` WHERE `P_Ref_Key` = %s AND `Language_ID` = %s);"""
+
+    sqlValTuple = (alias, languageID)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
+    print(result)
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
+    if result['length'] > 0:
+        return result['data'][0]['url']
+    else:
+        return False
+    
 def get_order_status_list():
     return {
         '0': gettext('Cancelled'),
@@ -1291,6 +1308,7 @@ def get_order_status_list():
         '4': gettext('Ready'),
         '5': gettext('Delivered')
     }
+
 
 
 

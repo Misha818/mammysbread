@@ -25,6 +25,10 @@
         .alt-input:hover {
             cursor: auto;
         }
+
+        .styled-select {
+            margin-bottom: 5px;
+        }
     
     </style>
 {% endblock %}
@@ -62,7 +66,7 @@
         
         
         <!-- Provide a link to translate categories -->
-        {% for val in productCategory.product_category.data %}
+        <!-- {% for val in productCategory.product_category.data %}
             {% set optVal = val['Product_Category_Name'] %}
             {% if optVal is none %}
                 <p>
@@ -72,14 +76,12 @@
                 </p>
             {% endif %}
         {% endfor %}
-        
+         -->
      
-        {% else %}
-            {{ _('You have not entered any product category yet.') }}
-            {{ _('Click on the link below to add a product category!') }}
-            <a href="{{ root_url }}add-product-category">{{ _('Add Product Category') }}</a>
-
         {% endif %}    
+        <a  href="{{ root_url }}add-product-category"
+            class="add-pr-category">{{ _('Add Product Category') }}</a>
+
 
         
         <div  class="dropzone" id="myDropzone">

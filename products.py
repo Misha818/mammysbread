@@ -654,39 +654,6 @@ def get_product_categories(pc_id, languageID):
     return answer
 
 
-def get_article_categories(ac_id, languageID):
-
-    if ac_id is not None: # STEGH ES | Sarcum es article category get anelu functian
-        # Get `Product_Category_ID` from `product` table
-        sqlQuery = """
-                    SELECT `Article_Category_ID` FROM `article` WHERE `ID` = %s
-                   """
-        sqlQueryValTuple = (pc_id,)
-        result = sqlSelect(sqlQuery, sqlQueryValTuple, True)
-        if result['length'] > 0:
-            pc_id = result['data'][0]['Article_Category_ID']
-        else:
-            pc_id = None    
-
-    # Select the content from `Product_Category` table
-    sqlQueryCategory = f"""
-                        SELECT `Article_Category_ID`, `Article_Category_Name`, `AC_Ref_Key`
-                        FROM `article_category`
-                        LEFT JOIN `article_c_relatives`
-                            ON `article_c_relatives`.`AC_ID` = `article_category`.`Article_Category_ID`
-                        WHERE `Article_Category_Status` = 1 AND `article_c_relatives`.`Language_ID` = %s;
-                        """
-    sqlQueryCatVal = (languageID,)
-    resultCategory = sqlSelect(sqlQueryCategory, sqlQueryCatVal, True)
-
-    answer = {
-        'article_category': resultCategory,
-        'Article_Category_ID': pc_id
-    }
-
-    return answer
-
-
 def get_pr_thumbnail_images(RefKey):
     langID = getLangID()
     sqlQuery = f"""SELECT `Thumbnail`, `AltText` 

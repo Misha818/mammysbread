@@ -5,9 +5,20 @@
 
 {% block head %}
 
+    <!-- Include jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- jQuery, Popper.js, and Bootstrap JS for accordion functionality -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    
+        
+
     <link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">  
     <link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}">  
     <link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}">  
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+
 
     <style>
         .dz-details:hover {
@@ -30,7 +41,8 @@
 {% block content %}
 <div class="overlay" id="overlay"></div>
 {{ sideBar | safe }}
-<div class="containerS">
+
+<div class="containerS" style="width: 55%">
     <h1>{{ _('Add Product in another lang') }}</h1>
     
     <!-- Form for adding a product -->
@@ -62,31 +74,69 @@
 
         <!-- Provide a link to translate categories -->
         {% if productCategoriesToBeTranslated|length > 0 %}
+        <style>
+            .styled-select {
+                margin-bottom: 5px;
+            }
+        </style>
+        <div class="card" style="cursor:pointer; width: 100%; background-color: #f8f8f8;" id="accordion">
+            <div class="card-header" id="headingId">
+              <span class="d-block" 
+                    data-toggle="collapse-accordion" 
+                    data-target="collapseId" 
+                    aria-expanded="false" 
+                    aria-controls="collapseId">
+                {{ _('Translate category name') }}
+              </span>
+            </div>
+            <div id="collapseId" class="collapse-accordion collapse" aria-labelledby="headingId" data-parent="#accordion">
+              <div class="card-body" style="padding: 0.3rem;">
+                
+                <ul class="list-group list-group-flush">
             {% for val in productCategoriesToBeTranslated %}
                 {% set optVal = val['Product_Category_Name'] %}
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col">
+                            <a  href="{{ root_url }}edit-product-category/{{ val['PC_Ref_Key'] }}" 
+                                target="_blank" 
+                                onclick="event.stopPropagation();"
+                                >
+                                {{ optVal }} 
+                            </a>
+                        </div>
+                    </div>
+                </li>
             
-                    <p>
-                        <a target="_blank" href="{{ root_url }}/edit-product-category/{{ val['PC_Ref_Key'] }}">
-                            {{ _('Translate category name') + ' "' + optVal + '"' }} 
-                        </a>
-                    </p>
             {% endfor %}
 
-        
-        {% else %}
-        <div>
-            <script type="text/javascript">
-                let emptyCategory = "{{ emptyCategory }}";
-                alert(emptyCategory);   
-                // let url = "{{ root_url }}/add-product-category"     
-                let url = window.location.origin + '/add-product-category'
-                // window.location = url
-            </script>
-            
-            <a href="{{ root_url }}/add-product-category">{{ _('Add Product Category') }}</a>
+                </ul>
+            </div>
+        </div>
         </div>
 
+
+    <script>    
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function(e) {
+            const collapseElement = card.querySelector('.collapse-accordion');
+            console.log(typeof $.fn.collapse);
+
+            // Use jQuery's collapse toggle method (Bootstrap relies on jQuery)
+            $(collapseElement).collapse('toggle');
+            });
+        });
+    </script>
+
+  
+        
         {% endif %}    
+
+        
+        <div style="margin: 5px auto; width: 100%;">
+            <a  href="{{ root_url }}/add-product-category" class="add-pr-category" style="display: block; margin-bottom: unset; background-color: #f8f8f8;">{{ _('Add Product Category') }}</a>
+        </div>
+
 
         <div  class="dropzone" id="myDropzone">
             <div class="dz-message dz-button">{{ _('Thumbnail image') }}</div>
@@ -429,8 +479,6 @@ saveButton.addEventListener('click', function (event) {
 <!-- End of thumbnail image manipulations -->
 
 
-<!-- Include jQuery library -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
     
     const inputElement = document.getElementById("product-link");
@@ -439,8 +487,6 @@ saveButton.addEventListener('click', function (event) {
     const newValue = event.target.value.replace(/\s/g, "-");
     inputElement.value = newValue;
     });
-
-
 
 
 </script>

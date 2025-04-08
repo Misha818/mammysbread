@@ -49,6 +49,19 @@ CREATE TABLE `product_type` (
 ) ENGINE=InnoDB;
 ALTER TABLE `product_type` AUTO_INCREMENT = 1;
 
+
+DROP TABLE IF EXISTS `product_type_relatives`;
+CREATE TABLE `product_type_relatives` (
+    `ID` INT AUTO_INCREMENT,
+    `PT_Ref_Key` INT,
+    `User_ID` INT,
+    `PT_ID` INT,
+    `Language_ID` INT,
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `product_type_relatives` AUTO_INCREMENT = 1;
+
+
 DROP TABLE IF EXISTS `product_category`;
 CREATE TABLE `product_category` (
     `Product_Category_ID` INT NOT NULL AUTO_INCREMENT,
@@ -83,6 +96,7 @@ CREATE TABLE `product_relatives` (
     PRIMARY KEY (`product_relatives_ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `product_relatives` AUTO_INCREMENT = 1;
+
 
 -- DROP TABLE IF EXISTS `sub_product`;
 -- CREATE TABLE `sub_product` (
@@ -479,6 +493,7 @@ CREATE TABLE `emails` (
     `ID` INT AUTO_INCREMENT,
     `email` VARCHAR(255),
     `clientID` INT,
+    `langID` INT,
     `Status` INT, -- 1 == active, 0 == blacklisted, 2 = subscribe, 3 = ansubscribed
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;

@@ -126,11 +126,11 @@ msgstr "Պահպանում..."
 
 #: app.py:1472
 msgid "Please specify the title!"
-msgstr "Խնդրում ենք նշել վերնագիրը։"
+msgstr "Խնդրում ենք նշել անվանումը։"
 
 #: app.py:1485 app.py:1799
 msgid "Product Type Title Already Exists!"
-msgstr "Ապրանքատեսակի վերնագիրը արդեն գոյություն ունի։"
+msgstr "Ապրանքատեսակի անվանումը արդեն գոյություն ունի։"
 
 #: app.py:1491
 msgid "Please specify the price!"
@@ -170,7 +170,7 @@ msgstr "Ոչինչ չի վերբեռնվել։"
 
 #: app.py:1790
 msgid "Please specify title!"
-msgstr "Խնդրում ենք նշել վերնագիրը։"
+msgstr "Խնդրում ենք նշել անվանումը։"
 
 #: app.py:1803
 msgid "Please specify price!"
@@ -178,7 +178,7 @@ msgstr "Խնդրում ենք նշել գինը։"
 
 #: app.py:2076
 msgid "Title is empty!"
-msgstr "Վերնագիրը դատարկ է։"
+msgstr "Ապրանքի անվանումը դատարկ է։"
 
 #: app.py:2079
 msgid "Link is empty!"
@@ -216,7 +216,7 @@ msgstr "Ապրանքը հրապարակված է։"
 msgid "Product is unpublished"
 msgstr "Ապրանքը հրապարակումը դադարեցված է։"
 
-#: app.py:2478 app.py:2657 app.py:2718 app.py:2939
+#: app.py:2478 app.py:2657 app.py:2718 app.py:2939 app.py:2945
 msgid "Something wrong!"
 msgstr "Ինչ-որ բան սխալ է։"
 
@@ -351,13 +351,13 @@ msgid ""
 "You have already added this product to the basket. You can change the "
 "quantity if You would like to."
 msgstr ""
-"Դուք արդեն ավելացրել եք այս ապրանքը զամբյուղ։ Կարող եք փոխել քանակը, "
-"եթե ցանկանում եք։"
+"Դուք արդեն ավելացրել եք այս ապրանքը զամբյուղ։ Կարող եք փոխել քանակը, եթե "
+"ցանկանում եք։"
 
 #: app.py:4192 app.py:5117 templates/buy-now.html:79 templates/buy-now.html:464
 #: templates/checkout.html:79 templates/checkout.html:471
 msgid "In Basket"
-msgstr "Զամբյուղում է" 
+msgstr "Զամբյուղում է"
 
 #: app.py:4193 app.py:5021
 msgid "The seller doesn't have that many left."
@@ -417,7 +417,7 @@ msgstr "Մեկ գնումի համար առավելագույն հասանելի
 
 #: app.py:5037
 msgid "Out of stock"
-msgstr "Պահեստում չկա։"
+msgstr "Առկա չէ"
 
 #: app.py:5043
 msgid "Maximum available quantity is "
@@ -437,19 +437,19 @@ msgstr "Դուք հաջողությամբ բաժանորդագրվել եք։"
 
 #: app.py:5210
 msgid "Out of stock."
-msgstr "Պահեստում չկա։"
+msgstr "Առկա չէ"
 
 #: products.py:286 products.py:331
 msgid "Category Exists!"
 msgstr "Կատեգորիան արդեն գոյություն ունի։"
 
-#: products.py:925 products.py:930
+#: products.py:844 products.py:863 products.py:925 products.py:930
 msgid "Something Wrong!"
 msgstr "Ինչ-որ բան սխալ է։"
 
 #: templates/add-price.html:3 templates/product.html:144
 msgid "Add Price"
-msgstr "Ավելացնել գին։"
+msgstr "Ավելացնել գին"
 
 #: templates/add-price.html:45
 msgid "Add Product Type Title"
@@ -462,7 +462,7 @@ msgstr "Ավելացնել ապրանքատեսակի գինը։"
 #: templates/add-price.html:52 templates/edit-price.html:55
 #: templates/product.html:203
 msgid "Click here to upload files"
-msgstr "Սեղմեք այստեղ ֆայլեր վերբեռնելու համար։"
+msgstr "Սեղմեք այստեղ նկարներ վերբեռնելու համար։"
 
 #: templates/add-price.html:58 templates/edit-price.html:60
 msgid "Choose product type specification"
@@ -595,13 +595,13 @@ msgstr "Սա է ձեր հոդվածի հղումը"
 #: copy.html:43 templates/add_article.html:43 templates/add_product
 #: templates/add_product.html:43 templates/add_product_lang.html:41
 msgid "Short description"
-msgstr "Կարճ նկարագրություն"
+msgstr "Հակիրճ նկարագրություն"
 
 #: copy.html:44 templates/add_article.html:44 templates/add_product
 #: templates/add_product.html:44 templates/add_product_lang.html:42
 #: templates/product.html:560
 msgid "Long description"
-msgstr "Երկար նկարագրություն"
+msgstr "Մանրամասն նկարագրություն"
 
 #: templates/add_article.html:48
 msgid "Choose article category"
@@ -631,7 +631,7 @@ msgstr "Ավելացնել հոդվածի կատեգորիա"
 #: templates/add_product.html:86 templates/add_product_category.html:91
 #: templates/add_product_lang.html:92 templates/teammate-signup.html:52
 msgid "Thumbnail image"
-msgstr "Նկար"
+msgstr "Գլխավոր նկար"
 
 #: copy.html:188 templates/add_article.html:188
 #: templates/add_article_category.html:197 templates/add_product
@@ -673,7 +673,7 @@ msgstr "Ապրանքի հղումը"
 #: copy.html:42 templates/add_product templates/add_product.html:42
 #: templates/add_product_lang.html:40
 msgid "This-is-Your-Product-Link"
-msgstr "Սա ձեր ապրանքի հղումն է"
+msgstr "Սա-ձեր-ապրանքի-հղումն-է"
 
 #: copy.html:48 templates/add_product templates/add_product.html:48
 #: templates/add_product_lang.html:46 templates/product.html:489
@@ -732,7 +732,7 @@ msgstr "Ավելացնել ապրանքատեսակի բնութագրի անվ�
 
 #: templates/add_product_lang.html:34
 msgid "Add Product in another lang"
-msgstr "Ավելացնել ապրանք այլ լեզվով"
+msgstr "Ավելացնել ապրանք"
 
 #: templates/add_product_lang.html:40 templates/product.html:544
 msgid "Product link"
@@ -997,7 +997,9 @@ msgstr "Բարի գալուստ սիրելի"
 
 #: templates/affiliate.html:146
 msgid "Below is the summary of your payment and reward progress."
-msgstr "Ստորև ամփոփված է Ձեր վճարումներին և պարգևատրումներին վերաբերող տեղեկատվությունը։"
+msgstr ""
+"Ստորև ամփոփված է Ձեր վճարումներին և պարգևատրումներին վերաբերող "
+"տեղեկատվությունը։"
 
 #: templates/affiliate.html:148
 msgid "Window for"
@@ -1007,7 +1009,9 @@ msgstr "Պատուհանը պատկանում է"
 msgid ""
 "Below is the summary of payment and reward progress of the current "
 "affiliate."
-msgstr "Ստորև ամփոփված է տվյալ գործընկերոջ վճարումներին և պարգևատրումներին վերաբերող տեղեկատվությունը։"
+msgstr ""
+"Ստորև ամփոփված է տվյալ գործընկերոջ վճարումներին և պարգևատրումներին "
+"վերաբերող տեղեկատվությունը։"
 
 #: templates/affiliate.html:198 templates/affiliate.html:242
 msgid "Details"
@@ -1081,7 +1085,7 @@ msgstr "Հոդվածների կատեգորիաներ"
 #: templates/products.html:85 templates/store.html:190
 #: templates/thumbnail.html:3
 msgid "Thumbnail"
-msgstr "Նկար"
+msgstr "Գլխավոր նկար"
 
 #: templates/article-categories.html:53
 #: templates/product-categories-copy.html:53
@@ -1252,7 +1256,7 @@ msgstr "Շարունակել"
 #: templates/buy-now.html:614 templates/checkout.html:621
 #: templates/index.html:143 templates/index.html:351 templates/index.html:834
 msgid "Add To Cart"
-msgstr "Ավելացնել զամբյուղ"
+msgstr "Զամբյուղ"
 
 #: templates/buy-now.html:1164 templates/checkout.html:1159
 msgid "Louding..."
@@ -1320,7 +1324,9 @@ msgstr "Պատվերը հաստատված է։"
 
 #: templates/confirmation-page.html:113
 msgid "Thank you for shopping with us. We are preparing your order now!"
-msgstr "Շնորհակալություն մեր ծառայություններից օգտվելու համար։ Ձեր պատվերը ընթացքի մեջ է։"
+msgstr ""
+"Շնորհակալություն մեր ծառայություններից օգտվելու համար։ Ձեր պատվերը "
+"ընթացքի մեջ է։"
 
 #: templates/confirmation-page.html:137
 msgid "Delivery Information"
@@ -1340,7 +1346,7 @@ msgstr "Շարունակել գնումները"
 
 #: templates/confirmation-page.html:159
 msgid "Contact us"
-msgstr "Կապվեք մեզ հետ"
+msgstr "Կապ"
 
 #: templates/confirmation-page.html:160
 msgid "Track Your Order"
@@ -1531,19 +1537,19 @@ msgstr "Թարմ թթխմորով հաց"
 
 #: templates/index.html:114
 msgid "Contact US"
-msgstr "Կապվեք մեզ հետ"
+msgstr "Կապ"
 
 #: templates/index.html:115
 msgid "Order Now!"
-msgstr "Պատվիրեք հիմա։"
+msgstr "Պատվիրել"
 
 #: templates/index.html:116 templates/public.html:123
 msgid "Our History"
-msgstr "Մեր պատմությունը"
+msgstr "Մեր մասին"
 
 #: templates/index.html:142 templates/product_client.html:156
 msgid "See Details"
-msgstr "Տեսնել մանրամասները"
+msgstr "Ավելին"
 
 #: templates/index.html:155
 msgid "About"
@@ -1565,7 +1571,7 @@ msgstr "Գաղտնաբառ"
 
 #: templates/login.html:90 templates/login1.html:16
 msgid "Log In"
-msgstr "Մուտք գործել"
+msgstr "Մուտք"
 
 #: templates/login.html:91
 msgid "Saveing"
@@ -1693,11 +1699,11 @@ msgstr "Ապրանքի անվանումը"
 
 #: templates/product.html:551
 msgid "Short Description"
-msgstr "Կարճ նկարագրություն"
+msgstr "Հակիրճ նկարագրություն"
 
 #: templates/product.html:558
 msgid "Long Description"
-msgstr "Երկար նկարագրություն"
+msgstr "Մանրամասն նկարագրություն"
 
 #: templates/products.html:95 templates/store.html:196
 msgid "Title"
@@ -1813,7 +1819,7 @@ msgstr "մնացել է պահեստում"
 
 #: templates/slideshow.html:176 templates/slideshow.html:222
 msgid "Add to cart"
-msgstr "Ավելացնել զամբյուղ"
+msgstr "Զամբյուղ"
 
 #: templates/slideshow.html:180
 msgid "Adding"

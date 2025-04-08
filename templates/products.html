@@ -77,6 +77,7 @@
 
 
 <div class="table-container toRight" id="tableDaddy">
+  <input type="text" id="myInput" onkeyup="filter_products_by_title(this)" placeholder="{{ _('Search for a product by title') }}" title="{{ _('Type in a product title') }}" style="margin-left: 10px; width: 200px; padding: 12px;">
   <table id="myTable">
     <thead>
       <tr>
@@ -139,7 +140,11 @@
             </div>
           </div>
         </th>
-        <th></th>
+        <th>
+          <div style="display: flex; align-items: center;">
+            {{ _('Actions') }} 
+          </div>
+        </th>
       </tr>
   </thead>
   <tbody>
@@ -149,27 +154,32 @@
     {% set status = _('Unpublished') %}
   {% endif %}
   {% if loop.index > 1 %}
-    {% set trBorderTop = 'class=trBorderTop' %}
-
+    {% set trBorderTop = 'trBorderTop keyup-filter' %}
   {% else %}
-    {% set trBorderTop = '' %}
+    {% set trBorderTop = 'keyup-filter' %}
   {% endif %}
+  
+  {% set publishedDate = row['DatePublished'] %}
+  {% if row['DatePublished'] == none %}
+    {% set publishedDate = '' %}
+  {% endif %}
+
   {% set editUrl = 'product/' + row['P_Ref_Key']|string %}
-    <tr {{ trBorderTop }}>
+    <tr class="{{ trBorderTop }}" data-value="{{row['ID']}}-&$%-{{row['Title']}}" >
       <td><img src="{{ url_for('static', filename='images/pr_thumbnails/' + row['Thumbnail']) }}" style="width: 100px;"/></td>
       <td>{{ row['Title'] }}</td>
-      <td>{{ row['DatePublished'] }}</td>
+      <td>{{ publishedDate }}</td>
       <td>{{ row['DateModified'] }}</td>
       <td>{{ row['Product_Category_Name'] }}</td>
       <td>{{ status }}</td>
       <td>
         {% if row['Product_Status'] == 2 %}
-        <a href="{{ url_for('home', _external=True) + row['Url'] }}" target="_blank">{{ _('View') }}</a>
+        <a href="{{ url_for('home', _external=True) + row['Url'] }}" target="_blank" title="{{ _('View') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2; margin-right: 20px;"></i></a>
         {% endif %}
-        <a href="{{ url_for('home', _external=True) + editUrl }}" target="_blank">{{ _('Edit') }}</a>
+        <a href="{{ url_for('home', _external=True) + editUrl }}" target="_blank" title="{{ _('Edit') }}"><i class="fas fa-pencil" style=" color: #6be6b2;"></i></a>
       </td>
     </tr>
-    <tr class="extra-row">
+    <tr class="extra-row" id="extraRow_{{row['ID']}}">
       <td colspan="7" style="text-align: center; padding: 5px; ">
         <button class="view-types-btn" title="{{ _('View Types') }}" id="btn_{{row['ID']}}" onclick="getProductTypes({{row['ID']}})">
           <div class="chevron">&#9660;</div>
@@ -623,6 +633,37 @@ function myLoader(color) {
     loader.style.display = 'inline-block';
     loader.textContent = '⚙';
     return loader;
+}
+
+function filter_products_by_title(input) {
+  let filter = input.value.toUpperCase();
+  let trows = document.querySelectorAll(".keyup-filter");
+  let extraRows = document.querySelectorAll(".extra-row");
+  if (document.getElementById('answerID')) {
+    document.getElementById('answerID').remove();
+  }
+
+  trows.forEach((tr) => {
+    let trValue = tr.getAttribute("data-value");
+    let trValueArray = trValue.split('-&$%-');  
+    let trID = trValueArray[0];
+    let title = trValueArray[1].toUpperCase();
+    if (title.includes(filter)) {
+      tr.style.display = ""; // Show the row
+      document.getElementById('extraRow_' + trID).style.display = 'revert'; // Show the extra row
+    } else {
+      tr.style.display = "none"; // Hide the row
+      document.getElementById('extraRow_' + trID).style.display = 'none'; // Hide the extra row
+    }
+
+    
+  });
+
+
+
+
+
+
 }
 
 </script>

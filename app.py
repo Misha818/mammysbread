@@ -2,8 +2,8 @@ from flask import Flask, render_template, request, jsonify, session, redirect, g
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_article_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
+from sysadmin import getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -89,11 +89,6 @@ orderStatusList = get_order_status_list()
 def handle_csrf_error(e):
     return render_template('csrf_error.html', reason=e.description), 400
 
-smthWrong = _l('Something went wrong. Please try again!')
-
-print('AAAAAAAAAAAAAAAAAAAAAAA')
-print(smthWrong)
-print('AAAAAAAAAAAAAAAAAAAAAAA')
 
 def side_bar_stuff():
     stuffID = session.get("user_id")
@@ -235,15 +230,36 @@ babel = Babel(app, locale_selector=get_locale, timezone_selector=get_timezone)
 def setlang():
     defLang = getDefLang()
     lang = request.args.get('lang', defLang['Prefix'])
+    refKey = request.args.get('RefKey', '')
     session['lang'] = lang
+    if refKey != '':
+        langData = getLangdata(lang)
+        translated_path_segment = check_alias(refKey, langData['ID'])
+        if translated_path_segment == False:
+            return redirect(request.referrer)
+        else:
+            newUrl = url_for('home', _external=True) + translated_path_segment
+            return redirect(newUrl)
+
     return redirect(request.referrer)
+
+# @app.route('/setlang')
+# def setlang():
+#     defLang = getDefLang()
+#     lang = request.args.get('lang', defLang['Prefix'])
+#     session['lang'] = lang
+#     print('request.referrer request.referrer request.referrer request.referrer request.referrer')
+#     print(request.referrer)
+#     print('request.referrer request.referrer request.referrer request.referrer request.referrer')
+#     return
+#     return redirect(request.referrer)
 
 @app.route('/changeprorder', methods=['POST'])
 @login_required
 def change_pr_order():
     status = '0'
     if not request.form.get('order') or not request.form.get('order'):
-        return jsonify({'status': status, 'answer': smthWrong})
+        return jsonify({'status': status, 'answer': gettext('Something went wrong. Please try again!')})
     
     newOrder = int(request.form.get('order'))
     prID = int(request.form.get('prID'))
@@ -269,13 +285,13 @@ def change_pr_order():
                 """
     result = sqlUpdate(sqlQuery, sqlValTuple)
     if result['status'] == '-1':
-        return jsonify({'status': status, 'answer': smthWrong})
+        return jsonify({'status': status, 'answer': gettext('Something went wrong. Please try again!')})
 
     sqlQueryOdd = "UPDATE `product` SET `Order` = %s WHERE `ID` = %s;"
     sqlVT = (newOrder, prID)
     resultOdd = sqlUpdate(sqlQueryOdd, sqlVT)
     if resultOdd['status'] == '-1':
-        return jsonify({'status': status, 'answer': smthWrong})
+        return jsonify({'status': status, 'answer': gettext('Something went wrong. Please try again!')})
 
     status = '1'
     return jsonify({'status': status})
@@ -490,20 +506,27 @@ def checkout():
     if request.method == 'POST':
         # Lock some tables, unlock at the end
         if not request.form.get('data'):
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})    
 
         json_str = request.form.get('data')
 
         try:
             data = json.loads(json_str)
         except json.JSONDecodeError as e:
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
         # check data validity 
 
         if data['confirm-phone'] != data['phone']:
             answer = gettext('The phone numbers do not match')
             return jsonify({'status': "0", 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+        
+        if data.get('email') != '' and data.get('email') is not None:
+            emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+            # Check if the email matches the pattern
+            if not re.match(emailPattern, data['email']):
+                answer = gettext('Invalid email format')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
         paymentMethod = False
         for key, value in data.items():
@@ -515,10 +538,10 @@ def checkout():
                 return jsonify({'status': "0", 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
 
         if len(data['ptData']) == 0:
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})   
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})   
         
         if paymentMethod == False:
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})   
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})   
         # End of Validation
 
 
@@ -543,7 +566,7 @@ def checkout():
         #     answer = gettext(priceARR['answer'])
         #     return jsonify({'status': "0", 'answer': answer, 'newCSRFtoken': newCSRFtoken})
         # if priceARR['status'] == "2":
-        #     return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})            
+        #     return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})            
         # if priceARR['status'] == "1":
         #     amount = priceARR['answer']
         # END of Calculate Total price to be purchased
@@ -575,12 +598,12 @@ def checkout():
 
         # insert data into table buffer
         # This also checks if specified amount of product exists
-        buffer = insertIntoBuffer(data, pdID, smthWrong)
+        buffer = insertIntoBuffer(data, pdID, gettext('Something went wrong. Please try again!'))
         # print('AAAAAAAAAAAAAAAAAAAAAAA')
         # print(buffer)
         # print('AAAAAAAAAAAAAAAAAAAAAAA')
         if buffer['status'] == "0":
-            return jsonify({'status': "0", 'answer': smthWrong + 'sdsds', 'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!') + 'sdsds', 'newCSRFtoken': newCSRFtoken})
         
         if buffer['status'] == "2":
             return jsonify({'status': "0", 'answer': gettext("Invalid Promo Code"), 'newCSRFtoken': newCSRFtoken})
@@ -604,7 +627,7 @@ def checkout():
             }
             purchseData = insertPUpdateP(pdID, paymentData)
             if purchseData['status'] == 0:
-                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+                return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
         
 
             # answer = gettext('Payment passed successfully') + ' ' + str(amount) + ' ' + MAIN_CURRENCY
@@ -1145,7 +1168,7 @@ def affiliate_order_details(pdID):
 def get_affiliate_transfer_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('notesID'):
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
     notesID = request.form.get('notesID')
     sqlQuery = """SELECT 
@@ -1167,14 +1190,14 @@ def get_affiliate_transfer_details():
 def get_transfer_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('notesID'):
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
     notesID = request.form.get('notesID')
     sqlQuery = "SELECT  `notes`.`ID`, `notes`.`note` FROM `notes` WHERE  `notes`.`ID` = %s"
 
     result = sqlSelect(sqlQuery, (notesID,), True)
     if result['length'] == 0:
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
     return jsonify({'status': "1", 'row': result['data'][0], 'newCSRFtoken': newCSRFtoken})
     
@@ -1183,7 +1206,7 @@ def get_transfer_details():
 # @login_required
 def get_order_details():
     if not request.form.get('orderID'):
-        return jsonify({'status': "0", 'answer': smthWrong})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!')})
     
     pdID = request.form.get('orderID')
 
@@ -1220,7 +1243,7 @@ def get_order_details():
 def edit_order_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('orderID') or not request.form.get('firstname') or not request.form.get('lastname') or not request.form.get('phone') or not request.form.get('address') or not request.form.get('status'):
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
     phone = request.form.get('phone')
     phone = ''.join(filter(str.isdigit, phone))
@@ -1247,8 +1270,9 @@ def edit_order_details():
     sqlValTuple = (Email,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] == 0:
-        sqlQuery = "INSERT INTO `emails` (`email`) VALUES (%s);"
-        sqlValTuple = (Email,)
+        langID = getLangdata(session['lang'])['ID']
+        sqlQuery = "INSERT INTO `emails` (`email`, `langID`) VALUES (%s, %s);"
+        sqlValTuple = (Email, langID)
         result = sqlInsert(sqlQuery, sqlValTuple)
         emailID = result['inserted_id']
     else:
@@ -1290,7 +1314,7 @@ def edit_order_details():
     sqlQuery = "SELECT `clientID`, `contactID`, `Status` FROM `payment_details` WHERE `ID` = %s;"
     result = sqlSelect(sqlQuery, (pdID,), True)
     if result['length'] == 0:
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     clientID = result['data'][0]['clientID']
     contactID = result['data'][0]['contactID']
     Status = result['data'][0]['Status']
@@ -1299,20 +1323,20 @@ def edit_order_details():
     sqlValTuple = (firstname, lastname, clientID)
     result = sqlUpdate(sqlQuery, sqlValTuple)
     if result['status'] == '-1':
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
     sqlQuery = "UPDATE `client_contacts` SET `phoneID` = %s, `emailID` = %s, `addressID` = %s WHERE `ID` = %s;"
     sqlValTuple = (phoneID, emailID, addressID, contactID)
     result = sqlUpdate(sqlQuery, sqlValTuple)
     if result['status'] == '-1':
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
     if Status != int(status):
         sqlQuery = "UPDATE `payment_details` SET `Status` = %s WHERE `ID` = %s;"
         sqlValTuple = (status, pdID)
         result = sqlUpdate(sqlQuery, sqlValTuple)
         if result['status'] == '-1':
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
         if status == '5':
             sqlQuery = "SELECT * FROM `delivered` WHERE `pdID` = %s;"
@@ -1321,12 +1345,12 @@ def edit_order_details():
                 sqlQurty = "INSERT INTO `delivered` (`pdID`, `timestamp`) VALUES (%s, NOW());"
                 result = sqlInsert(sqlQurty, (pdID,))
                 if result['status'] == '-1':
-                    return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+                    return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
             else:
                 sqlQuery = "UPDATE `delivered` SET `timestamp` = NOW() WHERE `pdID` = %s;"
                 result = sqlUpdate(sqlQuery, (pdID,))
                 if result['status'] == '-1':
-                    return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+                    return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
     return jsonify({'status': "1", "newCSRFtoken": generate_csrf()})
 
@@ -1476,7 +1500,7 @@ def editprice():
     ptID = request.form.get('PtID')
 
     if not ptID:
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     if not request.form.get('title') or len(request.form.get('title').strip())  == 0:
@@ -1602,7 +1626,7 @@ def editprice():
 
         if request.form.get('upload_status_' + str(i)) == '1':
             if not request.form.get('slideID_' + str(i)):
-                answer = smthWrong
+                answer = gettext('Something went wrong. Please try again!')
                 return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
             
             slideID = request.form.get('slideID_' + str(i))
@@ -1611,7 +1635,7 @@ def editprice():
                 sqlValTupleSlide = (request.form.get('alt_text_' + str(i)), i,  slideID)      
                 resultUpdate = sqlUpdate(sqlUpdateSlide, sqlValTupleSlide)
                 if resultUpdate['status'] == '-1':
-                    answer = smthWrong
+                    answer = gettext('Something went wrong. Please try again!')
                     return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
             del shortKeys[int(slideID)]  
 
@@ -1622,7 +1646,7 @@ def editprice():
             sqlValTuple = (unique_filename, altText, i, ptID, 2)
             result = sqlInsert(sqlInsertSlide, sqlValTuple)
             if result['status'] == 0:
-                answer = smthWrong
+                answer = gettext('Something went wrong. Please try again!')
                 return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
         i = i + 1
@@ -1638,7 +1662,7 @@ def editprice():
             # Del from folder
             removeResult = removeRedundantFiles(val[0], imgDir)
             if removeResult == False:
-                answer = smthWrong
+                answer = gettext('Something went wrong. Please try again!')
                 return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     # End of image upload
@@ -1659,7 +1683,7 @@ def editprice():
     sqlValTuple = (title, price, spsID, ptID)
     updateResult = sqlUpdate(sqlUpdatePriceTitle, sqlValTuple) 
     if updateResult['status'] == '-1':
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
     spsChecker = request.form.get('spsChecker')
@@ -1668,7 +1692,7 @@ def editprice():
         sqlValTuple = (ptID,)
         resultDelete = sqlDelete(sqlQueryDel, sqlValTuple)
         if resultDelete['status'] == '-1':
-            answer = smthWrong
+            answer = gettext('Something went wrong. Please try again!')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
         
 
@@ -1683,7 +1707,7 @@ def editprice():
                 sqlValTupleSpss = (ptID, int(arr[0]), arr[1])
                 resultInsert = sqlInsert(sqlInsertPtDetails, sqlValTupleSpss)
                 if resultInsert['status'] == 0:
-                    answer = smthWrong
+                    answer = gettext('Something went wrong. Please try again!')
                     return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
 
             i += 1
@@ -1734,7 +1758,7 @@ def pd(RefKey):
                 defaultLangDict = getDefLang()
                 if defaultLangDict['id'] != languageID:
                     defLangProductCategory = get_product_categories(None, defaultLangDict['id'])
-
+                    
                     if defLangProductCategory['product_category']['length'] > productCategory['product_category']['length']:
                         productCategoryRefKeys = filter_multy_dict(productCategory['product_category']['data'], 'PC_Ref_Key')
                         defLangProductCategoryRefKeys = filter_multy_dict(defLangProductCategory['product_category']['data'], 'PC_Ref_Key')
@@ -1773,7 +1797,7 @@ def pd(RefKey):
 @login_required
 def upload_slides():
     
-    answer = smthWrong
+    answer = gettext('Something went wrong. Please try again!')
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
     
@@ -1781,7 +1805,7 @@ def upload_slides():
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     
 
-    answer = smthWrong # Delete after function is completed
+    answer = gettext('Something went wrong. Please try again!') # Delete after function is completed
 
 
     if not request.form.get('upload_status_0') and request.form.get('Type') == 1:
@@ -1882,12 +1906,12 @@ def upload_slides():
                         sqlValTuplePTD = (ProductID, row['spssID'], Text)
                         resultInsertPTD = sqlInsert(sqlP_T_DetailsInsert, sqlValTuplePTD)
                         if resultInsertPTD['status'] == 0:
-                            answer = smthWrong
+                            answer = gettext('Something went wrong. Please try again!')
                             return jsonify({'status': '0', 'answer': resultInsertPTD['answer'], 'newCSRFtoken': newCSRFtoken})
 
 
         else: 
-            answer = smthWrong
+            answer = gettext('Something went wrong. Please try again!')
             return jsonify({'status': '0', 'answer': insertedResult['answer'], 'newCSRFtoken': newCSRFtoken})
             
 
@@ -1942,7 +1966,7 @@ def upload_slides():
                     sqlValTupleSlide = (request.form.get('alt_text_' + str(i)), i,  slideID)      
                     resultUpdate = sqlUpdate(sqlUpdateSlide, sqlValTupleSlide)
                     if resultUpdate['status'] == '-1':
-                        answer = smthWrong
+                        answer = gettext('Something went wrong. Please try again!')
                         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
                 del shortKeys[int(slideID)]  
                 # sliderID = shortKeys[filename][0]
@@ -1964,7 +1988,7 @@ def upload_slides():
                     # Stegh es grum file uploader
                     dataList.append(result['answer'])
                 else:
-                    answer = smthWrong
+                    answer = gettext('Something went wrong. Please try again!')
                     return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
          
 
@@ -1982,7 +2006,7 @@ def upload_slides():
                 # Del from folder
                 removeResult = removeRedundantFiles(val[0], imgDir)
                 if removeResult == False:
-                    answer = smthWrong
+                    answer = gettext('Something went wrong. Please try again!')
                     return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
             
             idCount = lenShortkeys * "%s, "
@@ -2127,7 +2151,7 @@ def add_pr():
 @login_required
 def edit_pr_headers():
     if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
     elif not request.form.get('productName'):
         answer = gettext('Product name is empty!')
@@ -3343,6 +3367,7 @@ def pt_specifications():
     sqlQuery = """
                 SELECT 
                     `sub_product_specification`.`ID`,
+                    `sps_relatives`.`Ref_Key`,
                     `sub_product_specification`.`Name`,
                     `sub_product_specification`.`Status`
                 FROM `sub_product_specification`
@@ -3357,10 +3382,18 @@ def pt_specifications():
     return render_template('product-type-specifications.html', result=result, sideBar=sideBar, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), current_locale=get_locale())
 
 # Edit product type specification (subproduct)
-@app.route("/edit-pts/<ptsID>", methods=['GET'])
+@app.route("/edit-pts/<ptsRefKey>", methods=['GET'])
 @login_required
-def edit_pts_view(ptsID):
+def edit_pts_view(ptsRefKey):
     languageID = getLangID()
+
+    # Get ptsID
+    sqlQueryPTS = "SELECT `SPS_ID` FROM `sps_relatives` WHERE `Ref_Key` = %s AND `Language_ID` = %s;"
+    resultPTS = sqlSelect(sqlQueryPTS, (ptsRefKey, languageID), True)
+    if resultPTS['length'] == 0:
+        return render_template('error.html', current_locale=get_locale())
+    
+    ptsID = resultPTS['data'][0]['SPS_ID']
     sqlQuery = """
                 SELECT 
                     `sub_product_specification`.`ID`,
@@ -3389,7 +3422,7 @@ def edit_pts_view(ptsID):
 def change_type_order():
     newCSRFtoken = generate_csrf()
     if not request.form.get('prID'):
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -3404,7 +3437,7 @@ def change_type_order():
     sqlValTuple = (prID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] == 0:
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
 
@@ -3417,7 +3450,7 @@ def change_type_order():
             sqlValTuple = (i, request.form.get(str(i)))
             updateResult = sqlUpdate(sqlQuery, sqlValTuple)
             if updateResult['status'] == '-1':
-                answer = smthWrong
+                answer = gettext('Something went wrong. Please try again!')
                 response = {'status': '0', 'answer': updateResult['answer'], 'newCSRFtoken': newCSRFtoken}
                 return jsonify(response)   
              
@@ -3436,7 +3469,7 @@ def chaneg_pt_status():
     ptID = request.form.get('ptID') 
     status = request.form.get('status') 
     if not ptID or not status:
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -3445,7 +3478,7 @@ def chaneg_pt_status():
     result = sqlUpdate(sqlQuery, sqlValTuple)
 
     if result['status'] == '-1':
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -3466,7 +3499,7 @@ def edit_pts():
     
     spsID = request.form.get('spsID') 
     if not spsID:
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
 
@@ -3510,7 +3543,7 @@ def edit_pts():
         sqlValTupleUpdate = (spsName, spsID)
         updateResult = sqlUpdate(sqlQueryUpdate, sqlValTupleUpdate)
         if updateResult['status'] == '-1':
-            answer = smthWrong
+            answer = gettext('Something went wrong. Please try again!')
             response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
             return jsonify(response)
         
@@ -3533,14 +3566,14 @@ def edit_pts():
                 sqlValTuple = (spsText, result['data'][i]['spssID'])
                 updateResult = sqlUpdate(sqlQuerySpssUpdate, sqlValTuple)
                 if updateResult['status'] == '-1':
-                    answer = smthWrong
+                    answer = gettext('Something went wrong. Please try again!')
                     response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
                     return jsonify(response)
         else:
             sqlValTuple = (spsText, i, spsID, 1)
             resultInsert = sqlInsert(sqlQuerySpssInsert, sqlValTuple)
             if resultInsert['status'] == 0:
-                answer = smthWrong
+                answer = gettext('Something went wrong. Please try again!')
                 response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
                 return jsonify(response)
 
@@ -3549,7 +3582,7 @@ def edit_pts():
             sqlValTupleSPSRel = (spssID, RefKey, languageID, userID, 1)
             insertResult = sqlInsert(sqlQuerySPSSRelativeInsert, sqlValTupleSPSRel)
             if insertResult['status'] == 0:
-                answer = smthWrong
+                answer = gettext('Something went wrong. Please try again!')
                 response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
                 return jsonify(response)
             
@@ -3566,7 +3599,7 @@ def edit_pts():
             sqlValTuple = (row['spssID'],)
             resultDel = sqlDelete(sqlQueryDel, sqlValTuple)
             if resultDel['status'] == '-1':
-                answer = smthWrong
+                answer = gettext('Something went wrong. Please try again!')
                 response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
                 return jsonify(response)
             
@@ -3711,13 +3744,13 @@ def transfer_funds(stuffID=0):
         num = amount.count(',') + amount.count('.')
 
         if num > 1 or invalid == True or bool(re.match(r'^[0-9.,]+$', amount)) == False:
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}) 
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken}) 
 
         recipient = request.form.get('recipient')
         sqlQuery =  "SELECT `ID` FROM `stuff` WHERE `ID` = %s;"
         result = sqlSelect(sqlQuery, (recipient,), True)
         if result['length'] == 0:
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}) 
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken}) 
 
         type = request.form.get('type')
 
@@ -3771,7 +3804,7 @@ def add_sps():
     result = sqlInsert(sqlQuery, sqlValTuple)
 
     if not result['inserted_id']:
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response) 
 
@@ -3989,7 +4022,7 @@ def getSlides(PrID):
 def get_specifications():
     newCSRFtoken = generate_csrf()
     if not request.form.get('LanguageID') or not request.form.get('spsID'):
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -4021,7 +4054,7 @@ def get_specifications():
 def get_product_types():
     newCSRFtoken = generate_csrf()
     if not request.form.get('prID'):
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -4058,7 +4091,7 @@ def get_product_types():
 def get_product_types_quantity():
     newCSRFtoken = generate_csrf()
     if not request.form.get('prID'):
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -4270,7 +4303,7 @@ def analyse_cart_data(cartData):
 def get_pt_quantities():     
     newCSRFtoken = generate_csrf()
     if not request.form.get('ptID'):
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -4340,7 +4373,7 @@ def get_pt_quantities():
 def get_pt_quantity():     
     newCSRFtoken = generate_csrf()
     if not request.form.get('ptID') or not request.form.get('quantity'):
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
@@ -4389,7 +4422,7 @@ def edit_store(quantity_pt_IDs=None):
     newCSRFtoken = generate_csrf()
     if request.method == "POST":
         if not request.form.get('quantityID') or request.form.get('quantityID') == 'null':
-            answer = smthWrong
+            answer = gettext('Something went wrong. Please try again!')
             return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
     
         if not request.form.get('ptID') or request.form.get('ptID') == 'null':
@@ -4405,7 +4438,7 @@ def edit_store(quantity_pt_IDs=None):
             return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
         
         if not request.form.get('quantity').isdigit():
-            return jsonify({'status': '0', 'answer': smthWrong,  'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'),  'newCSRFtoken': newCSRFtoken})
 
         if int(request.form.get('quantity')) < 1:
             answer = gettext('Quantity should be greater than Zero')
@@ -4426,7 +4459,7 @@ def edit_store(quantity_pt_IDs=None):
                 return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
             
             if not request.form.get('maxQuantity').isdigit():
-                return jsonify({'status': '0', 'answer': smthWrong + 'sSSSDASDF',  'newCSRFtoken': newCSRFtoken})
+                return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!') + 'sSSSDASDF',  'newCSRFtoken': newCSRFtoken})
 
             if int(request.form.get('maxQuantity')) < 1:
                 answer = gettext('Max Allowed Quantity should be greater than Zero')
@@ -4458,7 +4491,7 @@ def edit_store(quantity_pt_IDs=None):
         sqlValTuple = (ptID, storeID, quantity, maxQuantity, userID, productionDate, expDate, quantityID)
         result = sqlUpdate(sqlQuery, sqlValTuple)
         if result['status'] == '-1':
-            # response = {'status': '0', 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}
+            # response = {'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken}
             response = {'status': '0', 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken}
             return jsonify(response)        
 
@@ -4557,7 +4590,7 @@ def add_to_store(ptID=None):
             return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
         
         if not request.form.get('quantity').isdigit():
-            return jsonify({'status': '0', 'answer': smthWrong,  'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'),  'newCSRFtoken': newCSRFtoken})
 
         if int(request.form.get('quantity')) < 1:
             answer = gettext('Quantity should be greater than Zero')
@@ -4578,7 +4611,7 @@ def add_to_store(ptID=None):
                 return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
             
             if not request.form.get('maxQuantity').isdigit():
-                return jsonify({'status': '0', 'answer': smthWrong + 'sSSSDASDF',  'newCSRFtoken': newCSRFtoken})
+                return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!') + 'sSSSDASDF',  'newCSRFtoken': newCSRFtoken})
 
             if int(request.form.get('maxQuantity')) < 1:
                 answer = gettext('Max Allowed Quantity should be greater than Zero')
@@ -4601,7 +4634,7 @@ def add_to_store(ptID=None):
 
         result= sqlInsert(sqlQuery, sqlValTuple)
         if result['status'] == 0:
-            return jsonify({'status': '0', 'answer': smthWrong,  'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'),  'newCSRFtoken': newCSRFtoken})
 
         answer = 'Done!'
         return jsonify({'status': '1', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
@@ -4640,7 +4673,7 @@ def create_promo_code():
     
     if request.method == "POST":
         if not request.form.get('products') or not request.form.get('expDate') or not request.form.get('promo'):
-            return jsonify({'status': "0", 'answer': smthWrong})
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!')})
         
         promo = request.form.get('promo')
 
@@ -4657,20 +4690,20 @@ def create_promo_code():
             products = json.loads(json_str)
         except json.JSONDecodeError as e:
             # "error": "Invalid JSON data", "message": str(e),
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
         # check products validity 
         for row in products:
             for key, value in row.items():
                 if value == '':
-                    return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
+                    return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})    
 
             if int(row['discount']) > 99:
-                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}) 
+                return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken}) 
                 
             if row.get('revard_option') == '0':
                 if int(row['revard']) > 99:
-                    return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
+                    return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})    
 
         affiliate = 0
         columns = "(`promo_code_id`, `discount_status`, `ptID`, `discount`,  `Status`)"
@@ -4686,7 +4719,7 @@ def create_promo_code():
         valTuplePromo = (promo, affiliate, expDate)
         resultInsert = sqlInsert(sqlinsertPromo, valTuplePromo)
         if resultInsert['status'] == 0:
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}) 
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken}) 
         
         # Create tuple prototype for db insert
         promoID = resultInsert['inserted_id']
@@ -4741,7 +4774,7 @@ def promo_codes():
 def edit_promo():
     newCSRFtoken = generate_csrf()
     if not request.form.get('products') or not request.form.get('promoID') or not request.form.get('expDate') or not request.form.get('promo'):
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
     promo = request.form.get('promo')
     promoID = int(request.form.get('promoID'))
@@ -4759,20 +4792,20 @@ def edit_promo():
         products = json.loads(json_str)
     except json.JSONDecodeError as e:
         # "error": "Invalid JSON data", "message": str(e),
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
     # check products validity 
     for row in products:
         for key, value in row.items():
             if value == '':
-                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
+                return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})    
 
         if int(row['discount']) > 99:
-            return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken}) 
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken}) 
             
         if row.get('revard_option') == '0':
             if int(row['revard']) > 99:
-                return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})    
+                return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})    
     
     
     sqlSelectOldData =  f"""
@@ -4941,7 +4974,7 @@ def edit_promo_code(promoID):
 def get_promo_discounts():
     newCSRFtoken = generate_csrf()
     if not request.form.get('promo') or not request.form.get('products'):
-        return jsonify({'status': '0', 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
     promo = request.form.get('promo', '').strip()
     json_str = request.form.get('products')
@@ -4949,7 +4982,7 @@ def get_promo_discounts():
         products = json.loads(json_str)
     except json.JSONDecodeError as e:
         # "error": "Invalid JSON data", "message": str(e),
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
     # check products validity 
     ptIDs = ''
@@ -5017,7 +5050,7 @@ def check_promo_code():
 def check_pt_quantity():
     newCSRFtoken = generate_csrf()
     if not request.form.get('num') or not request.form.get('ptID') :
-        answer = smthWrong
+        answer = gettext('Something went wrong. Please try again!')
         return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
     
     ptID = request.form.get('ptID') 
@@ -5058,9 +5091,7 @@ def check_pt_quantity():
 
 @app.route('/<myLinks>')
 def index(myLinks):
-    print('Inside index')
-    print(myLinks)
-    print('Inside index')
+    
     content = get_RefKey_LangID_by_link(myLinks)
     slideShow = []
     supportedLangsData = []
@@ -5171,14 +5202,15 @@ def subscribe():
         sqlQueryUpdate = "UPDATE `emails` SET `Status` = 2 WHERE `email` = %s;"
         resultUpdate = sqlUpdate(sqlQueryUpdate, (Email,))
         if resultUpdate['status'] == '-1':
-            return jsonify({'status': '0', 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
     else:
-        sqlQueryInsert = "INSERT INTO `emails` (`email`, `Status`) VALUES (%s, %s)"
-        sqlValTuple = (Email, 2)
+        langID = getLangdata(session['lang'])['ID']
+        sqlQueryInsert = "INSERT INTO `emails` (`email`, `langID`, `Status`) VALUES (%s, %s, %s)"
+        sqlValTuple = (Email, langID, 2)
         resultInsert = sqlInsert(sqlQueryInsert, sqlValTuple)
         if resultInsert['status'] == 0:
-            return jsonify({'status': '0', 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
 
     answer = gettext("You have subscribed successfully!")
@@ -5189,7 +5221,7 @@ def subscribe():
 def get_available_pts():
     newCSRFtoken = generate_csrf()
     if not request.form.get('prID'):
-        return jsonify({'status': "0", 'answer': smthWrong, 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
     prID = request.form.get('prID')
     langID = getLangID()
