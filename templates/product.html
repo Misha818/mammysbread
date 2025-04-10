@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <button class="chooseBlock" id="textEditorButton">{{ _('Editor') }}</button>
     <button class="chooseBlock" id="thumbnailButton">{{ _('Thumbnail') }}</button>
     <a class="top-left-nav-a" 
-    href="{{ url_for('add_price', prID=prData['Product_ID'], _external=True) }}"  
+    href="{{ url_for('add_price', prID_RefKey=prData['Product_ID'], _external=True) }}"  
         target="_blank"
         style="text-decoration: none;"
         >

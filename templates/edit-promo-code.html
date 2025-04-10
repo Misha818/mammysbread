@@ -470,8 +470,9 @@ saveButton.addEventListener('click', function (event) {
     // Dynemically creat drop-down elements
     const ptID = "{{ ptID|safe }}" 
     const dataLength = "{{ dataLength|safe }}"
-    const prData = JSON.parse('{{ prData|safe }}');
-    const discounts = JSON.parse('{{ discounts|safe }}');
+    // const jsonToBeParsed = JSON.stringify('{{ prData|safe }}'); // automatically escapes quotes
+    const prData = JSON.parse(`{{ prData|safe }}`);
+    const discounts = JSON.parse(`{{ discounts|safe }}`);
  
     let dropDownContent = document.createElement('span');
     if (parseInt(dataLength) > 0) {

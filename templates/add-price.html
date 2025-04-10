@@ -32,6 +32,8 @@
 
 {% block content %}
 
+    {{ sideBar | safe }}
+
     <div class="containerS">
 
         <div id="mistakes" style="width: 93%;"></div>
@@ -41,6 +43,7 @@
 
     <input type="hidden" id="language-id" value="{{ languageID }}" >
     <input type="hidden" id="RefKey" value="{{ RefKey }}" >
+    <input type="hidden" id="PT_Ref_Key" value="{{ PT_Ref_Key }}" >
 
     <input type="text" name="title" id="title" placeholder="{{ _('Add Product Type Title') }}" class="imageInput">
     <div class="input-group">
@@ -453,6 +456,11 @@
             inputs.forEach(input => {
                 formData.append(input.id, input.value);
             });
+
+            if (document.getElementById('PT_Ref_Key')) {
+                let PT_Ref_Key = document.getElementById('PT_Ref_Key').value;
+                formData.append("PT_Ref_Key", PT_Ref_Key);
+            }
 
             // Create a new XMLHttpRequest object
             let xhr = new XMLHttpRequest();

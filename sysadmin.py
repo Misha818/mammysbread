@@ -658,6 +658,9 @@ def supported_langs():
 
 
 def getLangdatabyID(langID):
+    if not isinstance(langID, int):
+        langID = int(langID)
+        
     supportedLangs = supported_langs()
     content = []
     for lang in supportedLangs:

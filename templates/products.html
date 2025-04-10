@@ -64,6 +64,71 @@
           .dragging {
               opacity: 0.5;
           }
+
+          .option-box {
+            max-width: 1200px;
+            margin-left: 0%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            background-color: white;
+            border-radius: 6px;
+            margin-bottom: 15px;
+          }
+
+          .checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 1px solid #4CAF50;
+            border-radius: 5px;
+            position: relative;
+            cursor: pointer;
+            outline: none;
+            background-color: white;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .checkbox:checked {
+          background-color: #4CAF50;
+          border-color: #4CAF50;
+        }
+
+        .checkbox:checked::after {
+          content: "\2713";
+          font-size: 14px;
+          color: white;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-weight: bold;
+        }
+
+        .untranslated {
+          width: 100%;
+          /* border: 1px solid; */
+          padding: 10px;
+          margin: -5px auto -5px auto;
+        }
+        .container {
+          width: 70%;
+        }
+
+        .transparent {
+          opacity: 0.6;
+        }
+
+        .actions {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+        }
+
+        .actions a {
+          margin: 65% auto;
+        }
     </style>
 {% endblock %}
 
@@ -71,13 +136,19 @@
 
 {{ sideBar | safe }}
 
-<div class="container" >
-  
+
 {% if result.length > 0 %}
 
+<span class="option-box container" style="padding-top: unset; margin-top: 120px;">
+  <input type="text" id="myInput" onkeyup="filter_products_by_title(this)" placeholder="{{ _('Search for a product by title') }}" title="{{ _('Type in a product title') }}" style="margin-left: 10px; margin-right: 10px; width: 200px; padding: 12px;">
+  {% if translated == True %}
+    <input type="checkbox" class="checkbox">
+    <span class="untranslated" style="font-style: italic; font-weight: 600;">{{ _('Show Originals') }}</span>
+  {% endif %}
+</span>
 
+<div class="container" style="padding-top: unset;">
 <div class="table-container toRight" id="tableDaddy">
-  <input type="text" id="myInput" onkeyup="filter_products_by_title(this)" placeholder="{{ _('Search for a product by title') }}" title="{{ _('Type in a product title') }}" style="margin-left: 10px; width: 200px; padding: 12px;">
   <table id="myTable">
     <thead>
       <tr>
@@ -167,21 +238,21 @@
   {% set editUrl = 'product/' + row['P_Ref_Key']|string %}
     <tr class="{{ trBorderTop }}" data-value="{{row['ID']}}-&$%-{{row['Title']}}" >
       <td><img src="{{ url_for('static', filename='images/pr_thumbnails/' + row['Thumbnail']) }}" style="width: 100px;"/></td>
-      <td>{{ row['Title'] }}</td>
+      <td><a href="{{ url_for('home', _external=True) + editUrl }}" target="_blank" title="{{ _('Edit') }}">{{ row['Title'] }}</a></td>
       <td>{{ publishedDate }}</td>
       <td>{{ row['DateModified'] }}</td>
       <td>{{ row['Product_Category_Name'] }}</td>
       <td>{{ status }}</td>
-      <td>
+      <td class="actions">
+        <a href="{{ url_for('home', _external=True) + editUrl }}" target="_blank" title="{{ _('Edit') }}"><i class="fas fa-pencil" style=" color: #6be6b2;"></i></a>
         {% if row['Product_Status'] == 2 %}
         <a href="{{ url_for('home', _external=True) + row['Url'] }}" target="_blank" title="{{ _('View') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2; margin-right: 20px;"></i></a>
         {% endif %}
-        <a href="{{ url_for('home', _external=True) + editUrl }}" target="_blank" title="{{ _('Edit') }}"><i class="fas fa-pencil" style=" color: #6be6b2;"></i></a>
       </td>
     </tr>
     <tr class="extra-row" id="extraRow_{{row['ID']}}">
       <td colspan="7" style="text-align: center; padding: 5px; ">
-        <button class="view-types-btn" title="{{ _('View Types') }}" id="btn_{{row['ID']}}" onclick="getProductTypes({{row['ID']}})">
+        <button class="view-types-btn" title="{{ _('View Types') }}" id="btn_{{row['ID']}}" onclick="getProductTypes({{row['ID']}}, true)">
           <div class="chevron">&#9660;</div>
         </button>
       </td>
@@ -202,8 +273,168 @@
 
 <script>
 let csrfToken = "{{ csrf_token() }}";
+function constract_table_rows(data, mainUrl, langUrl, prID, transparent='', draggable='true') {
+    let dataArray = Object.entries(data);
+    let rows = '';
+
+    dataArray.forEach(function(list) {
+      let imgUrl = mainUrl + '/static/images/sub_product_slider/' + list[1]['imgName']
+      let editUrl = mainUrl + '/edit-price/' + list[1]['PT_Ref_Key']
+      let checked = '';
+
+      if (list[1]['Status'] === 1) {
+        checked = 'checked'
+      }
+
+      let title = "{{ _('Disable') }}"; 
+      if (checked == '') {
+        title = "{{ _('Enable') }}"; 
+      }
+
+      let editTitle = "{{ _('Edit') }}";
+      let editIconClass = 'fa-pencil';
+      if (transparent !== '') {
+        editIconClass = 'fa-language';
+        editTitle = "{{ _('Translate') }}"
+      }
+
+      let perRow = `<div class="child ${transparent}" draggable="${draggable}">
+                      <input type="hidden" name="TypeID" value="${list[1]['ID']}">
+                      <img src="${imgUrl}" alt="${list[1]['AltText']}" class="" style="width: 150px;">
+                      <div><p style="justify-content: left;">${list[1]['Title']}</p></div>
+                      <div><p>${list[1]['Price']} {{mainCurrency}}</p></div>
+                      <div title="${title}" onclick="changeStatus(${list[1]['ID']})">
+                          <label class="switch" id="switch_${list[1]['ID']}">
+                              <span class="sliderA round ${checked}"></span>
+                          </label>
+                      </div>
+                      
+                      <a href="${editUrl+langUrl}" target="_BLANK" title="${editTitle}"><i class="fas ${editIconClass}" style=" color: #6be6b2;"></i></a>
+                  </div>`;
+
+      rows = rows + perRow;
+      
+    });
+    
+
+    return rows;
+  }
+
+
 window.addEventListener('load', () => {
   document.querySelector('body').classList.add('loaded');
+
+  function formatToYYYYMMDD(dateStr) {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+
+  
+
+
+
+
+
+  document.querySelector('.checkbox').addEventListener('change', function(e) {
+    if (e.target.checked) {
+      if (document.querySelectorAll('.transparent').length > 0) {
+        document.querySelectorAll('.transparent').forEach(tr => {
+          tr.style.display = 'table-row';
+        });
+        if (document.getElementById('answerID')) {
+          document.getElementById('answerID').style.display = 'revert';
+        }
+      } else {
+
+        
+        let formData = new FormData();
+        
+        formData.append('shTP', '1');
+        
+        // Create a new XMLHttpRequest object
+        let xhr = new XMLHttpRequest();
+        
+        // Configure the request
+        xhr.open('POST', '/products');                   
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+        
+        // Define what happens on successful data submission
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            let response = JSON.parse(xhr.responseText);
+            
+            if (response.status === "1") {
+              // alert(response.prData.length)
+              
+              if (response.prData.length > 0) {
+                let newRows = '';
+                response.prData.data.forEach(row => {
+                // console.log(row.P_Ref_Key);
+                let editUrl = 'product/' + row.P_Ref_Key.toString();
+                
+                let actionBtns = `<a href="{{ url_for('home', _external=True) }}${editUrl}&langID={{ languageID }}" target="_blank" title="{{ _('Translate') }}"><i class="fas fa-language" style=" color: #6be6b2;"></i></a>`;
+                if (row['Product_Status'] == 2) {
+                  actionBtns += `<a href="{{ url_for('home', _external=True) }}${row['Url']}" target="_blank" title="{{ _('View') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2; margin-right: 20px;"></i></a>`;
+                } 
+                
+                let status = `{{ _('Published') }}`;
+                if (row['Product_Status'] == 1) {
+                  status = `{{ _('Unpublished') }}`;
+                }
+                
+                
+                let imgUrl = `{{ url_for('static', filename='images/pr_thumbnails/') }}`+ row.Thumbnail;
+                newRows += `
+                <tr class="keyup-filter transparent" data-value="${row.ID}-&$%-${row.Title}">
+                  <td><img src="${imgUrl}" style="width: 100px;"/></td>
+                  <td><a href="{{ url_for('home', _external=True) }}${editUrl}&langID={{ DefLangID }}" target="_blank" title="{{ _('Edit in original language') }}">${row.Title}</a></td>
+                  <td>${formatToYYYYMMDD(row.DatePublished)}</td>
+                  <td>${formatToYYYYMMDD(row.DateModified)}</td>
+                  <td>${row.Product_Category_Name}</td>
+                  <td>${status}</td>
+                  <td class="actions">${actionBtns}</td>
+                  </tr>
+                  <tr class="extra-row transparent" id="extraRow_${row['ID']}">
+                    <td colspan="7" style="text-align: center; padding: 5px; ">
+                      <button class="view-types-btn" title="{{ _('View Types') }}" id="btn_${row['ID']}" onclick="getProductTypes(${row['ID']})">
+                        <div class="chevron">&#9660;</div>
+                        </button>
+                        </td>
+                        </tr>`;
+                        
+                      });
+              
+                      document.querySelector('#myTable tbody').insertAdjacentHTML('afterbegin', newRows);
+                      
+                    }
+                  }                
+                } else {
+                  // Handle error response
+                  console.error('Error adding category:', xhr.responseText);
+                }
+                
+              };
+              
+              // Send the request with the FormData object
+              xhr.send(formData);
+            }
+              
+    } else {
+      if (document.querySelectorAll('.transparent').length > 0) {
+        document.querySelectorAll('.transparent').forEach(tr => {
+          tr.style.display = 'none';
+        });
+        if (document.getElementById('answerID')) {
+          document.getElementById('answerID').style.display = 'none';
+        }
+      }
+    }
+  });
 });
 
 let trace;
@@ -276,8 +507,7 @@ function sortTable(arrowElement, n, direction) {
 let prIdChecker = undefined; 
 let mode = 0;
 let clickedState = false
-function getProductTypes(prID) {
-  console.log(`clickedState is ${clickedState}`);
+function getProductTypes(prID, getOrighins=false) {
   if (clickedState) {
     return;
   }
@@ -313,6 +543,12 @@ function getProductTypes(prID) {
     
     
     clickedBtn.appendChild(loader);
+    let langUrl = ''
+    const parentRow = event.target.closest('tr');
+    if (parentRow && parentRow.classList.contains('transparent')) {
+      langUrl = '&langID=' + `{{ DefLangID }}`;
+      // console.log(langUrl)
+    }
 
     let gearElement = document.getElementById('gear');
     if (!gearElement) {
@@ -324,6 +560,15 @@ function getProductTypes(prID) {
     let formData = new FormData();
     formData.append('prID', prID)
     
+    if (getOrighins == true) {
+      if (document.querySelector('.checkbox')) {
+
+        if (document.querySelector('.checkbox').checked) {
+          formData.append('untranslated', '1')
+        }
+        
+      }  
+    }
     // Create a new XMLHttpRequest object
     let xhr = new XMLHttpRequest();
     
@@ -353,11 +598,17 @@ function getProductTypes(prID) {
             } 
             
             if (response.status === '1') {
-              
               const mainUrl = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}`;
+              let rows = ''  
+                if (response.originalData !== '') {
+                  // console.log(response.originalData)
+                  let originalLUrl = langUrl = '&langID=' + `{{ languageID }}`;
+                  rows += constract_table_rows(response.originalData, mainUrl, originalLUrl, prID, 'transparent', 'false');
+                }
+
                 if (response.length === 0) {
                   // Construct the main URL including the port, if present
-                  const urlTo = mainUrl + '/add-price/' + prID;
+                  const urlTo = mainUrl + '/add-price/' + prID+langUrl;
 
                   let addType = 'add-price/' + prID;
                   parentTr.insertAdjacentHTML('afterend', `
@@ -374,110 +625,93 @@ function getProductTypes(prID) {
                   setTimeout(() => (answerTr.classList.add('active')), 750); 
                   clickedState = false;  
                 } else {
+                  let draggable = 'true';
+                  if (document.querySelector('.checkbox')) {
 
-
-                  let dataArray = Object.entries(response.data);
-                  let rows = '';
-
-                  dataArray.forEach(function(list) {
-                    let imgUrl = mainUrl + '/static/images/sub_product_slider/' + list[1]['imgName']
-                    let editUrl = mainUrl + '/edit-price/' + list[1]['ID']
-                    let checked = '';
-
-                    if (list[1]['Status'] === 1) {
-                      checked = 'checked'
+                    if (document.querySelector('.checkbox').checked) {
+                      draggable = 'false'
                     }
 
-                    let title = "{{ _('Disable') }}"; 
-                    if (checked == '') {
-                      title = "{{ _('Enable') }}"; 
-                    }
-
-                    let perRow = `<div class="child" draggable="true">
-                                    <input type="hidden" name="TypeID" value="${list[1]['ID']}">
-                                    <img src="${imgUrl}" alt="${list[1]['AltText']}" class="" style="width: 150px;">
-                                    <div><p style="justify-content: left;">${list[1]['Title']}</p></div>
-                                    <div><p>${list[1]['Price']} {{mainCurrency}}</p></div>
-                                    <div title="${title}" onclick="changeStatus(${list[1]['ID']})">
-                                        <label class="switch" id="switch_${list[1]['ID']}">
-                                            <span class="sliderA round ${checked}"></span>
-                                        </label>
-                                    </div>
-                                    
-                                    <a href="${editUrl}" target="_BLANK"><p>{{ _('Edit') }}</p></a>
-                                </div>`;
-
-                    rows = rows + perRow;
-                    
-                  });
-
-                  let content = `<tr id="answerID" >
-                                  <td style="text-align: center;" colspan="7">
-                                    <div class="draggerContainer" id="draggerContainer">        
-                                      ${rows}    
-                                    </div>
-
-                                    <button class="pcButtonS" style="display: none" id="saveChanges" onclick="saveChanges(${prID})"><span id='schText'>{{ _('Save Changes') }}</span></button>
-                                  </td>
-                                </tr>
-                                `
-
-parentTr.insertAdjacentHTML('afterend', content); 
-
-
-              const draggerContainer = document.getElementById('draggerContainer');
-
-                      draggerContainer.addEventListener('dragstart', (e) => {
-                          if (e.target.classList.contains('child')) {
-                              e.target.classList.add('dragging');
-                              e.dataTransfer.setData('text/plain', e.target.outerHTML); // Store the dragged element.
-                            document.getElementById('saveChanges').style.display = 'inline';
-                          }
-                      });
-
-                      draggerContainer.addEventListener('dragend', (e) => {
-                          if (e.target.classList.contains('child')) {
-                              e.target.classList.remove('dragging');
-                          }
-                      });
-
-                      draggerContainer.addEventListener('dragover', (e) => {
-                          e.preventDefault();
-                          const draggingElement = draggerContainer.querySelector('.dragging');
-                          const afterElement = getDragAfterElement(draggerContainer, e.clientY);
-
-                          if (afterElement == null) {
-                              draggerContainer.appendChild(draggingElement);
-                          } else {
-                              draggerContainer.insertBefore(draggingElement, afterElement);
-                          }
-                      });
-
-                      function getDragAfterElement(draggerContainer, y) {
-                          const draggableElements = [...draggerContainer.querySelectorAll('.child:not(.dragging)')];
-
-                          return draggableElements.reduce(
-                              (closest, child) => {
-                                  const box = child.getBoundingClientRect();
-                                  const offset = y - box.top - box.height / 2;
-                                  if (offset < 0 && offset > closest.offset) {
-                                      return { offset: offset, element: child };
-                                  } else {
-                                      return closest;
-                                  }
-                              },
-                              { offset: Number.NEGATIVE_INFINITY }
-                          ).element;
-                      }
-                    
                   }
-
+                  let lUrl = langUrl = '&langID=' + `{{ languageID }}`;
+                  rows += constract_table_rows(response.data, mainUrl, langUrl, prID, '', draggable);
                 }
+
+              if (response.length > 0 || response.originalData !== '') {
+
+                let content = `<tr id="answerID">
+                                <td style="text-align: center;" colspan="7">
+                                  <div class="draggerContainer" id="draggerContainer">        
+                                    ${rows}    
+                                  </div>
+
+                                  <button class="pcButtonS" style="display: none" id="saveChanges" onclick="saveChanges(${prID})"><span id='schText'>{{ _('Save Changes') }}</span></button>
+                                </td>
+                              </tr>
+                              `;
+
+                parentTr.insertAdjacentHTML('afterend', content); 
+
+                const draggerContainer = document.getElementById('draggerContainer');
+
+                draggerContainer.addEventListener('dragstart', (e) => {
+                    if (e.target.classList.contains('child')) {
+                        e.target.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', e.target.outerHTML); // Store the dragged element.
+                      document.getElementById('saveChanges').style.display = 'inline';
+                    }
+                });
+
+                draggerContainer.addEventListener('dragend', (e) => {
+                    if (e.target.classList.contains('child')) {
+                        e.target.classList.remove('dragging');
+                    }
+                });
+
+                draggerContainer.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const draggingElement = draggerContainer.querySelector('.dragging');
+                    const afterElement = getDragAfterElement(draggerContainer, e.clientY);
+
+                    if (afterElement == null) {
+                        draggerContainer.appendChild(draggingElement);
+                    } else {
+                        draggerContainer.insertBefore(draggingElement, afterElement);
+                    }
+                });
+
+                function getDragAfterElement(draggerContainer, y) {
+                    const draggableElements = [...draggerContainer.querySelectorAll('.child:not(.dragging)')];
+
+                    return draggableElements.reduce(
+                        (closest, child) => {
+                            const box = child.getBoundingClientRect();
+                            const offset = y - box.top - box.height / 2;
+                            if (offset < 0 && offset > closest.offset) {
+                                return { offset: offset, element: child };
+                            } else {
+                                return closest;
+                            }
+                        },
+                        { offset: Number.NEGATIVE_INFINITY }
+                    ).element;
+                }
+
+                  
+              }
+
+            }
 
                 let answerTr = document.getElementById('answerID');
                 answerTr.style.display = 'revert'; // Make it visible
                 setTimeout(() => (answerTr.classList.add('active')), 750); 
                 clickedState = false;
+
+                const targetToScroll = document.getElementById('extraRow_' + prID);
+                if (targetToScroll) {
+                  targetToScroll.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+
         } else {
             // Handle error response
             uploadButton.classList.remove('hidden');
@@ -658,9 +892,6 @@ function filter_products_by_title(input) {
 
     
   });
-
-
-
 
 
 

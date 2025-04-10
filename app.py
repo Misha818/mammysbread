@@ -240,6 +240,10 @@ def setlang():
         else:
             newUrl = url_for('home', _external=True) + translated_path_segment
             return redirect(newUrl)
+    
+    if 'langID' in request.referrer:
+        newUrl = request.referrer.split('&langID=')[0]
+        return redirect(newUrl)
 
     return redirect(request.referrer)
 
@@ -1368,14 +1372,30 @@ def get_slides():
     return result
 
 
-@app.route('/add-price/<prID>', methods=["GET"])
+@app.route('/add-price/<prID_RefKey>', methods=["GET"])
 @login_required
-def add_price(prID):
+def add_price(prID_RefKey):
+    languageID = getLangID()
+    if 'langID' in prID_RefKey:
+        languageID = prID_RefKey.split('&langID=')[1]
+        prID_RefKey = prID_RefKey.split('&langID=')[0]
+
+        if len(getLangdatabyID(languageID)) == 0:
+            return render_template('error.html')
+        
+        session['lang'] = getLangdatabyID(languageID)['Prefix']
+    
+
+    prID = prID_RefKey
+    PT_Ref_Key = ''
+    if '&' in prID_RefKey:
+        prID = prID_RefKey.split('&')[0]
+        PT_Ref_Key = prID_RefKey.split('&')[1]    
+
 
     answer = gettext('Something is wrong!')
     # newCSRFtoken = generate_csrf()
     mainCurrency = MAIN_CURRENCY
-    languageID = getLangID()
     prData = {'Product_ID': prID, 'LanguageID': languageID, 'prUpdate': gettext('Update'), 'prSaving': gettext('Saving...')}
 
     sqlQuery = f"""SELECT 
@@ -1424,18 +1444,32 @@ def add_price(prID):
     sqlValTuple = (languageID, prID)
     resultSpecifications = sqlSelect(sqlQuery, sqlValTuple, True)
     
-
-    return render_template('add-price.html', prData=prData, sps=resultSPS, specifications=resultSpecifications, mainCurrency=mainCurrency, current_locale=get_locale())
+    sideBar = side_bar_stuff()
+    return render_template('add-price.html', prData=prData, sps=resultSPS, specifications=resultSpecifications, PT_Ref_Key=PT_Ref_Key, sideBar=sideBar, mainCurrency=mainCurrency, current_locale=get_locale())
 
 
 # Edit price view
 @app.route('/edit-price/<ptID>', methods=['GET'])
 @login_required
-def edit_price(ptID):
+def edit_price(ptID):    
     languageID = getLangID()
+    oldLangID = languageID
+    
+    newCSRFtoken = generate_csrf()
+    if 'langID' in ptID:
+        languageID = ptID.split('&langID=')[1]
+        ptID = ptID.split('&langID=')[0]
 
+        if len(getLangdatabyID(languageID)) == 0:
+            return render_template('error.html')
+        
+        session['lang'] = getLangdatabyID(languageID)['Prefix']
+
+    sideBar = side_bar_stuff()
     sqlQueryMain = f"""
-                    SELECT `product_type`.`ID`,
+                    SELECT  
+                            `product_type_relatives`.`PT_Ref_Key`,
+                            `product_type`.`ID`,
                             `product_type`.`Title`,
                             `product_type`.`Price`,
                             `product_relatives`.`P_Ref_Key`,        
@@ -1446,17 +1480,68 @@ def edit_price(ptID):
                             `slider`.`AltText`,
                             `slider`.`Order` AS `SliderOrder` 
                     FROM `product_type`
-                    LEFT JOIN `slider` ON `slider`.`ProductID` = `product_type`.`ID`
-                        AND `slider`.`Type` = 2
-                    LEFT JOIN `product_relatives` ON `product_relatives`.`P_ID` = `product_type`.`Product_ID` 
-                    WHERE `product_type`.`ID` = %s 
+                        LEFT JOIN `slider` ON `slider`.`ProductID` = `product_type`.`ID`
+                            AND `slider`.`Type` = 2
+                        LEFT JOIN `product_relatives` ON `product_relatives`.`P_ID` = `product_type`.`Product_ID` 
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID` 
+                    WHERE `product_type_relatives`.`PT_Ref_Key`= %s 
+                        AND `product_type_relatives`.`Language_ID` = %s
                     ORDER BY `SubPrOrder`  ASC, `slider`.`Order` ASC;
                     """
-    sqlValTupleMain = (ptID,)
+    sqlValTupleMain = (ptID, languageID)
     mainResult = sqlSelect(sqlQueryMain, sqlValTupleMain, True)
     if mainResult['length'] == 0:
-        return render_template('error.html')
-    
+        if session['lang'] == getDefLang()['Prefix']:
+            return render_template('error.html')
+        else:
+            # I have
+            # PT_Ref_Key, languageID, oldLangID
+            # PT_Ref_Key, oldLangID, languageID
+
+            # Get product ref key
+            sqlQueryPRK = """SELECT `product_relatives`.`P_Ref_Key` FROM `product_type_relatives`
+                                LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                                LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                                LEFT JOIN `product_relatives` ON `product`.`ID` = `product_relatives`.`P_ID`
+                            WHERE `product_type_relatives`.`PT_Ref_Key` = %s
+                            LIMIT 1"""
+            resultPRK = sqlSelect(sqlQueryPRK, (ptID,), True)
+            if resultPRK['length'] == 0:
+                return render_template('error.html', current_loacale=get_locale())
+            
+            P_Ref_Key = resultPRK['data'][0]['P_Ref_Key']
+
+            sqlQueryPrIDRefKey = f"""
+                                        SELECT 
+                                            `product_relatives`.`P_Ref_Key`,
+                                            `product_relatives`.`Language_ID`,
+                                            `product_relatives`.`P_ID`,
+                                            (SELECT `product_type_relatives`.`PT_ID`  FROM `product_type_relatives`
+                                                WHERE `product_type_relatives`.`PT_Ref_Key` = %s
+                                                    AND `product_type_relatives`.`Language_ID` = %s) AS `PT_ID`   
+                                        FROM `product_relatives`     
+                                        WHERE `product_relatives`.`P_Ref_Key` = %s
+                                            AND `product_relatives`.`Language_ID` =%s    
+                                    ;"""
+
+            # Though the var is called ptID actuelly it is PT_Ref_Key
+            sqlValTuplePrIDRefKey = (ptID, languageID, P_Ref_Key, languageID)
+            resultPrIDRefKey = sqlSelect(sqlQueryPrIDRefKey, sqlValTuplePrIDRefKey, True)
+            if resultPrIDRefKey['length'] == 0:
+                content = {
+                    'message': gettext('To continue translate the product first'),
+                    'forwardUrl': url_for('pd', RefKey=str(P_Ref_Key)), 
+                    'backUrl': url_for('edit_price', ptID=str(ptID)+'&langID='+str(getDefLang()['id']))
+                }
+                return render_template('choose.html', content=content, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+
+            if resultPrIDRefKey['data'][0]['PT_ID'] == None:
+                prID_RefKey = str(resultPrIDRefKey['data'][0]['P_ID'])+'&' + ptID + '&langID=' + str(languageID)
+                redirectUrl = url_for('add_price', prID_RefKey=prID_RefKey)
+                return redirect(redirectUrl) 
+
+    # sqlQuerySpss es queryin el a penq relativesov anel    
+    ptID = mainResult['data'][0]['ID']
     sqlQuerySpss = f"""
                         SELECT 
                             `sub_product_specifications`.`ID` AS `spssID`,
@@ -1488,8 +1573,7 @@ def edit_price(ptID):
     sqlValTuple = (languageID, 1)
     spsResult = sqlSelect(sqlQuery, sqlValTuple, True)
     
-    sideBar = side_bar_stuff()
-    return render_template('edit-price.html', sideBar=sideBar, mainResult=mainResult, sps=spsResult, resultSPSS=resultSPSS, languageID=languageID, current_locale=get_locale())
+    return render_template('edit-price.html', sideBar=sideBar, mainResult=mainResult, sps=spsResult, resultSPSS=resultSPSS, languageID=languageID, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
 
 
 # Edit price action
@@ -1724,27 +1808,35 @@ def pd(RefKey):
     productTemplate = 'product.html'
     root_url = url_for('home', _external=True)
     errorMessage = False
-    languageID = getLangID()
     supportedLangsData = supported_langs()
     toBeTranslated = {'length': 0}
     productCategoriesToBeTranslated = []
     slideShow = []
+
+    if RefKey is None:
+         errorMessage = True
+
+    languageID = getLangID()
+    if 'langID' in RefKey:
+        languageID = RefKey.split('&langID=')[1]
+        RefKey = RefKey.split('&langID=')[0]
+
+    if len(getLangdatabyID(languageID)) == 0:
+        return render_template('error.html')
     
     productCategory = get_product_categories(None, languageID)
     defLangProductCategory = {'length': 0}
     prData = ''
    
-    if RefKey is None:
-         errorMessage = True
+   
     if 'new' in RefKey.lower():      
         productTemplate = 'add_product.html'
 
         if len(RefKey) > 3:
             errorMessage = True
     else: 
-
         if RefKey.isdigit(): # Check if the variable is numeric
-            prData = constructPrData(RefKey, '')
+            prData = constructPrData(RefKey, '', languageID)
 
             if prData['content'] == True == prData['headers']: 
                 productTemplate = 'product.html' 
@@ -1895,6 +1987,20 @@ def upload_slides():
         sqlInsertQuery = "INSERT INTO `product_type` (`Price`, `Title`, `Order`, `Product_ID`, `User_Id`, `spsID`, `Status`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
         sqlInsertVals = (price, title, order, int(ProductID), session['user_id'], spsID, 1)
         insertedResult = sqlInsert(sqlInsertQuery, sqlInsertVals)
+
+        PT_Ref_Key = request.form.get('PT_Ref_Key', '')
+        if PT_Ref_Key == '':
+            sqlQueryHighestRK = "SELECT `PT_Ref_Key` FROM `product_type_relatives` ORDER BY `PT_Ref_Key` DESC LIMIT 1;"
+            resultHighestRK = sqlSelect(sqlQueryHighestRK, (), True)    
+            if resultHighestRK['length'] > 0:
+                PT_Ref_Key = resultHighestRK['data'][0]['PT_Ref_Key'] + 1
+            else:
+                PT_Ref_Key = 0
+
+
+        sqlQueryRefQey = "INSERT INTO `product_type_relatives` (`Language_ID`, `PT_ID`, `PT_REF_KEY`, `User_ID`) VALUES (%s, %s, %s, %s)"
+        sqlValTupleRefKey = (languageID, insertedResult['inserted_id'], PT_Ref_Key, session['user_id'])
+        resultRefKey = sqlInsert(sqlQueryRefQey, sqlValTupleRefKey)
 
         if insertedResult['inserted_id']:
             ProductID = insertedResult['inserted_id']
@@ -3238,29 +3344,70 @@ def stuff_promo_code_details(filters):
     return render_template('promo-code-details.html', discounts=discounts, headings=headings, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
 
 
-@app.route('/products', methods=['GET'])
+@app.route('/products', methods=['GET', 'POST'])
 @login_required
 def products():
     languageID = getLangID()
-    sqlQuery =  f"""SELECT * FROM `product` 
-                    LEFT JOIN `product_relatives`
-                      ON  `product_relatives`.`P_ID` = `product`.`ID`
-                    LEFT JOIN `product_category` 
-                      ON `product_category`.`Product_Category_ID` = `product`.`Product_Category_ID`
-                    WHERE `product_relatives`.`Language_ID` = %s  
-                    ORDER BY `product`.`Order` ASC                 
-                """
+    DefLangID = getDefLang()['id']
+    newCSRFtoken = generate_csrf()
     
-    sqlValTuple = (languageID,)
-    result = sqlSelect(sqlQuery, sqlValTuple, True)
-    sideBar = side_bar_stuff()
+    if request.method == 'POST':
+        if request.form.get('shTP') == '1':
+            sqlQuery =  """SELECT 
+                        `product`.`ID`,
+                        `product`.`Thumbnail`,
+                        `product`.`DatePublished`,
+                        `product`.`Product_Status`,
+                        `product_relatives`.`P_Ref_Key`,
+                        `product`.`Title`,
+                        `product`.`DateModified`,
+                        `product_category`.`Product_Category_Name`,
+                        `product`.`Url`
+                    FROM `product` 
+                        LEFT JOIN `product_relatives` ON  `product_relatives`.`P_ID` = `product`.`ID`
+                        LEFT JOIN `product_category` ON `product_category`.`Product_Category_ID` = `product`.`Product_Category_ID`
+                    WHERE `product_relatives`.`Language_ID` = %s
+                        AND not find_in_set(`product_relatives`.`P_Ref_Key`, (SELECT GROUP_CONCAT(`product_relatives`.`P_Ref_Key`) FROM `product_relatives` WHERE `product_relatives`.`Language_ID` = %s))
+                    ORDER BY `product`.`Order` ASC                 
+                    """
+             
+            sqlValTuple = (DefLangID, languageID)
+            resultFilters = sqlSelect(sqlQuery, sqlValTuple, True)
+            return jsonify({'status': '1', 'prData': resultFilters, 'newCSRFtoken': newCSRFtoken})
 
-    return render_template('products.html', result=result, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
+    else:        
+        sqlQuery =  """SELECT 
+                        `product`.`ID`,
+                        `product`.`Thumbnail`,
+                        `product`.`DatePublished`,
+                        `product`.`Product_Status`,
+                        `product_relatives`.`P_Ref_Key`,
+                        `product`.`Title`,
+                        `product`.`DateModified`,
+                        `product_category`.`Product_Category_Name`,
+                        `product`.`Url`
+                    FROM `product` 
+                        LEFT JOIN `product_relatives` ON  `product_relatives`.`P_ID` = `product`.`ID`
+                        LEFT JOIN `product_category` ON `product_category`.`Product_Category_ID` = `product`.`Product_Category_ID`
+                    WHERE `product_relatives`.`Language_ID` = %s
+                    ORDER BY `product`.`Order` ASC                 
+                    """
+        sqlValTuple = (languageID,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        sideBar = side_bar_stuff()
+        
+        if DefLangID == languageID:
+            translated = False
+        else:
+            translated = True
+
+        return render_template('products.html', result=result, mainCurrency=MAIN_CURRENCY, translated=translated, languageID=languageID, DefLangID=DefLangID, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
 
 
 @app.route('/store', methods=['GET', 'POST'])
 @login_required
 def store():    
+    newCSRFtoken = generate_csrf()
     if request.method == 'GET':
         languageID = getLangID()
         # Main query that gets all active products in all stores [ WHERE `quantity`.`Status` = 1]
@@ -3298,9 +3445,9 @@ def store():
         productsData = json.dumps(resultStore['data'])
 
         sideBar = side_bar_stuff()
-        return render_template('store.html', result=result, storeData=storeData, productsData=productsData, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, current_locale=get_locale()) 
+        return render_template('store.html', result=result, storeData=storeData, productsData=productsData, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
     else:
-        newCSRFtoken = generate_csrf()
+        
         filters = ''
         sqlValList = []
 
@@ -4062,9 +4209,39 @@ def get_product_types():
     dataType = True
     if request.form.get('type'):
         dataType = False
+    
+    originalData = ''
+    if request.form.get('untranslated') == '1':
+        # Get products in Original language 
+        
+        sqlQueryOriginalPR = """
+                SELECT  `product_type_relatives`.`PT_Ref_Key`,    
+                        `product_type`.`ID`,
+                        `product_type`.`Title`,
+                        `product_type`.`Price`,
+                        `product_type`.`Order` AS `SubPrOrder`,
+                        (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+                        (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+                        `product_type`.`Status`
+                FROM `product_type`
+                    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID`
+                WHERE `product_type`.`Product_ID` = (SELECT `P_ID` FROM `product_relatives` 
+                            WHERE `product_relatives`.`P_Ref_Key` = (SELECT `P_Ref_Key` FROM `product_relatives` WHERE `product_relatives`.`P_ID` = %s) 
+                                AND `product_relatives`.`Language_ID` = %s) 
+                    AND not find_in_set(`product_type_relatives`.`PT_Ref_Key`, (SELECT GROUP_CONCAT(`product_Type_relatives`.`PT_Ref_Key`) FROM `product_type_relatives` WHERE `product_type_relatives`.`Language_ID` = %s))
+                ORDER BY `SubPrOrder` 
+                ;"""
+        sqlValTupleOriginalPR = (prID, getDefLang()['id'], getLangID())
+        resultOriginalPR = sqlSelect(sqlQueryOriginalPR, sqlValTupleOriginalPR, dataType)
+
+        if resultOriginalPR['length'] > 0:    
+            originalData = resultOriginalPR['data']
+            if dataType == False:
+                originalData = json.dumps(resultOriginalPR['data'])
 
     sqlQuery = """
-                    SELECT  `product_type`.`ID`,
+                    SELECT  `product_type_relatives`.`PT_Ref_Key`,    
+                            `product_type`.`ID`,
                             `product_type`.`Title`,
                             `product_type`.`Price`,
                             `product_type`.`Order` AS `SubPrOrder`,
@@ -4072,7 +4249,8 @@ def get_product_types():
                             (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
                             `product_type`.`Status`
                     FROM `product_type`
-                    WHERE `product_type`.`Product_ID` = %s
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID`
+                    WHERE `product_type`.`Product_ID` = %s 
                     ORDER BY `SubPrOrder` 
                     ;"""
     sqlValTuple = (prID,)
@@ -4082,7 +4260,7 @@ def get_product_types():
     if dataType == False:
         productTypeData = json.dumps(result['data'])
 
-    response = {'status': '1', 'data': productTypeData, 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
+    response = {'status': '1', 'data': productTypeData, 'originalData': originalData, 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
     return jsonify(response)
 
 

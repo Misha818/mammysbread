@@ -927,7 +927,7 @@ def articleDetails(RefKey, articleStatus):
     return result
 
 
-def productDetails(RefKey, productStatus):
+def productDetails(RefKey, productStatus, Language_ID=''):
     sqlQuery = f""" SELECT 
                         `product`.`ID`,
                         `product`.`Order`,
@@ -950,15 +950,17 @@ def productDetails(RefKey, productStatus):
                     {productStatus}
                 """
     
-    Language_ID = getLangID()
+    if Language_ID == '':
+        Language_ID = getLangID()
+
     sqlValTuple = (RefKey, Language_ID)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
     return result
 
 
-def constructPrData(RefKey, productStatus):
-    prData = productDetails(RefKey, productStatus)
+def constructPrData(RefKey, productStatus, languageID=''):
+    prData = productDetails(RefKey, productStatus, languageID)
     content = {'content': False, 'headers': False}
     if prData['length'] > 0:
         row = prData['data'][0]
