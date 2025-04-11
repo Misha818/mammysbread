@@ -54,7 +54,7 @@
 <div class="overlay" id="overlay"></div>
 {{ sideBar | safe }}
 <div class="containerS" style="width: 350px;">
-    <h1>{{ _('Add To Store') }}</h1>
+    <h1 style="text-align: center;">{{ _('Add To Store') }}</h1>
     <!-- Form for adding a product -->
     <div id="mistakes" style="width: 250px"></div>
     <form id="product-category-form" style="margin: 20px 20px -15px 20px">
@@ -238,7 +238,7 @@ saveButton.addEventListener('click', function (event) {
     // Dynemically creat drop-down elements
     const ptID = "{{ ptID|safe }}" 
     const dataLength = "{{ dataLength|safe }}"
-    const prData = JSON.parse('{{ prData|safe }}');
+    const prData = JSON.parse(`{{ prData|safe }}`);
     
  
     let dropDownContent = document.createElement('span');

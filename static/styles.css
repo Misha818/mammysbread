@@ -7361,10 +7361,15 @@ tr:nth-child(even) {
 }
 
 .edit-user {
-  color: #5856d6;
+  color: #6be6b2;
   font-size: 18px;
   text-decoration: none;
 }
+
+.edit-user a {
+  color: #6be6b2;
+}
+
 
 .stuff-header {
   background-color: #f8f9fa;
@@ -8002,6 +8007,10 @@ tr:nth-child(even) {
   background-color: #f0f0f0;
   color: #000;
   text-decoration: none;
+}
+
+.transparent {
+  opacity: 0.6;
 }
 
 /* .cart-container {

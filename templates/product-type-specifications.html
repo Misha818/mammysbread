@@ -5,12 +5,74 @@
 
 
 {% block head %}
+<style>
+   .option-box {
+      max-width: 1200px;
+      margin-left: 0%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      background-color: white;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    .checkbox {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 1px solid #4CAF50;
+      border-radius: 5px;
+      position: relative;
+      cursor: pointer;
+      outline: none;
+      background-color: white;
+      transition: all 0.3s ease-in-out;
+      margin-left: 10px;
+  }
+
+  .checkbox:checked {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+  }
+
+  .checkbox:checked::after {
+    content: "\2713";
+    font-size: 14px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+  }
+
+  .untranslated {
+    width: 100%;
+    /* border: 1px solid; */
+    padding: 10px;
+    margin: -5px auto -5px auto;
+  }
+
+  .container {
+    width: 70%;
+    padding-top: unset;
+  }
+
+</style>
 
 {% endblock %}
 
 {% block content %}
 
 {{ sideBar | safe }}
+<span class="option-box container" style="padding-top: unset; margin-top: 120px;">
+  {% if translated == True %}
+    <input type="checkbox" class="checkbox">
+    <span class="untranslated" style="font-style: italic; font-weight: 600;">{{ _('Show Originals') }}</span>
+  {% endif %}
+</span>
+
 <div class="container" >
 <div class="table-container toRight" id="tableDaddy">
   <table id="myTable">
@@ -62,7 +124,7 @@
         {% set status = _('Disabled') %}
         {% set statusStyle = 'status-on-hold' %}
       {% endif %}
-      {% set editUrl = 'edit-pts/' + row['ID']|string %}
+      {% set editUrl = 'edit-pts/' + row['Ref_Key']|string %}
       <tr>
         <td data-label="{{ _('ID') }}" >
           {{ row['Ref_Key'] }}
@@ -112,7 +174,7 @@
 
 
 <script>
-
+let csrfToken = "{{ csrf_token() }}";
 window.addEventListener('load', () => {
   document.querySelector('body').classList.add('loaded');
 });
@@ -184,6 +246,102 @@ function sortTable(arrowElement, n, direction) {
     }
   }
 }
+
+if (document.querySelector('.checkbox')) {
+    document.querySelector('.checkbox').addEventListener('change', function(e) {
+      if (e.target.checked) {
+        if (document.querySelectorAll('.transparent').length > 0) {
+          document.querySelectorAll('.transparent').forEach(tr => {
+            tr.style.display = 'table-row';
+          });
+          if (document.getElementById('answerID')) {
+            document.getElementById('answerID').style.display = 'revert';
+          }
+        } else {
+
+          
+          let formData = new FormData();
+          
+          formData.append('shTP', '1');
+          
+          // Create a new XMLHttpRequest object
+          let xhr = new XMLHttpRequest();
+          
+          // Configure the request
+          xhr.open('POST', '/pt-specifications');                   
+          xhr.setRequestHeader('X-CSRFToken', csrfToken);
+          
+          // Define what happens on successful data submission
+          xhr.onload = function () {
+            if (xhr.status === 200) {
+              let response = JSON.parse(xhr.responseText);
+              
+              if (response.status === "1") {
+                if (response.data.length > 0) {
+                  let newRows = '';
+                  console.log(response.data)
+                  response.data.data.forEach(row => {
+                  console.log(row.Ref_Key);
+                  
+                  let translateUrl = `{{ url_for('home', _external=True) }}edit-pts/` + row.Ref_Key;
+                  
+                  let status = `{{ _('Active') }}`;
+                  let statusStyle = 'status-open';
+                  if (row['Status'] === 0) {
+                    status = `{{ _('Disabled') }}`;
+                    statusStyle = 'status-on-hold';
+                  }
+
+                  
+                  
+                  newRows += `
+                        <tr class="transparent">
+                          <td data-label="{{ _('ID') }}" >
+                            ${ row['Ref_Key'] }
+                          </td>
+
+                          <td data-label="{{ _('Name') }}" class="flex">
+                            ${ row['Name'] }
+                          </td>
+
+                          <td data-label="{{ _('Status') }}"><span class="status-label ${ statusStyle }">${ status }</span></td>
+
+                          <td class="edit-user">
+                            <a href="${translateUrl}" title="{{ _('Translate') }}">
+                              <i class="fas fa-language"></i>
+                            </a>
+                          </td>
+                        </tr>`;
+                          
+                        });
+                
+                        document.querySelector('#myTable tbody').insertAdjacentHTML('afterbegin', newRows);
+                        
+                      }
+                    }                
+                  } else {
+                    // Handle error response
+                    console.error('Error adding category:', xhr.responseText);
+                  }
+                  
+                };
+                
+                // Send the request with the FormData object
+                xhr.send(formData);
+              }
+                
+      } else {
+        if (document.querySelectorAll('.transparent').length > 0) {
+          document.querySelectorAll('.transparent').forEach(tr => {
+            tr.style.display = 'none';
+          });
+          if (document.getElementById('answerID')) {
+            document.getElementById('answerID').style.display = 'none';
+          }
+        }
+      }
+    });
+  }
 
 </script>
 

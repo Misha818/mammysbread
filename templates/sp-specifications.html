@@ -1,7 +1,16 @@
 {% extends "base.html" %}
 
+{% set title = _('Create Specifications for Product Type') %}
+{% set placeholderName =  _('Product Type Situation name') %}
+{% set refKey = '' %}
+
+{% if data | length > 0 %}
+    {% set title = _('Translate Specifications for Product Type') %}
+    {% set placeholderName = _('The field name to be translated:') + ' ' + data[0]['spsName'] %}
+    {% set refKey = spsRefKey %}
+{% endif %}
 {% block title %}
-    {{ _('Create Specifications for Product Type') }}
+    {{ title }}
 {% endblock %}
 
 
@@ -11,12 +20,24 @@
 
 <div class="container toRight" id="tableDaddy" style="width: 70%;">
 <div id="response"></div>
+<input type="hidden" name="spsRefKey" id="spsRefKey" value="{{ refKey }}">
 <div class="mb-3 containerSPS pr-name">
-    <input autocomplete="off" autofocus class="" id="name" name="name" placeholder="{{ _('Product Type Situation name') }}" type="text">
+    <input autocomplete="off" autofocus class="" id="name" name="name" placeholder="{{ placeholderName }}" type="text">
 </div>
 
 <form id="myForm" >
-    <!-- Dynamic fields -->           
+    <!-- Dynamic fields --> 
+    {% if spsRefKey is not none %}  
+        {% for row in data %}       
+        <div class="containerSPS parent" id="parent_{{ loop.index }}" draggable="true">
+            
+            <input type="text" name="text_{{ loop.index }}" placeholder="{{ _('The field name to be translated:') + ' ' + row['spssName']}}">
+            <!-- <input type="hidden" name="spssID" value="{{ row['spssID'] }}"> -->
+            <div class="remove" onclick="handleRemoveClick(this)">-</div>
+                    
+        </div>
+        {% endfor %}
+    {% else %}
     <div class="containerSPS parent" id="parent_1" draggable="true">
         
         
@@ -25,6 +46,7 @@
             
             
     </div>
+    {% endif %}
     <!-- End of dynamic fields -->
     
 </form>
@@ -161,9 +183,12 @@
                     response.style.display = 'flex';
                     return;
                 }
+        let spsRefKey = document.querySelector("#spsRefKey").value;
 
         formData.append('spsName', project_name)     
+        formData.append('spsRefKey', spsRefKey)     
         document.querySelector("#response").textContent = answer;
+
 
         // Create a new XMLHttpRequest object
         let xhr = new XMLHttpRequest();
@@ -205,7 +230,7 @@
     };
 
 
-        let num = 1; // total count of mobile elements. Starts from one
+        let num = parseInt("{{ num }}"); // total count of mobile elements. Starts from one
         // + buttun manipulation
         function handlePlusClick(plus) { 
 

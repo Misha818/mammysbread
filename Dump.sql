@@ -98,7 +98,7 @@ CREATE TABLE `product_relatives` (
 ALTER TABLE `product_relatives` AUTO_INCREMENT = 1;
 
 
--- DROP TABLE IF EXISTS `sub_product`;
+-- DROP TABLE IF EXISTS `sub_product`; -- Not used, replaced with product_type
 -- CREATE TABLE `sub_product` (
 --     `ID` INT AUTO_INCREMENT,
 --     `Title` VARCHAR(255),
@@ -110,17 +110,17 @@ ALTER TABLE `product_relatives` AUTO_INCREMENT = 1;
 -- ) ENGINE=InnoDB;
 -- ALTER TABLE `sub_product` AUTO_INCREMENT = 1;
 
-DROP TABLE IF EXISTS `sp_relatives`;
-CREATE TABLE `sp_relatives` (
-    `ID` INT AUTO_INCREMENT,
-    `Ref_Key` INT,
-    `User_ID` INT,
-    `SP_ID` INT,
-    `Order` INT,
-    `Language_ID` INT,
-    PRIMARY KEY (`ID`)
-) ENGINE=InnoDB;
-ALTER TABLE `sp_relatives` AUTO_INCREMENT = 1;
+-- DROP TABLE IF EXISTS `sp_relatives`; -- Not used, replaced with product_type_relatives 
+-- CREATE TABLE `sp_relatives` (
+--     `ID` INT AUTO_INCREMENT,
+--     `Ref_Key` INT,
+--     `User_ID` INT,
+--     `SP_ID` INT,
+--     `Order` INT,
+--     `Language_ID` INT,
+--     PRIMARY KEY (`ID`)
+-- ) ENGINE=InnoDB;
+-- ALTER TABLE `sp_relatives` AUTO_INCREMENT = 1;
 
 -- Drop tables if they exist and create them again
 DROP TABLE IF EXISTS `article`;

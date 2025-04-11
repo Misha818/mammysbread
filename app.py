@@ -3507,26 +3507,50 @@ def store():
         return jsonify(response)
 
 
-@app.route("/pt-specifications", methods=['GET'])
+@app.route("/pt-specifications", methods=['GET', 'POST'])
 @login_required
 def pt_specifications():
+    newCSRFtoken = generate_csrf()
     languageID = getLangID()
-    sqlQuery = """
-                SELECT 
-                    `sub_product_specification`.`ID`,
-                    `sps_relatives`.`Ref_Key`,
-                    `sub_product_specification`.`Name`,
-                    `sub_product_specification`.`Status`
-                FROM `sub_product_specification`
-                LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
-                WHERE `sps_relatives`.`Language_ID` = %s;
-                """
-    sqlValTuple = (languageID,)
-    result = sqlSelect(sqlQuery, sqlValTuple, True)
-    numRows = totalNumRows('sub_product_specification')
-    sideBar = side_bar_stuff()
+    if request.method == 'GET':
+        sqlQuery = """
+                    SELECT 
+                        `sub_product_specification`.`ID`,
+                        `sps_relatives`.`Ref_Key`,
+                        `sub_product_specification`.`Name`,
+                        `sub_product_specification`.`Status`
+                    FROM `sub_product_specification`
+                    LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                    WHERE `sps_relatives`.`Language_ID` = %s;
+                    """
+        sqlValTuple = (languageID,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        numRows = totalNumRows('sub_product_specification')
+        sideBar = side_bar_stuff()
+        translated = False
+        if getDefLang()['id'] != languageID:
+            translated = True
+        return render_template('product-type-specifications.html', result=result, sideBar=sideBar, translated=translated, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+    else:
+        if request.form.get('shTP') == '1':
+            sqlQuery = """
+                        SELECT 
+                            `sub_product_specification`.`ID`,
+                            `sps_relatives`.`Ref_Key`,
+                            `sub_product_specification`.`Name`,
+                            `sub_product_specification`.`Status`
+                        FROM `sub_product_specification`
+                        LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
+                        WHERE `sps_relatives`.`Language_ID` = %s
+                            AND not find_in_set(`sps_relatives`.`Ref_Key`, (SELECT GROUP_CONCAT(`sps_relatives`.`Ref_Key`) FROM `sps_relatives` WHERE `sps_relatives`.`Language_ID` = %s));
 
-    return render_template('product-type-specifications.html', result=result, sideBar=sideBar, numRows=numRows, page=1,  pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), current_locale=get_locale())
+                        """
+            sqlValTuple = (getDefLang()['id'], languageID)
+            result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+            return jsonify({'status': '1', 'data': result, 'newCSRFtoken': newCSRFtoken})
+        else:
+            return jsonify({'status': '0', 'newCSRFtoken': newCSRFtoken})
 
 # Edit product type specification (subproduct)
 @app.route("/edit-pts/<ptsRefKey>", methods=['GET'])
@@ -3538,7 +3562,12 @@ def edit_pts_view(ptsRefKey):
     sqlQueryPTS = "SELECT `SPS_ID` FROM `sps_relatives` WHERE `Ref_Key` = %s AND `Language_ID` = %s;"
     resultPTS = sqlSelect(sqlQueryPTS, (ptsRefKey, languageID), True)
     if resultPTS['length'] == 0:
-        return render_template('error.html', current_locale=get_locale())
+        if getDefLang()['id'] == getLangdata(session['lang'])['ID']:
+            return render_template('error.html', current_locale=get_locale())
+        else:    
+            redirectUrl = url_for('add_sps_view', spsRefKey=ptsRefKey)
+            return redirect(redirectUrl)
+
     
     ptsID = resultPTS['data'][0]['SPS_ID']
     sqlQuery = """
@@ -3757,11 +3786,39 @@ def edit_pts():
     
 
 
+@app.route("/add-sps/<spsRefKey>", methods=['GET'])
 @app.route("/add-sps", methods=['GET'])
 @login_required
-def add_sps_view():
+def add_sps_view(spsRefKey=None):
+    data = []
+    num=1
+    if spsRefKey is not None and getDefLang()['id'] != getLangdata(session['lang'])['ID']:
+        if not spsRefKey.isdigit():
+            return render_template('error.html')
+        
+        sqlQuery =  """
+                    SELECT 
+                        `sub_product_specification`.`ID` AS `spsID`,
+                        `sub_product_specification`.`Name` AS `spsName`,
+                        `sub_product_specifications`.`ID` AS `spssID`,
+                        `sub_product_specifications`.`Name` AS `spssName`
+                    FROM `sub_product_specification`
+                        LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID`
+                        LEFT JOIN `sub_product_specifications` ON `sub_product_specifications`.`spsID` = `sub_product_specification`.`ID`
+                    WHERE `sps_relatives`.`Ref_Key` = %s
+                        AND `sps_relatives`.`Language_ID` = %s
+                    ORDER BY `sub_product_specifications`.`Order`;
+                    """
+        sqlValTuple = (spsRefKey, getDefLang()['id'])
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        if result['length'] == 0:
+            return render_template('error.html')
+        
+        data = result['data']
+        num = result['length']
+
     sideBar = side_bar_stuff()
-    return render_template('sp-specifications.html', sideBar=sideBar, current_locale=get_locale())
+    return render_template('sp-specifications.html', spsRefKey=spsRefKey, data=data, num=num, sideBar=sideBar, current_locale=get_locale())
 
 
 @app.route("/transfers/<filters>", methods=['GET'])
@@ -3946,6 +4003,18 @@ def add_sps():
     
     userID = session['user_id']
 
+    if request.form.get('spsRefKey', '') != '':
+        spsRefKey = request.form.get('spsRefKey')
+        # Check weather sps RefKey exists in current language
+        # Return if exists
+        sqlQueryCheckspsRefKey = "SELECT `ID` FROM `sps_relatives` WHERE `Ref_Key` = %s AND `Language_ID` = %s;"
+        sqlValTuplespsRefKey = (spsRefKey, languageID)
+        resultspsRefKey = sqlSelect(sqlQueryCheckspsRefKey, sqlValTuplespsRefKey, True)
+        if resultspsRefKey['length'] > 0:
+            answer = gettext('The current subproduct situation has already been translated!')
+            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+            return jsonify(response) 
+        
     sqlQuery = "INSERT INTO `sub_product_specification` (`Name`, `User_ID`, `Status`) VALUES (%s, %s, %s)"
     sqlValTuple = (spsName, userID, 1)
     result = sqlInsert(sqlQuery, sqlValTuple)
@@ -3955,14 +4024,17 @@ def add_sps():
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response) 
 
-    # Get refkey
-    sqlQueryRefKey = "SELECT `Ref_Key` FROM `sps_relatives` WHERE `Language_ID` = %s AND `Status` = %s ORDER BY `Ref_Key` DESC LIMIT 1;"
-    sqlValTupleRK = (languageID, 1)
-    resultRK = sqlSelect(sqlQueryRefKey, sqlValTupleRK, True)
-    if resultRK['length'] > 0:
-        spsRefKey = resultRK['data'][0]['Ref_Key'] + 1
-    else:
-        spsRefKey = 1
+    # Get refkey of sub product specification
+    if request.form.get('spsRefKey', '') != '':
+        spsRefKey = request.form.get('spsRefKey')
+    else :            
+        sqlQueryRefKey = "SELECT `Ref_Key` FROM `sps_relatives` WHERE `Language_ID` = %s AND `Status` = %s ORDER BY `Ref_Key` DESC LIMIT 1;"
+        sqlValTupleRK = (languageID, 1)
+        resultRK = sqlSelect(sqlQueryRefKey, sqlValTupleRK, True)
+        if resultRK['length'] > 0:
+            spsRefKey = resultRK['data'][0]['Ref_Key'] + 1
+        else:
+            spsRefKey = 1
 
     spsID = result['inserted_id']
     sqlQuerySPSRel = "INSERT INTO `sps_relatives` (`SPS_ID`, `Ref_Key`, `Language_ID`, `User_ID`, `Status`) VALUES (%s, %s, %s, %s, %s)"
@@ -3975,7 +4047,7 @@ def add_sps():
     sqlQuerySPSS = "INSERT INTO `sub_product_specifications` (`Name`, `Order`, `spsID`, `Status`) VALUES (%s, %s, %s, %s)" 
     sqlQuerySPSSRel = "INSERT INTO `spss_relatives` (`SPSS_ID`, `Ref_Key`, `Language_ID`, `User_ID`, `Status`) VALUES (%s, %s, %s, %s, %s)"
     
-    # Get refkey
+    # Get refkey of sub product specificationS
     sqlQueryRefKey = "SELECT `Ref_Key` FROM `spss_relatives` WHERE `Language_ID` = %s AND `Status` = %s ORDER BY `Ref_Key` DESC LIMIT 1;"
     sqlValTupleRK = (languageID, 1)
     resultRK = sqlSelect(sqlQueryRefKey, sqlValTupleRK, True)

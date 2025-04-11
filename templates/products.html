@@ -339,102 +339,103 @@ window.addEventListener('load', () => {
 
 
 
+  if (document.querySelector('.checkbox')) {
+    document.querySelector('.checkbox').addEventListener('change', function(e) {
+      if (e.target.checked) {
+        if (document.querySelectorAll('.transparent').length > 0) {
+          document.querySelectorAll('.transparent').forEach(tr => {
+            tr.style.display = 'table-row';
+          });
+          if (document.getElementById('answerID')) {
+            document.getElementById('answerID').style.display = 'revert';
+          }
+        } else {
 
-  document.querySelector('.checkbox').addEventListener('change', function(e) {
-    if (e.target.checked) {
-      if (document.querySelectorAll('.transparent').length > 0) {
-        document.querySelectorAll('.transparent').forEach(tr => {
-          tr.style.display = 'table-row';
-        });
-        if (document.getElementById('answerID')) {
-          document.getElementById('answerID').style.display = 'revert';
-        }
-      } else {
-
-        
-        let formData = new FormData();
-        
-        formData.append('shTP', '1');
-        
-        // Create a new XMLHttpRequest object
-        let xhr = new XMLHttpRequest();
-        
-        // Configure the request
-        xhr.open('POST', '/products');                   
-        xhr.setRequestHeader('X-CSRFToken', csrfToken);
-        
-        // Define what happens on successful data submission
-        xhr.onload = function () {
-          if (xhr.status === 200) {
-            let response = JSON.parse(xhr.responseText);
-            
-            if (response.status === "1") {
-              // alert(response.prData.length)
+          
+          let formData = new FormData();
+          
+          formData.append('shTP', '1');
+          
+          // Create a new XMLHttpRequest object
+          let xhr = new XMLHttpRequest();
+          
+          // Configure the request
+          xhr.open('POST', '/products');                   
+          xhr.setRequestHeader('X-CSRFToken', csrfToken);
+          
+          // Define what happens on successful data submission
+          xhr.onload = function () {
+            if (xhr.status === 200) {
+              let response = JSON.parse(xhr.responseText);
               
-              if (response.prData.length > 0) {
-                let newRows = '';
-                response.prData.data.forEach(row => {
-                // console.log(row.P_Ref_Key);
-                let editUrl = 'product/' + row.P_Ref_Key.toString();
+              if (response.status === "1") {
+                // alert(response.prData.length)
                 
-                let actionBtns = `<a href="{{ url_for('home', _external=True) }}${editUrl}&langID={{ languageID }}" target="_blank" title="{{ _('Translate') }}"><i class="fas fa-language" style=" color: #6be6b2;"></i></a>`;
-                if (row['Product_Status'] == 2) {
-                  actionBtns += `<a href="{{ url_for('home', _external=True) }}${row['Url']}" target="_blank" title="{{ _('View') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2; margin-right: 20px;"></i></a>`;
-                } 
+                if (response.prData.length > 0) {
+                  let newRows = '';
+                  response.prData.data.forEach(row => {
+                  // console.log(row.P_Ref_Key);
+                  let editUrl = 'product/' + row.P_Ref_Key.toString();
+                  
+                  let actionBtns = `<a href="{{ url_for('home', _external=True) }}${editUrl}&langID={{ languageID }}" target="_blank" title="{{ _('Translate') }}"><i class="fas fa-language" style=" color: #6be6b2;"></i></a>`;
+                  if (row['Product_Status'] == 2) {
+                    actionBtns += `<a href="{{ url_for('home', _external=True) }}${row['Url']}" target="_blank" title="{{ _('View') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2; margin-right: 20px;"></i></a>`;
+                  } 
+                  
+                  let status = `{{ _('Published') }}`;
+                  if (row['Product_Status'] == 1) {
+                    status = `{{ _('Unpublished') }}`;
+                  }
+                  
+                  
+                  let imgUrl = `{{ url_for('static', filename='images/pr_thumbnails/') }}`+ row.Thumbnail;
+                  newRows += `
+                  <tr class="keyup-filter transparent" data-value="${row.ID}-&$%-${row.Title}">
+                    <td><img src="${imgUrl}" style="width: 100px;"/></td>
+                    <td><a href="{{ url_for('home', _external=True) }}${editUrl}&langID={{ DefLangID }}" target="_blank" title="{{ _('Edit in original language') }}">${row.Title}</a></td>
+                    <td>${formatToYYYYMMDD(row.DatePublished)}</td>
+                    <td>${formatToYYYYMMDD(row.DateModified)}</td>
+                    <td>${row.Product_Category_Name}</td>
+                    <td>${status}</td>
+                    <td class="actions">${actionBtns}</td>
+                    </tr>
+                    <tr class="extra-row transparent" id="extraRow_${row['ID']}">
+                      <td colspan="7" style="text-align: center; padding: 5px; ">
+                        <button class="view-types-btn" title="{{ _('View Types') }}" id="btn_${row['ID']}" onclick="getProductTypes(${row['ID']})">
+                          <div class="chevron">&#9660;</div>
+                          </button>
+                          </td>
+                          </tr>`;
+                          
+                        });
                 
-                let status = `{{ _('Published') }}`;
-                if (row['Product_Status'] == 1) {
-                  status = `{{ _('Unpublished') }}`;
-                }
-                
-                
-                let imgUrl = `{{ url_for('static', filename='images/pr_thumbnails/') }}`+ row.Thumbnail;
-                newRows += `
-                <tr class="keyup-filter transparent" data-value="${row.ID}-&$%-${row.Title}">
-                  <td><img src="${imgUrl}" style="width: 100px;"/></td>
-                  <td><a href="{{ url_for('home', _external=True) }}${editUrl}&langID={{ DefLangID }}" target="_blank" title="{{ _('Edit in original language') }}">${row.Title}</a></td>
-                  <td>${formatToYYYYMMDD(row.DatePublished)}</td>
-                  <td>${formatToYYYYMMDD(row.DateModified)}</td>
-                  <td>${row.Product_Category_Name}</td>
-                  <td>${status}</td>
-                  <td class="actions">${actionBtns}</td>
-                  </tr>
-                  <tr class="extra-row transparent" id="extraRow_${row['ID']}">
-                    <td colspan="7" style="text-align: center; padding: 5px; ">
-                      <button class="view-types-btn" title="{{ _('View Types') }}" id="btn_${row['ID']}" onclick="getProductTypes(${row['ID']})">
-                        <div class="chevron">&#9660;</div>
-                        </button>
-                        </td>
-                        </tr>`;
+                        document.querySelector('#myTable tbody').insertAdjacentHTML('afterbegin', newRows);
                         
-                      });
-              
-                      document.querySelector('#myTable tbody').insertAdjacentHTML('afterbegin', newRows);
-                      
-                    }
-                  }                
-                } else {
-                  // Handle error response
-                  console.error('Error adding category:', xhr.responseText);
-                }
+                      }
+                    }                
+                  } else {
+                    // Handle error response
+                    console.error('Error adding category:', xhr.responseText);
+                  }
+                  
+                };
                 
-              };
-              
-              // Send the request with the FormData object
-              xhr.send(formData);
-            }
-              
-    } else {
-      if (document.querySelectorAll('.transparent').length > 0) {
-        document.querySelectorAll('.transparent').forEach(tr => {
-          tr.style.display = 'none';
-        });
-        if (document.getElementById('answerID')) {
-          document.getElementById('answerID').style.display = 'none';
+                // Send the request with the FormData object
+                xhr.send(formData);
+              }
+                
+      } else {
+        if (document.querySelectorAll('.transparent').length > 0) {
+          document.querySelectorAll('.transparent').forEach(tr => {
+            tr.style.display = 'none';
+          });
+          if (document.getElementById('answerID')) {
+            document.getElementById('answerID').style.display = 'none';
+          }
         }
       }
-    }
-  });
+    });
+  }
 });
 
 let trace;
