@@ -741,7 +741,7 @@ msgstr "Ապրանքի հղում"
 #: templates/add_to_store.html:3 templates/add_to_store.html:57
 #: templates/store.html:371
 msgid "Add To Store"
-msgstr "Ավելացնել խանութում"
+msgstr "Ավելացնել ապրանք խանութում"
 
 #: templates/add_to_store.html:65 templates/edit_store.html:62
 msgid "Choose a Product"

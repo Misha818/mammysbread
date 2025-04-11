@@ -3420,20 +3420,22 @@ def store():
                             (SELECT 
                                 SUM(`quantity`.`Quantity`)
                                 FROM `Quantity`
-                                    LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                                    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
+                                    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                                     LEFT JOIN `product` p ON `product_type`.`Product_ID` = `p`.`ID`
                                 WHERE `Quantity`.`expDate` < CURRENT_DATE() AND `p`.`ID` = `product`.`ID`) 
                             AS `expired`
                         FROM `quantity`
-                            LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                            LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
+                            LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-                        WHERE `quantity`.`Status` = 1
+                        WHERE `quantity`.`Status` = 1 AND `product_type_relatives`.`Language_ID` = %s
                         GROUP BY `product`.`ID`, `product`.`Title`, `product`.`Thumbnail`
                         ORDER BY `product`.`Order` ASC  
                     ;               
                     """
         
-        sqlValTuple = ()
+        sqlValTuple = (getLangID(),)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
 
         sqlQueryStore = "SELECT `ID`, `Name` FROM `store` WHERE `Status` = 1;"
@@ -3449,7 +3451,7 @@ def store():
     else:
         
         filters = ''
-        sqlValList = []
+        sqlValList = [getLangID()]
 
         if request.form.get('productionDate'):
             filters = filters + ' AND productionDate = %s ' 
@@ -3472,7 +3474,7 @@ def store():
             sqlValList.append(request.form.get('productID'))
 
         if request.form.get('ptID'):
-            filters = filters + ' AND `productTypeID` = %s ' 
+            filters = filters + ' AND `product_type_relatives`.`PT_Ref_Key` = %s ' 
             sqlValList.append(request.form.get('ptID'))
 
         
@@ -3490,14 +3492,16 @@ def store():
                             (SELECT 
                                 SUM(`quantity`.`Quantity`)
                                 FROM `Quantity`
-                                    LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                                    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
+                                    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                                     LEFT JOIN `product` p ON `product_type`.`Product_ID` = `p`.`ID`
                                 WHERE `Quantity`.`expDate` < CURRENT_DATE() AND `p`.`ID` = `product`.`ID`) 
                             AS `expired`
                         FROM `quantity`
-                            LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                            LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
+                            LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-                        WHERE `quantity`.`Status` = 1 {filters}
+                        WHERE `quantity`.`Status` = 1 AND `product_type_relatives`.`Language_ID` = %s {filters}
                         GROUP BY `product`.`ID`, `product`.`Title`, `product`.`Thumbnail`
                     ;               
                     """
@@ -4312,11 +4316,12 @@ def get_product_types():
                 originalData = json.dumps(resultOriginalPR['data'])
 
     sqlQuery = """
-                    SELECT  `product_type_relatives`.`PT_Ref_Key`,    
-                            `product_type`.`ID`,
+                    SELECT  
+                            `product_type_relatives`.`PT_Ref_Key`,    
                             `product_type`.`Title`,
                             `product_type`.`Price`,
                             `product_type`.`Order` AS `SubPrOrder`,
+                            `product_type`.`ID`,
                             (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
                             (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
                             `product_type`.`Status`
@@ -4389,13 +4394,14 @@ def get_product_types_quantity():
                             (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
                             SUM(`quantity`.`Quantity`) AS `Quantity`,
                             (SELECT SUM(`q`.`Quantity`) FROM `Quantity` as q
-                                WHERE `q`.`expDate` < CURRENT_DATE() AND `q`.`productTypeID` = `quantity`.`productTypeID`
+                                WHERE `q`.`expDate` < CURRENT_DATE() AND `q`.`ptRefKey` = `quantity`.`ptRefKey`
                             ) AS `expired`,
                             `product_type`.`Status`
                     FROM `quantity`
-                        LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                     WHERE `product_type`.`Product_ID` = %s {filters}
-                    GROUP BY `product_type`.`ID`, `product_type`.`Title`, `product_type`.`Price`, `imgName`, `AltText`
+                    GROUP BY `product_type`.`ID`, `product_type`.`Title`, `product_type`.`Price`, `imgName`, `AltText`, `quantity`.`ptRefKey`
                     ORDER BY `SubPrOrder` 
                     ;"""
     
@@ -4586,7 +4592,8 @@ def get_pt_quantities():
     sqlQuary = f"""
                 SELECT 
                     `quantity`.`ID`,
-                    `product_type`.`ID` AS `ptID`,
+                    -- `product_type`.`ID` AS `ptID`,
+                    `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
                     `product_type`.`Price`,
                     `store`.`Name`,
                     CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`,
@@ -4603,12 +4610,12 @@ def get_pt_quantities():
                 FROM `quantity` 
                     LEFT JOIN `store` ON `store`.`ID` = `quantity`.`storeID`
                     LEFT JOIN `stuff` ON `stuff`.`ID` = `quantity`.`userID`
-                    LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
+                    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                     LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
-                WHERE `quantity`.`productTypeID` = %s 
+                WHERE `quantity`.`ptRefKey` = %s 
                     AND `quantity`.`Quantity` > 0
-                    AND `quantity`.`Status` = '1' {filters}
-                ;
+                    AND `quantity`.`Status` = 1 {filters};
             """
     
     result = sqlSelect(sqlQuary, sqlValTuple, True)
@@ -4804,13 +4811,14 @@ def add_to_store(ptID=None):
         sqlQuery = """SELECT 
                         `product`.`ID`,
                         `product`.`Title`,
-                        `product_type`.`ID` AS `ptID`,
+                        -- `product_type`.`ID` AS `ptID`,
+                        `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
                         `product_type`.`Title` AS `ptTitle`
                     FROM `product` 
                         LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID`
                     WHERE `product`.`Language_ID` = %s 
                     ORDER BY `product`.`Order`, `product_type`.`Order` 
-                    -- LIMIT 2
                     ;
                     """
         sqlValTuple = (languageID,)
@@ -4877,7 +4885,7 @@ def add_to_store(ptID=None):
         userID = session['user_id']
 
         sqlQuery = f"""INSERT INTO `quantity` 
-                        (`productTypeID`, `storeID`, `Quantity`, `maxQuantity`, `userID`, `productionDate`, `expDate`, `addDate`, `Status`) 
+                        (`ptRefKey`, `storeID`, `Quantity`, `maxQuantity`, `userID`, `productionDate`, `expDate`, `addDate`, `Status`) 
                         VALUES (%s, %s, %s, %s, %s, STR_TO_DATE(%s, '%m/%d/%Y'), STR_TO_DATE(%s, '%m/%d/%Y'), CURRENT_DATE(), '1');
                         """
         sqlValTuple = (ptID, storeID, quantity, maxQuantity, userID, productionDate, expDate)

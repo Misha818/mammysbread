@@ -1008,7 +1008,7 @@ button[type="submit"]:hover {
   margin-right: 5px;
 }
 
-.filter-button {
+.filter-button, .add-to-store-btn {
   margin-bottom: 7px;
   color: #00a6ed;
   border: 2px solid #00a6ed;
