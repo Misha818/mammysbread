@@ -648,6 +648,10 @@ def getDefLang():
 def getSupportedLangs():
     return ['en', 'hy', 'ru']
 
+def getSupportedLangIDs():
+    arr = supported_langs()
+    return [lang['Language_ID'] for lang in arr]
+
 def supported_langs():
     arr = [
             {'Language_ID': 2, 'Language': 'English', 'Prefix':	'en'},

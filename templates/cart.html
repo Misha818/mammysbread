@@ -298,12 +298,19 @@ document.addEventListener("DOMContentLoaded", function() {
         let subtotal = 0;
         quantities.forEach(quantity => {
           num = num + parseInt(quantity.value);
-
         });
 
+
         if (num == 0) {
-          document.querySelector('.subtotal').remove();
-          document.querySelector('.checkout-button').remove();
+          remove_from_cart(ptID)
+          if (document.querySelector('.subtotal')) {
+            document.querySelector('.subtotal').remove();
+          }
+
+          if (document.querySelector('.farther-actions-cart')) {
+            document.querySelector('.farther-actions-cart').remove();
+          }  
+
           document.querySelector('.price-header').style.display = 'none';
           
           const emptyCart = document.createElement('div');
@@ -321,7 +328,6 @@ document.addEventListener("DOMContentLoaded", function() {
           target.parentNode.appendChild(startShopping);
           document.querySelector('.cart-header').style.margin = "0 auto";
           document.querySelector('.shopping-cart').style.boxShadow = "none";
-          remove_from_cart(ptID)
 
         } else {
 
@@ -500,7 +506,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function remove_from_cart(ptID) {
         let cart = cookie.get('Cart');
-        
         if (cart.length > 0) {
           if (cart.includes('&')) {
             let newCart = ''
@@ -557,7 +562,7 @@ document.addEventListener("DOMContentLoaded", function() {
             minusBtn.addEventListener('click', () => {
             const parentDiv = minusBtn.parentNode;
             let quantity = parentDiv.querySelector('.quantity').value;
-            if (quantity == 'undefinied') {
+            if (quantity == 'undefinied' || parseInt(quantity) === 0) {
                 return;
             }
 
@@ -585,11 +590,8 @@ document.addEventListener("DOMContentLoaded", function() {
             if (newQuantity == 0) {
               const deleteBtn = minusBtn.parentNode.parentNode.querySelector('.delete-button');
               delete_cart(deleteBtn);
-            }
-
-        
-    
-            
+              flag = false;
+            } else {
             get_pt_quantity(ptID, newQuantity)
                 .then(response => {
                 if (response.status === 1) {
@@ -605,7 +607,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 flag = false;
                 }) 
                 .catch(error => console.error(error));
-            });
+            }
+          });
         }); 
     
     }    
@@ -615,48 +618,48 @@ document.addEventListener("DOMContentLoaded", function() {
         const plusButtons = document.querySelectorAll('.plus-btn');
         plusButtons.forEach(plusBtn => {
             plusBtn.addEventListener('click', () => {
-            const parentDiv = plusBtn.parentNode;
-            let quantity = parentDiv.querySelector('.quantity').value;
-            if (quantity == 0 || quantity == 'undefinied') {
+              const parentDiv = plusBtn.parentNode;
+              let quantity = parentDiv.querySelector('.quantity').value;
+              if (quantity == 0 || quantity == 'undefinied') {
+                  return;
+              }
+
+              if (flag === true) {
                 return;
-            }
+              }
+              flag = true;
 
-            if (flag === true) {
-              return;
-            }
-            flag = true;
-
-            plusBtn.textContent = '';
-            plusBtn.style.padding = '6px 10px';
-            plusBtn.appendChild(loader);
-        
-            let gearElement = document.getElementById('gear');
-            if (!gearElement) {
-              return;
-            } 
-        
-            rotate(gearElement);
-    
-            quantity = parseInt(quantity);
-            const grandPa = parentDiv.parentNode; 
-            ptID = grandPa.dataset.value;
-            let newQuantity = quantity + 1;
-                    
-            get_pt_quantity(ptID, newQuantity)
-                .then(response => {
-                if (response.status === 1) {
-                    parentDiv.querySelector('.quantity').value = newQuantity;
-                    change_price(plusBtn, response.data.price, '+')
-                    edit_cart(ptID, newQuantity)
-                } else {
-                    modal_message(response.message)
-                }
-                gearElement.remove();
-                plusBtn.textContent = '+';
-                plusBtn.style.padding = '10px 15px';
-                flag = false;
-                }) 
-                .catch(error => console.error(error));
+              plusBtn.textContent = '';
+              plusBtn.style.padding = '6px 10px';
+              plusBtn.appendChild(loader);
+          
+              let gearElement = document.getElementById('gear');
+              if (!gearElement) {
+                return;
+              } 
+          
+              rotate(gearElement);
+      
+              quantity = parseInt(quantity);
+              const grandPa = parentDiv.parentNode; 
+              ptID = grandPa.dataset.value;
+              let newQuantity = quantity + 1;
+                      
+              get_pt_quantity(ptID, newQuantity)
+                  .then(response => {
+                  if (response.status === 1) {
+                      parentDiv.querySelector('.quantity').value = newQuantity;
+                      change_price(plusBtn, response.data.price, '+')
+                      edit_cart(ptID, newQuantity)
+                  } else {
+                      modal_message(response.message)
+                  }
+                  gearElement.remove();
+                  plusBtn.textContent = '+';
+                  plusBtn.style.padding = '10px 15px';
+                  flag = false;
+                  }) 
+                  .catch(error => console.error(error));
             });
         }); 
     }

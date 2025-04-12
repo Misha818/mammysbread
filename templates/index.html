@@ -176,6 +176,7 @@ input[type=submit]:hover {
 
   <script>
     let prData = []
+    const languageID = `{{ languageID }}`;
     document.addEventListener('DOMContentLoaded', function() {
 
 
@@ -848,6 +849,7 @@ async function get_pt_quantity(ptID, quantity) {
         let formData = new FormData();
             formData.append('ptID', ptID);
             formData.append('quantity', quantity);
+            formData.append('languageID', languageID);
     
             try {
                 let response = await fetch('/get-pt-quantity', {
@@ -942,76 +944,77 @@ async function get_pt_quantity(ptID, quantity) {
             // const textContent = document.getElementById('outOfStock').value;
             modal_message(checkPtQuantity.answer);
             return true;
-        }
-        
-        // Max allowed quantity to purchase or max quantity in stoke 
-        if (checkPtQuantity.status === '2') {
+        } else if (checkPtQuantity.status === '2') { // Max allowed quantity to purchase or max quantity in stoke 
             modal_message(checkPtQuantity.answer);
             addToQuantity(clickedBotton, checkPtQuantity.max);
             num = parseInt(checkPtQuantity.max);
-        }
-        
-        
+        } else if (checkPtQuantity.status === '1') {
 
-        let Cart = cookie.get('Cart');
-        let flagID = false;
-        let flagNum = false;
-        let newPt = false;
-        let newCookie = '';
-        if (Cart) {
-            arr = Cart.split('&');
-            arr.forEach(item => {
-                array = item.split('-');
-                if (array[0] === ptID) {
-                    flagID = true; 
-                    if (array[1] === num) {
-                        flagNum = true; 
-                        return true;
-                    } else {
-                        let newItem = ptID + '-' + num;
-                        newCookie = newCookie + '&' + newItem;
-                    }  
+            let Cart = cookie.get('Cart');
+            let flagID = false;
+            let flagNum = false;
+            let newPt = false;
+            let newCookie = '';
+            if (Cart) {
+                arr = Cart.split('&');
+                arr.forEach(item => {
+                    array = item.split('-');
+                    if (array[0] === ptID) {
+                        flagID = true; 
+                        if (array[1] === num) {
+                            flagNum = true; 
+                            return true;
+                        } else {
+                            let newItem = ptID + '-' + num;
+                            newCookie = newCookie + '&' + newItem;
+                        }  
 
-                } else { 
-                    newPt = true;
-                    newCookie = newCookie + '&' + item;
+                    } else { 
+                        newPt = true;
+                        newCookie = newCookie + '&' + item;
+                    }
+                    
+                });
+                newCookie = newCookie.substring(1);
+                
+            } else {
+                newCookie = ptID + '-' + num;   
+            }
+            
+            if (flagNum === true) {
+                let textContent = document.getElementById('cartMessage').value;
+                if (textContent) {
+                    modal_message(textContent);
+                } else {
+                    modal_message("You have already Added this product to the basket. You can change the quantity.");
+                }
+                return true;
+            } else {
+
+                if (newPt === true && flagID === false) {
+                    newCookie = Cart + '&' + ptID + '-' + num;  
                 }
                 
-            });
-            newCookie = newCookie.substring(1);
-            
-        } else {
-            newCookie = ptID + '-' + num;   
-        }
-        
-        if (flagNum === true) {
-            let textContent = document.getElementById('cartMessage').value;
-            if (textContent) {
-                modal_message(textContent);
-            } else {
-                modal_message("You have already Added this product to the basket. You can change the quantity.");
+                // Set new Cookies   
+                cookie.set('Cart', newCookie, { expires: 7, path: '/' })  
+                basket();
+                const inBasket = document.getElementById('inBasketText').value;
+
+                clickedBotton.childNodes.forEach(node => {
+                    // Check if the node is a text node and not just whitespace
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length) {
+                        node.textContent = ' ' + inBasket; 
+                    }
+                });
+
             }
-            return true;
-        } else {
+          return true;  
 
-            if (newPt === true && flagID === false) {
-                newCookie = Cart + '&' + ptID + '-' + num;  
-            }
-            
-            // Set new Cookies   
-            cookie.set('Cart', newCookie, { expires: 7, path: '/' })  
-            basket();
-            const inBasket = document.getElementById('inBasketText').value;
+      } else {
+        modal_message(`{{ _('Something is wrong') }}`);
+        return false;
+      }
 
-            clickedBotton.childNodes.forEach(node => {
-                // Check if the node is a text node and not just whitespace
-                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length) {
-                    node.textContent = ' ' + inBasket; 
-                }
-            });
-
-        }
-      return true;  
     }
 
     // Check if product type exists in specified quantity
@@ -1020,6 +1023,7 @@ async function get_pt_quantity(ptID, quantity) {
         let formData = new FormData();
         formData.append('ptID', ptID);
         formData.append('num', num);
+        formData.append('languageID', languageID);
     
         try {
             let response = await fetch('/check-pt-quantity', {

@@ -315,7 +315,7 @@ ALTER TABLE `product_type_details` AUTO_INCREMENT = 1;
 DROP TABLE IF EXISTS `quantity`;
 CREATE TABLE `quantity` (
     `ID` INT AUTO_INCREMENT,
-    `productTypeID` INT,
+    `ptRefKey` INT,
     `storeID` INT,
     `userID` INT,
     `Quantity` INT,
@@ -327,7 +327,6 @@ CREATE TABLE `quantity` (
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `quantity` AUTO_INCREMENT = 1;
-
 
 DROP TABLE IF EXISTS `store`;
 CREATE TABLE `store` (
@@ -357,7 +356,7 @@ DROP TABLE IF EXISTS `discount`;
 CREATE TABLE `discount` (
     `ID` INT AUTO_INCREMENT,
     `promo_code_id` INT,
-    `ptID` INT,
+    `ptRefKey` INT,
     `discount` FLOAT,
     `discount_status` INT, -- 0 = Disabled, 1 = Enabled | if 1 promo will work even if product is at state of sale
     `revard_value` INT,

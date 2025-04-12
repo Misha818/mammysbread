@@ -51,7 +51,7 @@
 <div class="overlay" id="overlay"></div>
 {{ sideBar | safe }}
 <div class="containerS" style="width: 350px;">
-    <h1>{{ _('Edit Store') }}</h1>
+    <h1 style="text-align: center;">{{ _('Edit Store') }}</h1>
     <!-- Form for adding a product -->
     <div id="mistakes" style="width: 250px"></div>
     <form id="product-category-form" style="margin: 20px 20px -15px 20px">
@@ -174,6 +174,7 @@ saveButton.addEventListener('click', function (event) {
     let expDate = document.getElementById('expDate').value;
     let quantityID = "{{ resultQuantity[0].ID|safe }}";
     let maxQuantity = false;
+    const languageID = `{{ languageID | safe }}`;
 
     if (checkbox.checked) {
         maxQuantity = document.getElementById('maxQuantity').value;
@@ -181,6 +182,7 @@ saveButton.addEventListener('click', function (event) {
 
     // Create a new FormData object
     formData.append('ptID', ptID);
+    formData.append('languageID', languageID);
     formData.append('storeID', storeID);
     formData.append('quantity', quantity);
     formData.append('productionDate', productionDate);
@@ -242,7 +244,7 @@ saveButton.addEventListener('click', function (event) {
     // Dynemically creat drop-down elements
     const ptID = "{{ ptID|safe }}" 
     const dataLength = "{{ dataLength|safe }}"
-    const prData = JSON.parse('{{ prData|safe }}');
+    const prData = JSON.parse(`{{ prData|safe }}`);
     const storeID = "{{ storeID|safe }}";
  
     let dropDownContent = document.createElement('span');

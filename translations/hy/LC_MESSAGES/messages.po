@@ -741,7 +741,7 @@ msgstr "Ապրանքի հղում"
 #: templates/add_to_store.html:3 templates/add_to_store.html:57
 #: templates/store.html:371
 msgid "Add To Store"
-msgstr "Ավելացնել ապրանք խանութում"
+msgstr "Ավելացնել"
 
 #: templates/add_to_store.html:65 templates/edit_store.html:62
 msgid "Choose a Product"
@@ -1300,7 +1300,7 @@ msgstr "Ընդհամենը"
 
 #: templates/cart.html:120
 msgid "items"
-msgstr "ապրանքներ"
+msgstr ""
 
 #: templates/cart.html:122 templates/index.html:488
 msgid "Proceed to Checkout"

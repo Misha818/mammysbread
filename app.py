@@ -3,7 +3,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -329,7 +329,7 @@ def home():
     sqlValTuple = (languageID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
   
-    return render_template('index.html', result=result, MAIN_CURRENCY=MAIN_CURRENCY, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+    return render_template('index.html', result=result, languageID=languageID, MAIN_CURRENCY=MAIN_CURRENCY, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
 @app.route('/about')
 def about():
@@ -3447,7 +3447,7 @@ def store():
         productsData = json.dumps(resultStore['data'])
 
         sideBar = side_bar_stuff()
-        return render_template('store.html', result=result, storeData=storeData, productsData=productsData, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
+        return render_template('store.html', result=result, storeData=storeData, productsData=productsData, languageID=languageID, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
     else:
         
         filters = ''
@@ -4345,6 +4345,11 @@ def get_product_types():
 @login_required
 def get_product_types_quantity():
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
+    if request.form.get('LanguageID'):
+        if int(request.form.get('LanguageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('LanguageID'))
+
     if not request.form.get('prID'):
         answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
@@ -4358,6 +4363,7 @@ def get_product_types_quantity():
     filters = ''
     sqlValList = []
     sqlValList.append(prID)
+    sqlValList.append(languageID)
 
     if request.form.get('productionDate'):
         filters = filters + ' AND `quantity`.`productionDate` = %s ' 
@@ -4383,10 +4389,10 @@ def get_product_types_quantity():
     if len(sqlValList) > 0:
         sqlValTuple = tuple(sqlValList)
     else: 
-        sqlValTuple = (prID,)
+        sqlValTuple = (prID, languageID)
 
     sqlQuery = f"""
-                    SELECT  `product_type`.`ID`,
+                    SELECT  `product_type_relatives`.`PT_Ref_Key` AS `ID`,
                             `product_type`.`Title`,
                             `product_type`.`Price`,
                             `product_type`.`Order` AS `SubPrOrder`,
@@ -4396,11 +4402,14 @@ def get_product_types_quantity():
                             (SELECT SUM(`q`.`Quantity`) FROM `Quantity` as q
                                 WHERE `q`.`expDate` < CURRENT_DATE() AND `q`.`ptRefKey` = `quantity`.`ptRefKey`
                             ) AS `expired`,
+                            `product_type`.`ID` AS `ptID`,
                             `product_type`.`Status`
                     FROM `quantity`
                         LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
                         LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
-                    WHERE `product_type`.`Product_ID` = %s {filters}
+                    WHERE `product_type`.`Product_ID` = %s 
+                        AND `product_type_relatives`.`Language_ID` = %s
+                        {filters}
                     GROUP BY `product_type`.`ID`, `product_type`.`Title`, `product_type`.`Price`, `imgName`, `AltText`, `quantity`.`ptRefKey`
                     ORDER BY `SubPrOrder` 
                     ;"""
@@ -4464,26 +4473,47 @@ def analyse_cart_data(cartData):
             findInSetPtIDs = array[0]
             ptIdQuantity.append([int(array[0]), int(array[1])])
 
-    sqlQuery =  f"""
-                    SELECT 
-                        `product`.`Title` AS `prTitle`,
-                        `product`.`url`,
-                        `product_type`.`Title` AS `ptTitle`,
-                        `product_type`.`Price`,
-                        (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
-                        (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
-                        (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
-                        (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
-                        `product_type`.`ID` AS `ptID`        
-                    FROM `product_type`
-                        LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-                    WHERE `product`.`Language_ID` = %s 
-                        AND find_in_set(`product_type`.`ID`, %s)
-                        AND (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) > 0
-                    ORDER BY `product`.`ID`, `product_type`.`Order`; 
+    # sqlQuery =  f"""
+    #                 SELECT 
+    #                     `product`.`Title` AS `prTitle`,
+    #                     `product`.`url`,
+    #                     `product_type`.`Title` AS `ptTitle`,
+    #                     `product_type`.`Price`,
+    #                     (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+    #                     (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+    #                     (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
+    #                     (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
+    #                     `product_type`.`ID` AS `ptID`        
+    #                 FROM `product_type`
+    #                     LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+    #                 WHERE `product`.`Language_ID` = %s 
+    #                     AND find_in_set(`product_type`.`ID`, %s)
+    #                     AND (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) > 0
+    #                 ORDER BY `product`.`ID`, `product_type`.`Order`; 
+    #             """
+
+    sqlQuery =  """
+                SELECT 
+                    `product`.`Title` AS `prTitle`,
+                    `product`.`url`,
+                    `product_type`.`Title` AS `ptTitle`,
+                    `product_type`.`Price`,
+                    (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+                    (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+                    (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key` AND `product_type_relatives`.`Language_ID` = %s AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
+                    (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key` AND `product_type_relatives`.`Language_ID` = %s AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`, 
+                    -- `product_type`.`ID` AS `ptID`    
+                    `product_type_relatives`.`PT_Ref_Key` AS `ptID`    
+                FROM `product_type_relatives`
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                    LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                WHERE `product_type_relatives`.`Language_ID` = %s
+                    AND find_in_set(`product_type_relatives`.`PT_Ref_Key`, %s)
+                    AND (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key` AND `product_type_relatives`.`Language_ID` = %s AND `quantity`.`expDate` > CURDATE()) > 0 
+                ORDER BY `product`.`ID`, `product_type`.`Order`;
                 """
     
-    sqlValTuple = (languageID, findInSetPtIDs)
+    sqlValTuple = (languageID, languageID, languageID, findInSetPtIDs, languageID)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     cartMessage = [ 
                 gettext("You have already added this product to the basket. You can change the quantity if You would like to."),
@@ -4558,6 +4588,12 @@ def analyse_cart_data(cartData):
 @app.route("/get-pt-quantities", methods=["POST"])
 def get_pt_quantities():     
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
+    if request.form.get('languageID'):
+        if int(request.form.get('languageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('languageID'))
+
+
     if not request.form.get('ptID'):
         answer = gettext('Something went wrong. Please try again!')
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
@@ -4568,6 +4604,7 @@ def get_pt_quantities():
     filters = ''
     sqlValList = []
     sqlValList.append(ptID)
+    sqlValList.append(languageID)
 
     if request.form.get('productionDate'):
         filters = filters + ' AND `quantity`.`productionDate` = %s ' 
@@ -4613,7 +4650,7 @@ def get_pt_quantities():
                     LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
                     LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                     LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
-                WHERE `quantity`.`ptRefKey` = %s 
+                WHERE `quantity`.`ptRefKey` = %s AND `product_type_relatives`.`Language_ID` = %s
                     AND `quantity`.`Quantity` > 0
                     AND `quantity`.`Status` = 1 {filters};
             """
@@ -4634,19 +4671,27 @@ def get_pt_quantity():
         response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
         return jsonify(response)
     
+    languageID = getLangID()
+    if request.form.get('languageID'):
+        if int(request.form.get('languageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('languageID'))
+    
     ptID = request.form.get('ptID')
     quantity = float(request.form.get('quantity'))
 
     
-    sqlValTuple = (ptID,)
+    sqlValTuple = (languageID, ptID)
     sqlQuary = f"""
                 SELECT 
                     SUM(`quantity`.`Quantity`) AS `quantity`,
                     `product_type`.`Price`,
                     MAX(`quantity`.`maxQuantity`) AS `maxQuantity`
                 FROM `quantity` 
-                    LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
-                WHERE `quantity`.`productTypeID` = %s AND `quantity`.`Status` = '1' AND `quantity`.`expDate` > CURDATE() 
+                    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
+                        AND `product_type_relatives`.`Language_ID` = %s
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                WHERE `quantity`.`ptRefKey` = %s AND `quantity`.`Status` = '1' AND `quantity`.`expDate` > CURDATE() 
+                GROUP BY `product_type`.`Price`
                 ;
             """
     
@@ -4677,7 +4722,13 @@ def get_pt_quantity():
 @login_required
 def edit_store(quantity_pt_IDs=None):
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
+    if request.form.get('languageID'):
+        if int(request.form.get('languageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('languageID'))
+
     if request.method == "POST":
+
         if not request.form.get('quantityID') or request.form.get('quantityID') == 'null':
             answer = gettext('Something went wrong. Please try again!')
             return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
@@ -4734,7 +4785,7 @@ def edit_store(quantity_pt_IDs=None):
 
         sqlQuery =  """
                     UPDATE `quantity` SET
-                        `productTypeID` = %s,  
+                        `ptRefKey` = %s,  
                         `storeID` = %s,  
                         `Quantity` = %s,  
                         `maxQuantity` = %s,  
@@ -4757,11 +4808,10 @@ def edit_store(quantity_pt_IDs=None):
 
     else:
         quantityID, ptID = quantity_pt_IDs.split('qptid')
-        languageID = getLangID()
-
-        sqlQuaryQuantity = """SELECT 
+        sqlQuaryQuantity = """
+                            SELECT 
                                 `ID`,
-                                `productTypeID`,
+                                `ptRefKey`,
                                 `storeID`,
                                 `Quantity`,
                                 `maxQuantity`,
@@ -4774,18 +4824,20 @@ def edit_store(quantity_pt_IDs=None):
         sqlValTupQuantity = (quantityID,)
         resultQuantity = sqlSelect(sqlQuaryQuantity, sqlValTupQuantity, True)
 
-        sqlQuery = """SELECT 
+        sqlQuery =  """
+                    SELECT 
                         `product`.`ID`,
                         `product`.`Title`,
-                        `product_type`.`ID` AS `ptID`,
+                        -- `product_type`.`ID` AS `ptID`,
+                        `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
                         `product_type`.`Title` AS `ptTitle`
                     FROM `product` 
                         LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID`
                     WHERE `product`.`Language_ID` = %s 
-                    ORDER BY `product`.`ID`, `product_type`.`Order` 
-                    -- LIMIT 2
-                    ;
+                    ORDER BY `product`.`Order`, `product_type`.`Order`
                     """
+        
         sqlValTuple = (languageID,)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
         prData = json.dumps(result['data']) 
@@ -4797,7 +4849,7 @@ def edit_store(quantity_pt_IDs=None):
 
         sideBar = side_bar_stuff()
 
-        return render_template('edit_store.html', resultQuantity=resultQuantity['data'],  storeData=storeData, storeID = resultQuantity['data'][0]['storeID'], dataLength=result['length'], prData=prData, ptID=ptID, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
+        return render_template('edit_store.html', resultQuantity=resultQuantity['data'],  storeData=storeData, storeID = resultQuantity['data'][0]['storeID'], dataLength=result['length'], prData=prData, ptID=ptID, languageID=languageID, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
 
 
 
@@ -5307,14 +5359,19 @@ def check_promo_code():
 @app.route('/check-pt-quantity', methods=['POST'])
 def check_pt_quantity():
     newCSRFtoken = generate_csrf()
+    
     if not request.form.get('num') or not request.form.get('ptID') :
         answer = gettext('Something went wrong. Please try again!')
         return jsonify({'status': '0', 'answer': answer,  'newCSRFtoken': newCSRFtoken})
     
     ptID = request.form.get('ptID') 
     num = request.form.get('num') 
+    languageID = getLangID()
+    if request.form.get('languageID'):
+        if int(request.form.get('languageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('languageID'))
 
-    sqlQuery = "SELECT SUM(`Quantity`) AS `Quantity` FROM `quantity` WHERE `productTypeID` = %s AND `expDate` >= CURDATE() AND `Status` = 1;"
+    sqlQuery = "SELECT SUM(`Quantity`) AS `Quantity` FROM `quantity` WHERE `ptRefKey` = %s AND `expDate` >= CURDATE() AND `Status` = 1;"
     sqlValTuple = (ptID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     
@@ -5323,7 +5380,7 @@ def check_pt_quantity():
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
     # Check if there is a maximum quantity to buy
-    sqlQueryMax = "SELECT `maxQuantity` FROM `quantity` WHERE `productTypeID` = %s AND `maxQuantity` IS NOT NULL AND `expDate` >= CURDATE()  AND `Status` = 1 ORDER BY `maxQuantity` DESC LIMIT 1;"
+    sqlQueryMax = "SELECT `maxQuantity` FROM `quantity` WHERE `ptRefKey` = %s AND `maxQuantity` IS NOT NULL AND `expDate` >= CURDATE()  AND `Status` = 1 ORDER BY `maxQuantity` DESC LIMIT 1;"
     sqlValTupleMax = (ptID,)
     resultMax = sqlSelect(sqlQueryMax, sqlValTupleMax, True)
     if resultMax['length'] > 0:
@@ -5482,29 +5539,64 @@ def get_available_pts():
         return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
     prID = request.form.get('prID')
-    langID = getLangID()
+    languageID = getLangID()
+    if request.form.get('languageID'):
+        if int(request.form.get('languageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('languageID'))
 
-    sqlQuery =  """
-                    SELECT 
-                    `product`.`Title` AS `prTitle`,
-                    `product`.`url`,
-                    `product_type`.`Title` AS `ptTitle`,
-                    `product_type`.`Price`,
-                    `product_type`.`Status`,
-                    (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
-                    (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
-                    (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
-                    (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
-                    `product_type`.`ID` AS `ptID`        
-                FROM `product`
-                    LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
-                WHERE `product`.`ID` = %s 
-                    AND `product`.`Language_ID` = %s 
-                    AND (SELECT SUM(`Quantity`) FROM `quantity` 
-                        WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) > 0
-                ORDER BY `product`.`ID`, `product_type`.`Order`;            
-                """
-    sqlValTuple = (prID, langID)
+    # sqlQuery =  """
+    #                 SELECT 
+    #                 `product`.`Title` AS `prTitle`,
+    #                 `product`.`url`,
+    #                 `product_type`.`Title` AS `ptTitle`,
+    #                 `product_type`.`Price`,
+    #                 `product_type`.`Status`,
+    #                 (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+    #                 (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+    #                 (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
+    #                 (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
+    #                 `product_type`.`ID` AS `ptID`        
+    #             FROM `product`
+    #                 LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
+    #             WHERE `product`.`ID` = %s 
+    #                 AND `product`.`Language_ID` = %s 
+    #                 AND (SELECT SUM(`Quantity`) FROM `quantity` 
+    #                     WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) > 0
+    #             ORDER BY `product`.`ID`, `product_type`.`Order`;            
+    #             """
+
+    sqlQuery = """
+  SELECT 
+    `product`.`Title` AS `prTitle`,
+    `product`.`url`,
+    `product_type`.`Title` AS `ptTitle`,
+    `product_type`.`Price`,
+    `product_type`.`Status`,
+    (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
+    (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
+    (SELECT SUM(`Quantity`) 
+        FROM `product_type`
+            LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID`
+            LEFT JOIN `quantity` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
+        WHERE `product_type`.`Product_ID` = `product`.`ID`
+            AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
+    (SELECT `maxQuantity` FROM `quantity` 
+            LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
+            LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID`
+        WHERE `quantity`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
+    -- `product_type`.`ID` AS `ptID` 
+    `product_type_relatives`.`PT_Ref_Key` AS `ptID`       
+FROM `quantity`
+    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
+    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+    LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+WHERE `product`.`ID` = %s
+    AND `quantity`.`Quantity` > 0
+    AND `quantity`.`expDate` > CURDATE() > 0
+GROUP BY `prTitle`, `product`.`url`, `ptTitle`,  `product_type`.`Price`, `product_type`.`Status`, `ptID`, `product_type`.`ID`
+ORDER BY `product`.`ID`, `product_type`.`Order`;   """
+    # sqlValTuple = (prID, languageID)
+    sqlValTuple = (prID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] == 0:
         return jsonify({'status': "0", 'answer': gettext("Out of stock."), 'newCSRFtoken': newCSRFtoken})

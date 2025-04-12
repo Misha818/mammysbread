@@ -121,7 +121,7 @@
 <div class="containerCart">
   <div style="display: flex; align-items: center;">
     <div class="filter-button">{{ _('Filters') }}</div>
-    <a class="add-to-store-btn" style="width: 210px; margin-left: 10px; text-decoration: none;" href="{{ url_for('add_to_store') }}">{{ _('Add To Store') }}</a>
+    <a class="add-to-store-btn" style="width: 180px; margin-left: 10px; text-decoration: none;" href="{{ url_for('add_to_store') }}">{{ _('Add To Store') }}</a>
   </div>
   <div class="filters">
     <div class="filter-dates">
@@ -264,6 +264,8 @@ window.addEventListener('load', () => {
   document.querySelector('body').classList.add('loaded');
 });
 
+const languageID = `{{ languageID }}`;
+
 let prIdChecker = undefined; 
 let mode = 0;
 let clickedState = false
@@ -321,8 +323,9 @@ function getProductTypes(prID) {
       ptID = document.getElementById('productType').value;
     }
 
-    let formData = new FormData();
+    let formData = new FormData();    
     formData.append('prID', prID)
+    formData.append('languageID', languageID);
     formData.append('productionDate', productionDate);
     formData.append('expDate', expDate);
     formData.append('addDate', addDate);
@@ -896,9 +899,11 @@ document.addEventListener('click', function(event) {
     let addDate = document.getElementById('addDate').value;
     let storeID = document.getElementById('store').value;
     let productID = document.getElementById('product').value;
+    const languageID = `{{ languageID }}`;
 
     formData.append('ptID', ptID);
     formData.append('productionDate', productionDate);
+    formData.append('languageID', languageID);
     formData.append('expDate', expDate);
     formData.append('addDate', addDate);
     formData.append('storeID', storeID);
