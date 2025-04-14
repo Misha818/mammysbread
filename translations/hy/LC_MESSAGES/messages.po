@@ -36,7 +36,7 @@ msgstr "Սպասման մեջ"
 #: templates/order-details.html:241 templates/order-details.html:249
 #: templates/orders.html:212 templates/orders.html:221
 msgid "Purchased"
-msgstr "Գնված"
+msgstr "Վճարված"
 
 #: app.py:79 templates/affiliate-order-details.html:206
 #: templates/affiliate-orders.html:237 templates/order-details.html:252
@@ -881,7 +881,7 @@ msgstr "Պարգևավճար մեկական ապրանքի դիմաց"
 
 #: templates/affiliate-order-details.html:286
 msgid "Revard value"
-msgstr "Պարգևավճարի արժեքը"
+msgstr "Պարգևավճար"
 
 #: templates/affiliate-order-details.html:297
 msgid "Total revard"
@@ -1003,15 +1003,12 @@ msgstr ""
 
 #: templates/affiliate.html:148
 msgid "Window for"
-msgstr "Պատուհանը պատկանում է"
+msgstr "Գործընկեր "
 
 #: templates/affiliate.html:149
 msgid ""
-"Below is the summary of payment and reward progress of the current "
-"affiliate."
-msgstr ""
-"Ստորև ամփոփված է տվյալ գործընկերոջ վճարումներին և պարգևատրումներին "
-"վերաբերող տեղեկատվությունը։"
+"Below is the summary of payment and reward progress of the current affiliate."
+msgstr "Ստորև ամփոփված է տվյալ գործընկերոջ վճարումներին և պարգևատրումներին վերաբերող տեղեկատվությունը։"
 
 #: templates/affiliate.html:198 templates/affiliate.html:242
 msgid "Details"
@@ -1040,11 +1037,11 @@ msgstr "Պասիվ"
 
 #: templates/affiliate.html:221
 msgid "Expired"
-msgstr "Ժամկետանց"
+msgstr "Վավեր է մինչև"
 
 #: templates/affiliate.html:256
 msgid "No promo code registered"
-msgstr "Նմանատիպ պռոմո կոդ գոյություն չունի"
+msgstr "Պռոմո կոդ չի գտնվել"
 
 #: templates/affiliates.html:3
 msgid "Affiliates"
@@ -1227,7 +1224,7 @@ msgstr "Քարտի վրայի անունը պարտադիր է։"
 
 #: templates/buy-now.html:217 templates/checkout.html:217
 msgid "Credit card number"
-msgstr "Կրեդիտ քարտի համար"
+msgstr "Քարտի համարը"
 
 #: templates/buy-now.html:219 templates/checkout.html:219
 msgid "Credit card number is required."
@@ -1592,7 +1589,7 @@ msgstr "Նշում"
 
 #: templates/order-details.html:225
 msgid "Promo Code ID"
-msgstr "Ակցիայի կոդի ID"
+msgstr "Պռոմո կոդի ID"
 
 #: templates/order-details.html:376 templates/orders.html:152
 #: templates/orders.html:261 templates/public.html:85
@@ -1801,7 +1798,7 @@ msgstr "Դիտել/Խմբագրել"
 
 #: templates/side-bar-stuff-1.html:41
 msgid "Dashboards"
-msgstr "Կառավարման վահանակներ"
+msgstr "Կառավարման վահանակ"
 
 #: templates/slideshow.html:104 templates/slideshow.html:161
 #: templates/slideshow.html:208

@@ -106,16 +106,17 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
     affiliate pages
     contacts
 
+    translate
         Fix translation on language change
         add prefared language id on subscribtion/on checkout 
-===========================================================
-
-    TO DO
-    translate
         product_type_relatives
         store
         Logo in current language
+===========================================================
 
+    TO DO
+
+    mailing
     about 
 
 

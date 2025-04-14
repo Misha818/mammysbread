@@ -213,7 +213,8 @@
 
 <script>
 
-let csrfToken = "{{ csrf_token() }}"
+let csrfToken = "{{ csrf_token() }}";
+const languageID = `{{ languageID }}`;
 
     document.querySelector('#promo-code').addEventListener('input', function(event) {
         event.target.style.color = '#000';  
@@ -402,6 +403,7 @@ saveButton.addEventListener('click', function (event) {
     let formData = new FormData();
 
     formData.append('affiliate', affiliate);
+    formData.append('languageID', languageID);
     formData.append('products', JSON.stringify(products));
     formData.append('expDate', expDate);
     formData.append('promo', promoCode);

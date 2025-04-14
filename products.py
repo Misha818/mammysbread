@@ -1095,44 +1095,44 @@ def edit_p_h(productName, productLink, languageID, CategoryID, RefKey, ShortDesc
 
 
 # article headers update action
-def edit_a_h(productName, productLink, languageID, CategoryID, RefKey, ShortDescription, LongDescription):
+# def edit_a_h(productName, productLink, languageID, CategoryID, RefKey, ShortDescription, LongDescription):
     
-    productID = get_ar_id_by_lang(RefKey, languageID)
-    myResponse = {'status': '1', 'answer': 'Done!'}
+#     productID = get_ar_id_by_lang(RefKey, languageID)
+#     myResponse = {'status': '1', 'answer': 'Done!'}
 
-    # Check if product name exists
-    nameCheck = ar_name_check(productName, languageID, productID)
-    if nameCheck['status'] == '1':    
-        myResponse['status'] = '3'    
-        myResponse['answer'] = nameCheck['answer']    
+#     # Check if product name exists
+#     nameCheck = ar_name_check(productName, languageID, productID)
+#     if nameCheck['status'] == '1':    
+#         myResponse['status'] = '3'    
+#         myResponse['answer'] = nameCheck['answer']    
 
-        return myResponse
+#         return myResponse
 
-    # Check if product link exists
-    urlCheck = pr_url_check(productLink, languageID, productID)
-    if urlCheck['status'] == '1':
-        myResponse['status'] = '5'   
-        myResponse['answer'] = urlCheck['answer']  
+#     # Check if product link exists
+#     urlCheck = pr_url_check(productLink, languageID, productID)
+#     if urlCheck['status'] == '1':
+#         myResponse['status'] = '5'   
+#         myResponse['answer'] = urlCheck['answer']  
     
-        return myResponse
+#         return myResponse
     
-    userID = getUserID()
-    sqlPRUpdate = f"""UPDATE `article`
-                    SET `Title` = %s, 
-                        `Url` = %s, 
-                        `User_ID` = %s, 
-                        `Language_ID` = %s, 
-                        `ShortDescription` = %s, 
-                        `LongDescription` = %s,
-                        `DateModified` = CURDATE(), 
-                        `Article_Category_ID` = %s
-                    WHERE `ID` = %s
-                    """
-    sqlPRUpdateVal = (productName, productLink, userID, languageID, ShortDescription, LongDescription, CategoryID, productID)
+#     userID = getUserID()
+#     sqlPRUpdate = f"""UPDATE `article`
+#                     SET `Title` = %s, 
+#                         `Url` = %s, 
+#                         `User_ID` = %s, 
+#                         `Language_ID` = %s, 
+#                         `ShortDescription` = %s, 
+#                         `LongDescription` = %s,
+#                         `DateModified` = CURDATE(), 
+#                         `Article_Category_ID` = %s
+#                     WHERE `ID` = %s
+#                     """
+#     sqlPRUpdateVal = (productName, productLink, userID, languageID, ShortDescription, LongDescription, CategoryID, productID)
 
-    resulUpdate = sqlUpdate(sqlPRUpdate, sqlPRUpdateVal)
+#     resulUpdate = sqlUpdate(sqlPRUpdate, sqlPRUpdateVal)
 
-    return resulUpdate
+#     return resulUpdate
 
 
 def checkProductCategoryName(RefKey, languageID, categoryName):

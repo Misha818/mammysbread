@@ -2,10 +2,25 @@
 {% block title %}
     {{ _('Something is wrong') }}
 {% endblock %}
-
+{% block head %}
+<style>
+    a {
+        border: 1px solid brown;
+        color: brown;
+        border-radius: 10px;
+        width: 50%;
+        text-align: center;
+        padding: 15px;
+        text-decoration: none;
+        margin: 10px auto;
+        font-size: 18pt;
+    }
+</style>
+{% endblock %}
 {% block content %}
     <div class="container" style="display: contents;">
         <img src="{{ url_for('static', filename='images/error.png' ) }}" style="margin-top: 110px;">
         <h1 style="color:brown; font-size: 40pt;"> {{ _('Something went wrong!') }} </H1>
+        <a href="{{ url_for('stuff') }}">{{ _('Back to home') }}</a> 
     </div>
 {% endblock %}

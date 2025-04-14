@@ -149,7 +149,7 @@ th, td {
     {% set welcome2 = _('Below is the summary of payment and reward progress of the current affiliate.') %}
   
   {% endif %}
-  <h2 class="text-center mt-2">{{ welcome }} {{ result['data'][0].Firstname + ' ' + result['data'][0].Lastname }}!</h2>
+  <h2 class="text-center mt-2">{{ welcome }} {{ result['data'][0].Firstname + ' ' + result['data'][0].Lastname }}</h2>
   <p class="text-center mt-1">{{ welcome2 }}</p>
   <!-- Stepper container -->
   <div id="stepper" class="stepper"></div>
@@ -253,7 +253,7 @@ th, td {
 </div>
 
 {% else %}
-<h3>{{ _('No promo code registered') }}</h3>
+<h3 style="text-align: center;">{{ _('No promo code registered') }}</h3>
 {% endif %}
 </div>
 

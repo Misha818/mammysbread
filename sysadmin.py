@@ -928,7 +928,7 @@ def calculate_price(products):
     return {'status': "1", 'answer': totalPrice}
 
 
-def insertIntoBuffer(data, pdID, smthWrong):
+def insertIntoBuffer(data, pdID, smthWrong, languageID):
     # IMPORTANT
     # Do not forget to take into consideration the max quantity as well
     bufferQuantities = []
@@ -941,37 +941,40 @@ def insertIntoBuffer(data, pdID, smthWrong):
 
     ptIDs = ptIDs[:-1]    
     sqlQuaryStore = f"""
-        SELECT 
-            `quantity`.`ID` AS `quantityID`,
-            `quantity`.`Quantity`,
-            `quantity`.`maxQuantity`,
-            (SELECT SUM(q.`Quantity`) FROM `quantity` `q`
-                WHERE find_in_set(`q`.`productTypeID`, `quantity`.`productTypeID`)
-            AND `Status` = '1'
-            AND `expDate` >= CURDATE()) AS `totalQuantity`,
-            `product_type`.`ID` AS `ptID`,
-            `product_type`.`Price`,
-            `promo_code`.`Promo`,
-            `promo_code`.`ID` AS `promoID`,
-            `discount`.`discount`,
-            `discount`.`revard_value`,
-            `discount`.`revard_type`,
-            `stuff`.`ID` AS `affiliateID`
-        FROM `quantity` 
-            LEFT JOIN `store` ON `store`.`ID` = `quantity`.`storeID`
-            LEFT JOIN `product_type` ON `product_type`.`ID` = `quantity`.`productTypeID`
-            LEFT JOIN `promo_code` ON `promo_code`.`Promo` = %s
-            LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID` 
-                AND `ptID` = `product_type`.`ID`
-            LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`
-        WHERE find_in_set(`productTypeID`, %s)
-            AND `quantity`.`Quantity` > 0
-            AND `quantity`.`Status` = '1'
-            AND `quantity`.`expDate` >= CURDATE()
-        ORDER BY  `product_type`.`ID`,  `quantity`.`expDate`, `quantity`.`Quantity` DESC, `quantity`.`maxQuantity` DESC;
+                    SELECT 
+                        `quantity`.`ID` AS `quantityID`,
+                        `quantity`.`Quantity`,
+                        `quantity`.`maxQuantity`,
+                        (SELECT SUM(q.`Quantity`) FROM `quantity` `q`
+                            WHERE find_in_set(`q`.`ptRefKey`, `quantity`.`ptRefKey`)
+                        AND `Status` = '1'
+                        AND `expDate` >= CURDATE()) AS `totalQuantity`,
+                        -- `product_type`.`ID` AS `ptID`,
+                        `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
+                        `product_type`.`Price`,
+                        `promo_code`.`Promo`,
+                        `promo_code`.`ID` AS `promoID`,
+                        `discount`.`discount`,
+                        `discount`.`revard_value`,
+                        `discount`.`revard_type`,
+                        `stuff`.`ID` AS `affiliateID`
+                    FROM `quantity` 
+                        LEFT JOIN `store` ON `store`.`ID` = `quantity`.`storeID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey` 
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                        LEFT JOIN `promo_code` ON `promo_code`.`Promo` = %s 
+                        LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID` 
+                            AND `discount`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key`
+                        LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`
+                    WHERE find_in_set(`product_type_relatives`.`PT_Ref_Key`, %s)
+                        AND `product_type_relatives`.`Language_ID` = %s 
+                        AND `quantity`.`Quantity` > 0
+                        AND `quantity`.`Status` = '1'
+                        AND `quantity`.`expDate` >= CURDATE()
+                    ORDER BY  `product_type`.`ID`,  `quantity`.`expDate`, `quantity`.`Quantity` DESC, `quantity`.`maxQuantity` DESC;
     """
 
-    sqlValTuple = (data['promo'], ptIDs)
+    sqlValTuple = (data['promo'], ptIDs, languageID)
     result = sqlSelect(sqlQuaryStore, sqlValTuple, True)
     if result['length'] == 0:
         return {'status': "0", 'answer': smthWrong}  
@@ -1059,7 +1062,7 @@ def insertIntoBuffer(data, pdID, smthWrong):
             bufferValuePrototype.append(val)
     
     
-    sqlInsertBuffer = f"INSERT INTO `buffer_store` (`quantityID`, `quantity`,`promo_code_id`, `promo_code`,  `discount`, `affiliateID`, `price`, `ptID`,  `payment_details_id`) VALUES {bufferInsertRows[:-1]};"
+    sqlInsertBuffer = f"INSERT INTO `buffer_store` (`quantityID`, `quantity`,`promo_code_id`, `promo_code`,  `discount`, `affiliateID`, `price`, `ptRefKey`,  `payment_details_id`) VALUES {bufferInsertRows[:-1]};"
     sqlValTupleBuffer = tuple(bufferValuePrototype)
     result = sqlInsert(sqlInsertBuffer, sqlValTupleBuffer)
 
@@ -1070,7 +1073,7 @@ def insertIntoBuffer(data, pdID, smthWrong):
 def insertPUpdateP(pdID, paymentData):
     sqlQuery = """
                 SELECT 
-                `ptID`,
+                `ptRefKey` AS `ptID`,
                 SUM(`quantity`) AS `quantity`,
                 `payment_details_id`,
                 `promo_code_id`,
@@ -1079,14 +1082,14 @@ def insertPUpdateP(pdID, paymentData):
                 `price`,
                 `affiliateID`
             FROM `buffer_store` WHERE `payment_details_id` = %s 
-            GROUP BY `ptID`, `payment_details_id`, `promo_code_id`, `promo_code`, `discount`, `price`, `affiliateID`
+            GROUP BY `ptRefKey`, `payment_details_id`, `promo_code_id`, `promo_code`, `discount`, `price`, `affiliateID`
             ;"""
     result = sqlSelect(sqlQuery, (pdID,), True)
     if result['length'] == 0:
 
-        print('FFFFFFFFFFFFFFFFFFFFFFFFFFFF')
-        print(result['error'])
-        print('FFFFFFFFFFFFFFFFFFFFFFFFFFFF')
+        # print('FFFFFFFFFFFFFFFFFFFFFFFFFFFF')
+        # print(result['error'])
+        # print('FFFFFFFFFFFFFFFFFFFFFFFFFFFF')
         return {'status': '0', 'answer': result['error']}
     
     promoID, promo, affiliateID = [None, None, None]
@@ -1114,7 +1117,7 @@ def insertPUpdateP(pdID, paymentData):
     values = "(%s, %s, %s, %s, %s, %s)," * len(result['data'])
     sqlQueryInsert = f"""
                     INSERT INTO `purchase_history` 
-                    (`ptID`, `quantity`, `payment_details_id`, `price`, `discount`, `Status`)
+                    (`ptRefKey`, `quantity`, `payment_details_id`, `price`, `discount`, `Status`)
                     VALUES {values[:-1]};
                     """
     
@@ -1126,7 +1129,7 @@ def insertPUpdateP(pdID, paymentData):
     if affiliateID is not None:
         sqlQueryAff = """SELECT
                             `purchase_history`.`ID`,	
-                            `purchase_history`.`ptID`,	
+                            `purchase_history`.`ptRefKey` AS `ptID`,	
                             `purchase_history`.`quantity`,		
                             `purchase_history`.`price`,	
                             -- `purchase_history`.`discount`,
@@ -1204,6 +1207,7 @@ def deletePUpdateP(pdID):
 
 
 def get_affiliate_reward_progress(affiliateID):
+    languageID = getLangID()
     sqlQuery = f"""
                 SELECT
                     `payment_details`.`affiliateID`,
@@ -1218,10 +1222,12 @@ def get_affiliate_reward_progress(affiliateID):
                     FROM `purchase_history`
                         LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
                         LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
-                        LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
-                        LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey` 
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                        LEFT JOIN `discount` ON `discount`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key`
                             AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
                     WHERE `payment_details`.`affiliateID` = %s
+                        AND `product_type_relatives`.`Language_ID` = %s
                         AND `payment_details`.`Status` = 0
                         AND `purchase_history`.`discount` is not null
                     GROUP BY `payment_details`.`Status`) AS `Voided`,
@@ -1236,10 +1242,12 @@ def get_affiliate_reward_progress(affiliateID):
                     FROM `purchase_history`
                         LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
                         LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
-                        LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
-                        LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey` 
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                        LEFT JOIN `discount` ON `discount`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key`
                             AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
                     WHERE `payment_details`.`affiliateID` = %s
+                        AND `product_type_relatives`.`Language_ID` = %s
                         AND `payment_details`.`Status` in (2,3,4)
                         AND `purchase_history`.`discount` is not null
                     GROUP BY `payment_details`.`affiliateID`) AS `Pending`,
@@ -1254,16 +1262,18 @@ def get_affiliate_reward_progress(affiliateID):
                     FROM `purchase_history`
                         LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
                         LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
-                        LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
-                        LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey`
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                        LEFT JOIN `discount` ON `discount`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key`
                             AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
                     WHERE `payment_details`.`affiliateID` = %s
+                        AND `product_type_relatives`.`Language_ID` = %s
                         AND `payment_details`.`Status` = 5
                         AND `purchase_history`.`discount` is not null
                     GROUP BY `payment_details`.`Status`) AS `Approved`,
 
                     -- SUM UP Settled Revards
-                    (SELECT SUM(`amount`) FROM `partner_payments` WHERE `affiliateID` = %s AND `type` = 1) AS `Settled` 
+                    (SELECT SUM(`amount`) FROM `partner_payments` WHERE `affiliateID` = %s AND `type` = 1) AS `Settled`
 
                 FROM `payment_details`
                     LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
@@ -1272,7 +1282,7 @@ def get_affiliate_reward_progress(affiliateID):
                 WHERE `payment_details`.`affiliateID` = %s 
                 GROUP BY `payment_details`.`affiliateID`;
                 """
-    sqlValTuple = (affiliateID,) * 5
+    sqlValTuple = (affiliateID, languageID, affiliateID, languageID, affiliateID, languageID, affiliateID, affiliateID) 
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
     return result

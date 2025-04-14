@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect, g
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, edit_a_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
+from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
 from sysadmin import getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -149,6 +149,7 @@ def login():
 
             if result['length'] == 1 and check_password_hash(result['data'][0]["Password"], password): 
                 session['user_id'] = result['data'][0]['ID']
+                session['lang'] = getLangdatabyID(result['data'][0]['LanguageID'])['Prefix']  
                 response = {'status': '1'}
                 return jsonify(response)
             else:
@@ -490,9 +491,10 @@ def buy_now(surl):
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
     if request.method == 'GET':
         mainCurrency = MAIN_CURRENCY
-        return render_template('checkout.html', mainCurrency=mainCurrency, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+        return render_template('checkout.html', mainCurrency=mainCurrency, languageID=languageID, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
     # 1. Lock some tables, unlock at the end
     # 2. check data validity
@@ -508,6 +510,10 @@ def checkout():
     # 10. delete data from buffer_store
     # 11. unlock locked tables
     if request.method == 'POST':
+        if request.form.get('languageID'):
+            if int(request.form.get('languageID')) in getSupportedLangIDs():
+                languageID = int(request.form.get('languageID'))
+
         # Lock some tables, unlock at the end
         if not request.form.get('data'):
             return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})    
@@ -577,18 +583,16 @@ def checkout():
         
         # Get Promo Code ID
         promoID, affiliateID = [None, None]
-        print('AAAAAAAAAAAAAAAAAAAA')
-        print(data['promo'])
-        print(type(data['promo']))
-        print('AAAAAAAAAAAAAAAAAAAA')
+        # print('AAAAAAAAAAAAAAAAAAAA')
+        # print(data['promo'])
+        # print(type(data['promo']))
+        # print('AAAAAAAAAAAAAAAAAAAA')
         if data['promo'] != '':
             promodict = get_promo_code_id_affiliateID(data['promo'])
             if len(promodict) > 0:
                 promoID = promodict['ID']
                 affiliateID = promodict['affiliateID']
             
-
-
         # insert additional data into  payment_details table and get inserted id
         sqlQueryPD = "INSERT INTO `payment_details` (`promo_code_id`, `promo_code`, `affiliateID`, `notesID`, `clientID`, `contactID`, `Status`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
         sqlValTuplePD = (promoID, data['promo'], affiliateID, notesID, clientID, contactID, 1)
@@ -602,7 +606,7 @@ def checkout():
 
         # insert data into table buffer
         # This also checks if specified amount of product exists
-        buffer = insertIntoBuffer(data, pdID, gettext('Something went wrong. Please try again!'))
+        buffer = insertIntoBuffer(data, pdID, gettext('Something went wrong. Please try again!'), languageID)
         # print('AAAAAAAAAAAAAAAAAAAAAAA')
         # print(buffer)
         # print('AAAAAAAAAAAAAAAAAAAAAAA')
@@ -649,7 +653,8 @@ def checkout():
 @app.route('/confirmation-page/<pdID>', methods=['GET'])
 def confirmation_page(pdID):
     newCSRFtoken = generate_csrf()
-    
+    languageID = getLangID()
+
     sqlQuery = f"""
     SELECT 
         `payment_details`.`ID`,
@@ -676,12 +681,14 @@ def confirmation_page(pdID):
             LEFT JOIN `addresses` ON `client_contacts`.`addressID` = `addresses`.`ID`
             LEFT JOIN `notes` ON `payment_details`.`notesID` = `notes`.`ID`
             LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
-            LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+            LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey` 
+            LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+            -- LEFT JOIN `product_type` ON ``.`ptID` = `product_type`.`ID`
             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
-    WHERE `payment_details`.`ID` = %s
+    WHERE `payment_details`.`ID` = %s AND `product_type_relatives`.`Language_ID` = %s
     ORDER BY `product`.`Order`, `product_type`.`Order`;
 """
-    result = sqlSelect(sqlQuery, (pdID,), True)
+    result = sqlSelect(sqlQuery, (pdID, languageID), True)
     if result['length'] == 0:
         return render_template('error.html')
     
@@ -730,7 +737,7 @@ def orders(filter):
         where += f"""AND `emails`.`email` = %s """
 
     if filters.get('promoCode') is not None:
-        where += f"""AND `payment_details`.`promo_code` = %s """
+        where += f"""AND BINARY `payment_details`.`promo_code` = %s """
 
     if filters.get('status') != 'all':
         where = where + 'AND `payment_details`.`Status` = %s '
@@ -781,9 +788,10 @@ def orders(filter):
 # @login_required
 def affiliate_orders(filter): 
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
     filters = {}
     
-    protoTuple = [session['user_id']] * 3
+    protoTuple = [session['user_id'], languageID, session['user_id'], languageID, session['user_id']]
 
     if '&' in filter:
         array = filter.split('&')
@@ -818,7 +826,7 @@ def affiliate_orders(filter):
         where += f"""AND `emails`.`email` = %s """
 
     if filters.get('promoCode') is not None:
-        where += f"""AND `payment_details`.`promo_code` = %s """
+        where += f"""AND BINARY `payment_details`.`promo_code` = %s """
 
     if filters.get('status') != 'all' and filters.get('status') != 'pending':
         where = where + 'AND `payment_details`.`Status` = %s '
@@ -854,11 +862,13 @@ def affiliate_orders(filter):
                 FROM `purchase_history` 
                     LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
                     LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
-                    LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
-                    LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID` 
+                    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey` 
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                    LEFT JOIN `discount` ON `discount`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key` 
                         AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
                 WHERE `payment_details`.`ID` = `pdID`     
                     AND `payment_details`.`affiliateID` = %s
+                    AND `product_type_relatives`.`Language_ID` = %s
                     AND `purchase_history`.`discount` is not null
                 GROUP BY `payment_details`.`ID`) AS `RV`,
                 -- COUNT NET
@@ -867,11 +877,13 @@ def affiliate_orders(filter):
                 FROM `purchase_history` 
                     LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
                     LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
-                    LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
-                    LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID` 
+                    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey` 
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                    LEFT JOIN `discount` ON `discount`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key`
                         AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
                 WHERE `payment_details`.`ID` = `pdID`  
                     AND `payment_details`.`affiliateID` = %s
+                    AND `product_type_relatives`.`Language_ID` = %s
                     AND `purchase_history`.`discount` is not null
                 GROUP BY `payment_details`.`ID`) AS `Discounted_Price`
             FROM `payment_details`
@@ -883,24 +895,6 @@ def affiliate_orders(filter):
             ORDER BY `payment_details`.`ID` DESC
             LIMIT {rowsToSelect}, {int(PAGINATION)}; 
                """
-    
-    # sqlQuery = f"""
-    #         SELECT 
-    #             `payment_details`.`ID`,
-    #             `payment_details`.`promo_code`,   
-    #             `payment_details`.`final_price`,   
-    #             `payment_details`.`Status`,   
-    #             `clients`.`FirstName`,
-    #             `clients`.`LastName`
-    #         FROM `payment_details` 
-    #             LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
-    #             LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
-    #             LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
-    #         {where}
-    #             GROUP BY `payment_details`.`ID`
-    #             ORDER BY `payment_details`.`ID` DESC
-    #             LIMIT {rowsToSelect}, {int(PAGINATION)}; 
-    #            """
     
     orderStatusList = get_order_status_list()
 
@@ -917,8 +911,8 @@ def affiliate_orders(filter):
 # @login_required
 def stuff_affiliate_orders(filter): 
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
     filters = {}
-    
     protoTuple = []
 
     if '&' in filter:
@@ -954,7 +948,7 @@ def stuff_affiliate_orders(filter):
         where += f"""AND `emails`.`email` = %s """
 
     if filters.get('promoCode') is not None:
-        where += f"""AND `payment_details`.`promo_code` = %s """
+        where += f"""AND BINARY `payment_details`.`promo_code` = %s """
 
     if filters.get('status') != 'all' and filters.get('status') != 'pending':
         where = where + 'AND `payment_details`.`Status` = %s '
@@ -970,60 +964,64 @@ def stuff_affiliate_orders(filter):
     page = filters['page']
     rowsToSelect = (int(page) - 1) * int(PAGINATION)
 
-    protoTuple = [filters['affiliate']] * 3 + protoTuple
+    protoTuple = [filters['affiliate'], languageID, filters['affiliate'], languageID, filters['affiliate']] + protoTuple
     sqlValTuple = tuple(protoTuple)
 
     sqlQuery = f"""
-             SELECT
-                `payment_details`.`ID`,
-                `payment_details`.`ID` AS `pdID`,
-                `payment_details`.`promo_code`,
-                `payment_details`.`final_price`,
-                `payment_details`.`Status`,
-                `clients`.`FirstName`,
-                `clients`.`LastName`,
-                CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `affiliate`,
+                SELECT
+                    `payment_details`.`ID`,
+                    `payment_details`.`ID` AS `pdID`,
+                    `payment_details`.`promo_code`,
+                    `payment_details`.`final_price`,
+                    `payment_details`.`Status`,
+                    `clients`.`FirstName`,
+                    `clients`.`LastName`,
+                    CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `affiliate`,
 
-                -- count affiliate revard
-                (SELECT 
-                    SUM(CASE 
-                        WHEN `discount`.`revard_type` =  1 
-                            THEN `discount`.`revard_value` * `purchase_history`.`quantity` 
-                        ELSE  `purchase_history`.`quantity` * `purchase_history`.`price` * `discount`.`revard_value` / 100
-                    END) 
-                FROM `purchase_history` 
-                    LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
-                    LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
-                    LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
-                    LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID` 
-                        AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
-                WHERE `payment_details`.`ID` = `pdID`     
-                    AND `payment_details`.`affiliateID` = %s
-                    AND `purchase_history`.`discount` is not null
-                GROUP BY `payment_details`.`ID`) AS `RV`,
-                -- COUNT NET
-                (SELECT 
-                    SUM(`purchase_history`.`quantity` * `purchase_history`.`price` - `purchase_history`.`quantity` * `purchase_history`.`price` * `purchase_history`.`discount` / 100) AS `net`
-                FROM `purchase_history` 
-                    LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
-                    LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
-                    LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
-                    LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID` 
-                        AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
-                WHERE `payment_details`.`ID` = `pdID`  
-                    AND `payment_details`.`affiliateID` = %s
-                    AND `purchase_history`.`discount` is not null
-                GROUP BY `payment_details`.`ID`) AS `Discounted_Price`
-            FROM `payment_details`
-                LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
-                LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
-                LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
-                LEFT JOIN `stuff` ON `stuff`.`ID` = `payment_details`.`affiliateID`            
-                {where}
-            GROUP BY `payment_details`.`ID`
-            ORDER BY `payment_details`.`ID` DESC
-            LIMIT {rowsToSelect}, {int(PAGINATION)}; 
-               """
+                    -- count affiliate revard
+                    (SELECT 
+                        SUM(CASE 
+                            WHEN `discount`.`revard_type` =  1 
+                                THEN `discount`.`revard_value` * `purchase_history`.`quantity` 
+                            ELSE  `purchase_history`.`quantity` * `purchase_history`.`price` * `discount`.`revard_value` / 100
+                        END) 
+                    FROM `purchase_history` 
+                        LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                        LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey` 
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                        LEFT JOIN `discount` ON `discount`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key` 
+                            AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                    WHERE `payment_details`.`ID` = `pdID`   
+                        AND `payment_details`.`affiliateID` = %s
+                        AND `product_type_relatives`.`Language_ID` = %s  
+                        AND `purchase_history`.`discount` is not null
+                    GROUP BY `payment_details`.`ID`) AS `RV`,
+                    -- COUNT NET
+                    (SELECT 
+                        SUM(`purchase_history`.`quantity` * `purchase_history`.`price` - `purchase_history`.`quantity` * `purchase_history`.`price` * `purchase_history`.`discount` / 100) AS `net`
+                    FROM `purchase_history` 
+                        LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                        LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey` 
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                        LEFT JOIN `discount` ON `discount`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key` 
+                            AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
+                    WHERE `payment_details`.`ID` = `pdID`  
+                        AND `payment_details`.`affiliateID` = %s
+                        AND `product_type_relatives`.`Language_ID` = %s
+                        AND `purchase_history`.`discount` is not null
+                    GROUP BY `payment_details`.`ID`) AS `Discounted_Price`
+                FROM `payment_details`
+                    LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+                    LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+                    LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                    LEFT JOIN `stuff` ON `stuff`.`ID` = `payment_details`.`affiliateID`    
+                {where} 
+                GROUP BY `payment_details`.`ID`
+                ORDER BY pdID DESC
+                LIMIT {rowsToSelect}, {int(PAGINATION)}; 
+                """
     
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     sideBar = side_bar_stuff()
@@ -1032,7 +1030,7 @@ def stuff_affiliate_orders(filter):
 
     orderStatusList = get_order_status_list()
 
-    return render_template('affiliate-orders.html', result=result, filters=filters, affID=filters['affiliate'], orderStatusList=orderStatusList, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+    return render_template('affiliate-orders.html', languageID=languageID, result=result, filters=filters, affID=filters['affiliate'], orderStatusList=orderStatusList, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
 
 @app.route('/send-email/<email>', methods=['GET'])
@@ -1041,10 +1039,12 @@ def send_email(email):
     newCSRFtoken = generate_csrf()
     return 1
 
+
 @app.route('/order-details/<pdID>', methods=['GET'])
 # @login_required
 def order_details(pdID):
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
     
     sqlQuery = f"""
     SELECT 
@@ -1077,13 +1077,15 @@ def order_details(pdID):
             LEFT JOIN `addresses` ON `client_contacts`.`addressID` = `addresses`.`ID`
             LEFT JOIN `notes` ON `payment_details`.`notesID` = `notes`.`ID`
             LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
-            LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+            LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey` 
+            LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
     WHERE `payment_details`.`ID` = %s
+         AND `product_type_relatives`.`Language_ID` = %s
     ORDER BY `product`.`Order`, `product_type`.`Order`
     ;
 """
-    result = sqlSelect(sqlQuery, (pdID,), True)
+    result = sqlSelect(sqlQuery, (pdID, languageID), True)
     if result['length'] == 0:
         return render_template('error.html')
     
@@ -1095,6 +1097,7 @@ def order_details(pdID):
 # @login_required
 def affiliate_order_details(pdID):
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
     
 #     sqlQuery = f"""
 #     SELECT 
@@ -1132,7 +1135,7 @@ def affiliate_order_details(pdID):
                         `payment_details`.`Status`,
                         `delivered`.`timestamp` AS `deliveryDate`,
                         -- `purchase_history`.`ID`,	
-                        `purchase_history`.`ptID`,	
+                        `purchase_history`.`ptRefKey`,	
                         `purchase_history`.`quantity`,		
                         `purchase_history`.`price`,	
                         `purchase_history`.`discount`,
@@ -1145,20 +1148,22 @@ def affiliate_order_details(pdID):
                         `clients`.`FirstName`,
                         `clients`.`LastName`
                     FROM `purchase_history` 
-                       LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+                        LEFT JOIN `payment_details` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
                         LEFT JOIN `delivered` ON `delivered`.`pdID` = `payment_details`.`ID`
                         LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
                         LEFT JOIN `promo_code` ON `payment_details`.`promo_code_id` = `promo_code`.`ID`
-                        LEFT JOIN `product_type` ON `purchase_history`.`ptID` = `product_type`.`ID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey` 
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                         LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
-                        LEFT JOIN `discount` ON `discount`.`ptID` = `product_type`.`ID` 
+                        LEFT JOIN `discount` ON `discount`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key` 
                             AND `discount`.`promo_code_id` = `payment_details`.`promo_code_id`
                     WHERE `purchase_history`.`payment_details_id` = %s
                         AND `promo_code`.`affiliateID` = %s
+                        AND `product_type_relatives`.`Language_ID` = %s
                         AND `purchase_history`.`discount` is not null;
                 """
 
-    result = sqlSelect(sqlQuery, (pdID, session.get('user_id')), True)
+    result = sqlSelect(sqlQuery, (pdID, session.get('user_id'), languageID), True)
     if result['length'] == 0:
         return render_template('error.html')
     
@@ -3261,33 +3266,38 @@ def affiliate(affID):
 @app.route('/promo-code-details/<promo>', methods=['GET'])
 # @login_required
 def promo_code_details(promo):
+    languageID = getLangID()
     sqlQuery = """
-        SELECT 
-            `promo_code`.`Promo`,
-            `promo_code`.`affiliateID`,
-            DATE_FORMAT(`promo_code`.`expDate`, '%m-%d-%Y') AS `expDate`, 
-            `promo_code`.`Status`,
-            `product`.`ID` AS `prID`,
-            `product_type`.`ID` AS `ptID`,
-            `product`.`Title` AS `prTitle`,
-            `product_type`.`Title` AS `ptTitle`,
-            `discount`.`ID` AS `discountID`,
-            `discount`.`discount`,
-            `discount`.`discount_status`,
-            `discount`.`revard_value`,
-            `discount`.`revard_type`,
-            CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `affiliate` 
-        FROM `promo_code` 
-            LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
-            LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
-            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-            LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`
-        WHERE `promo_code`.`Promo` = %s AND `promo_code`.`affiliateID` = %s
-        ORDER BY `product`.`Order` ASC, `product_type`.`Order` ASC;
+                SELECT 
+                    `promo_code`.`Promo`,
+                    `promo_code`.`affiliateID`,
+                    DATE_FORMAT(`promo_code`.`expDate`, '%m-%d-%Y') AS `expDate`, 
+                    `promo_code`.`Status`,
+                    `product`.`ID` AS `prID`,
+                    -- `product_type`.`ID` AS `ptID`,
+                    `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
+                    `product`.`Title` AS `prTitle`,
+                    `product_type`.`Title` AS `ptTitle`,
+                    `discount`.`ID` AS `discountID`,
+                    `discount`.`discount`,
+                    `discount`.`discount_status`,
+                    `discount`.`revard_value`,
+                    `discount`.`revard_type`,
+                    CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `affiliate` 
+                FROM `promo_code` 
+                    LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
+                    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `discount`.`ptRefKey` 
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                    LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                    LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`
+                WHERE BINARY `promo_code`.`Promo` = %s
+                    AND `promo_code`.`affiliateID` = %s 
+                    AND `product_type_relatives`.`Language_ID` = %s
+                ORDER BY `product`.`Order` ASC, `product_type`.`Order` ASC;
     """
 
     userID = session.get('user_id')
-    result = sqlSelect(sqlQuery, (promo, userID), True)
+    result = sqlSelect(sqlQuery, (promo, userID, languageID), True)
 
     if result['length'] == 0:
         return render_template('error.html', current_locale=get_locale())
@@ -3303,7 +3313,7 @@ def promo_code_details(promo):
 @app.route('/stuff-promo-code-details/<filters>', methods=['GET'])
 # @login_required
 def stuff_promo_code_details(filters):
-
+    languageID = getLangID()
     promo, affID = (item.split('=')[1] for item in filters.split('&'))
 
     sqlQuery = """
@@ -3313,7 +3323,8 @@ def stuff_promo_code_details(filters):
             DATE_FORMAT(`promo_code`.`expDate`, '%m-%d-%Y') AS `expDate`, 
             `promo_code`.`Status`,
             `product`.`ID` AS `prID`,
-            `product_type`.`ID` AS `ptID`,
+            -- `product_type`.`ID` AS `ptID`,
+            `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
             `product`.`Title` AS `prTitle`,
             `product_type`.`Title` AS `ptTitle`,
             `discount`.`ID` AS `discountID`,
@@ -3324,13 +3335,16 @@ def stuff_promo_code_details(filters):
             CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `affiliate`
         FROM `promo_code` 
             LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
-            LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
+            LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `discount`.`ptRefKey` 
+            LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
             LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`
-        WHERE `promo_code`.`Promo` = %s AND `promo_code`.`affiliateID` = %s
+        WHERE BINARY `promo_code`.`Promo` = %s 
+            AND `promo_code`.`affiliateID` = %s
+            AND `product_type_relatives`.`Language_ID` = %s
         ORDER BY `product`.`Order` ASC, `product_type`.`Order` ASC;
     """
-    result = sqlSelect(sqlQuery, (promo, affID), True)
+    result = sqlSelect(sqlQuery, (promo, affID, languageID), True)
 
     if result['length'] == 0:
         return render_template('error.html', current_locale=get_locale())
@@ -3517,7 +3531,7 @@ def pt_specifications():
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
     if request.method == 'GET':
-        sqlQuery = """
+        sqlQuery = f"""
                     SELECT 
                         `sub_product_specification`.`ID`,
                         `sps_relatives`.`Ref_Key`,
@@ -3977,7 +3991,7 @@ def transfer_funds(stuffID=0):
             
             submit_notes_text(content, type, insertedID, 3)
 
-        return jsonify({'status': "1", 'answer': 'Cool!', 'newCSRFtoken': newCSRFtoken})
+        return jsonify({'status': "1", 'answer': gettext('Done!'), 'newCSRFtoken': newCSRFtoken})
 
 # Subproduct situation and situations adding function
 @app.route("/add_sps", methods=['POST'])
@@ -4510,7 +4524,7 @@ def analyse_cart_data(cartData):
                 WHERE `product_type_relatives`.`Language_ID` = %s
                     AND find_in_set(`product_type_relatives`.`PT_Ref_Key`, %s)
                     AND (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`ptRefKey` = `product_type_relatives`.`PT_Ref_Key` AND `product_type_relatives`.`Language_ID` = %s AND `quantity`.`expDate` > CURDATE()) > 0 
-                ORDER BY `product`.`ID`, `product_type`.`Order`;
+                ORDER BY `product`.`Order`, `product_type`.`Order`;
                 """
     
     sqlValTuple = (languageID, languageID, languageID, findInSetPtIDs, languageID)
@@ -4955,20 +4969,19 @@ def add_to_store(ptID=None):
 # @login_required
 def create_promo_code():
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
     if request.method == "GET":
-        languageID = getLangID()
         sqlQuery = """SELECT 
                         `product`.`ID`,
                         `product`.`Title`,
-                        `product_type`.`ID` AS `ptID`,
+                        -- `product_type`.`ID` AS `ptID`,
+                        `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
                         `product_type`.`Title` AS `ptTitle`
                     FROM `product` 
                         LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
-                    WHERE `product`.`Language_ID` = %s 
-                        -- AND `product_type`.`Status` = 1
-                    ORDER BY `product`.`ID`, `product_type`.`Order` 
-                    -- LIMIT 2
-                    ;
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID`
+                    WHERE `product_type_relatives`.`Language_ID` = %s 
+                    ORDER BY `product`.`Order`, `product_type`.`Order`;
                     """
         sqlValTuple = (languageID,)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
@@ -4979,15 +4992,18 @@ def create_promo_code():
 
         sideBar = side_bar_stuff()
 
-        return render_template('create-promo-code.html', dataLength=result['length'], prData=prData, affiliates=affiliates, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+        return render_template('create-promo-code.html', dataLength=result['length'], prData=prData, affiliates=affiliates, languageID=languageID, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
     if request.method == "POST":
         if not request.form.get('products') or not request.form.get('expDate') or not request.form.get('promo'):
             return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!')})
         
         promo = request.form.get('promo')
+        if request.form.get('languageID'):
+            if int(request.form.get('languageID')) in getSupportedLangIDs():
+                languageID = int(request.form.get('languageID'))
 
-        sqlQuery = "SELECT `promo` FROM `promo_code` WHERE `promo` = %s;"
+        sqlQuery = "SELECT `promo` FROM `promo_code` WHERE BINARY `promo` = %s;"
         sqlValTuple = (promo,)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
         if result['length'] > 0:
@@ -5016,11 +5032,11 @@ def create_promo_code():
                     return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})    
 
         affiliate = 0
-        columns = "(`promo_code_id`, `discount_status`, `ptID`, `discount`,  `Status`)"
+        columns = "(`promo_code_id`, `discount_status`, `ptRefKey`, `discount`,  `Status`)"
         values = "(%s, %s, %s, %s, %s)," * len(products)  
         if request.form.get('affiliate'):
             affiliate = request.form.get('affiliate')
-            columns = "(`promo_code_id`, `discount_status`, `ptID`, `discount`,  `revard_value`, `revard_type`, `Status`)"
+            columns = "(`promo_code_id`, `discount_status`, `ptRefKey`, `discount`,  `revard_value`, `revard_type`, `Status`)"
             values = "(%s, %s, %s, %s, %s, %s, %s)," * len(products)  
         
         expDate = request.form.get('expDate').replace("-", "/")
@@ -5086,10 +5102,15 @@ def edit_promo():
     if not request.form.get('products') or not request.form.get('promoID') or not request.form.get('expDate') or not request.form.get('promo'):
         return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
+    languageID = getLangID()
+    if request.form.get('languageID'):
+        if int(request.form.get('languageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('languageID'))
+
     promo = request.form.get('promo')
     promoID = int(request.form.get('promoID'))
 
-    sqlQuery = "SELECT `promo` FROM `promo_code` WHERE `promo` = %s AND `ID` != %s;"
+    sqlQuery = "SELECT `promo` FROM `promo_code` WHERE BINARY `promo` = %s AND `ID` != %s;"
     sqlValTuple = (promo, promoID)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] > 0:
@@ -5126,7 +5147,8 @@ def edit_promo():
                             `promo_code`.`expDate`, 
                             `promo_code`.`Status`,
                             `product`.`ID` AS `prID`,
-                            `product_type`.`ID` AS `ptID`,
+                            -- `product_type`.`ID` AS `ptID`,
+                            `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
                             `product`.`Title` AS `prTitle`,
                             `product_type`.`Title` AS `ptTitle`,
                             `discount`.`ID` AS `discountID`,
@@ -5136,12 +5158,14 @@ def edit_promo():
                             `discount`.`revard_type` 
                         FROM `promo_code` 
                             LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
-                            LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
+                            LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `discount`.`ptRefKey` 
+                            LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-                        WHERE `promo_code`.`ID` = %s;
+                        WHERE `promo_code`.`ID` = %s AND `product_type_relatives`.`Language_ID` = %s
+                        ORDER BY `product`.`Order` ASC, `product_type`.`Order` ASC; 
                         """
     
-    resultOldData = sqlSelect(sqlSelectOldData, (promoID,), True)
+    resultOldData = sqlSelect(sqlSelectOldData, (promoID, languageID), True)
 
     promoCheck = resultOldData['data'][0]
     # promoStatus = int(request.form.get('promo-status'))
@@ -5163,7 +5187,7 @@ def edit_promo():
                             `discount_status` = %s,
                             `revard_value` = %s,
                             `revard_type` = %s
-                        WHERE `promo_code_id` = %s AND `ptID` = %s
+                        WHERE `promo_code_id` = %s AND `ptRefKey` = %s
                         """
     for row in resultOldData['data'][:]:
         for product in products[:]:
@@ -5199,11 +5223,11 @@ def edit_promo():
 
     if len(products) > 0:
         affiliate = 0
-        columns = "(`promo_code_id`, `discount_status`, `ptID`, `discount`,  `Status`)"
+        columns = "(`promo_code_id`, `discount_status`, `ptRefKey`, `discount`,  `Status`)"
         values = "(%s, %s, %s, %s, %s)," * len(products)  
         if request.form.get('affiliate'):
             affiliate = request.form.get('affiliate')
-            columns = "(`promo_code_id`, `discount_status`, `ptID`, `discount`,  `revard_value`, `revard_type`, `Status`)"
+            columns = "(`promo_code_id`, `discount_status`, `ptRefKey`, `discount`,  `revard_value`, `revard_type`, `Status`)"
             values = "(%s, %s, %s, %s, %s, %s, %s)," * len(products)  
         
         protoTuple = []
@@ -5226,6 +5250,7 @@ def edit_promo():
 @app.route('/edit-promo-code/<promoID>', methods=['GET'])
 # @login_required
 def edit_promo_code(promoID):
+    languageID = getLangID()
 
     sqlQuery = """
                     SELECT 
@@ -5235,7 +5260,8 @@ def edit_promo_code(promoID):
                         DATE_FORMAT(`promo_code`.`expDate`, '%m-%d-%Y') AS `expDate`, 
                         `promo_code`.`Status`,
                         `product`.`ID` AS `prID`,
-                        `product_type`.`ID` AS `ptID`,
+                        -- `product_type`.`ID` AS `ptID`,
+                        `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
                         `product`.`Title` AS `prTitle`,
                         `product_type`.`Title` AS `ptTitle`,
                         `discount`.`ID` AS `discountID`,
@@ -5245,29 +5271,30 @@ def edit_promo_code(promoID):
                         `discount`.`revard_type` 
                     FROM `promo_code` 
                         LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
-                        LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `discount`.`ptRefKey` 
+                        LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                         LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-                    WHERE `promo_code`.`ID` = %s
+                    WHERE `promo_code`.`ID` = %s AND `product_type_relatives`.`Language_ID` = %s
                     ORDER BY `product`.`Order` ASC, `product_type`.`Order` ASC; 
                 """
-    discountsResult = sqlSelect(sqlQuery, (promoID,), True)
+    discountsResult = sqlSelect(sqlQuery, (promoID, languageID), True)
     discounts = json.dumps(discountsResult['data']) 
 
 
     sqlQueryAffiliate = "SELECT `ID`, `Firstname`, `Lastname`, `email` FROM `stuff` WHERE `rolID` = 2 AND `Status` = 1;"
     affiliates = sqlSelect(sqlQueryAffiliate, (), True)
 
-    languageID = getLangID()
     sqlQuery = """SELECT 
-                    `product`.`ID`,
-                    `product`.`Title`,
-                    `product_type`.`ID` AS `ptID`,
-                    `product_type`.`Title` AS `ptTitle`
-                FROM `product` 
-                    LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
-                WHERE `product`.`Language_ID` = %s 
-                    -- AND `product_type`.`Status` = 1
-                ORDER BY `product`.`Order`, `product_type`.`Order` 
+                        `product`.`ID`,
+                        `product`.`Title`,
+                        -- `product_type`.`ID` AS `ptID`,
+                        `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
+                        `product_type`.`Title` AS `ptTitle`
+                    FROM `product` 
+                        LEFT JOIN `product_type` ON `product_type`.`Product_ID` = `product`.`ID`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID`
+                    WHERE `product_type_relatives`.`Language_ID` = %s 
+                    ORDER BY `product`.`Order`, `product_type`.`Order`; 
                 ;
                 """
     sqlValTuple = (languageID,)
@@ -5276,13 +5303,18 @@ def edit_promo_code(promoID):
 
     newCSRFtoken = generate_csrf()
     sideBar = side_bar_stuff()
-    return render_template('edit-promo-code.html', affiliateID=discountsResult['data'][0]['affiliateID'], promoCode=discountsResult['data'][0]['Promo'], expDate=discountsResult['data'][0]['expDate'], discounts=discounts,  affiliates=affiliates, prData=prData, promoID=promoID, dataLength=result['length'], sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
+    return render_template('edit-promo-code.html', affiliateID=discountsResult['data'][0]['affiliateID'], languageID=languageID, promoCode=discountsResult['data'][0]['Promo'], expDate=discountsResult['data'][0]['expDate'], discounts=discounts,  affiliates=affiliates, prData=prData, promoID=promoID, dataLength=result['length'], sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
 
     
 # Get Discounts With Promo Code
 @app.route('/get-promo-discounts', methods=['POST'])
 def get_promo_discounts():
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
+    if request.form.get('languageID'):
+        if int(request.form.get('languageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('languageID'))
+
     if not request.form.get('promo') or not request.form.get('products'):
         return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
@@ -5302,22 +5334,26 @@ def get_promo_discounts():
     ptIDs = ptIDs[:-1]    
     sqlQuery =  """
                 SELECT 
-                    `product_type`.`ID` AS `ptID`,
+                    -- `product_type`.`ID` AS `ptID`,
+                    `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
                     `product_type`.`Price`,
                     `discount`.`discount`
                     -- `discount`.`discount_status`
                 FROM `promo_code` 
                     LEFT JOIN `discount` ON `discount`.`promo_code_id` = `promo_code`.`ID`
-                    LEFT JOIN `product_type` ON `product_type`.`ID` = `discount`.`ptID`
+                    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `discount`.`ptRefKey` 
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                     LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-                WHERE `promo_code`.`Promo` = %s 
+                WHERE BINARY `promo_code`.`Promo` = %s 
                     AND `promo_code`.`expDate` >= CURRENT_DATE() 
                     AND `promo_code`.`Status` = 1
                     AND `product`.`Product_Status` = 2
-                    AND FIND_IN_SET(`product_type`.`ID`, %s)
+                    AND `product_type_relatives`.`Language_ID` = %s
+                    AND FIND_IN_SET(`product_type_relatives`.`PT_Ref_Key`, %s)
                     AND `discount`.`Status` = 1
                 """
-    sqlValTuple = (promo, ptIDs)
+    
+    sqlValTuple = (promo, languageID, ptIDs)
     # sqlValTuple = (promo, ptIDs)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] == 0:
@@ -5345,7 +5381,7 @@ def check_promo_code():
     
     # Check weather promo code exists in db
     promo = request.form.get('promo')
-    sqlQuery = "SELECT `promo` FROM `promo_code` WHERE `promo` = %;"
+    sqlQuery = "SELECT `promo` FROM `promo_code` WHERE BINARY `promo` = %;"
     sqlValTuple = (promo,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] > 0:
@@ -5496,6 +5532,11 @@ def get_langs():
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
     newCSRFtoken = generate_csrf()
+    languageID = getLangID()
+    if request.form.get('languageID'):
+        if int(request.form.get('languageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('languageID'))
+
     # Check if email exists
     if not request.form.get('Email'):
         answer = gettext('Please specify email!')
@@ -5511,23 +5552,41 @@ def subscribe():
         answer = gettext('Invalid email format')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
     
-    sqlQuery = "SELECT `email` FROM `emails` WHERE `email` = %s;"
+    sqlQuery = "SELECT `ID`, `email` FROM `emails` WHERE `email` = %s;"
     result = sqlSelect(sqlQuery, (Email,), True)
     if result['length'] > 0:
         sqlQueryUpdate = "UPDATE `emails` SET `Status` = 2 WHERE `email` = %s;"
         resultUpdate = sqlUpdate(sqlQueryUpdate, (Email,))
         if resultUpdate['status'] == '-1':
             return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
-
+        emailID = result['data'][0]['ID']
     else:
-        langID = getLangdata(session['lang'])['ID']
-        sqlQueryInsert = "INSERT INTO `emails` (`email`, `langID`, `Status`) VALUES (%s, %s, %s)"
-        sqlValTuple = (Email, langID, 2)
+        
+        sqlQueryInsert = "INSERT INTO `emails` (`email`, `Status`) VALUES (%s, %s)"
+        sqlValTuple = (Email, 2)
         resultInsert = sqlInsert(sqlQueryInsert, sqlValTuple)
         if resultInsert['status'] == 0:
             return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
+        emailID = resultInsert['inserted_id']
 
+    # Check emailID in subscribers
+    sqlQuerySCH = "SELECT * FROM `subscribers` WHERE `emailID` = %s;"
+    resultSCH = sqlSelect(sqlQuerySCH, (emailID,), True)
+    if resultSCH['length'] > 0:
+        if resultSCH['data'][0]['Status'] != 1:
+            sqlUpdateS = "UPDATE `subscribers` SET `Status` = 1 WHERE `emailID` = %s;"
+            resultS = sqlUpdate(sqlUpdateS, (emailID))
+            if resultS['status'] == 0:
+                return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+
+    else:
+        sqlQuerySubscribers = "INSERT INTO `subscribers` (`emailID`, `languageID`, `Status`) VALUES (%s, %s, %s);"
+        resultSubscribers = sqlInsert(sqlQuerySubscribers, (emailID, languageID, 1))
+        if resultSubscribers['status'] == 0:
+                return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+
+    
     answer = gettext("You have subscribed successfully!")
     return jsonify({'status': '1', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
@@ -5594,7 +5653,7 @@ WHERE `product`.`ID` = %s
     AND `quantity`.`Quantity` > 0
     AND `quantity`.`expDate` > CURDATE() > 0
 GROUP BY `prTitle`, `product`.`url`, `ptTitle`,  `product_type`.`Price`, `product_type`.`Status`, `ptID`, `product_type`.`ID`
-ORDER BY `product`.`ID`, `product_type`.`Order`;   """
+ORDER BY `product`.`Order`, `product_type`.`Order`;   """
     # sqlValTuple = (prID, languageID)
     sqlValTuple = (prID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)

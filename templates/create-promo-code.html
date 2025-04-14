@@ -155,7 +155,8 @@
 
 <script>
 
-let csrfToken = "{{ csrf_token() }}"
+let csrfToken = "{{ csrf_token() }}";
+const languageID = `{{ languageID }}`;
 
     document.querySelector('#promo-code').addEventListener('input', function(event) {
         event.target.style.color = '#000';  
@@ -392,6 +393,7 @@ saveButton.addEventListener('click', function (event) {
     formData.append('products', JSON.stringify(products));
     formData.append('expDate', expDate);
     formData.append('promo', promoCode);
+    formData.append('languageID', languageID);
 
     // Create a new XMLHttpRequest object
     let xhr = new XMLHttpRequest();
@@ -451,7 +453,7 @@ saveButton.addEventListener('click', function (event) {
     // Dynemically creat drop-down elements
     const ptID = "{{ ptID|safe }}" 
     const dataLength = "{{ dataLength|safe }}"
-    const prData = JSON.parse('{{ prData|safe }}');
+    const prData = JSON.parse(`{{ prData|safe }}`);
  
     let dropDownContent = document.createElement('span');
     if (parseInt(dataLength) > 0) {
@@ -531,7 +533,7 @@ saveButton.addEventListener('click', function (event) {
                         if (valFloat > 99 || valFloat < 1) {
                             input.value = this.value.slice(0, -1); 
                             if (valFloat === '' && valFloat !== 0) {
-                                if(confirm("{{ _('All discount values will be changed to') }} " + this.value)) {
+                                if(confirm("{{ _('All discount values will be changed to') }} " + this.value + ' ')) {
                                     childDiscountValues.forEach(input => {
                                         input.value = this.value;
                                     });
@@ -681,7 +683,7 @@ saveButton.addEventListener('click', function (event) {
 
                         if (flag === 1) {
                             const selectedText = this.options[this.selectedIndex].text;
-                            if(!confirm("{{ _('All revard options will be changed to') }} " + selectedText + "{{ _('And all corresponding reward values will be removed') }}") ) {
+                            if(!confirm("{{ _('All revard options will be changed to') }} " + selectedText + " {{ _('and all corresponding reward values will be removed') }}") ) {
                                 this.value = this.oldValue; 
                                 return;
                             }

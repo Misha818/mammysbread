@@ -385,6 +385,7 @@ CREATE TABLE `clients` (
     `ID` INT AUTO_INCREMENT,
     `Firstname` VARCHAR(255),
     `Lastname` VARCHAR(255),
+    `languageID` INT,
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
@@ -394,7 +395,7 @@ ALTER TABLE `clients` AUTO_INCREMENT = 1;
 DROP TABLE IF EXISTS `purchase_history`;
 CREATE TABLE `purchase_history` (
     `ID` INT AUTO_INCREMENT,
-    `ptID` INT,
+    `ptRefKey` INT,
     `quantity` INT,
     `payment_details_id` INT,
     `price` FLOAT,
@@ -492,11 +493,21 @@ CREATE TABLE `emails` (
     `ID` INT AUTO_INCREMENT,
     `email` VARCHAR(255),
     `clientID` INT,
-    `langID` INT,
-    `Status` INT, -- 1 == active, 0 == blacklisted, 2 = subscribe, 3 = ansubscribed
+    `Status` INT, -- 1 == active, 0 == blacklisted
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `emails` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `subscribers`;
+CREATE TABLE `subscribers` (
+    `ID` INT AUTO_INCREMENT,
+    `emailID` VARCHAR(255),
+    `languageID` INT,
+    `Status` INT, -- 1 == subscribe, 0 == unsubscribe
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `subscribers` AUTO_INCREMENT = 1;
 
 
 DROP TABLE IF EXISTS `notes`;
@@ -516,7 +527,7 @@ ALTER TABLE `notes` AUTO_INCREMENT = 1;
 DROP TABLE IF EXISTS `buffer_store`;
 CREATE TABLE `buffer_store` (
     `ID` INT AUTO_INCREMENT,
-    `ptID` INT,
+    `ptRefKey` INT,
     `quantityID` INT,
     `quantity` INT,
     `payment_details_id` INT,
