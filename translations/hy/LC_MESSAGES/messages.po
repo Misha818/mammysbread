@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-05 01:21+0400\n"
+"POT-Creation-Date: 2025-04-14 19:56+0400\n"
 "PO-Revision-Date: 2025-04-05 00:48+0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: hy\n"
@@ -18,335 +18,316 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.15.0\n"
 
-#: app.py:76 templates/affiliate-order-details.html:197
-#: templates/affiliate-orders.html:227 templates/order-details.html:243
-#: templates/orders.html:214
-msgid "Cancelled"
-msgstr "Չեղարկված"
-
-#: app.py:77 templates/affiliate-order-details.html:200
-#: templates/affiliate-orders.html:231 templates/order-details.html:246
-#: templates/orders.html:218
-msgid "Panding"
-msgstr "Սպասման մեջ"
-
-#: app.py:78 templates/affiliate-order-details.html:195
-#: templates/affiliate-order-details.html:203
-#: templates/affiliate-orders.html:224 templates/affiliate-orders.html:234
-#: templates/order-details.html:241 templates/order-details.html:249
-#: templates/orders.html:212 templates/orders.html:221
-msgid "Purchased"
-msgstr "Վճարված"
-
-#: app.py:79 templates/affiliate-order-details.html:206
-#: templates/affiliate-orders.html:237 templates/order-details.html:252
-#: templates/orders.html:224
-msgid "Preparing"
-msgstr "Պատրաստվում է"
-
-#: app.py:80
-msgid "Ready"
-msgstr "Պատրաստ է"
-
-#: app.py:81 templates/affiliate-order-details.html:189
-#: templates/affiliate-order-details.html:212
-#: templates/affiliate-orders.html:243 templates/order-details.html:235
-#: templates/order-details.html:258 templates/orders.html:230
-msgid "Delivered"
-msgstr "Առաքված"
-
-#: app.py:88
-msgid "Something went wrong. Please try again!"
-msgstr "Ինչ-որ բան սխալ է։ Խնդրում ենք փորձել ավելի ուշ։"
-
-#: app.py:130 app.py:2816
+#: app.py:133 app.py:2962
 msgid "Please specify username"
 msgstr "Խնդրում ենք նշել օգտանվանումը"
 
-#: app.py:138
+#: app.py:141
 msgid "Please specify password"
 msgstr "Խնդրում ենք նշել գաղտնաբառը"
 
-#: app.py:152
+#: app.py:156
 msgid "The username or password do not match"
 msgstr "Օգտանվանումը կամ գաղտնաբառը չեն համընկնում"
 
-#: app.py:167
+#: app.py:171
 msgid "Rate limit exceeded"
 msgstr "Սահմանաչափը գերազանցված է"
 
-#: app.py:495
+#: app.py:267 app.py:293 app.py:299 app.py:519 app.py:526 app.py:551 app.py:554
+#: app.py:609 app.py:614 app.py:638 app.py:1180 app.py:1202 app.py:1209
+#: app.py:1218 app.py:1255 app.py:1326 app.py:1335 app.py:1341 app.py:1348
+#: app.py:1357 app.py:1362 app.py:1592 app.py:1718 app.py:1727 app.py:1738
+#: app.py:1754 app.py:1775 app.py:1784 app.py:1799 app.py:1897 app.py:1905
+#: app.py:2020 app.py:2025 app.py:2080 app.py:2102 app.py:2120 app.py:2265
+#: app.py:3619 app.py:3634 app.py:3647 app.py:3666 app.py:3675 app.py:3696
+#: app.py:3740 app.py:3763 app.py:3770 app.py:3779 app.py:3796 app.py:3969
+#: app.py:3975 app.py:4041 app.py:4262 app.py:4294 app.py:4368 app.py:4612
+#: app.py:4684 app.py:4747 app.py:4763 app.py:4784 app.py:4917 app.py:4938
+#: app.py:4961 app.py:4999 app.py:5019 app.py:5025 app.py:5028 app.py:5032
+#: app.py:5048 app.py:5103 app.py:5126 app.py:5132 app.py:5135 app.py:5139
+#: app.py:5319 app.py:5327 app.py:5400 app.py:5561 app.py:5569 app.py:5581
+#: app.py:5587 app.py:5598
+msgid "Something went wrong. Please try again!"
+msgstr "Ինչ-որ բան սխալ է։ Խնդրում ենք փորձել ավելի ուշ։"
+
+#: app.py:531
 msgid "The phone numbers do not match"
 msgstr "Հեռախոսահամարները չեն համընկնում"
 
-#: app.py:504
+#: app.py:538 app.py:1267 app.py:2655 app.py:2881 app.py:5552
+msgid "Invalid email format"
+msgstr "Էլ. փոստի ձևաչափը անվավեր է"
+
+#: app.py:547
 msgid "Invalid value for "
 msgstr "Անվավեր արժեք "
 
-#: app.py:576 app.py:4971 templates/buy-now.html:129
+#: app.py:617 app.py:5360 templates/buy-now.html:129
 #: templates/checkout.html:129
 msgid "Invalid Promo Code"
 msgstr "Անվավեր պռոմո կոդ"
 
-#: app.py:608
+#: app.py:649
 msgid "Payment failed"
 msgstr "Վճարումը ձախողվեց"
 
-#: app.py:1224 app.py:2509 app.py:2735 app.py:5155
-msgid "Invalid email format"
-msgstr "Էլ. փոստի ձևաչափը անվավեր է"
-
-#: app.py:1340 app.py:2004 app.py:2022 app.py:2235 app.py:2265 app.py:2321
+#: app.py:1401 app.py:2150 app.py:2168 app.py:2381 app.py:2411 app.py:2467
 #: dropzon.py:52 dropzon.py:79
 msgid "Something is wrong!"
 msgstr "Ինչ-որ բան սխալ է։"
 
-#: app.py:1344 products.py:1012 products.py:1057
+#: app.py:1404 products.py:981 products.py:1026
 msgid "Update"
 msgstr "Թարմացնել"
 
-#: app.py:1344 copy.html:45 copy.html:93 products.py:1013 products.py:1058
-#: templates/add-price.html:109 templates/add-role.html:51
+#: app.py:1404 copy.html:45 copy.html:93 products.py:982 products.py:1027
+#: templates/add-price.html:112 templates/add-role.html:51
 #: templates/add-teammate.html:51 templates/add_article.html:93
 #: templates/add_article_category.html:60 templates/add_product
-#: templates/add_product.html:93 templates/add_product_category
-#: templates/add_product_category.html:107 templates/add_product_lang.html:99
+#: templates/add_product.html:96 templates/add_product_category
+#: templates/add_product_category.html:107 templates/add_product_lang.html:154
 #: templates/add_to_store.html:129 templates/create-promo-code.html:152
 #: templates/edit-price.html:115 templates/edit-promo-code.html:210
 #: templates/edit-pts.html:39 templates/edit-role.html:52
 #: templates/edit-teammate.html:79 templates/edit_article_category.html:91
-#: templates/edit_product_category.html:124 templates/edit_store.html:127
+#: templates/edit_product_category.html:125 templates/edit_store.html:127
 #: templates/login1.html:17 templates/pr_thumbnail.html:87
-#: templates/product.html:208 templates/product.html:870
-#: templates/sp-specifications.html:38 templates/stuff-signup.html:48
+#: templates/product.html:212 templates/product.html:874
+#: templates/sp-specifications.html:60 templates/stuff-signup.html:48
 #: templates/teammate-signup.html:57 templates/thumbnail.html:83
 #: templates/transfer-funds.html:76
 msgid "Saving..."
 msgstr "Պահպանում..."
 
-#: app.py:1472
+#: app.py:1537
+msgid "To continue translate the product first"
+msgstr ""
+
+#: app.py:1596
 msgid "Please specify the title!"
 msgstr "Խնդրում ենք նշել անվանումը։"
 
-#: app.py:1485 app.py:1799
+#: app.py:1609 app.py:1931
 msgid "Product Type Title Already Exists!"
 msgstr "Ապրանքատեսակի անվանումը արդեն գոյություն ունի։"
 
-#: app.py:1491
+#: app.py:1615
 msgid "Please specify the price!"
 msgstr "Խնդրում ենք նշել գինը։"
 
-#: app.py:1495 app.py:1811
+#: app.py:1619 app.py:1943
 msgid "The price should be higher then 0!"
 msgstr "Գինը պետք է լինի 0-ից բարձր։"
 
-#: app.py:1499 app.py:1807
+#: app.py:1623 app.py:1939
 msgid "At least one image should be uploaded"
 msgstr "Պահանջվում է վերբեռնել առնվազն մեկ նկար"
 
-#: app.py:1535 app.py:1845 sysadmin.py:759
+#: app.py:1659 app.py:1977 sysadmin.py:768
 msgid "Text is too long for field "
 msgstr "Տեքստը չափազանց երկար է դաշտի համար "
 
-#: app.py:1539 app.py:1848
+#: app.py:1663 app.py:1980
 msgid "Max allowed characters are 255."
 msgstr "Առավելագույն թույլատրելի նիշերի քանակը 255 է։"
 
-#: app.py:1585 app.py:1913
+#: app.py:1709 app.py:2059
 msgid "image size is more than 5MB"
 msgstr "Պատկերի չափը գերազանցում է 5ՄԲ-ը"
 
-#: app.py:1681 app.py:1985 app.py:3563 products.py:425
+#: app.py:1805 app.py:2131 app.py:3800 app.py:3994 products.py:425
 msgid "Done!"
 msgstr "Կատարված է"
 
-#: app.py:1755
+#: app.py:1887
 msgid "To continue, please, add at least one product category."
 msgstr "Շարունակելու համար խնդրում ենք ավելացնել առնվազն մեկ ապրանքային կատեգորիա։"
 
-#: app.py:1777
+#: app.py:1909
 msgid "Nothing was uploaded!"
 msgstr "Ոչինչ չի վերբեռնվել։"
 
-#: app.py:1790
+#: app.py:1922
 msgid "Please specify title!"
 msgstr "Խնդրում ենք նշել անվանումը։"
 
-#: app.py:1803
+#: app.py:1935
 msgid "Please specify price!"
 msgstr "Խնդրում ենք նշել գինը։"
 
-#: app.py:2076
+#: app.py:2222
 msgid "Title is empty!"
 msgstr "Ապրանքի անվանումը դատարկ է։"
 
-#: app.py:2079
+#: app.py:2225
 msgid "Link is empty!"
 msgstr "Հղումը դատարկ է։"
 
-#: app.py:2082 app.py:2128
+#: app.py:2228 app.py:2274
 msgid "Please Choose Product Category!"
 msgstr "Խնդրում ենք ընտրել ապրանքային կատեգորիա։"
 
-#: app.py:2122
+#: app.py:2268
 msgid "Product name is empty!"
 msgstr "Ապրանքի անվանումը դատարկ է։"
 
-#: app.py:2125
+#: app.py:2271
 msgid "Product link is empty!"
 msgstr "Ապրանքի հղումը դատարկ է։"
 
-#: app.py:2181
+#: app.py:2327
 msgid "Category name is empty!"
 msgstr "Կատեգորիայի անվանումը դատարկ է։"
 
-#: app.py:2241
+#: app.py:2387
 msgid "Category Name is empty!"
 msgstr "Կատեգորիայի անվանումը դատարկ է։"
 
-#: app.py:2246 products.py:376
+#: app.py:2392 products.py:376
 msgid "Category Name Exists!"
 msgstr "Կատեգորիայի անվանումը արդեն գոյություն ունի։"
 
-#: app.py:2346
+#: app.py:2492
 msgid "Product is published"
 msgstr "Ապրանքը հրապարակված է։"
 
-#: app.py:2348
+#: app.py:2494
 msgid "Product is unpublished"
 msgstr "Ապրանքը հրապարակումը դադարեցված է։"
 
-#: app.py:2478 app.py:2657 app.py:2718 app.py:2939 app.py:2945
+#: app.py:2624 app.py:2803 app.py:2864 app.py:3085 app.py:3091
 msgid "Something wrong!"
 msgstr "Ինչ-որ բան սխալ է։"
 
-#: app.py:2485
+#: app.py:2631
 msgid "Please specify the first name"
 msgstr "Խնդրում ենք նշել անվանումը։"
 
-#: app.py:2492
+#: app.py:2638 app.py:2956
 msgid "Please specify the last name"
 msgstr "Խնդրում ենք նշել ազգանվանումը։"
 
-#: app.py:2499 app.py:2725
+#: app.py:2645 app.py:2871
 msgid "Please specify email"
 msgstr "Խնդրում ենք նշել էլ. փոստի հասցեն։"
 
-#: app.py:2531 app.py:2663 app.py:2739 app.py:2951
+#: app.py:2677 app.py:2809 app.py:2885 app.py:3097
 msgid "Please specify the role"
 msgstr "Խնդրում ենք նշել դերը։"
 
-#: app.py:2538
+#: app.py:2684
 msgid "Something is wrong, please try again!"
 msgstr "Ինչ-որ բան սխալ է, խնդրում ենք փորձել կրկին։"
 
-#: app.py:2669 app.py:2957
+#: app.py:2815 app.py:3103
 msgid "Please choose at least on action"
 msgstr "Խնդրում ենք ընտրել առնվազն մեկ գործողություն։"
 
-#: app.py:2804
+#: app.py:2950
 msgid "Please specify firstname"
 msgstr "Խնդրում ենք նշել անվանումը։"
 
-#: app.py:2810
-msgid "Please specify lastname"
-msgstr "Խնդրում ենք նշել ազգանվանումը։"
-
-#: app.py:2827
+#: app.py:2973
 msgid "Username exists"
 msgstr "Օգտանվանումը արդեն գոյություն ունի։"
 
-#: app.py:2832
+#: app.py:2978
 msgid "Please specify Password"
 msgstr "Խնդրում ենք նշել գաղտնաբառը։"
 
-#: app.py:2841
+#: app.py:2987
 msgid "Password confirmation field is empty"
 msgstr "Գաղտնաբառի հաստատման դաշտը դատարկ է։"
 
-#: app.py:2845
+#: app.py:2991
 msgid "Passwords do not match!"
 msgstr "Գաղտնաբառերը չեն համընկնում։"
 
-#: app.py:2849
+#: app.py:2995
 msgid "Please specify prefared language"
 msgstr "Խնդրում ենք նշել նախընտրելի լեզուն։"
 
-#: app.py:2861
+#: app.py:3007
 msgid "File should be in PNG or JPG/JPEG format"
 msgstr "Ֆայլը պետք է լինի PNG կամ JPG/JPEG ձևաչափով։"
 
-#: app.py:2867 templates/add_product.html:134 templates/edit-teammate.html:164
+#: app.py:3013 templates/add_product.html:137 templates/edit-teammate.html:164
 #: templates/teammate-signup.html:95
 msgid "File size should not exceed 1MB."
 msgstr "Ֆայլի չափը չպետք է գերազանցի 1ՄԲ։"
 
-#: app.py:2884
+#: app.py:3030
 msgid "The URL is expired"
 msgstr "Հղումը ժամկետանց է։"
 
-#: app.py:3068
+#: app.py:3214 app.py:3256
 msgid "Voided"
 msgstr "Չեղարկված"
 
-#: app.py:3069
+#: app.py:3215 app.py:3257 sysadmin.py:1322
 msgid "Pending"
 msgstr "Սպասման մեջ"
 
-#: app.py:3070
+#: app.py:3216 app.py:3258
 msgid "Approved"
 msgstr "Հաստատված"
 
-#: app.py:3071
+#: app.py:3217 app.py:3259
 msgid "Settled"
 msgstr "Վճարված"
 
-#: app.py:3417
+#: app.py:3654
 msgid "Order Changed Successfully!"
 msgstr "Պատվերը հաջողությամբ փոփոխվել է։"
 
-#: app.py:3442
+#: app.py:3679
 msgid "Status changed successfully!"
 msgstr "Կարգավիճակը հաջողությամբ փոփոխվել է։"
 
-#: app.py:3453 app.py:3739 templates/edit-pts.html:102
-#: templates/sp-specifications.html:101
+#: app.py:3690 app.py:4004 templates/edit-pts.html:102
+#: templates/sp-specifications.html:123
 msgid "Please specify subproduct situation name!"
 msgstr "Խնդրում ենք նշել ապրանքատեսակի բնութագրի անվանվանումը։"
 
-#: app.py:3474 app.py:3753
+#: app.py:3711 app.py:4018
 msgid "Subproduct situation name exists!"
 msgstr "Ապրանքատեսակի բնութագրի անվանումը գոյություն ունի։"
 
-#: app.py:3856
+#: app.py:4032
+#, fuzzy
+msgid "The current subproduct situation has already been translated!"
+msgstr "Թարգմանել ապրանքատեսակի բնութագրի անվանումը"
+
+#: app.py:4136
 msgid "The password must be between "
 msgstr "Գաղտնաբառը պետք է բաղկացած լինի հետևյալ քանակի թվերից "
 
-#: app.py:3856
+#: app.py:4136
 msgid " and "
 msgstr " և "
 
-#: app.py:3856
+#: app.py:4136
 msgid " characters long."
 msgstr " նիշ երկարությամբ։"
 
-#: app.py:3860
+#: app.py:4140
 msgid "The password must contain at least one digit."
 msgstr "Գաղտնաբառը պետք է պարունակի առնվազն մեկ թիվ։"
 
-#: app.py:3863
+#: app.py:4143
 msgid "The password must contain at least one uppercase letter."
 msgstr "Գաղտնաբառը պետք է պարունակի առնվազն մեկ մեծատառ։"
 
-#: app.py:3866
+#: app.py:4146
 msgid "The password must contain at least one lowercase letter."
 msgstr "Գաղտնաբառը պետք է պարունակի առնվազն մեկ փոքրատառ։"
 
-#: app.py:3869
+#: app.py:4149
 msgid "The password must contain at least one special character."
 msgstr "Գաղտնաբառը պետք է պարունակի առնվազն մեկ հատուկ նշան։"
 
-#: app.py:4190 app.py:5115
+#: app.py:4533 app.py:5507
 msgid ""
 "You have already added this product to the basket. You can change the "
 "quantity if You would like to."
@@ -354,88 +335,88 @@ msgstr ""
 "Դուք արդեն ավելացրել եք այս ապրանքը զամբյուղ։ Կարող եք փոխել քանակը, եթե "
 "ցանկանում եք։"
 
-#: app.py:4192 app.py:5117 templates/buy-now.html:79 templates/buy-now.html:464
-#: templates/checkout.html:79 templates/checkout.html:471
+#: app.py:4535 app.py:5509 templates/buy-now.html:79 templates/buy-now.html:464
+#: templates/checkout.html:79 templates/checkout.html:473
 msgid "In Basket"
 msgstr "Զամբյուղում է"
 
-#: app.py:4193 app.py:5021
+#: app.py:4536 app.py:5415
 msgid "The seller doesn't have that many left."
-msgstr "Վաճառողը այդքան շատ քանակի ապրանք չունի։"
+msgstr "Խանութում այդքան ապրանք չկա։"
 
-#: app.py:4363 app.py:4369
+#: app.py:4722 app.py:4728
 msgid "The specified amount is unavailable."
 msgstr "Նշված քանակը հասանելի չէ։"
 
-#: app.py:4386 app.py:4538
+#: app.py:4751 app.py:4905
 msgid "Please Specify Product Type"
 msgstr "Խնդրում ենք նշել ապրանքի տեսակը։"
 
-#: app.py:4390 app.py:4542
+#: app.py:4755 app.py:4909
 msgid "Please Specify Store"
 msgstr "Խնդրում ենք նշել խանութը։"
 
-#: app.py:4394 app.py:4546
+#: app.py:4759 app.py:4913
 msgid "Please Specify Quantity"
 msgstr "Խնդրում ենք նշել քանակը։"
 
-#: app.py:4401 app.py:4553
+#: app.py:4766 app.py:4920
 msgid "Quantity should be greater than Zero"
 msgstr "Քանակը պետք է լինի 0-ից մեծ։"
 
-#: app.py:4405 app.py:4557
+#: app.py:4770 app.py:4924
 msgid "Please Specify Production Date"
 msgstr "Խնդրում ենք նշել արտադրության ամսաթիվը։"
 
-#: app.py:4409 app.py:4561
+#: app.py:4774 app.py:4928
 msgid "Please Specify Expiration Date"
 msgstr "Խնդրում ենք նշել ժամկետի սպառման ամսաթիվը։"
 
-#: app.py:4415 app.py:4567
+#: app.py:4780 app.py:4934
 msgid "Please Specify Max Allowed Quantity"
 msgstr "Խնդրում ենք նշել առավելագույն թույլատրելի քանակը։"
 
-#: app.py:4422 app.py:4574
+#: app.py:4787 app.py:4941
 msgid "Max Allowed Quantity should be greater than Zero"
 msgstr "Առավելագույն թույլատրելի քանակը պետք է լինի 0-ից մեծ։"
 
-#: app.py:4641 app.py:4743
+#: app.py:5010 app.py:5117
 msgid "code exists"
 msgstr "Պռոմո կոդը արդեն գոյություն ունի։"
 
-#: app.py:4700
+#: app.py:5069
 msgid "Promo Code Created Successfully"
 msgstr "Պռոմո կոդը հաջողությամբ ստեղծվել է։"
 
-#: app.py:4870
+#: app.py:5247
 msgid "Promo Code updated successfully!"
 msgstr "Պռոմո կոդը հաջողությամբ թարմացվել է։"
 
-#: app.py:5031
+#: app.py:5425
 msgid "Maximum available quantity for single purchase is "
 msgstr "Մեկ գնումի համար առավելագույն հասանելի քանակըշն է "
 
-#: app.py:5037
+#: app.py:5431
 msgid "Out of stock"
 msgstr "Առկա չէ"
 
-#: app.py:5043
+#: app.py:5437
 msgid "Maximum available quantity is "
 msgstr "Առավելագույն հասանելի քանակը "
 
-#: app.py:5043
+#: app.py:5437
 msgid "item added to the cart"
 msgstr "ապրանքը ավելացվել է զամբյուղ։"
 
-#: app.py:5145
+#: app.py:5542
 msgid "Please specify email!"
 msgstr "Խնդրում ենք նշել էլ. փոստի հասցեն։"
 
-#: app.py:5174
+#: app.py:5590
 msgid "You have subscribed successfully!"
 msgstr "Դուք հաջողությամբ բաժանորդագրվել եք։"
 
-#: app.py:5210
+#: app.py:5661
 msgid "Out of stock."
 msgstr "Առկա չէ"
 
@@ -443,105 +424,137 @@ msgstr "Առկա չէ"
 msgid "Category Exists!"
 msgstr "Կատեգորիան արդեն գոյություն ունի։"
 
-#: products.py:844 products.py:863 products.py:925 products.py:930
+#: products.py:811 products.py:830 products.py:835 products.py:892
+#: products.py:897
 msgid "Something Wrong!"
 msgstr "Ինչ-որ բան սխալ է։"
 
-#: templates/add-price.html:3 templates/product.html:144
+#: sysadmin.py:1321 templates/affiliate-order-details.html:197
+#: templates/affiliate-orders.html:227 templates/order-details.html:240
+#: templates/orders.html:214
+msgid "Cancelled"
+msgstr "Չեղարկված"
+
+#: sysadmin.py:1323 templates/affiliate-order-details.html:195
+#: templates/affiliate-order-details.html:203
+#: templates/affiliate-orders.html:224 templates/affiliate-orders.html:234
+#: templates/order-details.html:238 templates/order-details.html:246
+#: templates/orders.html:212 templates/orders.html:221
+msgid "Purchased"
+msgstr "Վճարված"
+
+#: sysadmin.py:1324 templates/affiliate-order-details.html:206
+#: templates/affiliate-orders.html:237 templates/order-details.html:249
+#: templates/orders.html:224
+msgid "Preparing"
+msgstr "Պատրաստվում է"
+
+#: sysadmin.py:1325
+msgid "Ready"
+msgstr "Պատրաստ է"
+
+#: sysadmin.py:1326 templates/affiliate-order-details.html:189
+#: templates/affiliate-order-details.html:212
+#: templates/affiliate-orders.html:243 templates/order-details.html:232
+#: templates/order-details.html:255 templates/orders.html:230
+msgid "Delivered"
+msgstr "Առաքված"
+
+#: templates/add-price.html:3 templates/product.html:148
 msgid "Add Price"
 msgstr "Ավելացնել գին"
 
-#: templates/add-price.html:45
+#: templates/add-price.html:48
 msgid "Add Product Type Title"
 msgstr "Ավելացնել ապրանքատեսակի անվանումը։"
 
-#: templates/add-price.html:47
+#: templates/add-price.html:50
 msgid "Add Product Type Price"
 msgstr "Ավելացնել ապրանքատեսակի գինը։"
 
-#: templates/add-price.html:52 templates/edit-price.html:55
-#: templates/product.html:203
+#: templates/add-price.html:55 templates/edit-price.html:55
+#: templates/product.html:207
 msgid "Click here to upload files"
 msgstr "Սեղմեք այստեղ նկարներ վերբեռնելու համար։"
 
-#: templates/add-price.html:58 templates/edit-price.html:60
+#: templates/add-price.html:61 templates/edit-price.html:60
 msgid "Choose product type specification"
 msgstr "Ընտրեք ապրանքատեսակի բնութագիրը։"
 
-#: templates/add-price.html:94 templates/edit-price.html:100
+#: templates/add-price.html:97 templates/edit-price.html:100
 msgid "Translate Product Type Specification Name"
 msgstr "Թարգմանել ապրանքատեսակի բնութագրի անվանումը։"
 
-#: templates/add-price.html:102 templates/edit-price.html:108
+#: templates/add-price.html:105 templates/edit-price.html:108
 msgid "You have not entered any product type specification yet."
 msgstr "Դուք դեռ չեք մուտքագրել որևէ ապրանքատեսակի բնութագիր։"
 
-#: copy.html:79 templates/add-price.html:103 templates/add_product
-#: templates/add_product.html:79 templates/edit-price.html:109
+#: copy.html:79 templates/add-price.html:106 templates/add_product
+#: templates/edit-price.html:109
 msgid "Click on the link below to add a product category!"
 msgstr "Սեղմեք ներքևի հղման վրա ապրանքային կատեգորիա ավելացնելու համար։"
 
-#: templates/add-price.html:104 templates/edit-price.html:110
+#: templates/add-price.html:107 templates/edit-price.html:110
 msgid "Add Product Type Specifications"
 msgstr "Ավելացնել ապրանքատեսակի բնութագրեր։"
 
-#: copy.html:44 copy.html:92 templates/add-price.html:108
+#: copy.html:44 copy.html:92 templates/add-price.html:111
 #: templates/add-role.html:50 templates/add-teammate.html:50
 #: templates/add_article.html:92 templates/add_article_category.html:59
-#: templates/add_product templates/add_product.html:92
+#: templates/add_product templates/add_product.html:95
 #: templates/add_product_category templates/add_product_category.html:102
-#: templates/add_product_lang.html:98 templates/add_to_store.html:128
+#: templates/add_product_lang.html:153 templates/add_to_store.html:128
 #: templates/buy-now.html:135 templates/buy-now.html:1177
 #: templates/buy-now.html:1221 templates/buy-now.html:1236
 #: templates/buy-now.html:1242 templates/checkout.html:135
-#: templates/checkout.html:1172 templates/checkout.html:1216
-#: templates/checkout.html:1231 templates/checkout.html:1237
+#: templates/checkout.html:1174 templates/checkout.html:1219
+#: templates/checkout.html:1234 templates/checkout.html:1240
 #: templates/create-promo-code.html:151 templates/edit-price.html:114
 #: templates/edit-promo-code.html:209 templates/edit-pts.html:38
 #: templates/edit-role.html:51 templates/edit-teammate.html:78
 #: templates/edit_article_category.html:90
-#: templates/edit_product_category.html:123 templates/edit_store.html:126
-#: templates/order-details.html:541 templates/pr_thumbnail.html:86
-#: templates/product.html:206 templates/product.html:207
-#: templates/product.html:869 templates/public.html:103
-#: templates/sp-specifications.html:37 templates/stuff-signup.html:47
+#: templates/edit_product_category.html:124 templates/edit_store.html:126
+#: templates/order-details.html:538 templates/pr_thumbnail.html:86
+#: templates/product.html:210 templates/product.html:211
+#: templates/product.html:873 templates/public.html:103
+#: templates/sp-specifications.html:59 templates/stuff-signup.html:47
 #: templates/teammate-signup.html:56 templates/thumbnail.html:82
 #: templates/transfer-funds.html:75
 msgid "Submit"
 msgstr "Հաստատել"
 
-#: templates/add-price.html:114 templates/edit-price.html:120
+#: templates/add-price.html:117 templates/edit-price.html:120
 #: templates/edit_article_category.html:94
-#: templates/edit_product_category.html:127 templates/pr_thumbnail.html:92
+#: templates/edit_product_category.html:128 templates/pr_thumbnail.html:92
 #: templates/thumbnail.html:88
 msgid "Back"
 msgstr "Հետ"
 
-#: templates/add-price.html:293 templates/edit-price.html:301
-#: templates/product.html:403
+#: templates/add-price.html:296 templates/edit-price.html:301
+#: templates/product.html:407
 msgid "Close"
 msgstr "Փակել"
 
-#: copy.html:187 templates/add-price.html:305 templates/add_article.html:187
+#: copy.html:187 templates/add-price.html:308 templates/add_article.html:187
 #: templates/add_article_category.html:196 templates/add_product
-#: templates/add_product.html:209 templates/add_product_category.html:243
-#: templates/add_product_lang.html:193 templates/edit-price.html:313
+#: templates/add_product.html:212 templates/add_product_category.html:243
+#: templates/add_product_lang.html:248 templates/edit-price.html:313
 #: templates/edit-teammate.html:274 templates/edit_article_category.html:347
-#: templates/edit_product_category.html:376 templates/pr_thumbnail.html:338
-#: templates/product.html:415 templates/teammate-signup.html:171
+#: templates/edit_product_category.html:377 templates/pr_thumbnail.html:338
+#: templates/product.html:419 templates/teammate-signup.html:171
 #: templates/thumbnail.html:334
 msgid "Crop"
 msgstr "Կտրել"
 
-#: templates/add-price.html:387 templates/edit-price.html:473
+#: templates/add-price.html:390 templates/edit-price.html:473
 msgid "Please specify Title"
 msgstr "Խնդրում ենք նշել անվանումը"
 
-#: templates/add-price.html:396 templates/edit-price.html:481
+#: templates/add-price.html:399 templates/edit-price.html:481
 msgid "Please specify Price"
 msgstr "Խնդրում ենք նշել գինը"
 
-#: templates/add-price.html:518 templates/edit-price.html:613
+#: templates/add-price.html:526 templates/edit-price.html:613
 msgid ""
 "All changes in specifications fields will be lost, would you like to "
 "continue?"
@@ -566,8 +579,8 @@ msgstr "Ավելացնել թիմակից"
 
 #: templates/add-teammate.html:44 templates/buy-now.html:175
 #: templates/checkout.html:175 templates/confirmation-page.html:144
-#: templates/edit-teammate.html:57 templates/order-details.html:208
-#: templates/order-details.html:488 templates/orders.html:94
+#: templates/edit-teammate.html:57 templates/order-details.html:205
+#: templates/order-details.html:485 templates/orders.html:94
 #: templates/orders.html:163 templates/orders.html:265 templates/public.html:84
 msgid "Email"
 msgstr "Էլ. փոստ"
@@ -593,13 +606,13 @@ msgid "This-is-Your-Article-Link"
 msgstr "Սա է ձեր հոդվածի հղումը"
 
 #: copy.html:43 templates/add_article.html:43 templates/add_product
-#: templates/add_product.html:43 templates/add_product_lang.html:41
+#: templates/add_product.html:47 templates/add_product_lang.html:53
 msgid "Short description"
 msgstr "Հակիրճ նկարագրություն"
 
 #: copy.html:44 templates/add_article.html:44 templates/add_product
-#: templates/add_product.html:44 templates/add_product_lang.html:42
-#: templates/product.html:560
+#: templates/add_product.html:48 templates/add_product_lang.html:54
+#: templates/product.html:564
 msgid "Long description"
 msgstr "Մանրամասն նկարագրություն"
 
@@ -608,7 +621,7 @@ msgid "Choose article category"
 msgstr "Ընտրեք հոդվածի կատեգորիան"
 
 #: copy.html:70 templates/add_article.html:70 templates/add_product
-#: templates/add_product.html:70 templates/add_product_lang.html:70
+#: templates/add_product.html:74 templates/add_product_lang.html:89
 msgid "Translate category name"
 msgstr "Թարգմանել կատեգորիայի անվանումը"
 
@@ -628,17 +641,17 @@ msgstr "Ավելացնել հոդվածի կատեգորիա"
 
 #: copy.html:86 templates/add_article.html:86
 #: templates/add_article_category.html:52 templates/add_product
-#: templates/add_product.html:86 templates/add_product_category.html:91
-#: templates/add_product_lang.html:92 templates/teammate-signup.html:52
+#: templates/add_product.html:89 templates/add_product_category.html:91
+#: templates/add_product_lang.html:147 templates/teammate-signup.html:52
 msgid "Thumbnail image"
 msgstr "Գլխավոր նկար"
 
 #: copy.html:188 templates/add_article.html:188
 #: templates/add_article_category.html:197 templates/add_product
-#: templates/add_product.html:210 templates/add_product_category.html:244
-#: templates/add_product_lang.html:194 templates/edit-teammate.html:275
+#: templates/add_product.html:213 templates/add_product_category.html:244
+#: templates/add_product_lang.html:249 templates/edit-teammate.html:275
 #: templates/edit_article_category.html:348
-#: templates/edit_product_category.html:377 templates/pr_thumbnail.html:339
+#: templates/edit_product_category.html:378 templates/pr_thumbnail.html:339
 #: templates/teammate-signup.html:172 templates/thumbnail.html:335
 msgid "Done"
 msgstr "Կատարված է"
@@ -651,47 +664,47 @@ msgstr "Հոդվածի կատեգորիայի անվանումը"
 #: templates/add_article_category.html:166
 #: templates/add_product_category.html:213 templates/edit-teammate.html:215
 #: templates/edit_article_category.html:285
-#: templates/edit_product_category.html:314 templates/pr_thumbnail.html:286
+#: templates/edit_product_category.html:315 templates/pr_thumbnail.html:286
 #: templates/thumbnail.html:282
 msgid "Enter alt text"
 msgstr "Մուտքագրեք այլընտրանքային տեքստը"
 
 #: copy.html:3 copy.html:37 templates/add_product templates/add_product.html:3
-#: templates/add_product.html:37 templates/add_product_lang.html:3
+#: templates/add_product.html:41 templates/add_product_lang.html:3
 msgid "Add Product"
 msgstr "Ավելացնել ապրանք"
 
-#: copy.html:41 templates/add_product templates/add_product.html:41
-#: templates/add_product_lang.html:39
+#: copy.html:41 templates/add_product templates/add_product.html:45
+#: templates/add_product_lang.html:51
 msgid "Product Title"
 msgstr "Ապրանքի անվանումը"
 
-#: copy.html:42 templates/add_product templates/add_product.html:42
+#: copy.html:42 templates/add_product templates/add_product.html:46
 msgid "Product Url"
 msgstr "Ապրանքի հղումը"
 
-#: copy.html:42 templates/add_product templates/add_product.html:42
-#: templates/add_product_lang.html:40
+#: copy.html:42 templates/add_product templates/add_product.html:46
+#: templates/add_product_lang.html:52
 msgid "This-is-Your-Product-Link"
 msgstr "Սա-ձեր-ապրանքի-հղումն-է"
 
-#: copy.html:48 templates/add_product templates/add_product.html:48
-#: templates/add_product_lang.html:46 templates/product.html:489
+#: copy.html:48 templates/add_product templates/add_product.html:52
+#: templates/add_product_lang.html:58 templates/product.html:493
 msgid "Choose product category"
 msgstr "Ընտրեք ապրանքի կատեգորիան"
 
-#: copy.html:78 templates/add_product templates/add_product.html:78
+#: copy.html:78 templates/add_product
 msgid "You have not entered any product category yet."
 msgstr "Դուք դեռ որևէ ապրանքի կատեգորիա չեք մուտքագրել։"
 
 #: copy.html:27 copy.html:80 templates/add_product
-#: templates/add_product.html:80 templates/add_product_category
+#: templates/add_product.html:84 templates/add_product_category
 #: templates/add_product_category.html:30
-#: templates/add_product_category.html:41 templates/add_product_lang.html:86
+#: templates/add_product_category.html:41 templates/add_product_lang.html:141
 msgid "Add Product Category"
 msgstr "Ավելացնել ապրանքի կատեգորիա"
 
-#: templates/add_product.html:126 templates/edit-teammate.html:156
+#: templates/add_product.html:129 templates/edit-teammate.html:156
 #: templates/teammate-signup.html:87
 msgid "File should be in PNG or JPG/JPEG format."
 msgstr "Ֆայլը պետք է լինի PNG կամ JPG/JPEG ձևաչափով։"
@@ -701,45 +714,45 @@ msgid "Article Category"
 msgstr "Հոդվածի կատեգորիա"
 
 #: templates/add_product_category.html:50
-#: templates/edit_product_category.html:80
+#: templates/edit_product_category.html:81
 msgid "Product Category Name"
 msgstr "Ապրանքի կատեգորիայի անվանումը"
 
 #: templates/add_product_category.html:53
-#: templates/edit_product_category.html:83
+#: templates/edit_product_category.html:84
 msgid "Choose subproduct situation name"
 msgstr "Ընտրեք ապրանքատեսակի բնութագրի անվանումը"
 
 #: templates/add_product_category.html:72
-#: templates/edit_product_category.html:98
+#: templates/edit_product_category.html:99
 msgid "Translate subproduct situation name"
 msgstr "Թարգմանել ապրանքատեսակի բնութագրի անվանումը"
 
 #: templates/add_product_category.html:80
-#: templates/edit_product_category.html:106
+#: templates/edit_product_category.html:107
 msgid "You have not entered any product type situation name yet."
 msgstr "Դուք դեռ չեք մուտքագրել որևէ ապրանքատեսակի բնութագրի անվանում։"
 
 #: templates/add_product_category.html:81
-#: templates/edit_product_category.html:107
+#: templates/edit_product_category.html:108
 msgid "Click on the link below to add a product type situation!"
 msgstr "Սեղմեք ներքևի հղման վրա՝ ապրանքատեսակի բնութագիր ավելացնելու համար։"
 
 #: templates/add_product_category.html:82
-#: templates/edit_product_category.html:108
+#: templates/edit_product_category.html:109
 msgid "Add subproduct situation name"
 msgstr "Ավելացնել ապրանքատեսակի բնութագրի անվանում"
 
-#: templates/add_product_lang.html:34
+#: templates/add_product_lang.html:46
 msgid "Add Product in another lang"
 msgstr "Ավելացնել ապրանք"
 
-#: templates/add_product_lang.html:40 templates/product.html:544
+#: templates/add_product_lang.html:52 templates/product.html:548
 msgid "Product link"
 msgstr "Ապրանքի հղում"
 
 #: templates/add_to_store.html:3 templates/add_to_store.html:57
-#: templates/store.html:371
+#: templates/store.html:124 templates/store.html:376
 msgid "Add To Store"
 msgstr "Ավելացնել"
 
@@ -748,12 +761,12 @@ msgid "Choose a Product"
 msgstr "Ընտրեք ապրանք"
 
 #: templates/add_to_store.html:72 templates/affiliate-order-details.html:281
-#: templates/edit_store.html:69 templates/store.html:1008
+#: templates/edit_store.html:69 templates/store.html:1019
 msgid "Quantity"
 msgstr "Քանակ"
 
 #: templates/add_to_store.html:76 templates/edit_store.html:73
-#: templates/store.html:127 templates/store.html:1010
+#: templates/store.html:130 templates/store.html:1021
 msgid "Production Date"
 msgstr "Արտադրության ամսաթիվ"
 
@@ -761,7 +774,7 @@ msgstr "Արտադրության ամսաթիվ"
 #: templates/create-promo-code.html:123 templates/create-promo-code.html:129
 #: templates/edit-promo-code.html:179 templates/edit-promo-code.html:185
 #: templates/edit_store.html:91 templates/promo-codes.html:64
-#: templates/store.html:145 templates/store.html:1011
+#: templates/store.html:148 templates/store.html:1022
 msgid "Expiration Date"
 msgstr "Սպառման ամսաթիվ"
 
@@ -770,12 +783,12 @@ msgstr "Սպառման ամսաթիվ"
 msgid "Max allowed quantity to purchase"
 msgstr "Առավելագույն թույլատրելի քանակը գնումների համար"
 
-#: templates/add_to_store.html:297 templates/create-promo-code.html:1410
-#: templates/edit-promo-code.html:1440 templates/edit_store.html:301
+#: templates/add_to_store.html:297 templates/create-promo-code.html:1412
+#: templates/edit-promo-code.html:1443 templates/edit_store.html:303
 msgid "Click on me to add a product"
 msgstr "Սեղմեք ինձ վրա ապրանք ավելացնելու համար"
 
-#: templates/add_to_store.html:404 templates/edit_store.html:407
+#: templates/add_to_store.html:404 templates/edit_store.html:409
 msgid "Choose Store"
 msgstr "Ընտրեք խանութ"
 
@@ -789,23 +802,22 @@ msgid "Logout"
 msgstr "Ելք"
 
 #: templates/admin_panel.html:60 templates/article-categories.html:78
-#: templates/index.html:148 templates/product-categories-copy.html:79
-#: templates/product-categories.html:99 templates/products.html:187
+#: templates/index.html:181 templates/product-categories-copy.html:79
+#: templates/product-categories.html:99 templates/products.html:268
 #: templates/promo-codes.html:117 templates/roles.html:84
-#: templates/store.html:246
 msgid "No data to show!"
 msgstr "Տվյալները բացակայում են։"
 
 #: templates/affiliate-order-details.html:4
 #: templates/affiliate-order-details.html:166
 #: templates/affiliate-orders.html:294 templates/confirmation-page.html:118
-#: templates/order-details.html:4 templates/order-details.html:194
+#: templates/order-details.html:4 templates/order-details.html:191
 #: templates/orders.html:280
 msgid "Order Details"
 msgstr "Պատվերի մանրամասներ"
 
 #: templates/affiliate-order-details.html:161
-#: templates/confirmation-page.html:114 templates/order-details.html:183
+#: templates/confirmation-page.html:114 templates/order-details.html:180
 #: templates/order-tracker.html:106
 msgid "Order"
 msgstr "Պատվեր"
@@ -821,14 +833,14 @@ msgstr "Հաճախորդ"
 #: templates/affiliate-orders.html:271 templates/affiliate-transfers.html:180
 #: templates/affiliate.html:167 templates/create-promo-code.html:119
 #: templates/create-promo-code.html:138 templates/edit-promo-code.html:175
-#: templates/edit-promo-code.html:195 templates/order-details.html:223
+#: templates/edit-promo-code.html:195 templates/order-details.html:220
 #: templates/orders.html:95 templates/orders.html:185 templates/orders.html:273
 #: templates/promo-code-details.html:40 templates/promo-code-details.html:43
 #: templates/promo-codes.html:42 templates/transfers.html:225
 msgid "Promo Code"
 msgstr "Պռոմո կոդ"
 
-#: templates/affiliate-order-details.html:184 templates/order-details.html:229
+#: templates/affiliate-order-details.html:184 templates/order-details.html:226
 msgid "Ordered"
 msgstr "Պատվիրված"
 
@@ -837,25 +849,32 @@ msgstr "Պատվիրված"
 #: templates/affiliate.html:189 templates/affiliates.html:44
 #: templates/affiliates.html:83 templates/article-categories.html:50
 #: templates/edit-teammate.html:68 templates/edit_article_category.html:84
-#: templates/edit_product_category.html:117 templates/order-details.html:239
-#: templates/order-details.html:515 templates/orders.html:196
+#: templates/edit_product_category.html:118 templates/order-details.html:236
+#: templates/order-details.html:512 templates/orders.html:196
 #: templates/orders.html:277 templates/product-categories-copy.html:50
 #: templates/product-categories.html:63
-#: templates/product-type-specifications.html:33
-#: templates/product-type-specifications.html:60 templates/products.html:135
+#: templates/product-type-specifications.html:106
+#: templates/product-type-specifications.html:137
+#: templates/product-type-specifications.html:307 templates/products.html:207
 #: templates/promo-codes.html:75 templates/roles.html:53
 #: templates/table.html:75 templates/team.html:44 templates/team.html:83
 msgid "Status"
 msgstr "Կարգավիճակ"
 
+#: templates/affiliate-order-details.html:200
+#: templates/affiliate-orders.html:231 templates/order-details.html:243
+#: templates/orders.html:218
+msgid "Panding"
+msgstr "Սպասման մեջ"
+
 #: templates/affiliate-order-details.html:209
-#: templates/affiliate-orders.html:240 templates/order-details.html:255
+#: templates/affiliate-orders.html:240 templates/order-details.html:252
 #: templates/orders.html:227
 msgid "Ready for delivery"
 msgstr "Պատրաստ է առաքման"
 
 #: templates/affiliate-order-details.html:280
-#: templates/confirmation-page.html:234 templates/order-details.html:320
+#: templates/confirmation-page.html:234 templates/order-details.html:317
 msgid "Product"
 msgstr "Ապրանք"
 
@@ -867,11 +886,11 @@ msgid "Net"
 msgstr "Զուտ"
 
 #: templates/affiliate-order-details.html:283
-#: templates/confirmation-page.html:236 templates/order-details.html:322
+#: templates/confirmation-page.html:236 templates/order-details.html:319
 msgid "Discount"
 msgstr "Զեղչ"
 
-#: templates/affiliate-order-details.html:284 templates/order-details.html:323
+#: templates/affiliate-order-details.html:284 templates/order-details.html:320
 msgid "Discounted"
 msgstr "Զեղչված"
 
@@ -1007,8 +1026,11 @@ msgstr "Գործընկեր "
 
 #: templates/affiliate.html:149
 msgid ""
-"Below is the summary of payment and reward progress of the current affiliate."
-msgstr "Ստորև ամփոփված է տվյալ գործընկերոջ վճարումներին և պարգևատրումներին վերաբերող տեղեկատվությունը։"
+"Below is the summary of payment and reward progress of the current "
+"affiliate."
+msgstr ""
+"Ստորև ամփոփված է տվյալ գործընկերոջ վճարումներին և պարգևատրումներին "
+"վերաբերող տեղեկատվությունը։"
 
 #: templates/affiliate.html:198 templates/affiliate.html:242
 msgid "Details"
@@ -1024,8 +1046,9 @@ msgstr "Գ/Պ"
 
 #: templates/affiliate.html:217 templates/affiliates.html:58
 #: templates/edit-teammate.html:69 templates/edit_article_category.html:85
-#: templates/edit_product_category.html:118
-#: templates/product-type-specifications.html:48 templates/promo-codes.html:86
+#: templates/edit_product_category.html:119
+#: templates/product-type-specifications.html:121
+#: templates/product-type-specifications.html:288 templates/promo-codes.html:86
 #: templates/roles.html:64 templates/table.html:50 templates/team.html:58
 msgid "Active"
 msgstr "Ակտիվ"
@@ -1051,8 +1074,9 @@ msgstr "Գործընկերներ"
 #: templates/affiliates.html:74 templates/article-categories.html:49
 #: templates/product-categories-copy.html:49
 #: templates/product-categories.html:53
-#: templates/product-type-specifications.html:22
-#: templates/product-type-specifications.html:56 templates/table.html:59
+#: templates/product-type-specifications.html:95
+#: templates/product-type-specifications.html:133
+#: templates/product-type-specifications.html:303 templates/table.html:59
 #: templates/table.html:66 templates/team.html:23 templates/team.html:67
 #: templates/team.html:74
 msgid "Name"
@@ -1063,8 +1087,9 @@ msgstr "Անուն"
 msgid "Position"
 msgstr "Պաշտոն"
 
-#: templates/affiliates.html:61 templates/product-type-specifications.html:51
-#: templates/table.html:53 templates/team.html:61
+#: templates/affiliates.html:61 templates/product-type-specifications.html:124
+#: templates/product-type-specifications.html:291 templates/table.html:53
+#: templates/team.html:61
 msgid "Disabled"
 msgstr "Անջատված"
 
@@ -1078,21 +1103,23 @@ msgstr "Հոդվածների կատեգորիաներ"
 
 #: templates/article-categories.html:48
 #: templates/product-categories-copy.html:48
-#: templates/product-categories.html:42 templates/product.html:136
-#: templates/products.html:85 templates/store.html:190
+#: templates/product-categories.html:42 templates/product.html:140
+#: templates/products.html:157 templates/store.html:193
 #: templates/thumbnail.html:3
 msgid "Thumbnail"
 msgstr "Գլխավոր նկար"
 
 #: templates/article-categories.html:53
 #: templates/product-categories-copy.html:53
-#: templates/product-categories.html:74 templates/products.html:147
+#: templates/product-categories.html:74 templates/products.html:223
+#: templates/products.html:385
 msgid "Published"
 msgstr "Հրապարակված"
 
 #: templates/article-categories.html:55
 #: templates/product-categories-copy.html:55
-#: templates/product-categories.html:76 templates/products.html:149
+#: templates/product-categories.html:76 templates/products.html:225
+#: templates/products.html:387
 msgid "Unpublished"
 msgstr "Չհրապարակված"
 
@@ -1102,14 +1129,15 @@ msgstr "Չհրապարակված"
 msgid "Empty"
 msgstr "Դատարկ"
 
-#: templates/article-categories.html:67 templates/order-details.html:189
+#: templates/article-categories.html:67 templates/order-details.html:186
 #: templates/product-categories-copy.html:67
-#: templates/product-categories.html:88 templates/products.html:169
-#: templates/products.html:397 templates/promo-codes.html:106
+#: templates/product-categories.html:88 templates/products.html:241
+#: templates/products.html:247 templates/products.html:294
+#: templates/promo-codes.html:106
 msgid "Edit"
 msgstr "Խմբագրել"
 
-#: templates/buy-now.html:4 templates/index.html:461
+#: templates/buy-now.html:4 templates/index.html:484
 msgid "Buy Now"
 msgstr "Գնել հիմա"
 
@@ -1118,22 +1146,23 @@ msgid "Items in Cart"
 msgstr "Ապրանքներ զամբյուղում"
 
 #: templates/buy-now.html:109 templates/checkout.html:109
+#: templates/checkout.html:134
 msgid "Promo code"
 msgstr "Պռոմո կոդ"
 
 #: templates/buy-now.html:117 templates/checkout.html:117
 #: templates/confirmation-page.html:248 templates/confirmation-page.html:289
-#: templates/order-details.html:334
+#: templates/order-details.html:331
 msgid "Total"
 msgstr "Ընդհամենը"
 
 #: templates/buy-now.html:140 templates/checkout.html:140
-#: templates/order-details.html:435
+#: templates/order-details.html:432
 msgid "Billing address"
 msgstr "Վճարման հասցե"
 
 #: templates/buy-now.html:145 templates/checkout.html:145
-#: templates/order-details.html:445
+#: templates/order-details.html:442
 msgid "First name"
 msgstr "Անուն"
 
@@ -1142,7 +1171,7 @@ msgid "Valid first name is required."
 msgstr "Մուտքագրված անունն անվավեր է։"
 
 #: templates/buy-now.html:150 templates/checkout.html:150
-#: templates/order-details.html:459
+#: templates/order-details.html:456
 msgid "Last name"
 msgstr "Ազգանուն"
 
@@ -1151,7 +1180,7 @@ msgid "Valid last name is required."
 msgstr "Մուտքագրված ազգանունն անվավեր է։"
 
 #: templates/buy-now.html:157 templates/checkout.html:157
-#: templates/order-details.html:473
+#: templates/order-details.html:470
 msgid "Phone Number"
 msgstr "Հեռախոսահամար"
 
@@ -1177,7 +1206,7 @@ msgid "Please enter a valid email address!"
 msgstr "Խնդրում ենք մուտքագրել վավեր էլ. փոստի հասցե։"
 
 #: templates/buy-now.html:181 templates/checkout.html:181
-#: templates/order-details.html:501
+#: templates/order-details.html:498
 msgid "Address"
 msgstr "Հասցե"
 
@@ -1194,7 +1223,7 @@ msgid "Choose..."
 msgstr "Ընտրեք..."
 
 #: templates/buy-now.html:190 templates/checkout.html:190
-#: templates/confirmation-page.html:141 templates/order-details.html:205
+#: templates/confirmation-page.html:141 templates/order-details.html:202
 msgid "Yerevan"
 msgstr "Երևան"
 
@@ -1247,29 +1276,30 @@ msgid "Security code required."
 msgstr "Անվտանգության կոդը պարտադիր է։"
 
 #: templates/buy-now.html:237 templates/checkout.html:237
+#: templates/choose.html:22
 msgid "Continue"
 msgstr "Շարունակել"
 
-#: templates/buy-now.html:614 templates/checkout.html:621
-#: templates/index.html:143 templates/index.html:351 templates/index.html:834
+#: templates/buy-now.html:614 templates/checkout.html:623
+#: templates/index.html:176 templates/index.html:374 templates/index.html:857
 msgid "Add To Cart"
 msgstr "Զամբյուղ"
 
-#: templates/buy-now.html:1164 templates/checkout.html:1159
+#: templates/buy-now.html:1164 templates/checkout.html:1161
 msgid "Louding..."
 msgstr "Բեռնվում է..."
 
-#: templates/buy-now.html:1169 templates/checkout.html:1164
+#: templates/buy-now.html:1169 templates/checkout.html:1166
 msgid "Enter Promo Code"
 msgstr "Մուտքագրեք պռոմո կոդը"
 
 #: templates/buy-now.html:1305 templates/buy-now.html:1373
-#: templates/buy-now.html:1414 templates/checkout.html:1300
-#: templates/checkout.html:1368 templates/checkout.html:1409
+#: templates/buy-now.html:1414 templates/checkout.html:1303
+#: templates/checkout.html:1371 templates/checkout.html:1412
 msgid "Please improve all field marked in red"
 msgstr "Խնդրում ենք ուղղել կարմիրով նշված բոլոր դաշտերը։"
 
-#: templates/buy-now.html:1427 templates/checkout.html:1422
+#: templates/buy-now.html:1427 templates/checkout.html:1425
 msgid "Country codes of phone numbers do not match!"
 msgstr "Հեռախոսահամարների երկրի կոդերը չեն համընկնում։"
 
@@ -1278,16 +1308,16 @@ msgid "Shopping Cart"
 msgstr "Զամբյուղ"
 
 #: templates/cart.html:29 templates/cart.html:41
-#: templates/confirmation-page.html:235 templates/index.html:334
-#: templates/order-details.html:321
+#: templates/confirmation-page.html:235 templates/index.html:357
+#: templates/order-details.html:318
 msgid "Price"
 msgstr "Գին"
 
-#: templates/cart.html:32 templates/cart.html:310
+#: templates/cart.html:32 templates/cart.html:317
 msgid "You don’t have any items in your cart."
 msgstr "Ձեր զամբյուղը դատարկ է"
 
-#: templates/cart.html:33 templates/cart.html:314
+#: templates/cart.html:33 templates/cart.html:321
 msgid "Start shopping"
 msgstr "Սկսել գնումները"
 
@@ -1299,7 +1329,7 @@ msgstr "Ընդհամենը"
 msgid "items"
 msgstr ""
 
-#: templates/cart.html:122 templates/index.html:488
+#: templates/cart.html:122 templates/index.html:511
 msgid "Proceed to Checkout"
 msgstr "Շարունակել"
 
@@ -1310,6 +1340,14 @@ msgstr "Վճարում"
 #: templates/checkout.html:87
 msgid "Your cart"
 msgstr "Ձեր զամբյուղը"
+
+#: templates/choose.html:3 templates/error.html:3 templates/index.html:1036
+msgid "Something is wrong"
+msgstr "Ինչ-որ բան սխալ է"
+
+#: templates/choose.html:23
+msgid "Return"
+msgstr ""
 
 #: templates/confirmation-page.html:4
 msgid "Confirmation Page"
@@ -1329,15 +1367,15 @@ msgstr ""
 msgid "Delivery Information"
 msgstr "Առաքման տվյալներ"
 
-#: templates/confirmation-page.html:141 templates/order-details.html:205
+#: templates/confirmation-page.html:141 templates/order-details.html:202
 msgid "Armenia"
 msgstr "Հայաստան"
 
-#: templates/confirmation-page.html:150 templates/order-details.html:212
+#: templates/confirmation-page.html:150 templates/order-details.html:209
 msgid "Payment Method"
 msgstr "Վճարման եղանակ"
 
-#: templates/confirmation-page.html:158 templates/index.html:493
+#: templates/confirmation-page.html:158 templates/index.html:516
 msgid "Continue Shopping"
 msgstr "Շարունակել գնումները"
 
@@ -1370,70 +1408,75 @@ msgstr "Դուք դեռ գործընկերներ չունեք։"
 msgid "Products"
 msgstr "Ապրանքներ"
 
-#: templates/create-promo-code.html:145 templates/create-promo-code.html:1569
-#: templates/edit-promo-code.html:202 templates/edit-promo-code.html:1979
+#: templates/create-promo-code.html:145 templates/create-promo-code.html:1571
+#: templates/edit-promo-code.html:202 templates/edit-promo-code.html:1982
 msgid "Auto Genarate"
 msgstr "Ավտոմատ գեներացում"
 
-#: templates/create-promo-code.html:350 templates/edit-promo-code.html:362
+#: templates/create-promo-code.html:351 templates/edit-promo-code.html:363
 msgid "Please improve all fields marked with red in products!"
 msgstr "Խնդրում ենք ուղղել կարմիրով նշված բոլոր դաշտերը։"
 
-#: templates/create-promo-code.html:358 templates/edit-promo-code.html:370
+#: templates/create-promo-code.html:359 templates/edit-promo-code.html:371
 msgid "Please select at least one product type!"
 msgstr "Խնդրում ենք նշել առնվազն մեկ ապրանքատեսակ։"
 
-#: templates/create-promo-code.html:368 templates/edit-promo-code.html:380
+#: templates/create-promo-code.html:369 templates/edit-promo-code.html:381
 msgid "Please select expiration date!"
 msgstr "Խնդրում ենք նշել վերջնաժամկետը։"
 
-#: templates/create-promo-code.html:377 templates/edit-promo-code.html:389
+#: templates/create-promo-code.html:378 templates/edit-promo-code.html:390
 msgid "Please create promo code!"
 msgstr "Խնդրում ենք ստեղծեք պռոմո կոդ"
 
-#: templates/create-promo-code.html:495 templates/edit-promo-code.html:515
+#: templates/create-promo-code.html:497 templates/edit-promo-code.html:518
 msgid "Select All"
 msgstr "Նշել բոլորը"
 
-#: templates/create-promo-code.html:534 templates/create-promo-code.html:552
-#: templates/edit-promo-code.html:554 templates/edit-promo-code.html:572
+#: templates/create-promo-code.html:536 templates/create-promo-code.html:554
+#: templates/edit-promo-code.html:557 templates/edit-promo-code.html:575
 msgid "All discount values will be changed to"
 msgstr "Զեղչի բոլոր դաշտերը կփոխվեն հետևյալ արժեքով"
 
-#: templates/create-promo-code.html:625 templates/create-promo-code.html:930
-#: templates/create-promo-code.html:1240 templates/edit-promo-code.html:649
-#: templates/edit-promo-code.html:959 templates/edit-promo-code.html:1276
+#: templates/create-promo-code.html:627 templates/create-promo-code.html:932
+#: templates/create-promo-code.html:1242 templates/edit-promo-code.html:652
+#: templates/edit-promo-code.html:962 templates/edit-promo-code.html:1279
 msgid "All revard values in Product Type fields will be changed to"
 msgstr "Ապրանքատեսակի պարգևատրման բոլոր դաշտերը կփոխվեն հետևյալ արժեքով"
 
-#: templates/create-promo-code.html:684 templates/edit-promo-code.html:708
+#: templates/create-promo-code.html:686 templates/edit-promo-code.html:711
 msgid "All revard options will be changed to"
 msgstr "Պարգևատրման բոլոր տարբերակները կփոխվեն հետևյալ արժեքի"
 
-#: templates/create-promo-code.html:684 templates/create-promo-code.html:990
-#: templates/create-promo-code.html:1300 templates/edit-promo-code.html:708
-#: templates/edit-promo-code.html:1019 templates/edit-promo-code.html:1336
-msgid "And all corresponding reward values will be removed"
+#: templates/create-promo-code.html:686
+#, fuzzy
+msgid "and all corresponding reward values will be removed"
 msgstr "Եվ բոլոր համապատասխան պարգևատրման արժեքները կհեռացվեն"
 
-#: templates/create-promo-code.html:719 templates/create-promo-code.html:1025
-#: templates/edit-promo-code.html:743 templates/edit-promo-code.html:1054
+#: templates/create-promo-code.html:721 templates/create-promo-code.html:1027
+#: templates/edit-promo-code.html:746 templates/edit-promo-code.html:1057
 msgid "Discount state is disabled"
 msgstr "Զեղչի դրությունը անջատված է"
 
-#: templates/create-promo-code.html:839 templates/create-promo-code.html:857
-#: templates/create-promo-code.html:1149 templates/create-promo-code.html:1167
-#: templates/edit-promo-code.html:863 templates/edit-promo-code.html:881
-#: templates/edit-promo-code.html:1181 templates/edit-promo-code.html:1199
+#: templates/create-promo-code.html:841 templates/create-promo-code.html:859
+#: templates/create-promo-code.html:1151 templates/create-promo-code.html:1169
+#: templates/edit-promo-code.html:866 templates/edit-promo-code.html:884
+#: templates/edit-promo-code.html:1184 templates/edit-promo-code.html:1202
 msgid "All discount values in current Product Type fields will be changed to"
 msgstr "Տվյալ ապրանքատեսակի դաշտերում բոլոր զեղչի արժեքները կփոխվեն"
 
-#: templates/create-promo-code.html:990 templates/create-promo-code.html:1300
-#: templates/edit-promo-code.html:1019 templates/edit-promo-code.html:1336
+#: templates/create-promo-code.html:992 templates/create-promo-code.html:1302
+#: templates/edit-promo-code.html:1022 templates/edit-promo-code.html:1339
 msgid "All revard options in current Product Type fields will be changed to"
 msgstr "Տվյալ ապրանքատեսակի դաշտերում բոլոր պարգևատրման տարբերակները կփոխվեն"
 
-#: templates/create-promo-code.html:1560 templates/edit-promo-code.html:1970
+#: templates/create-promo-code.html:992 templates/create-promo-code.html:1302
+#: templates/edit-promo-code.html:711 templates/edit-promo-code.html:1022
+#: templates/edit-promo-code.html:1339
+msgid "And all corresponding reward values will be removed"
+msgstr "Եվ բոլոր համապատասխան պարգևատրման արժեքները կհեռացվեն"
+
+#: templates/create-promo-code.html:1562 templates/edit-promo-code.html:1973
 msgid "Loading ......"
 msgstr "Բեռնվում է ......"
 
@@ -1457,11 +1500,11 @@ msgstr "Խմբագրել պռոմո կոդը"
 msgid "Edit Product Type Specifications"
 msgstr "Խմբագրել ապրանքատեսակի բնութագրերը"
 
-#: templates/edit-pts.html:15 templates/sp-specifications.html:15
+#: templates/edit-pts.html:15 templates/sp-specifications.html:4
 msgid "Product Type Situation name"
 msgstr "Ապրանքատեսակի բնութագրի անվանումը"
 
-#: templates/edit-pts.html:165 templates/sp-specifications.html:159
+#: templates/edit-pts.html:165 templates/sp-specifications.html:181
 msgid "Please improve all red fields!"
 msgstr "Խնդրում ենք ուղղել բոլոր կարմիր դաշտերը։"
 
@@ -1478,7 +1521,7 @@ msgid "Avatar"
 msgstr "Ավատար"
 
 #: templates/edit-teammate.html:70 templates/edit_article_category.html:86
-#: templates/edit_product_category.html:119
+#: templates/edit_product_category.html:120
 msgid "Passive"
 msgstr "Պասիվ"
 
@@ -1487,19 +1530,19 @@ msgid "Edit Article Category"
 msgstr "Խմբագրել հոդվածի կատեգորիան"
 
 #: templates/edit_article_category.html:40
-#: templates/edit_product_category.html:40 templates/pr_thumbnail.html:43
+#: templates/edit_product_category.html:41 templates/pr_thumbnail.html:43
 #: templates/thumbnail.html:39
 msgid "Something went wrong."
 msgstr "Ինչ-որ բան սխալ է։"
 
 #: templates/edit_article_category.html:80
-#: templates/edit_product_category.html:113 templates/pr_thumbnail.html:83
+#: templates/edit_product_category.html:114 templates/pr_thumbnail.html:83
 #: templates/thumbnail.html:79
 msgid "Image"
 msgstr "Նկար"
 
 #: templates/edit_product_category.html:3
-#: templates/edit_product_category.html:70
+#: templates/edit_product_category.html:71
 msgid "Edit Product Category"
 msgstr "Խմբագրել ապրանքի կատեգորիան"
 
@@ -1507,13 +1550,13 @@ msgstr "Խմբագրել ապրանքի կատեգորիան"
 msgid "Edit Store"
 msgstr "Խմբագրել խանութը"
 
-#: templates/error.html:3
-msgid "Something is wrong"
-msgstr "Ինչ-որ բան սխալ է"
-
-#: templates/error.html:9
+#: templates/error.html:23
 msgid "Something went wrong!"
 msgstr "Ինչ-որ բան սխալ է։"
+
+#: templates/error.html:24
+msgid "Back to home"
+msgstr ""
 
 #: templates/index.html:3
 msgid "Mammy's Bread"
@@ -1523,34 +1566,58 @@ msgstr "Մայրիկի Հացը"
 msgid "Home"
 msgstr "Գլխավոր"
 
-#: templates/index.html:105 templates/index.html:354 templates/index.html:678
-#: templates/index.html:798
+#: templates/index.html:127 templates/index.html:377 templates/index.html:701
+#: templates/index.html:821
 msgid "Added"
 msgstr "Ավելացված է"
 
-#: templates/index.html:109
+#: templates/index.html:131
 msgid "Fresh Sourdough Bread"
 msgstr "Թարմ թթխմորով հաց"
 
-#: templates/index.html:114
+#: templates/index.html:136
 msgid "Contact US"
 msgstr "Կապ"
 
-#: templates/index.html:115
+#: templates/index.html:137
 msgid "Order Now!"
 msgstr "Պատվիրել"
 
-#: templates/index.html:116 templates/public.html:123
+#: templates/index.html:138 templates/public.html:123
 msgid "Our History"
 msgstr "Մեր մասին"
 
-#: templates/index.html:142 templates/product_client.html:156
-msgid "See Details"
-msgstr "Ավելին"
-
-#: templates/index.html:155
+#: templates/index.html:144
 msgid "About"
 msgstr "Մեր մասին"
+
+#: templates/index.html:145
+msgid "aboutText1"
+msgstr "Փնտրու՞մ եք 100% էկոլոգիապես մաքուր հաց, պատրաստված մայրական հոգատարությամբ և քնքշանքով, որը ստանում ենք առաջնակարգ հումքից, գուրմա՞ն եք, ով կարոտ է նոր համային արկածների, ուրեմն դուք ճիշտ տեղում եք։"
+
+#: templates/index.html:146
+msgid "aboutText2"
+msgstr "Թթխմորի հիմքով համեղ և առողջարար բոքոններ` պատրաստված ավանդական եղանակով, սերնդեսերունդ փոխանցվող բաղադրատոմսերով, որ իրենց մեջ պարուրում են անցյալի համն ու ջերմությունը՝ կատարելոգործված ժամանակակից նորարարություններով։"
+
+#: templates/index.html:147
+msgid "aboutText3"
+msgstr "Մեր հացերն առանձնահատուկ են ոչ միայն իրենց օգտակարությամբ, այլև՝ յուրօրինակ համային հատկանիշներով։"
+
+#: templates/index.html:148
+msgid "aboutText4"
+msgstr "Սեղմեք քարտերի վրայի «Ավելին» կոճակը յուրաքանչյուր հացի մասին մանրամասն տեղեկատվություն ստանալու համար կամ "
+
+#: templates/index.html:148
+msgid "contact with us"
+msgstr "կապվեք մեզ հետ։"
+
+#: templates/index.html:149
+msgid "aboutText5"
+msgstr "Մենք հաճույքով կպատասխանենք Ձեր հարցիրին և կօգնենք կատարել ճիշտ ընտրություն։"
+
+#: templates/index.html:175 templates/product_client.html:156
+msgid "See Details"
+msgstr "Ավելին"
 
 #: templates/login.html:83 templates/login1.html:4
 msgid "Login"
@@ -1574,58 +1641,58 @@ msgstr "Մուտք"
 msgid "Saveing"
 msgstr "Պահպանում"
 
-#: templates/order-details.html:192 templates/order-details.html:549
-#: templates/product.html:1108 templates/store.html:737
+#: templates/order-details.html:189 templates/order-details.html:546
+#: templates/product.html:1112 templates/store.html:742
 msgid "Loading..."
 msgstr "Բեռնվում է..."
 
-#: templates/order-details.html:201
+#: templates/order-details.html:198
 msgid "Client Information"
 msgstr "Հաճախորդի տվյալներ"
 
-#: templates/order-details.html:218
+#: templates/order-details.html:215
 msgid "Note"
 msgstr "Նշում"
 
-#: templates/order-details.html:225
+#: templates/order-details.html:222
 msgid "Promo Code ID"
 msgstr "Պռոմո կոդի ID"
 
-#: templates/order-details.html:376 templates/orders.html:152
+#: templates/order-details.html:373 templates/orders.html:152
 #: templates/orders.html:261 templates/public.html:85
 msgid "Phone"
 msgstr "Հեռախոս"
 
-#: templates/order-details.html:409 templates/order-details.html:644
-#: templates/store.html:707 templates/store.html:864 templates/store.html:1068
+#: templates/order-details.html:406 templates/order-details.html:641
+#: templates/store.html:712 templates/store.html:873 templates/store.html:1079
 msgid "Something Went Wrong!"
 msgstr "Ինչ-որ բան սխալ է։"
 
-#: templates/order-details.html:578
+#: templates/order-details.html:575
 msgid "First name is required."
 msgstr "անվանումը պարտադիր է։"
 
-#: templates/order-details.html:583
+#: templates/order-details.html:580
 msgid "Last name is required."
 msgstr "Ազգանունը պարտադիր է։"
 
-#: templates/order-details.html:589
+#: templates/order-details.html:586
 msgid "Valid phone number is required."
 msgstr "Խնդրում ենք մուտքագրել վավեր հեռախոսահամար։"
 
-#: templates/order-details.html:595
+#: templates/order-details.html:592
 msgid "Valid email is required."
 msgstr "Խնդրում ենք մուտքագրել վավեր էլ. փոստի հասցե։"
 
-#: templates/order-details.html:601
+#: templates/order-details.html:598
 msgid "Address is required."
 msgstr "Հասցեն պարտադիր է։"
 
-#: templates/order-details.html:607
+#: templates/order-details.html:604
 msgid "Status is required."
 msgstr "Կարգավիճակը պարտադիր է։"
 
-#: templates/order-details.html:640
+#: templates/order-details.html:637
 msgid "Form submitted successfully!"
 msgstr "Հաջողությամբ լրացված է։"
 
@@ -1657,85 +1724,121 @@ msgstr "Դերեր"
 msgid "Product Type Specifications"
 msgstr "Ապրանքատեսակի բնութագրեր"
 
-#: templates/product.html:115 templates/product.html:130
+#: templates/product-type-specifications.html:72 templates/products.html:146
+msgid "Show Originals"
+msgstr ""
+
+#: templates/product-type-specifications.html:84
+#: templates/product-type-specifications.html:129
+#: templates/product-type-specifications.html:299
+msgid "ID"
+msgstr ""
+
+#: templates/product-type-specifications.html:310 templates/products.html:298
+#: templates/products.html:380
+#, fuzzy
+msgid "Translate"
+msgstr "Փոխանցումներ"
+
+#: templates/product.html:119 templates/product.html:134
 #: templates/side-bar-stuff.html:4
 msgid "Dashboard"
 msgstr "Կառավարման վահանակ"
 
-#: templates/product.html:133 templates/product.html:1187
+#: templates/product.html:137 templates/product.html:1191
 msgid "Slider"
 msgstr "Սլայդեր"
 
-#: templates/product.html:134
+#: templates/product.html:138
 msgid "Header"
 msgstr "Վերնագիր"
 
-#: templates/product.html:135
+#: templates/product.html:139
 msgid "Editor"
 msgstr "Խմբագրիչ"
 
-#: templates/product.html:143 templates/products.html:357
+#: templates/product.html:147 templates/products.html:619
 msgid "Add Product Type"
 msgstr "Ավելացնել ապրանքատեսակ"
 
-#: templates/product.html:155 templates/products.html:167
+#: templates/product.html:159 templates/products.html:249
+#: templates/products.html:382
 msgid "View"
 msgstr "Դիտել"
 
-#: templates/product.html:209
+#: templates/product.html:213
 msgid "Cencel"
 msgstr "Չեղարկել"
 
-#: templates/product.html:530
+#: templates/product.html:534
 msgid "Edit Header"
 msgstr "Խմբագրել վերնագիրը"
 
-#: templates/product.html:538
+#: templates/product.html:542
 msgid "Product name"
 msgstr "Ապրանքի անվանումը"
 
-#: templates/product.html:551
+#: templates/product.html:555
 msgid "Short Description"
 msgstr "Հակիրճ նկարագրություն"
 
-#: templates/product.html:558
+#: templates/product.html:562
 msgid "Long Description"
 msgstr "Մանրամասն նկարագրություն"
 
-#: templates/products.html:95 templates/store.html:196
+#: templates/products.html:143
+#, fuzzy
+msgid "Search for a product by title"
+msgstr "Ավելացնել ապրանքատեսակի անվանումը։"
+
+#: templates/products.html:143
+#, fuzzy
+msgid "Type in a product title"
+msgstr "Ապրանքի անվանումը"
+
+#: templates/products.html:167 templates/store.html:199
 msgid "Title"
 msgstr "Անվանում"
 
-#: templates/products.html:105
+#: templates/products.html:177
 msgid "Published Date"
 msgstr "Հրապարակման ամսաթիվ"
 
-#: templates/products.html:115
+#: templates/products.html:187
 msgid "Modified Date"
 msgstr "Թարմացման ամսաթիվ"
 
-#: templates/products.html:125
+#: templates/products.html:197
 msgid "Product Category"
 msgstr "Ապրանքի կատեգորիա"
 
-#: templates/products.html:174 templates/store.html:237
-#: templates/store.html:846
+#: templates/products.html:216
+#, fuzzy
+msgid "Actions"
+msgstr "Գործողություն"
+
+#: templates/products.html:255 templates/products.html:404
+#: templates/store.html:240 templates/store.html:855
 msgid "View Types"
 msgstr "Դիտել տեսակները"
 
-#: templates/products.html:356
-msgid "No Product Type Detected"
-msgstr "Ապրանքատեսակ չի հայտնաբերվել"
-
-#: templates/products.html:381
+#: templates/products.html:289
 msgid "Disable"
 msgstr "Անջատել"
 
-#: templates/products.html:383
+#: templates/products.html:291
 msgid "Enable"
 msgstr "Միացնել"
 
-#: templates/products.html:410 templates/store.html:428
+#: templates/products.html:395
+msgid "Edit in original language"
+msgstr ""
+
+#: templates/products.html:618
+msgid "No Product Type Detected"
+msgstr "Ապրանքատեսակ չի հայտնաբերվել"
+
+#: templates/products.html:649 templates/store.html:433
 msgid "Save Changes"
 msgstr "Պահպանել փոփոխությունները"
 
@@ -1826,79 +1929,92 @@ msgstr "Ավելացվում է"
 msgid "Buy now"
 msgstr "Գնել հիմա"
 
-#: templates/sp-specifications.html:4
+#: templates/sp-specifications.html:3
 msgid "Create Specifications for Product Type"
 msgstr "Ստեղծել ապրանքատեսակի բնութագրեր"
 
-#: templates/store.html:3 templates/store.html:1006
+#: templates/sp-specifications.html:8
+#, fuzzy
+msgid "Translate Specifications for Product Type"
+msgstr "Ստեղծել ապրանքատեսակի բնութագրեր"
+
+#: templates/sp-specifications.html:9 templates/sp-specifications.html:34
+msgid "The field name to be translated:"
+msgstr ""
+
+#: templates/store.html:3 templates/store.html:1017
 msgid "Store"
 msgstr "Խանութ"
 
-#: templates/store.html:122
+#: templates/store.html:123
 msgid "Filters"
 msgstr "Զտիչներ"
 
-#: templates/store.html:163 templates/store.html:1012
+#: templates/store.html:166 templates/store.html:1023
 msgid "Add Date"
 msgstr "Ավելացման ամսաթիվ"
 
-#: templates/store.html:202
+#: templates/store.html:205
 msgid "Full Quantity"
 msgstr "Ամբողջական քանակը"
 
-#: templates/store.html:208
+#: templates/store.html:211
 msgid "Outdated Quantity"
 msgstr "Ժամկետանց քանակը"
 
-#: templates/store.html:370
+#: templates/store.html:249
+msgid "The store(s) are empty."
+msgstr ""
+
+#: templates/store.html:375
 msgid "No Product Type Detected In Store"
 msgstr "Խանութում ապրանքատեսակ չի հայտնաբերվել"
 
-#: templates/store.html:386
+#: templates/store.html:391
 msgid "in stock"
 msgstr "պահեստում"
 
-#: templates/store.html:387
+#: templates/store.html:392
 msgid "expired"
 msgstr "ժամկետանց"
 
-#: templates/store.html:415
+#: templates/store.html:420
 msgid "More"
 msgstr "Ավելին"
 
-#: templates/store.html:620
+#: templates/store.html:625
 msgid "Shows From All Stores"
 msgstr "Ցուցադրում է բոլոր խանութներից"
 
-#: templates/store.html:621
+#: templates/store.html:626
 msgid "Shows All Products"
 msgstr "Ցուցադրում է բոլոր ապրանքները"
 
-#: templates/store.html:701
+#: templates/store.html:706
 msgid "Product Types"
 msgstr "Ապրանքի տեսակներ"
 
-#: templates/store.html:704
+#: templates/store.html:709
 msgid "No Types For Specified Product"
 msgstr "Նշված ապրանքի համար տեսակներ չկան"
 
-#: templates/store.html:857
+#: templates/store.html:866
 msgid "No Data"
 msgstr "Տվյալները բացակայում են"
 
-#: templates/store.html:1007
+#: templates/store.html:1018
 msgid "Submitted By"
 msgstr "Ներկայացրել է"
 
-#: templates/store.html:1009
+#: templates/store.html:1020
 msgid "Max Quantity"
 msgstr "Առավելագույն քանակը"
 
-#: templates/store.html:1013
+#: templates/store.html:1024
 msgid "Action"
 msgstr "Գործողություն"
 
-#: templates/store.html:1062
+#: templates/store.html:1073
 msgid "Nothing was found"
 msgstr "Ոչինչ չի գտնվել"
 
@@ -1969,4 +2085,7 @@ msgstr "Ֆիլտրել աշխատակցով"
 #: templates/transfers.html:156
 msgid "Staff member"
 msgstr "Աշխատակից"
+
+#~ msgid "Please specify lastname"
+#~ msgstr "Խնդրում ենք նշել ազգանվանումը։"
 

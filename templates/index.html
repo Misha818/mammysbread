@@ -88,6 +88,33 @@ input[type=submit]:hover {
   clear: both;
 }
 
+.card-container-user, #about p{
+  font-family: cursive!important;
+}
+
+#about {
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #fdf6ec;
+  padding: 40px !important;
+  max-width: 1200px;
+  max-width: 1200px;
+  margin: 55px 20px 0px 20px;
+}
+
+#about p {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 400;
+  margin-bottom: 15px;
+}
+
+.contact-with-us {
+  text-decoration: underline;
+  color: #fcc628;
+  cursor: pointer;
+}
+
 /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
 @media screen and (max-width: 600px) {
   .column, input[type=submit] {
@@ -117,6 +144,17 @@ input[type=submit]:hover {
   </nav>
 
 
+  <div id="about">
+    <div style="text-align:center">
+      <!-- <h2>{{ _('About') }}</h2> -->
+      <p>{{ _('aboutText1') }}</p>
+      <p>{{ _('aboutText2') }}</p>
+      <p style="font-style: italic; font-weight: 600;">{{ _('aboutText3') }}</p>
+      <p>{{ _('aboutText4') }}<span class="contacts contact-with-us">{{ _('contact with us') }}</span></p>
+      <p>{{ _('aboutText5') }} 😊 </p>
+    </div>
+  </div>
+  
 
 <div class="card-container-user" id="card-container-user">
 {% if result.length > 0 %}
@@ -150,17 +188,6 @@ input[type=submit]:hover {
 </div>
 
 
-<div class="container" id="about">
-  <div style="text-align:center">
-    <h2>{{ _('About') }}</h2>
-    <p>Some interesting information about what we do</p>
-    <p>And why we do</p>
-  </div>
-  <div class="row">
-
-  
-  </div>
-</div>
 
 <!-- 
 <div class="container" id="contacts">
