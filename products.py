@@ -1197,7 +1197,7 @@ def get_RefKey_LangID_by_link(myLink):
     if '&' in myLink:
         arr = myLink.split('&')
         prUrl = arr[0]
-        ptID = get_ptid_by_title(arr[1])
+        ptID = get_ptRefKey_by_title(arr[1]) # ptRefKey is used instead of ptID for multi-language purpose 
         
     else:
         prUrl = myLink
@@ -1272,6 +1272,22 @@ def get_ptid_by_title(title):
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     if result['length'] > 0:
         return result['data'][0]['ID']
+    else: 
+        return ''
+
+
+def get_ptRefKey_by_title(title): # By product_type.Title
+    title = title.replace('-', ' ')
+    sqlQuery = """
+                    SELECT `product_type_relatives`.`PT_Ref_Key` 
+                    FROM `product_type` 
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID` 
+                    WHERE `product_type`.`Title` = %s;"""
+    
+    sqlValTuple = (title,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] > 0:
+        return result['data'][0]['PT_Ref_Key']
     else: 
         return ''
 

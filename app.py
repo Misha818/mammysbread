@@ -1845,7 +1845,7 @@ def pd(RefKey):
 
             if prData['content'] == True == prData['headers']: 
                 productTemplate = 'product.html' 
-                slideShow = getSlides(prData['Product_ID'])
+                slideShow = getSlides(prData['Product_ID'], languageID)
                                         
             if prData['content'] == True and prData['headers'] == False:
                 
@@ -4163,7 +4163,7 @@ def validate_password(password):
 #     return render_template('table.html', structure=structure, current_locale=get_locale())
 
 
-def getSlides(PrID):
+def getSlides(PrID, languageID):
     sqlQueryTitle = "SELECT `Title` FROM `product` WHERE `ID` = %s;"
     sqlValTuple = (PrID,)
     resultTitle = sqlSelect(sqlQueryTitle, sqlValTuple, True)
@@ -4180,21 +4180,23 @@ def getSlides(PrID):
     sqlValTuple = (PrID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
-    sqlQuerySubProduct = f"""SELECT `product_type`.`ID`,
-                                    -- `product_type`.`Price`,
-                                    -- `product_type`.`Title`,
-                                    `product_type`.`Order` AS `SubPrOrder`,
-                                    `slider`.`ID` AS `sliderID`,
-                                    `slider`.`AltText`,
-                                    `slider`.`Name`,
-                                    `slider`.`Order` AS `SliderOrder` 
+    sqlQuerySubProduct = f"""SELECT  
+                                -- `product_type`.`ID`,
+                                `product_type_relatives`.`PT_Ref_Key` AS `ID`,
+                                `product_type`.`Order` AS `SubPrOrder`,
+                                `slider`.`ID` AS `sliderID`,
+                                `slider`.`AltText`,
+                                `slider`.`Name`,
+                                `slider`.`Order` AS `SliderOrder` 
                             FROM `product_type`
+                            LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID` 
                             LEFT JOIN `slider` ON `slider`.`ProductID` = `product_type`.`ID`
-                            WHERE `product_type`.`Product_ID` = %s AND `product_type`.`Status` = 1
-                            AND `slider`.`Type` = 2
-                            ORDER BY `SubPrOrder` ASC, `slider`.`Order` ASC;
+                            WHERE `product_type`.`Product_ID` = %s 
+                                AND `product_type_relatives`.`Language_ID` = %s
+                                AND `product_type`.`Status` = 1
+                                AND `slider`.`Type` = 2;
                           """
-    sqlSubPRValTuple = (PrID,)
+    sqlSubPRValTuple = (PrID, languageID)
     resultSubPr = sqlSelect(sqlQuerySubProduct, sqlSubPRValTuple, True)
     
     subProducts = []
@@ -4235,20 +4237,23 @@ def getSlides(PrID):
                         `product_type_details`.`Text`,
                         `product_type`.`Title` AS `ptTitle`,
                         `product_type`.`Price`,
-                        `product_type`.`ID` AS `ptID`,
+                        -- `product_type`.`ID` AS `ptID`,
+                        `product_type_relatives`.`PT_Ref_Key` AS `ptID`,
                         `product`.`Title` AS `prTitle`,
                         (SELECT COUNT(`ID`) FROM `product_type` WHERE `product_type`.`Product_ID` = %s) AS `ptCount`,
                         (SELECT SUM(`Quantity`) FROM `quantity` WHERE `productTypeID` = `ptID` AND `expDate` >= CURDATE()) AS `Quantity`
                     FROM `product_type`
+                        LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID` 
                         LEFT JOIN `product_type_details` ON `Product_Type`.`ID` = `product_type_details`.`ProductTypeID`
                         LEFT JOIN `sub_product_specifications` ON `product_type_details`.`spssID` = `sub_product_specifications`.`ID`
                         LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
                     WHERE `product_type`.`Product_ID` = %s
+                           AND `product_type_relatives`.`Language_ID` = %s
                         AND `product_type`.`Status` = 1
                     ORDER BY `product_type`.`Order`, `sub_product_specifications`.`Order`
                     ;
                     """
-    sqlValTupleSpss = (PrID, PrID)
+    sqlValTupleSpss = (PrID, PrID, languageID)
     resultSpss = sqlSelect(sqlQuerySpss, sqlValTupleSpss, True)
 
     return render_template('slideshow.html', result=result, resultSubPr=resultSubPr, resultSpss=resultSpss, subProducts=subProducts, Title = resultTitle['data'][0]['Title'], mainCurrency=MAIN_CURRENCY, current_locale=get_locale())
@@ -5461,7 +5466,7 @@ def index(myLinks):
             prData = constructPrData(content['RefKey'], productStatus)
             productStatusResult = prData.get('Status', 1)
             if prData.get('Product_ID') is not None: 
-                slideShow = getSlides(prData['Product_ID'])
+                slideShow = getSlides(prData['Product_ID'], content['LanguageID'])
 
             if productStatusResult == 2:
                 myHtml = 'product_client.html'
@@ -5509,7 +5514,8 @@ def index(myLinks):
                     gettext("In Basket")
     ]  
 
-    return render_template(myHtml, cartMessage=cartMessage, prData=prData, ptID=ptID, slideShow=slideShow, supportedLangsData=supportedLangsData, metaTags=metaTags, current_locale=get_locale())
+    languageID = getLangID()
+    return render_template(myHtml, cartMessage=cartMessage, prData=prData, ptID=ptID, languageID=languageID, slideShow=slideShow, supportedLangsData=supportedLangsData, metaTags=metaTags, current_locale=get_locale())
 
 
 @app.route("/get_langs", methods=["POST"])
@@ -5588,6 +5594,77 @@ def subscribe():
 
     
     answer = gettext("You have subscribed successfully!")
+    return jsonify({'status': '1', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+
+@app.route("/client-message", methods=["POST"])
+def client_message():
+    newCSRFtoken = generate_csrf()
+    languageID = getLangID()
+    if request.form.get('languageID'):
+        if int(request.form.get('languageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('languageID'))
+
+    # Check if email exists
+    if not request.form.get('emailMessage'):
+        answer = gettext('Please specify email!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+    
+    if not request.form.get('nameMessage'):
+        answer = gettext('Please specify your name!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+    
+    if not request.form.get('subjectMessage'):
+        answer = gettext('Please specify the subject!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+    
+    if not request.form.get('textareaMessage'):
+        answer = gettext('Please specify the message!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+    
+    
+    Email = request.form.get('emailMessage').strip()
+
+    # Validate email
+    emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+    # Check if the email matches the pattern
+    if not re.match(emailPattern, Email):
+        answer = gettext('Invalid email format')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
+    sqlQuery = "SELECT `ID`, `email` FROM `emails` WHERE `email` = %s;"
+    result = sqlSelect(sqlQuery, (Email,), True)
+    if result['length'] > 0:
+        sqlQueryUpdate = "UPDATE `emails` SET `Status` = 2 WHERE `email` = %s;"
+        resultUpdate = sqlUpdate(sqlQueryUpdate, (Email,))
+        if resultUpdate['status'] == '-1':
+            return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+        emailID = result['data'][0]['ID']
+    else:
+        
+        sqlQueryInsert = "INSERT INTO `emails` (`email`, `Status`) VALUES (%s, %s)"
+        sqlValTuple = (Email, 2)
+        resultInsert = sqlInsert(sqlQueryInsert, sqlValTuple)
+        if resultInsert['status'] == 0:
+            return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+
+        emailID = resultInsert['inserted_id']
+
+    Initials = request.form.get('nameMessage').strip()
+    Subject = request.form.get('subjectMessage').strip()
+    Message = request.form.get('textareaMessage').strip()
+    if len(Initials) > 50 or len(Subject) > 50 or len(Message) > 500:
+        answer = gettext('Something went wrong. Please try again!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
+    sqlQueryInsert = "INSERT INTO `client_messages` (`emailID`, `Initials`, `Subject`, `Message`, `languageID`, `Status`) VALUES (%s, %s, %s, %s, %s, %s);"
+    sqlValTuple = (emailID, Initials, Subject, Message, languageID, 1)
+    resultInsert = sqlInsert(sqlQueryInsert, sqlValTuple)
+    if resultInsert['status'] == 0:
+        return jsonify({'status': '0', 'answer': resultInsert['answer'], 'newCSRFtoken': newCSRFtoken})
+
+    answer = gettext("Thank you for your message! We will contact you as soon as possible.")
     return jsonify({'status': '1', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
 

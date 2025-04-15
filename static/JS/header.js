@@ -341,7 +341,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target) {
 
                 if (input.value == "") {
-                    input.value = 1;
+                    // input.value = 1;
+                    return;
                 }    
                 
                 let quantity = 0;
@@ -368,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let buyNowBtns = document.getElementsByClassName('buy-btn');
     for (let i = 0; i < buyNowBtns.length; i++) {
         buyNowBtns[i].onclick = function() {
-            const quantity = document.querySelector('.quantity').value;
+            const quantity = buyNowBtns[i].parentNode.querySelector('.quantity').value;
             if (parseInt(quantity) < 1) {
                 return;
             }
@@ -394,9 +395,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if product type exists in specified quantity
     // Returns bool    
     async function check_pt_quantity(ptID, num) {
+        let languageID = '';
+        if (document.getElementById('language-id')) {
+            languageID = document.getElementById('language-id').value;
+        }
+
         let formData = new FormData();
         formData.append('ptID', ptID);
         formData.append('num', num);
+        formData.append('languageID', languageID);
     
         try {
             let response = await fetch('/check-pt-quantity', {

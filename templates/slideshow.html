@@ -254,4 +254,41 @@
 
   <!-- <script type="text/javascript" src="{{ url_for('static', filename='JS/header.js') }}"></script> -->
   <script type="text/javascript" src="{{ url_for('static', filename='JS/slideshow.js') }}"></script>
+
+  <script>
+    const container = document.querySelector('.price-thumbnails');
+    if (container) {
+        if (window.innerWidth > 474 && window.innerWidth < 1366) {
+            if (container.querySelectorAll('img').length < 6) {
+                container.classList.add('centered');
+            }
+        } 
+        
+        if (window.innerWidth < 474) {
+            if (container.querySelectorAll('img').length < 4) {
+                container.classList.add('centered');
+            }
+        }
+    }
+
+  window.addEventListener('resize', function () {
+      if (container) {
+        if (window.innerWidth > 474 && window.innerWidth < 1365) {
+            if (container.querySelectorAll('img').length < 6) {
+                container.classList.add('centered');
+            }
+        } 
+        
+        if (window.innerWidth < 474) {
+            if (container.querySelectorAll('img').length < 4) {
+                container.classList.add('centered');
+            }
+        }
+
+        if (window.innerWidth >= 1365) {
+            container.classList.remove('centered');
+        }
+    }
+  });
+  </script>
   {% endif %}

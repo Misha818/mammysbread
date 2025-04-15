@@ -112,12 +112,13 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
         product_type_relatives
         store
         Logo in current language
+    about 
 ===========================================================
 
     TO DO
 
     mailing
-    about 
+    mailing for add stuff
 
 
 

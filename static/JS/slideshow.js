@@ -31,18 +31,88 @@
     let scrollTo = 0;
     // let thumbnailsWrapperHeight = itemHeight * maxShownThumbnails;
     let thumbnailsWrapperHeight = document.querySelector('.thumbnails-wrapper').offsetHeight;
-    // function displaySize() {
-    //     const width = window.innerWidth;
-    //     const height = window.innerHeight;
-    //     thumbnailsWrapperHeight = document.querySelector('.thumbnails-wrapper').offsetHeight;
-    //     console.log(`Current thumbnailsWrapperHeight: ${thumbnailsWrapperHeight}px`);
-    //   }
 
-    //   // Initial size display
-    // //   displaySize();
 
-    //   // Event listener for resize events
-    //   window.addEventListener('resize', displaySize);
+    // Price thumbnails
+    
+    // let currentImageIndexP = 0;
+    const thumbnailsP = document.querySelectorAll('.price-thumbnails img');
+    const imagesP = [];
+    const imagesSRCPrice = [];
+
+    thumbnailsP.forEach(thumbnail => {
+        const src = thumbnail.getAttribute('src');
+        const imageName = src.split('/').pop();
+        imagesSRCPrice.push(src);
+        imagesP.push(imageName);
+    });
+
+
+    // if (imagesP.length < 5) {
+        //     document.querySelector('.thumbnails-wrapper').style.width = '100%';
+        // }
+        // let returnChecker = false; // Maybe I delete you
+        // let scrollPosition = 0; // Maybe I delete you
+        
+        let maxShownThumbnailsP = 5;
+            if (screen.width < 475) {
+                maxShownThumbnailsP = 3;
+            } else {
+                maxShownThumbnailsP = 5;
+            }
+            
+        let scrollCounterP = 1
+    
+        let scrollNumberP = Math.floor(imagesP.length / maxShownThumbnailsP) +  (imagesP.length % maxShownThumbnailsP === 0 ? 0 : 1);
+        
+        let thumbnailImageP = document.querySelector('.price-thumbnails img');
+        let imgWidthP = thumbnailImageP ? thumbnailImageP.offsetWidth : 0;
+        let imgStyleP;
+        let marginRightP;
+        if (thumbnailImageP) {
+            imgStyleP = window.getComputedStyle(thumbnailImageP);
+            marginRightP = imgStyleP.marginRight;
+            marginRightP = parseInt(marginRightP.replace("px", ""), 10);
+        }
+
+        let itemWidthP = imgWidthP + marginRightP;
+        let scrollToP = 0;
+        
+        const thumbnailContainerP = document.querySelector('.price-thumbnails');
+        
+
+    function displaySize() {
+        thumbnailsWrapperHeight = document.querySelector('.thumbnails-wrapper').offsetHeight;
+        let imgHeight = thumbnailImage ? thumbnailImage.offsetHeight : 0;
+        let imgStyle = window.getComputedStyle(thumbnailImage);
+        let marginBottom = imgStyle.marginBottom;
+        marginBottom = parseInt(marginBottom.replace("px", ""), 10);
+        // console.log('displaySize')
+
+        // Price Thumbnails
+        if (screen.width < 475) {
+            maxShownThumbnailsP = 3;
+        } else {
+            maxShownThumbnailsP = 5;
+        }
+
+        scrollNumberP = Math.floor(imagesP.length / maxShownThumbnailsP) +  (imagesP.length % maxShownThumbnailsP === 0 ? 0 : 1);
+        imgWidthP = thumbnailImageP ? thumbnailImageP.offsetWidth : 0;
+        if (thumbnailImageP) {
+            imgStyleP = window.getComputedStyle(thumbnailImageP);
+            marginRightP = imgStyleP.marginRight;
+            marginRightP = parseInt(marginRightP.replace("px", ""), 10);
+        }
+
+        itemWidthP = imgWidthP + marginRightP;
+     
+      }
+
+      // Initial size display
+    //   displaySize();
+
+      // Event listener for resize events
+      window.addEventListener('resize', displaySize);
 
 
     function scrollThumbnailsFromPrice(num) {
@@ -220,53 +290,7 @@
         thumbnailContainer.style.transform = `translateY(-${scrollTo}px)`; // Adjust based on thumbnail size and gap
     }
 
-
-    // let currentImageIndexP = 0;
-    const thumbnailsP = document.querySelectorAll('.price-thumbnails img');
-    const imagesP = [];
-    const imagesSRCPrice = [];
-
-    thumbnailsP.forEach(thumbnail => {
-        const src = thumbnail.getAttribute('src');
-        const imageName = src.split('/').pop();
-        imagesSRCPrice.push(src);
-        imagesP.push(imageName);
-    });
-
-
-    // if (imagesP.length < 5) {
-        //     document.querySelector('.thumbnails-wrapper').style.width = '100%';
-        // }
-        // let returnChecker = false; // Maybe I delete you
-        // let scrollPosition = 0; // Maybe I delete you
-        
-        let maxShownThumbnailsP = 5;
-            if (screen.width < 475) {
-                maxShownThumbnailsP = 3;
-            } else {
-                maxShownThumbnailsP = 5;
-            }
-            
-        let scrollCounterP = 1
-    
-        let scrollNumberP = Math.floor(imagesP.length / maxShownThumbnailsP) +  (imagesP.length % maxShownThumbnailsP === 0 ? 0 : 1);
-        
-        let thumbnailImageP = document.querySelector('.price-thumbnails img');
-        let imgWidthP = thumbnailImageP ? thumbnailImageP.offsetWidth : 0;
-        let imgStyleP;
-        let marginRightP;
-        if (thumbnailImageP) {
-            imgStyleP = window.getComputedStyle(thumbnailImageP);
-            marginRightP = imgStyleP.marginRight;
-            marginRightP = parseInt(marginRightP.replace("px", ""), 10);
-        }
-
-        let itemWidthP = imgWidthP + marginRightP;
-        let scrollToP = 0;
-        
-        const thumbnailContainerP = document.querySelector('.price-thumbnails');
-        
-        
+    //Price thumbnails 
     function scrollThumbnailsPrice(direction, stop) {
 
         if (screen.width < 475) {
@@ -427,6 +451,8 @@ document.addEventListener("DOMContentLoaded", function() {
             showImage(dataValue);
         }
     }
+
+  
 
 });
       

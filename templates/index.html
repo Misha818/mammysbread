@@ -206,27 +206,6 @@ input[type=submit]:hover {
     const languageID = `{{ languageID }}`;
     document.addEventListener('DOMContentLoaded', function() {
 
-
-        const text = "Happy New 2025 Year!";
-        const delay = 100; // Delay in milliseconds
-        let index = 0;
-        
-        function typeWriter() {
-            if (index < text.length) {
-              if (document.getElementById('text')) {
-
-                document.getElementById('text').innerHTML += text.charAt(index);
-                index++;
-                setTimeout(typeWriter, delay);
-                if (index === text.length) {
-                  document.querySelector('.cursor').style.display = 'none';
-                  // setTimeout(slide_moves, 400);
-                }
-              }
-            }
-        }
-        
-        window.onload = typeWriter;
         function slide_moves() {
 
             const header = document.querySelector('.header');
@@ -299,6 +278,7 @@ input[type=submit]:hover {
 
   document.querySelector('.contacts').addEventListener('click', function(event) {
       event.preventDefault(); // Prevent default action if it's a link
+      document.querySelector('.messageForm').classList.remove('hidden')
 
       const targetElement = document.querySelector('#contacts');
       

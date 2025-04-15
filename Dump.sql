@@ -514,7 +514,7 @@ DROP TABLE IF EXISTS `notes`;
 CREATE TABLE `notes` (
     `ID` INT AUTO_INCREMENT,
     `note` TEXT, 
-    `type` INT, -- 1 = revard; 2 = cancelation; 3 = note; 4 = blacklisting reason; 5 = email, 6 = message;
+    `type` INT, -- 1 = revard; 2 = cancelation; 3 = note; 4 = blacklisting reason; 5 = message;
     `refID` INT, -- refers to the id of the corresponding table
     `addressee_type` INT, -- 1 == stuff; 2 == client; 3 affiliate 
     `add_user_id` INT NULL,
@@ -522,6 +522,21 @@ CREATE TABLE `notes` (
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;  
 ALTER TABLE `notes` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `client_messages`;
+CREATE TABLE `client_messages` (
+    `ID` INT AUTO_INCREMENT,
+    `Message` TEXT, 
+    `Initials` VARCHAR(255), 
+    `Subject` VARCHAR(255), 
+    `emailID` INT, 
+    `languageID` INT, 
+    `Date` DATE,
+    `Status` INT, 
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;  
+ALTER TABLE `client_messages` AUTO_INCREMENT = 1;
 
 
 DROP TABLE IF EXISTS `buffer_store`;

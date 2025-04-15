@@ -18,9 +18,10 @@
 </style>
 {% endblock %}
 {% block content %}
+
     <div class="container" style="display: contents;">
         <img src="{{ url_for('static', filename='images/error.png' ) }}" style="margin-top: 110px;">
         <h1 style="color:brown; font-size: 40pt;"> {{ _('Something went wrong!') }} </H1>
-        <a href="{{ url_for('stuff') }}">{{ _('Back to home') }}</a> 
+        <a href="{{ url_for('home') }}">{{ _('Back to home') }}</a> 
     </div>
 {% endblock %}
