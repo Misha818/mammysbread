@@ -1210,12 +1210,82 @@ def get_transfer_details():
 
     return jsonify({'status': "1", 'row': result['data'][0], 'newCSRFtoken': newCSRFtoken})
     
+
+@app.route('/get-email-content', methods=['POST'])
+# @login_required
+def get_email_content():
+    newCSRFtoken = generate_csrf()
+            
+    if not request.form.get('messageID'):
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
+    messageID = request.form.get('messageID')
+    sqlQuery = """
+                    SELECT 
+                        `client_messages`.`ID`, 
+                        `client_messages`.`Subject`,
+                        `client_messages`.`Initials`,
+                        `client_messages`.`Message`,
+                        `client_messages`.`Date`,
+                        `client_messages`.`Status`,
+                        `emails`.`email`
+                    FROM `client_messages`
+                        LEFT JOIN `emails` ON `client_messages`.`emailID` = `emails`.`ID`
+                    WHERE `client_messages`.`ID` = %s;"""
+
+    result = sqlSelect(sqlQuery, (messageID,), True)
+    if result['length'] == 0:
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+
+    sqlQueryUpdate = "UPDATE `client_messages` SET `Status` = 1 WHERE `ID` = %s;"
+    sqlup = sqlUpdate(sqlQueryUpdate, (messageID,))
+    print(sqlup)
+    return jsonify({'status': "1", 'row': result['data'][0], 'newCSRFtoken': newCSRFtoken})
+
+
+@app.route('/get-associated-employees', methods=['POST'])
+# @login_required
+def get_associated_employees():
+    newCSRFtoken = generate_csrf()
+            
+    if not request.form.get('emailID'):
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+    
+    emailID = request.form.get('emailID')
+    if not emailID.isdigit():
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+    
+    emailID = int(emailID)
+    sqlQuery = f"""
+                    SELECT 
+                        `stuff`.`ID`,
+                        CONCAT(`stuff`.`FirstName`, ' ', `stuff`.`LastName`) AS `Initials`,
+                        `stuff`.`email`,
+                        `corporate_emails`.`email` AS `CorporateEmail`,
+                        `rol`.`Rol`,
+                        `ceID`
+                    FROM `corporate_email_relatives`
+                        LEFT JOIN `corporate_emails` ON `corporate_email_relatives`.`ceID` = `corporate_emails`.`ID`
+                        LEFT JOIN `stuff` ON `corporate_email_relatives`.`stuffID` = `stuff`.`ID`
+                        LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID`
+                    WHERE `stuff`.`Status` = 1 AND `corporate_email_relatives`.`ceID` = %s
+                    ORDER BY `rol`.`ID` DESC;
+                """
+
+    result = sqlSelect(sqlQuery, (emailID,), True)
+   
+    if result['length'] == 0:
+        return jsonify({'status': "0", 'answer': gettext('No employees are associated with the current email'), 'newCSRFtoken': newCSRFtoken})
+
+    return jsonify({'status': "1", 'data': result['data'], 'newCSRFtoken': newCSRFtoken})
+    
+
 @app.route('/get-order-details', methods=['POST'])
 # @login_required
 def get_order_details():
+    newCSRFtoken = generate_csrf()
     if not request.form.get('orderID'):
-        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!')})
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
     
     pdID = request.form.get('orderID')
 
@@ -1245,7 +1315,69 @@ def get_order_details():
     result = sqlSelect(sqlQuery, (pdID,), True)
     orderStatusList = get_order_status_list()
 
-    return jsonify({'status': "1", 'data': result['data'], "statusList": orderStatusList, "newCSRFtoken": generate_csrf()})
+    return jsonify({'status': "1", 'data': result['data'], "statusList": orderStatusList, "newCSRFtoken": newCSRFtoken})
+
+
+@app.route('/remove-email-from-employee', methods=['POST'])
+# @login_required
+def rm_email_em():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('stuffID') or not request.form.get('emailID'):
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), "newCSRFtoken": newCSRFtoken})
+    
+    sqlQuery = "DELETE FROM `corporate_email_relatives` WHERE `stuffID` = %s AND `ceID` = %s;"
+    sqlValTuple = (request.form.get('stuffID'), request.form.get('emailID'))
+    result = sqlDelete(sqlQuery, sqlValTuple)
+    if result['status'] == '-1':
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), "newCSRFtoken": newCSRFtoken})
+    
+    return jsonify({'status': "1", "newCSRFtoken": newCSRFtoken})
+
+
+@app.route('/edit-corporate-email-view', methods=['POST'])
+# @login_required
+def edit_ce_view():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('emailID') or not request.form.get('emailID').isdigit():
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), "newCSRFtoken": newCSRFtoken})
+    
+    sqlQuery = "SELECT `ID`, `email` FROM `corporate_emails` WHERE `ID` = %s;"
+    sqlValTuple = (int(request.form.get('emailID')),)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] == 0:
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), "newCSRFtoken": newCSRFtoken})
+    
+    return jsonify({'status': "1", 'row': result['data'][0], "newCSRFtoken": newCSRFtoken})
+
+
+@app.route('/edit-corporate-email', methods=['POST'])
+# @login_required
+def edit_ce():
+    newCSRFtoken = generate_csrf()
+    if not request.form.get('emailID') or not request.form.get('emailID').isdigit() or not request.form.get('emailToEdit'):
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+    # Validate email
+    emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    # Check if the email matches the pattern
+    if not re.match(emailPattern, request.form.get('emailToEdit')):
+        answer = gettext('Invalid email format')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+    
+    # Check if email exists
+    sqlQuery = "SELECT * FROM `corporate_emails` WHERE `email` = %s AND `ID` != %s;"
+    sqlValTuple = (request.form.get('emailToEdit'), int(request.form.get('emailID')))
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    if result['length'] > 0:
+        return jsonify({'status': "0", 'answer': gettext('Email already exists!'), 'newCSRFtoken': newCSRFtoken})  
+    
+    sqlQuery = "UPDATE `corporate_emails` SET `email` = %s WHERE `ID` = %s;"
+    sqlValTuple = (request.form.get('emailToEdit'), int(request.form.get('emailID')),)
+    result = sqlUpdate(sqlQuery, sqlValTuple)
+    if result['status'] == '-1':
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+    
+    return jsonify({'status': "1", 'answer': gettext('Email updated successfully!'), "newCSRFtoken": newCSRFtoken})
+
 
 @app.route('/edit-order-details', methods=['POST'])
 # @login_required
@@ -2923,7 +3055,7 @@ def add_teammate():
             answer = r['data'][0]['Url']
             return jsonify({'status': '0', 'answer': uniqueURL, 'newCSRFtoken': newCSRFtoken}) 
         else:
-            answer = " Something is wrong!"
+            answer = gettext("Something is wrong!")
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     else:
         languageID = getLangID()
@@ -2939,6 +3071,151 @@ def add_teammate():
 
         sideBar = side_bar_stuff()
         return render_template('add-teammate.html', result=result, sideBar=sideBar, languageID=languageID, current_locale=get_locale())
+
+
+@app.route('/create-email', methods=['GET', 'POST'])
+# @login_required
+def create_email():
+    if request.method == "POST":
+        newCSRFtoken = generate_csrf()
+        if len(request.form.get('languageID')) == 0:
+            answer = gettext('Something wrong!')
+            return jsonify({'status': '0', 'answer': answer})  
+        
+        languageID  = request.form.get('languageID')
+
+        # Check if email exists
+        if len(request.form.get('Email')) == 0:
+            answer = gettext('Please specify email')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+        Email = request.form.get('Email').strip()
+
+        # Validate email
+        emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+        # Check if the email matches the pattern
+        if not re.match(emailPattern, Email):
+            answer = gettext('Invalid email format')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+        # Check whether Email exists
+        sqlQuery = "SELECT `email` FROM `corporate_emails` WHERE `email` = %s;"
+        sqlValTuple = (Email,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        if result['length'] > 0:
+            answer = f""" Specified email  "{Email}" already exists """
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+         
+        # insert into corporate_emails table
+        sqlQuery = "INSERT INTO `corporate_emails` (`email`, `Status`) VALUES (%s, %s);"
+        sqlValTuple = (Email, 1)
+
+        result = sqlInsert(sqlQuery, sqlValTuple)
+        
+        if result['inserted_id'] is not None:
+            if request.form.get('stuffID'):
+                stuffID  = int(request.form.get('stuffID').strip())
+                sqlQueryInsert = "INSERT INTO `corporate_email_relatives` (`ceID`, `stuffID`, `Status`) VALUES (%s, %s, %s);"
+                sqlValTuple = (result['inserted_id'], stuffID, 1)
+                result = sqlInsert(sqlQueryInsert, sqlValTuple)
+
+            return jsonify({'status': '0', 'answer': gettext('Done!'), 'newCSRFtoken': newCSRFtoken}) 
+        else:
+            answer = gettext("Something is wrong!")
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    else:
+        languageID = getLangID()
+        sqlQuery = """
+                    SELECT 
+                        `stuff`.`ID`,
+                        CONCAT(' ', `stuff`.`Firstname`, `stuff`.`Lastname`) AS `Initials`,
+                        `rol`.`Rol`
+                    FROM `stuff`
+                    LEFT JOIN `rol` ON `stuff`.`RolID` = `rol`.`ID`
+                    WHERE `stuff`.`Status` = 1
+                    ; 
+                """
+        result = sqlSelect(sqlQuery, (), True)
+
+        sideBar = side_bar_stuff()
+        return render_template('create-email.html', result=result, sideBar=sideBar, languageID=languageID, current_locale=get_locale())
+
+
+@app.route('/assign-email', methods=['GET', 'POST'])
+# @login_required
+def assign_email():
+    if request.method == "POST":
+        newCSRFtoken = generate_csrf()
+        if len(request.form.get('languageID')) == 0:
+            answer = gettext('Something wrong!')
+            return jsonify({'status': '0', 'answer': answer})  
+        
+        languageID  = request.form.get('languageID')
+
+        # Check if email exists
+        if not request.form.get('emailID'):
+            answer = gettext('Please specify email')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+        if not request.form.get('stuffID'):
+            answer = gettext('Please specify an employee')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+        
+        emailID = request.form.get('emailID').strip()
+        stuffID  = int(request.form.get('stuffID').strip())
+
+        # Check whether Email exists
+        sqlQuery = "SELECT `ID` FROM `corporate_emails` WHERE `ID` = %s;"
+        sqlValTuple = (emailID,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        if result['length'] == 0:
+            answer = gettext('Email does not exist')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+        
+        # Check if email is already assigned to the employee
+        sqlQueryAsigned = "SELECT `ID` FROM `corporate_email_relatives` WHERE `ceID` = %s AND `stuffID` = %s;"
+        sqlValTupleAsigned = (emailID, stuffID)
+        resultAsigned = sqlSelect(sqlQueryAsigned, sqlValTupleAsigned, True)
+        if resultAsigned['length'] > 0:
+            answer = gettext('Email is already assigned to the employee')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+        
+
+        # insert into corporate_emails table
+        sqlQuery = "INSERT INTO `corporate_email_relatives` (`ceID`, `stuffID`, `Status`) VALUES (%s, %s, %s);"
+        sqlValTuple = (emailID, stuffID, 1)
+
+        resultInsert = sqlInsert(sqlQuery, sqlValTuple)
+        
+        if resultInsert['inserted_id'] is not None:
+            return jsonify({'status': '1', 'answer': gettext('Done!'), 'newCSRFtoken': newCSRFtoken})             
+        else:
+            answer = gettext("Something is wrong!")
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    else:
+        languageID = getLangID()
+        sqlQuery = """
+                    SELECT 
+                        `stuff`.`ID`,
+                        CONCAT(' ', `stuff`.`Firstname`, `stuff`.`Lastname`) AS `Initials`,
+                        `rol`.`Rol`
+                    FROM `stuff`
+                    LEFT JOIN `rol` ON `stuff`.`RolID` = `rol`.`ID`
+                    WHERE `stuff`.`Status` = 1
+                    ; 
+                """
+        result = sqlSelect(sqlQuery, (), True)
+
+        sqlQueryEmails = "SELECT * FROM `corporate_emails` WHERE `Status` = 1;"
+        resultEmails = sqlSelect(sqlQueryEmails, (), True)
+
+        sideBar = side_bar_stuff()
+        return render_template('assign-email.html', result=result, resultEmails=resultEmails, sideBar=sideBar, languageID=languageID, current_locale=get_locale())
 
 
 @app.route('/stuff-signup/<uniqueURL>', methods=['GET', 'POST'])
@@ -3043,7 +3320,7 @@ def stuff_signup(uniqueURL):
         result = sqlInsert(sqlQuery, sqlValTuple)
         
         if result['inserted_id'] is None:
-            answer = " Something is wrong!"
+            answer = gettext("Something is wrong!")
             return jsonify({'status': '0', 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken})
         
 
@@ -3837,6 +4114,170 @@ def add_sps_view(spsRefKey=None):
 
     sideBar = side_bar_stuff()
     return render_template('sp-specifications.html', spsRefKey=spsRefKey, data=data, num=num, sideBar=sideBar, current_locale=get_locale())
+
+
+@app.route("/emails/<filters>", methods=['GET'])
+# @login_required
+def emails(filters):
+    languageID = getLangID()
+    if request.method == "GET":
+        page = filters
+                       
+        newCSRFtoken = generate_csrf()
+
+        where, eStatus, eStatusVal, emailInWhere, email, message = ['WHERE `client_messages`.`languageID` = %s ', ' AND `client_messages`.`Status` = %s ', 0, '', '', '']
+        protoTuple = []
+
+        if '&' in filters:
+            arr = filters.split('&')
+            page = arr[0]
+            for strs in arr:
+                if 'eStatus' in strs:                    
+                    eStatusVal = strs.split('=')[1]
+
+                    if not eStatusVal.isdigit():
+                        return render_template('error.html', current_locale=get_locale())
+                    
+                    eStatusVal = int(eStatusVal)
+                    if eStatusVal == 2:
+                        eStatus = ""
+                        protoTuple.append(languageID)
+                    else:
+                        eStatus = " AND `client_messages`.`Status` = %s "
+                        protoTuple.append(languageID)
+                        protoTuple.append(eStatusVal)
+                
+                if 'email' in strs:
+                    email = strs.split('=')[1]
+                    flag = 0
+                    if email == '':
+                        flag = 1
+
+                    # Validate email
+                    emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+                    # Check if the email matches the pattern
+                    if not re.match(emailPattern, email):
+                        flag = 1
+
+                    if flag == 0:
+                        emailInWhere = " AND `emails`.`email` = %s "
+                        protoTuple.append(email)
+                    else:
+                        message = gettext('Invalid email address!')
+
+        if not 'page' in filters or not '=' in page:
+            return render_template('error.html', current_locale=get_locale())
+        page = page.split('=')[1]
+
+        if not page.isdigit():
+            return render_template('error.html', current_locale=get_locale())
+        
+        rowsToSelect = (int(page) - 1) * int(PAGINATION)
+
+        if len(protoTuple) == 0:
+            protoTuple = [languageID, 0]
+
+        sqlValTuple = tuple(protoTuple)     
+        sqlQuery =  f"""SELECT 
+                        `client_messages`.`ID`, 
+                        `client_messages`.`Subject`,
+                        `client_messages`.`Initials`,
+                        `client_messages`.`Date`,
+                        `client_messages`.`Status`,
+                        `emails`.`email`
+                    FROM `client_messages`
+                        LEFT JOIN `emails` ON `client_messages`.`emailID` = `emails`.`ID`
+                    {where + eStatus + emailInWhere}
+                    ORDER BY `client_messages`.`ID` DESC
+                    LIMIT {rowsToSelect}, {int(PAGINATION)};
+                    """
+        
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        
+        numRows = totalNumRows('client_messages', where+eStatus+emailInWhere, sqlValTuple)        
+
+        sideBar = side_bar_stuff()
+        return render_template('emails.html', result=result, eStatus=eStatusVal, email=email, message=message, sideBar=sideBar, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), newCSRFtoken=newCSRFtoken, languageID=languageID, current_locale=get_locale())
+
+
+@app.route("/corporate-emails/<filters>", methods=['GET'])
+# @login_required
+def corporate_emails(filters):
+    languageID = getLangID()
+    if request.method == "GET":
+        page = filters
+                       
+        newCSRFtoken = generate_csrf()
+
+        where, eStatus, eStatusVal, emailInWhere, email, message = ['', '', 0, '', '', '']
+        protoTuple = []
+
+        if '&' in filters:
+            arr = filters.split('&')
+            page = arr[0]
+            for strs in arr:
+                if 'eStatus' in strs:                    
+                    eStatusVal = strs.split('=')[1]
+
+                    if not eStatusVal.isdigit():
+                        return render_template('error.html', current_locale=get_locale())
+                    
+                    eStatusVal = int(eStatusVal)
+                    if eStatusVal == 2:
+                        eStatus = ""
+                        protoTuple.append(languageID)
+                    else:
+                        eStatus = " AND `corporate_emails`.`Status` = %s "
+                        protoTuple.append(eStatusVal)
+                
+                if 'email' in strs:
+                    email = strs.split('=')[1]
+                    flag = 0
+                    if email == '':
+                        flag = 1
+
+                    # Validate email
+                    emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+                    # Check if the email matches the pattern
+                    if not re.match(emailPattern, email):
+                        flag = 1
+
+                    if flag == 0:
+                        emailInWhere = " AND `corporate_emails`.`email` = %s "
+                        protoTuple.append(email)
+                    else:
+                        message = gettext('Invalid email address!')
+
+        if not 'page' in filters or not '=' in page:
+            return render_template('error.html', current_locale=get_locale())
+        page = page.split('=')[1]
+
+        if not page.isdigit():
+            return render_template('error.html', current_locale=get_locale())
+        
+        rowsToSelect = (int(page) - 1) * int(PAGINATION)
+
+        sqlValTuple = tuple(protoTuple)     
+        sqlQuery =  f"""SELECT 
+                        `corporate_emails`.`ID`,
+                        `corporate_emails`.`email`,
+                        `corporate_emails`.`Status`        
+                    FROM `corporate_emails`
+                        
+                    {where + eStatus + emailInWhere}
+                    ORDER BY `corporate_emails`.`ID` DESC
+                    LIMIT {rowsToSelect}, {int(PAGINATION)};
+                    """
+        
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        
+        numRows = totalNumRows('corporate_emails', where+eStatus+emailInWhere, sqlValTuple)        
+
+        sideBar = side_bar_stuff()
+        return render_template('corporate-emails.html', result=result, eStatus=eStatusVal, email=email, message=message, sideBar=sideBar, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), newCSRFtoken=newCSRFtoken, languageID=languageID, current_locale=get_locale())
+
 
 
 @app.route("/transfers/<filters>", methods=['GET'])
@@ -5658,8 +6099,8 @@ def client_message():
         answer = gettext('Something went wrong. Please try again!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
     
-    sqlQueryInsert = "INSERT INTO `client_messages` (`emailID`, `Initials`, `Subject`, `Message`, `languageID`, `Status`) VALUES (%s, %s, %s, %s, %s, %s);"
-    sqlValTuple = (emailID, Initials, Subject, Message, languageID, 1)
+    sqlQueryInsert = "INSERT INTO `client_messages` (`emailID`, `Initials`, `Subject`, `Message`, `languageID`, `Status`, `Date`) VALUES (%s, %s, %s, %s, %s, %s, CURDATE());"
+    sqlValTuple = (emailID, Initials, Subject, Message, languageID, 0)
     resultInsert = sqlInsert(sqlQueryInsert, sqlValTuple)
     if resultInsert['status'] == 0:
         return jsonify({'status': '0', 'answer': resultInsert['answer'], 'newCSRFtoken': newCSRFtoken})

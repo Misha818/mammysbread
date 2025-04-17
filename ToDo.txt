@@ -190,6 +190,64 @@ Unvalidated Inputs: Ensure server-side validation to protect against injection a
 Use Content-Security-Policy, X-Content-Type-Options, and Strict-Transport-Security.
 Restrict CORS: Only allow trusted domains to access your resources
 
+Whitelist Approach: Instead of just filtering out “bad” characters, enforce a whitelist of characters or patterns (especially for fields like initials or subjects) to limit what is acceptable.
+
+ Sanitization:
+
+XSS Prevention: Sanitize inputs to remove any script tags or HTML that might lead to Cross-Site Scripting (XSS). Although you might not be displaying the data immediately, stored XSS can become an issue later if the data is rendered on a web page.
+
+Email Header Injection: If you’re using these inputs to construct email headers, ensure you strip newline characters and any formatting that may allow an attacker to inject additional email headers.
+
+4. Spam and Bot Mitigation
+a. Captchas:
+
+Implement a CAPTCHA: To deter automated submissions (bots) that might try to overwhelm your form, integrate CAPTCHAs like Google reCAPTCHA or similar solutions.
+
+b. Rate Limiting:
+
+Throttling Submissions:
+Limit the number of submissions from a single IP address within a given timeframe. This helps mitigate spam or brute-force attempts.
+
+c. Honeypot Fields:
+
+Hidden Fields:
+Add a hidden field that is not visible to normal users but can be filled by bots. If this field has data upon submission, you can assume it’s an automated submission and discard it.
+
+Email Handling Security
+Sanitize Email Data:
+When sending emails, ensure that all data that goes into the email body or headers is sanitized and validated. This prevents header injection attacks where attackers might manipulate email delivery.
+
+Use Reliable Libraries:
+Consider using established libraries for email sending which often have built-in safeguards against common injection vulnerabilities.
+
+7. Monitoring, Logging, and Error Handling
+a. Logging:
+
+Log Suspicious Activity:
+Implement logging for all form submissions and any unusual activities. This can help you detect and investigate potential abuse.
+
+Monitor Error Logs:
+Ensure your error logs do not expose sensitive information in production. Use generic error messages for end-users while keeping detailed logs on the server for analysis.
+
+b. Audit Trails:
+
+Maintain an audit trail for database changes related to contact form submissions. This helps in forensic analysis in case of a security incident.
+
+8. Additional Security Considerations
+a. Security Headers:
+
+HTTP Security Headers:
+Use headers such as Content-Security-Policy (CSP), X-Frame-Options, and X-Content-Type-Options to add extra layers of defense.
+
+b. Regular Security Updates:
+
+Software and Libraries:
+Regularly update your web server software, database systems, and any libraries you use to ensure you’re protected from known vulnerabilities.
+
+c. Minimal Data Exposure:
+
+Data Minimization:
+Only collect the data you need. Avoid storing sensitive personal data unless absolutely required, and ensure any data you do collect is securely managed.
 
 
 
@@ -292,6 +350,15 @@ stuff_promo_code_details
 transfer_funds
 get_transfer_details
 transfers
+emails
+get_email_content
+create_email
+assign_email
+corporate_emails
+get_associated_employees
+rm_email_em
+edit_ce_view
+edit_ce
 
 
 affiliate

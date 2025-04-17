@@ -499,6 +499,27 @@ CREATE TABLE `emails` (
 ALTER TABLE `emails` AUTO_INCREMENT = 1;
 
 
+DROP TABLE IF EXISTS `corporate_emails`;
+CREATE TABLE `corporate_emails` (
+    `ID` INT AUTO_INCREMENT,
+    `email` VARCHAR(255),
+    `Status` INT, -- 1 == active, 0 == passive
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `corporate_emails` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `corporate_email_relatives`;
+CREATE TABLE `corporate_email_relatives` (
+    `ID` INT AUTO_INCREMENT,
+    `ceID` INT,
+    `stuffID` INT,
+    `Status` INT, -- 1 == active, 0 == passive
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `corporate_email_relatives` AUTO_INCREMENT = 1;
+
+
 DROP TABLE IF EXISTS `subscribers`;
 CREATE TABLE `subscribers` (
     `ID` INT AUTO_INCREMENT,
@@ -533,7 +554,7 @@ CREATE TABLE `client_messages` (
     `emailID` INT, 
     `languageID` INT, 
     `Date` DATE,
-    `Status` INT, 
+    `Status` INT, -- 1 == read; 0 == unread
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;  
 ALTER TABLE `client_messages` AUTO_INCREMENT = 1;

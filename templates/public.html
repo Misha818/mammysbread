@@ -281,12 +281,18 @@
           mobileNavOverlay.classList.remove('open');
         });
 
-
+        let sFlag = false;
         document.getElementById('subscribe').addEventListener('click', function() {
+          if (sFlag) {
+            return;
+          }
+
+          sFlag = true;
           document.getElementById('subscribe-message').classList.add('hidden')
           let Email = document.getElementById('subscribe-email').value;
           if (Email === '') {
             document.getElementById('subscribe-message').classList.remove('hidden');
+            sFlag = false;
             return;
           }
 
@@ -299,6 +305,7 @@
             if (!gearElement) {
               gearElement.remove();
               document.getElementById('subscribe').textContent = `{{ _('Submit') }}`;
+              sFlag = false;
               return;
             } 
         
@@ -336,6 +343,7 @@
                     
                     document.querySelector('#subscribe-message').classList.remove('hidden');
               } 
+              sFlag = false;
           };
 
           // Define what happens in case of error

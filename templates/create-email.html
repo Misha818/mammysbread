@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}">  
+
+    <style>
+        .dz-details:hover {
+            cursor: pointer;
+        }
+    
+        .dz-remove-btn:hover {
+            background-color: #c82333;
+            cursor: pointer;
+        }
+    
+    
+        .alt-input:hover {
+            cursor: auto;
+        }
+    
+    </style>
+{% endblock %}
+{% block title %}
+    {{ _('Create Email') }}
+{% endblock %}
+
+
+
+{% block content %}
+
+{{ sideBar | safe }}
+
+<div class="overlay" id="overlay"></div>
+<div class="containerS">
+    <div class="title" style="margin-top: 10px">{{ _('Create Email') }}</div>
+    <!-- Form for adding a product -->
+    
+    <form>
+        <div id="mistakes" style="width: 100%;"></div>
+        
+        <input type="text" id="email" placeholder="{{ _('Email') }}" style="padding: 15px; width: 100%;">
+        <div class="form-group row" id="stuffDropDown"></div>
+
+            
+        <input type="hidden" id="language-id" value="{{ languageID }}">
+        
+        <div id="saveButton" class="pcButtonS modifiedB" >{{ _('Submit') }}</div>
+        <div id="saving" class="pcButtonS hidden modifiedB" >{{ _('Saving...') }}</div>
+    </form>
+
+
+</div>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    let csrfToken = "{{ csrf_token() }}"
+
+    function stuffDropDown() {
+
+        const stuff = {{ result | tojson }};
+
+        const dropdownContainer = document.getElementById('stuffDropDown');
+        if (stuff['length'] > 0) {
+            const select = document.createElement('select');
+            select.name = 'stuff';
+            select.id = 'stuff';
+            select.classList.add('form-control');
+            select.classList.add('styled-select');
+           
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '{{ _("Choose an employee") }}';
+            // defaultOption.disabled = true;
+            select.appendChild(defaultOption);
+
+            stuff.data.forEach(val => {
+                const optVal = val['Initials'] + ' ' + val['Rol'];
+                if (optVal !== null) {
+                    const option = document.createElement('option');
+                    option.value = val['ID'];
+                 
+                    option.textContent = optVal;
+
+                    // option.selected = true;
+                    select.appendChild(option);
+                }
+            });
+
+            dropdownContainer.appendChild(select); // Append the select element to the body or any other specific location
+        }
+    };
+
+    stuffDropDown();
+
+    // When the form is submitted
+    const saveButton = document.getElementById('saveButton');
+
+    saveButton.addEventListener('click', function (event) {
+
+        event.preventDefault();
+        
+        const saveButton = document.getElementById('saveButton');
+        const saving = document.getElementById('saving');
+        
+        saveButton.classList.add('hidden');
+        saving.classList.remove('hidden');
+        
+        let formData = new FormData();
+         
+        let languageID = document.getElementById('language-id').value;
+        let stuffID = document.getElementById('stuff').value;
+        let Email = document.getElementById('email').value;
+
+        
+
+        
+        // Create a new FormData object
+        formData.append('languageID', languageID);
+        formData.append('stuffID', stuffID);
+        formData.append('Email', Email);
+        
+
+        // Create a new XMLHttpRequest object
+        let xhr = new XMLHttpRequest();
+
+        // Configure the request
+        xhr.open('POST', '/create-email');
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+        // Define what happens on successful data submission
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText);
+
+                let mistakesDiv = document.getElementById('mistakes');
+                mistakesDiv.innerHTML = ''; // Clear previous messages
+
+                if (response.status === '0') {
+                    // Handle empty product name
+                    mistakesDiv.innerHTML = response.answer;
+                    mistakesDiv.style.color = 'red';
+                    mistakesDiv.style.display = 'flex';
+
+                    // Scroll the window to the mistakesDiv with smooth behavior
+                    mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                    csrfToken = response.newCSRFtoken;
+
+                    saveButton.classList.remove('hidden');
+                    saving.classList.add('hidden');
+
+                } 
+                
+                if (response.status === '1') {
+
+                    alert(response.answer)
+                    // Handle success
+                    let prURL = window.location.origin  + '/roles';
+                    // location.href = prURL;
+
+                    // location.reload();
+                }
+            } else {
+                // Handle error response
+                saveButton.classList.remove('hidden');
+                saving.classList.add('hidden');
+
+                console.error('Error adding category:', xhr.responseText);
+            }
+        };
+
+        // Send the request with the FormData object
+        xhr.send(formData);
+    });
+
+});
+
+</script>
+
+
+{% endblock %}
