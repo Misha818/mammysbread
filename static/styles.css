@@ -151,9 +151,9 @@ button[type="submit"] {
     margin-top: 10px;
 }
 
-button[type="submit"]:hover {
+/* button[type="submit"]:hover {
     background-color: #0056b3;
-}
+} */
 
 .image-container {
     position: relative;
@@ -377,9 +377,9 @@ button[type="submit"]:hover {
     text-decoration: none;
     border-radius: 4px;
 }
-.top-right-nav a:hover {
+/* .top-right-nav a:hover {
     background-color: #0056b3;
-}
+} */
 .top-right-nav select {
     margin-left: 10px;
     padding: 8px;
@@ -575,7 +575,7 @@ button[type="submit"]:hover {
 .pcButtonS1 {
     display: block;
     padding: 10px 20px;
-    background-color: #5856d6;
+    background-color: #6be6b2;
     color: white;
     border: none;
     border-radius: 5px;
@@ -585,9 +585,9 @@ button[type="submit"]:hover {
 }
 
 /* Hover effect */
-.pcButton:hover {
+/* .pcButton:hover {
     background-color: #0056b3;
-}
+} */
 
 .hidden {
     display: none!important;
@@ -1010,8 +1010,8 @@ button[type="submit"]:hover {
 
 .filter-button, .add-to-store-btn {
   margin-bottom: 7px;
-  color: #00a6ed;
-  border: 2px solid #00a6ed;
+  color: #6be6b2;
+  border: 2px solid #6be6b2;
   width: 100px;
   text-align: center;
   padding: 5px 10px;
@@ -1022,7 +1022,7 @@ button[type="submit"]:hover {
 .filter-button:hover {
   cursor: pointer;
   color: white;
-  background-color: #00a6ed;
+  background-color: #6be6b2;
 
 }
 
@@ -1366,10 +1366,10 @@ h2 {
         cursor: pointer;
       }
       
-      .button:hover {
+      /* .button:hover {
         background-color: #0056b3;
       }
-      
+       */
       
       .card-image {
         width: 100%;
@@ -1398,9 +1398,9 @@ h2 {
         text-decoration: none;
       }
       
-      .card-button:hover {
+      /* .card-button:hover {
         background-color: #0056b3;
-      }
+      } */
       
       .simple-card-button:hover {
         text-decoration: underline;
@@ -1820,7 +1820,7 @@ h2 {
 
   width: 100%;
   overflow: hidden;
-  background-color: #f1f1f1;
+  background-color: #6be6b2;
   padding: 20px 10px;
   margin-bottom: 20px;
   border-bottom:  solid #e0e0e0;
@@ -7003,17 +7003,21 @@ h2 {
  }
 
  .lang-drop-down {
-  padding: 10px;
+  padding: 7px 12px;
   font-size: 16px;
   line-height: 1.5;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f8f8f8;
+  /* border: 1px solid #ccc; */
+  border-radius: 25px;
+  background-color: #fff;
   appearance: none;
-  text-align: center;
+  /* text-align: center; */
   -webkit-appearance: none;
   -moz-appearance: none;
   color: #333;
+ }
+
+ .lang-drop-down:hover {
+  cursor: pointer;
  }
 
 @media (max-width: 450px) {
@@ -7131,7 +7135,7 @@ h2 {
   white-space: nowrap!important;
   left: 0!important;
   overflow-x: hidden!important;
-  top: 60px!important;
+  top: 95px!important;
   border-radius: 8px!important;
   z-index: 9999!important;
 }

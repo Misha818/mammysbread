@@ -13,6 +13,8 @@ import uuid
 import random
 import string
 import time
+import requests
+
 
 load_dotenv()
 
@@ -1328,19 +1330,49 @@ def get_order_status_list():
 
 
 
+# Send email
 
-# def replace_spaces_in_text_nodes(html_content):
-#     # This regex will match text between HTML tags while ignoring attributes and tags themselves
-#     def replace_spaces(match):
-#         # Replace spaces in the text node with &nbsp;
-#         return match.group(1).replace(' ', '&nbsp;')
+MAILGUN_DOMAIN = 'sandboxc21c9204634846bbbbefd1f0470f7a79.mailgun.org'  # e.g. sandbox12345.mailgun.org
+MAILGUN_API_KEY = '703c25778b5be98867330de2867fbc37-3d4b3a2a-3a467097'
+
+# recipient = 'misha818m@gmail.com'
+
+def send_email_mailgun(credentials):
+    response = requests.post(
+        f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
+        auth=("api", MAILGUN_API_KEY),
+        data={
+            "from": credentials['Sender'] + ' ' + credentials['From'],
+            "to": [{credentials['To']}],
+            "subject": credentials['Subject'],
+            "text": "Testing Mailgun email sending with tracking.",
+            "html": f"<html><body>{credentials['Content']}</body></html>",  
+            "o:tracking": "yes"  # Enable tracking
+        }
+    )
     
-#     # Regex explanation:
-#     # 1. `>(.*?)<` matches text content between any tags.
-#     # 2. `re.DOTALL` allows the `.` to match newlines as well.
-#     return re.sub(r'>([^<]+)<', lambda m: f">{replace_spaces(m)}<", html_content, flags=re.DOTALL)
+    if response.status_code == 200:
+        return jsonify({'status': '1', 'emailID': response.json().get('id')})  # Message ID for tracking
+    else:
+        return jsonify({'status': '0', 'answer': "Failed to send email:" + response.text})  
 
+def check_delivery_status(message_id):
+    print("Waiting for status update...")
+    time.sleep(10)  # Wait a bit to allow Mailgun to process
+    response = requests.get(
+        f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/events",
+        auth=("api", MAILGUN_API_KEY),
+        params={"message-id": message_id}  # Remove <> from ID
+    )
+    
+    if response.status_code == 200:
+        events = response.json().get('items', [])
+        for event in events:
+            print(f"Event: {event.get('event')}, Timestamp: {event.get('timestamp')}")
+    else:
+        print("Failed to fetch delivery status:", response.text)
 
-# Call the function
-# if __name__ == "__main__":
-#     removeRedundantFiles()
+# Usage
+# msg_id = send_email_mailgun()
+# if msg_id:
+#     check_delivery_status(msg_id)

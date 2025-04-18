@@ -331,7 +331,7 @@ WISHLIST_CNT	The number of items in your Wishlist.
 
 rgba(10, 161, 221, 0.92)
 
-
+Errors
 
 =========================================
 Functions to add to PERMISSIONS
@@ -359,6 +359,7 @@ get_associated_employees
 rm_email_em
 edit_ce_view
 edit_ce
+send_email
 
 
 affiliate
@@ -463,14 +464,7 @@ process_data()
 
 
 
-
-
-
-add_price
-    PR_Ref_Key, PT_Ref_Key, langID
-
-
-
+https://127.0.0.1:5000/send-email/email=flanfstan@mail.com&emailID=1
 
 
 

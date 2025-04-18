@@ -3,7 +3,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -31,6 +31,23 @@ app = Flask(__name__)
 @app.context_processor
 def inject_current_year():
     return {'current_year': datetime.now(UTC).year}
+
+@app.context_processor
+def inject_supportedLangsData():
+    supportedLangsData = supported_langs()
+    return {'supportedLangsData': supportedLangsData}
+
+@app.context_processor
+def inject_user_bool():
+    userBool = session.get("user_id", False)
+    return {'userBool': userBool}
+
+@app.template_test('digit')
+def is_digit(value):
+    try:
+        return str(value).isdigit()
+    except Exception:
+        return False
 
 
 # app.config['RECAPTCHA_SITE_KEY'] = os.getenv('SECRET_KEY')
@@ -1032,13 +1049,6 @@ def stuff_affiliate_orders(filter):
 
     return render_template('affiliate-orders.html', languageID=languageID, result=result, filters=filters, affID=filters['affiliate'], orderStatusList=orderStatusList, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
     
-
-@app.route('/send-email/<email>', methods=['GET'])
-# @login_required
-def send_email(email):
-    newCSRFtoken = generate_csrf()
-    return 1
-
 
 @app.route('/order-details/<pdID>', methods=['GET'])
 # @login_required
@@ -4210,7 +4220,7 @@ def corporate_emails(filters):
                        
         newCSRFtoken = generate_csrf()
 
-        where, eStatus, eStatusVal, emailInWhere, email, message = ['', '', 0, '', '', '']
+        where, eStatus, eStatusVal, emailInWhere, email, message = ['WHERE `corporate_emails`.`ID` > 0 ', '', 0, '', '', '']
         protoTuple = []
 
         if '&' in filters:
@@ -4226,7 +4236,7 @@ def corporate_emails(filters):
                     eStatusVal = int(eStatusVal)
                     if eStatusVal == 2:
                         eStatus = ""
-                        protoTuple.append(languageID)
+                        # protoTuple.append(languageID)
                     else:
                         eStatus = " AND `corporate_emails`.`Status` = %s "
                         protoTuple.append(eStatusVal)
@@ -4248,7 +4258,7 @@ def corporate_emails(filters):
                         emailInWhere = " AND `corporate_emails`.`email` = %s "
                         protoTuple.append(email)
                     else:
-                        message = gettext('Invalid email address!')
+                        message = gettext('Invalid email format!')
 
         if not 'page' in filters or not '=' in page:
             return render_template('error.html', current_locale=get_locale())
@@ -4272,6 +4282,9 @@ def corporate_emails(filters):
                     """
         
         result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        print(sqlQuery)
+        print(result)
         
         numRows = totalNumRows('corporate_emails', where+eStatus+emailInWhere, sqlValTuple)        
 
@@ -4427,12 +4440,94 @@ def transfer_funds(stuffID=0):
         # print('Content After', content)
         content = request.form.get('content', '').strip()
         if content != '<p><br></p>':
-            print('Content Before', content)
             # submit_product_text(content, insertedID)
-            
             submit_notes_text(content, type, insertedID, 3)
+            
 
         return jsonify({'status': "1", 'answer': gettext('Done!'), 'newCSRFtoken': newCSRFtoken})
+
+
+@app.route("/send-email/<filters>", methods=['GET', 'POST'])
+@app.route("/send-email", methods=['GET', 'POST'])
+# @login_required
+def send_email(filters=''):
+    newCSRFtoken = generate_csrf()
+    if request.method == "GET":
+        filterContent = {}
+        if filters != '':
+            if '&' in filters:
+                arr = filters.split('&')
+                for strs in arr:
+                    filterContent[strs.split('=')[0]] = strs.split('=')[1]
+            else:
+                if '=' in filters:
+                    filterContent[filters.split('=')[0]] = filters.split('=')[1]
+                else:
+                    return render_template('error.html', current_locale=get_locale())
+                
+        sqlQuery = """ SELECT 
+                            `corporate_emails`.`ID`,
+                            `corporate_emails`.`email`
+                        FROM `corporate_email_relatives`
+                            LEFT JOIN `corporate_emails` ON `corporate_email_relatives`.`ceID` = `corporate_emails`.`ID`
+                        WHERE `corporate_email_relatives`.`stuffID` = %s; """
+        
+        result = sqlSelect(sqlQuery, (session['user_id'],), True)
+        if result['length'] == 0:
+            return render_template('error.html', current_locale=get_locale())
+
+        sideBar = side_bar_stuff()
+        return render_template('send-email.html', result=result, filterContent=filterContent, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+    else:
+        
+        if not request.form.get('from'):
+            return jsonify({'status': "0", 'answer': gettext('Please specify sender email address!'), 'newCSRFtoken': newCSRFtoken}) 
+        
+        if not request.form.get('to'):
+            return jsonify({'status': "0", 'answer': gettext('Please specify recipient email address!'), 'newCSRFtoken': newCSRFtoken}) 
+        
+        # Validate email
+        emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+        sqlQueryCE = """SELECT 
+                            CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`,
+                            `corporate_emails`.`ID`,
+                            `corporate_emails`.`email`
+                        FROM `corporate_email_relatives`
+                            LEFT JOIN `corporate_emails` ON `corporate_email_relatives`.`ceID` = `corporate_emails`.`ID`
+                            LEFT JOIN `stuff` ON `corporate_email_relatives`.`stuffID` = `stuff`.`ID`
+                        WHERE `corporate_email_relatives`.`stuffID` = %s AND `corporate_emails`.`ID` = %s;"""
+        result = sqlSelect(sqlQueryCE, (session['user_id'], int(request.form.get('from').strip())), True)
+        if result['length'] == 0:
+            return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+        
+        From = result['data'][0]['email']
+        # Check if the email matches the pattern
+        if not re.match(emailPattern, From) or not re.match(emailPattern, request.form.get('to')):
+            answer = gettext('Invalid email format')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+        
+        if not request.form.get('subject'):
+            return jsonify({'status': "0", 'answer': gettext('Please specify subject!'), 'newCSRFtoken': newCSRFtoken}) 
+    
+        if not request.form.get('content') or request.form.get('content', '').strip() == '<p><br></p>':
+            return jsonify({'status': "0", 'answer': gettext('Please specify email content!'), 'newCSRFtoken': newCSRFtoken}) 
+
+        senderInitials = result['data'][0]['Initials']
+        credentials = {
+            'Sender': senderInitials,
+            'From': From,
+            'To': request.form.get('to'),
+            'Subject': request.form.get('subject'),
+            'Content': request.form.get('content')
+        }
+        msg_id = send_email_mailgun(credentials)
+        if msg_id:
+            check_delivery_status(msg_id)
+            return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
+        else:
+            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+
 
 # Subproduct situation and situations adding function
 @app.route("/add_sps", methods=['POST'])
@@ -5526,7 +5621,8 @@ def promo_codes():
                         `stuff`.`Firstname`, 
                         `stuff`.`Lastname`, 
                         `stuff`.`Email`, 
-                        `promo_code`.`expDate`, 
+                        `promo_code`.`expDate`,
+                        `promo_code`.`affiliateID`, 
                         `promo_code`.`Status` 
                     FROM `promo_code` 
                     LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`

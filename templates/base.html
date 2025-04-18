@@ -33,7 +33,29 @@
     {% endblock %}
   </head>
   <body>
-    
+    {% if userBool != False %}
+      <div class="header-stuff">
+        <img src="{{ url_for('static', filename='images/logo.jpg')}}" onclick="toggleSidebar()" style="cursor: pointer;" >
+        
+        <!-- <div class="header-stuff-right">
+          <a class="" href="{{ url_for('home') + 'logout' }}"><i class="fas fa-right-from-bracket"></i>{{ _('Logout') }}</a>
+        </div> -->
+        
+        <div class="header-stuff-right" style="display: flex; align-items: center;">
+          
+          {% if supportedLangsData | length > 1 %}     
+            <select onchange="location = '/setlang?lang=' + this.value;" class="lang-drop-down">
+              {% for lang in supportedLangsData %}
+                <option value="{{ lang['Prefix'] }}" {{ 'selected' if get_locale() ==  lang['Prefix']  else '' }}>{{ lang['Language'] }}</option>
+              {% endfor %}
+            </select>
+          {% endif %}
+          <a class="" href="{{ url_for('home') + 'logout' }}" title="{{ _('Logout') }}"><i class="fas fa-right-from-bracket" style="font-size: 25px; color: #fff;"></i></a>
+          
+        </div>
+          
+      </div>
+    {% endif %}
     {% block content %}
     
 

@@ -227,7 +227,11 @@
 
         <td class="edit-user">
             <span data-value="{{ row['ID'] }}" class="show-email-content" title="{{ _('Show Message') }}" style="color:#6be6b2"><i class="fas fa-eye"></i></span>
-            <span data-value="{{ row['ID'] }}" class="show-transfer-details" title="{{ _('Compose') }}" style="color:#6be6b2"><i class="fas fa-envelope"></i></span>
+            <a href="{{ url_for('send_email', _external=True) + '/email=' + row['email'] }}" target="_blank">
+              <span data-value="{{ row['ID'] }}" class="show-transfer-details" title="{{ _('Compose') }}" style="color:#6be6b2">
+                <i class="fas fa-envelope"></i>
+              </span>
+            </a>
         </td>
 
       </tr>

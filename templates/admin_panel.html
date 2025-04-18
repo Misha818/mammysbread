@@ -1,47 +1,8 @@
-<!doctype html>
-<html lang="{{ current_locale }}">
-
-<head>
-    <!-- Required meta tags -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
-    <title>
-        {{ _('Admin Panel') }}
-    </title>
-
-    <script>
-      window.addEventListener('load', () => {
-        document.querySelector('body').classList.add('loaded');
-      });
-    </script>
-    <style>
-
-    </style>
-</head>
-<body>
-
-<div class="header-stuff">
-  <img src="{{ url_for('static', filename='images/logo.png')}}" >
-  
-  <div class="header-stuff-right">
-    <a class="" href="{{ url_for('home') + 'logout' }}">{{ _('Logout') }}</a>
-  </div>
-  
-  <div class="header-stuff-right">
-    
-    {% if supportedLangsData | length > 1 %}     
-      <select onchange="location = '/setlang?lang=' + this.value;" class="lang-drop-down">
-        {% for lang in supportedLangsData %}
-          <option value="{{ lang['Prefix'] }}" {{ 'selected' if get_locale() ==  lang['Prefix']  else '' }}>{{ lang['Language'] }}</option>
-        {% endfor %}
-      </select>
-    {% endif %}
-    </div>
-    
-</div>
+{% extends 'base.html' %}
+{% block title %}
+    {{ _('Admin Panel') }}
+{% endblock %}
+{% block content %}
   
 <div class="card-container">
 {% if result.length > 0 %}
@@ -61,6 +22,4 @@
 {% endif %}
 </div>
 
-</body>
-
-</html>
+{% endblock %}

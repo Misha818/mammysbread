@@ -108,7 +108,7 @@
     }
 
     #saveButton:hover {
-      background-color: #00a6ed!important;
+      background-color: #6be6b2!important;
     }
 
   </style>
@@ -187,7 +187,7 @@
     <div class="table-container toRight" id="tableDaddy" style="max-width: 100%;">
       <table id="myTable">
         <thead>
-          <tr style="    border-width: 1px; border-color: #00a6ed; background-color: #00a6ed;">
+          <tr style="    border-width: 1px; border-color: #6be6b2; background-color: #6be6b2;">
             <th>
               <div style="display: flex; align-items: center;">
               {{ _('Thumbnail') }} 
@@ -301,7 +301,7 @@ function getProductTypes(prID) {
   if (clickedBtn) {
     let chevron = clickedBtn.getElementsByClassName('chevron');
     chevron[0].style.display = 'none';
-    let loader = myLoader('#00a6ed');
+    let loader = myLoader('#6be6b2');
     
     
     clickedBtn.appendChild(loader);
@@ -733,14 +733,14 @@ function myLoader(color) {
     saveButton.id = 'saveButton';
     saveButton.className = 'pcButtonS';     
     saveButton.textContent = '🔍';
-    saveButton.style = 'background-color: white; border: 1px solid #00a6ed;';
+    saveButton.style = 'background-color: white; border: 1px solid #6be6b2;';
 
     // 3. Create the second new DIV (#saving)
     const savingDiv = document.createElement('div');
     savingDiv.id = 'saving';
     savingDiv.className = 'pcButtonS hidden';
     savingDiv.textContent = "{{ _('Loading...') }}";
-    savingDiv.style = 'background-color: white; border: 1px solid #00a6ed; color: #00a6ed;';
+    savingDiv.style = 'background-color: white; border: 1px solid #6be6b2; color: #6be6b2;';
 
     // 4. Append both to .filters (at the end)
     filtersContainer.appendChild(saveButton);

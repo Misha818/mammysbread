@@ -103,7 +103,9 @@ tr:nth-child(even) {
       <td style="{{ expDateStyle }}">{{ row['expDate'] }}</td>
       <td>{{ status }}</td>
       <td>
-        <a href="{{ url_for('home', _external=True) + editUrl }}" target="_blank" title="{{ _('Edit') }}"><i class="fa-solid fa-pen-to-square" style="font-size: 20px; color: #fe7166;"></i></a>
+        {% set promoFilters = 'promoCode=' + row['Promo'] | string + '&affiliate=' + row['affiliateID'] | string %}
+        <a href="{{ url_for('stuff_promo_code_details', filters=promoFilters ) }}" target="_blank" title="{{ _('Promo Code Details') }}"><i class="fa-solid fa-eye" style="font-size: 20px; color: #6be6b2;"></i></a>
+        <a href="{{ url_for('home', _external=True) + editUrl }}" target="_blank" title="{{ _('Edit') }}"><i class="fa-solid fa-pen-to-square" style="font-size: 20px; color: #6be6b2;"></i></a>
       </td>
     </tr>
     
