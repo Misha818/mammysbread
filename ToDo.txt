@@ -113,11 +113,12 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
         store
         Logo in current language
     about 
+    mailing
 ===========================================================
 
     TO DO
-
-    mailing
+    add/edit price image size control
+    control max length of each submited form
     mailing for add stuff
 
 
@@ -335,21 +336,26 @@ Errors
 
 =========================================
 Functions to add to PERMISSIONS
-create_promo_code()
+
 promo_codes
+create_promo_code
 edit_promo_code
 edit_promo
+
 orders
 order_details
 get_order_details
 edit_order_details
-affiliates
-stuff_affiliate_orders
-stuff_partner_payments
 stuff_promo_code_details
+
+affiliates
+affiliate
+stuff_affiliate_orders
+
+transfers
 transfer_funds
 get_transfer_details
-transfers
+
 emails
 get_email_content
 create_email
@@ -362,12 +368,12 @@ edit_ce
 send_email
 
 
-affiliate
 affiliate_orders
 affiliate_order_details
 affiliate_transfers
 promo_code_details
 get_affiliate_transfer_details
+
 
 
 // To continue, please, add at least one product category.

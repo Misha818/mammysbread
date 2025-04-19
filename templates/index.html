@@ -527,22 +527,28 @@ return modalBackdrop;
 }
 
 
-function myLoader(color, gearID) {
-    if (color === undefined) {
-      color = 'crimson'
-    }
+// function myLoader(color, gearID) {
+//     if (color === undefined) {
+//       color = 'crimson'
+//     }
 
-    if (gearID === undefined) {
-      gearID = 'gear'
-    }
-    let loader = document.createElement('div'); // Create a div element for the loader
-      loader.id = gearID;
-      loader.style.color = color;
-      loader.style.fontSize = '20px';
-      loader.style.display = 'inline-block';
-      loader.textContent = '⚙';
-      return loader;
-}
+//     alert(`color is ${color}`)
+//     alert(`gearID is ${gearID}`)
+
+//     console.log(`gearID is ${gearID}`)
+//     console.log(`type of gearID is ${typeof(gearID)}`)
+
+//     if (gearID === undefined) {
+//       gearID = 'gear'
+//     }
+//     let loader = document.createElement('div'); // Create a div element for the loader
+//       loader.id = gearID;
+//       loader.style.color = color;
+//       loader.style.fontSize = '20px';
+//       loader.style.display = 'inline-block';
+//       loader.textContent = '⚙';
+//       return loader;
+// }
 
 function rotate(gearElement) {
   let angle = 0;
@@ -579,6 +585,7 @@ if (addToCartButtons) {
 
       let gearElementHome = document.getElementById('gearHome');
       if (!gearElementHome) {
+        alert('aaaaa')
         return;
       } 
 

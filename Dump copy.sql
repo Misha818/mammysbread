@@ -196,7 +196,7 @@ CREATE TABLE `stuff` (
     `Lastname` VARCHAR(255),
     `Avatar` TEXT,
     `AltText` VARCHAR(255),
-    `PositionID` INT,
+    `RolID` INT,
     `LanguageID` INT,
     `Status` INT,
     PRIMARY KEY (`ID`)
@@ -207,23 +207,11 @@ DROP TABLE IF EXISTS `rol`;
 CREATE TABLE `rol` (
     `ID` INT AUTO_INCREMENT NOT NULL,
     `Rol` VARCHAR(255),
-    `ActionIDs` TEXT,
+    `ActionIDs` VARCHAR(255),
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `rol` AUTO_INCREMENT = 1;
-
-
-DROP TABLE IF EXISTS `position`;
-CREATE TABLE `position` (
-    `ID` INT AUTO_INCREMENT NOT NULL,
-    `Position` VARCHAR(255),
-    `rolIDs` VARCHAR(255),
-    `Status` INT,
-    PRIMARY KEY (`ID`)
-) ENGINE=InnoDB;
-ALTER TABLE `position` AUTO_INCREMENT = 1;
-
 
 DROP TABLE IF EXISTS `actions`;
 CREATE TABLE `actions` (
@@ -603,22 +591,14 @@ ALTER TABLE `client_contacts` AUTO_INCREMENT = 1;
 
 
 
-INSERT INTO `stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `PositionID`, `LanguageID`, `Status`)
+INSERT INTO `stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `RolID`, `LanguageID`, `Status`)
 VALUES 
-    ('superuser', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'test@test.com', 'John', 'Smith', 6, 2, 1),
-    ('HR', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'hr@test.com', 'Satti', 'Matti', 5, 2, 1),
-    ('Sales AND Marketing', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'sales@test.com', 'Hayek', 'Manas', 4, 2, 1),
-    ('Manager', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'manager@test.com', 'Avi', 'Manavi', 3, 2, 1),
-    ('Editor', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'editor@test.com', 'Lyubov', 'Uspenskaia', 2, 2, 1);
+    ('superuser', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'test@test.com', 'John', 'Smith', 1, 2, 1),
+    ('user2', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'user2@test.com', 'Second', 'User', 2, 2, 1);
 
 INSERT INTO `rol` (`Rol`, `ActionIDs`, `Status`)
-VALUES 
-    ('Affiliate', '33,74,75,76,77,78', 1),
-    ('Editor', '33,1,2,3,4,5,6,7,8,9,10,11,12,13,14,21,22,23,24,25,34,35,36,37,38,39,41,42,43,44,45,46', 1),
-    ('Manager', '33,15,16,17,18,19,20,40,59,60,61,62,66,67', 1),
-    ('Sales AND Marketing', '47,48,49,50,51,52,53,54,55,56,57,58,59,62,66,67', 1),
-    ('HR', '26,27,28,29,63,69,64,65,68,70,71,72,73,66,67', 1),
-    ('Master User', '33,66,67,30,31,32', 1);
+VALUES ('Superuser', '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60', 1),
+     ('Affiliate', '', 1);
 
 -- If ActionType = 1 show on dushboard, 2 => actions with POST requests.
 INSERT INTO `actions` (`Action`, `ActionDir`, `ActionName`, `ActionGroup`, `ActionType`, `Img`)
@@ -676,45 +656,7 @@ VALUES
     ('change_type_order', 'change-type-order', 'Get Type Order', 9, 2, 'change-type-order.png'), 
     ('chaneg_pt_status', 'chaneg-pt-status', 'Change Product Type Status', 9, 2, 'change-type-order.png'), 
     ('submit_product_t', 'submit_product_text', 'Submit Product Text', 9, 2, 'change-type-order.png'), 
-    ('get_slides', 'get_slides', 'Get Slides', 9, 2, 'get_slides.png'),
-
-    ('promo_codes', 'promo-codes', 'Promo Codes', 10, 1, 'promo_codes.png'),
-    ('create_promo_code', 'create-promo-code', 'Create Promo Code', 10, 1, 'create_promo_code.png'), -- G/P
-    ('edit_promo_code', 'edit-promo-code/', 'Edit Promo Code', 10, 2, 'edit_promo_code.png'), 
-    ('stuff_promo_code_details', 'stuff-promo-code-details/', 'Promo Code Details', 10, 2, 'stuff_promo_code_details.png'), 
-    ('edit_promo', 'edit-promo', 'Edit Promo', 10, 2, 'edit_promo.png'), 
-
-    ('orders', 'orders/page=1&status=all', 'Orders', 11, 1, 'orders.png'), 
-    ('order_details', 'order-details/', 'Order Details', 11, 2, 'order_details.png'), 
-    ('get_order_details', 'get-order-details', 'Get Order Details', 11, 2, ''), 
-    ('edit_order_details', 'edit-order-details', 'Edit Order Details', 11, 2, ''), 
-    
-    ('affiliates', 'affiliates', 'Affiliates', 12, 1, 'affiliates.png'), 
-    ('affiliate', 'affiliate/', 'Affiliate', 12, 2, 'affiliate.png'), 
-    ('stuff_affiliate_orders', 'stuff-affiliate-orders/', 'Affiliate Orders', 12, 2, 'stuff_affiliate_orders.png'), 
-   
-    ('transfers', 'transfers/page=1', 'Transfers', 13, 1, 'transfers.png'), 
-    ('transfer_funds', 'transfer-funds', 'Transfer Funds', 13, 1, 'transfer-funds.png'), -- G/P
-    ('transfer_funds', 'transfer-funds/', 'Transfer Funds', 13, 2, 'transfer-funds.png'), -- G/P
-    ('get_transfer_details', 'get-transfer-details', 'Get Transfer Details', 13, 2, ''),
-    
-    ('emails', 'emails/page=1', 'Emails', 14, 1, 'emails.png'),
-    ('create_email', 'create-email', 'Create Email', 14, 1, 'create_email.png'), -- G/P
-    ('assign_email', 'assign-email', 'Assign Email', 14, 1, 'assign_email.png'), -- G/P
-    ('send_email', 'send-email', 'Send Email', 14, 1, 'send_email.png'), -- G/P
-    ('send_email', 'send-email/', 'Send Email', 14, 2, 'send_email.png'), -- G/P
-    ('corporate_emails', 'corporate-emails/page=1', 'Corporate Emails', 14, 1, 'corporate_emails.png'),
-    ('get_email_content', 'get-email-content', 'Get Email Content', 14, 2, ''),
-    ('get_associated_employees', 'get-associated-employees', 'Get Associated Employees', 14, 2, ''),
-    ('rm_email_em', 'remove-email-from-employee', 'Remove Email From Employee', 14, 2, ''),
-    ('edit_ce_view', 'edit-corporate-email-view', 'Edit Corporate Email View', 14, 2, ''),
-    ('edit_ce', 'edit-corporate-email', 'Edit Corporate Email', 14, 2, ''),
-    
-    ('affiliate_orders', 'affiliate-orders/page=1&status=all', 'Affiliate Orders', 15, 1, 'affiliate_orders.png'),
-    ('affiliate_order_details', 'affiliate-order-details/', 'Affiliate Order Details', 15, 2, 'affiliate_order_details.png'),
-    ('affiliate_transfers', 'affiliate-transfers/page=1', 'Affiliate Transfers', 15, 1, 'affiliate_transfers.png'),
-    ('promo_code_details', 'promo-code-details/', 'Promo Code Details', 15, 2, 'promo_code_details.png'),
-    ('get_affiliate_transfer_details', 'get-affiliate-transfer-details', 'Get Affiliate Transfer Details', 15, 2, '') 
+    ('get_slides', 'get_slides', 'Get Slides', 9, 2, 'get_slides.png') 
     ;
 
 

@@ -163,17 +163,35 @@
 
       document.body.appendChild(csrfInput);
 
-      function myLoader(color) {
-        if (color === undefined) {
-          color = 'crimson'
-        }
-        let loader = document.createElement('div'); // Create a div element for the loader
-          loader.id = 'gear';
-          loader.style.color = color;
-          loader.style.fontSize = '20px';
-          loader.style.display = 'inline-block';
-          loader.textContent = '⚙';
-          return loader;
+      // function myLoader(color) {
+      //   if (color === undefined) {
+      //     color = 'crimson'
+      //   }
+      //   let loader = document.createElement('div'); // Create a div element for the loader
+      //     loader.id = 'gear';
+      //     loader.style.color = color;
+      //     loader.style.fontSize = '20px';
+      //     loader.style.display = 'inline-block';
+      //     loader.textContent = '⚙';
+      //     return loader;
+      // }
+
+      
+      function myLoader(color, gearID) {
+          if (color === undefined) {
+            color = 'crimson'
+          }
+
+          if (gearID === undefined) {
+            gearID = 'gear'
+          }
+          let loader = document.createElement('div'); // Create a div element for the loader
+            loader.id = gearID;
+            loader.style.color = color;
+            loader.style.fontSize = '20px';
+            loader.style.display = 'inline-block';
+            loader.textContent = '⚙';
+            return loader;
       }
 
       
@@ -253,8 +271,18 @@
           let mobileNavSelect = select.cloneNode(true);
 
           mobileNavSelect.className = "change-language-menu";
+          // mobileNavSelect.addEventListener("change", function() {
+          //   window.location.href = '/setlang?lang=' + this.value;
+          // });
+
+          // Add an event listener for the change language menu
           mobileNavSelect.addEventListener("change", function() {
-            window.location.href = '/setlang?lang=' + this.value;
+            let refKey = '';
+            if (document.getElementById('RefKey')) {
+              refKey = document.getElementById('RefKey').value;
+            }
+            window.location.href = '/setlang?lang=' + this.value + '&RefKey=' + refKey;
+
           });
 
           document.querySelector('.mobile-nav-content').append(mobileNavSelect);

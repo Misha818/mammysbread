@@ -166,6 +166,7 @@ def login():
 
             if result['length'] == 1 and check_password_hash(result['data'][0]["Password"], password): 
                 session['user_id'] = result['data'][0]['ID']
+                session['PositionID'] = result['data'][0]['PositionID']
                 session['lang'] = getLangdatabyID(result['data'][0]['LanguageID'])['Prefix']  
                 response = {'status': '1'}
                 return jsonify(response)
