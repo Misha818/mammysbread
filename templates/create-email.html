@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
             select.appendChild(defaultOption);
 
             stuff.data.forEach(val => {
-                const optVal = val['Initials'] + ' ' + val['Rol'];
+                const optVal = val['Initials'] + ' ' + val['Position'];
                 if (optVal !== null) {
                     const option = document.createElement('option');
                     option.value = val['ID'];
@@ -161,8 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     alert(response.answer)
                     // Handle success
-                    let prURL = window.location.origin  + '/roles';
-                    // location.href = prURL;
+                    window.location.reload();
 
                     // location.reload();
                 }

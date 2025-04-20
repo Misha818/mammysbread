@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
             select.appendChild(defaultOption);
 
             stuff.data.forEach(val => {
-                const optVal = val['Initials'] + ' ' + val['Rol'];
+                const optVal = val['Initials'] + ' ' + val['Position'];
                 if (optVal !== null) {
                     const option = document.createElement('option');
                     option.value = val['ID'];

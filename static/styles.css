@@ -397,7 +397,7 @@ button[type="submit"] {
     padding: 10px 25px 100% 10px;
     background-color: #f4f5fa;
     border: 1px solid #ddd;
-    z-index: 2;
+    z-index: 11;
     transition: transform 0.3s ease, width 0.3s ease;
     white-space: nowrap;
     overflow-x: hidden;
@@ -2597,7 +2597,7 @@ h2 {
 /* End of Shopping Cart */
 
 #myReachTextEditor {
-  margin: 0 45% 0 auto;
+  margin: 0 37% 0 auto;
 }
 
 #editor-container {
@@ -7002,6 +7002,24 @@ h2 {
   margin-bottom: 20px;
  }
 
+ .rolls {
+  padding: 7px 12px;
+  font-size: 16px;
+  line-height: 1.5;
+  /* border: 1px solid #ccc; */
+  border-radius: 25px;
+  background-color: #fff;
+  appearance: none;
+  /* text-align: center; */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color: #333;
+ }
+
+ .rolls:hover {
+  cursor: pointer;
+ }
+
  .lang-drop-down {
   padding: 7px 12px;
   font-size: 16px;
@@ -8050,6 +8068,19 @@ tr:nth-child(even) {
 #error-message p {
   text-align: left;
 }
+
+.margin-right {
+  margin-right: 5px;
+}
+
+.selectedRole {
+  background-color: #f0f0f0;
+  color: #000;
+  text-decoration: none;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
 /* .cart-container {
   flex-direction: row;
   position: fixed;

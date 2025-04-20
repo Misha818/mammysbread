@@ -243,7 +243,7 @@ CREATE TABLE `buffer` (
     `ID` INT NOT NULL AUTO_INCREMENT,
     `Email` VARCHAR(255),
     `Url` VARCHAR(255),
-    `RoleID` INT,
+    `PositionID` INT,
     `Deadline` DATETIME,
     `Status` INT,
     PRIMARY KEY (`ID`)

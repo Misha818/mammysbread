@@ -40,7 +40,7 @@
         <select id="recipient" class="styled-select" style="margin-bottom: 10px;">
             <option value="">{{ _('Choose recipient') }}</option>
             {% for val in result.data %}
-                {% set optVal = val['Initials'] + ' ' + val['Rol'] %}
+                {% set optVal = val['Initials'] + ' ' + val['Position'] %}
                 {% if optVal is not none %}
                 {% endif %}
                 {% set selected = '' %}

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-{{ _('Roles') }}
+{{ _('Product categories') }}
 {% endblock %}
 
 
@@ -85,7 +85,7 @@ tr:nth-child(even) {
         <td>{{ name }}</td>
         <td>{{ status }}</td>
         <td>
-          <a href="{{ url_for('home', _external=True) + editUrl }}" >{{ _('Edit') }}</a>
+          <a href="{{ url_for('home', _external=True) + editUrl }}" title="{{ _('Edit') }}"><i class="fas fa-pencil" style="color: #6be6b2"></i></a>
         </td>
       </tr>
     

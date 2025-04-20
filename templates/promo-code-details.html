@@ -36,8 +36,10 @@
 {{ sideBar | safe }}
 <div class="container my-5">
 {% if headings[2] %}  
-<h2>{{ _('Affiliate') + ': ' }}  <a href="{{ url_for('affiliate', affID=headings[2]) }}" >{{ headings[0] }}</a></h2>
-<h4>{{ _('Promo Code') + ': ' }}  <a href="{{ url_for('home') + 'stuff-affiliate-orders/page=1&status=all&promoCode=' + headings[1] + '&affiliate=' + headings[2] }}" >{{ headings[1] }}</a></h4>
+  {% if headings[0] is not none %}
+    <h2>{{ _('Affiliate') + ': ' }}  <a href="{{ url_for('affiliate', affID=headings[2]) }}" >{{ headings[0] }}</a></h2>
+  {% endif %}
+  <h4>{{ _('Promo Code') + ': ' }}  <a href="{{ url_for('home') + 'stuff-affiliate-orders/page=1&status=all&promoCode=' + headings[1] + '&affiliate=' + headings[2] }}" >{{ headings[1] }}</a></h4>
 {% else %}
 <h2>{{ _('Affiliate') + ': ' }}  <a href="{{ url_for('stuff') }}" >{{ headings[0] }}</a></h2>
 <h4>{{ _('Promo Code') + ': ' }}  <a href="{{ url_for('home') + 'affiliate-orders/page=1&status=all&promoCode=' + headings[1]}}" >{{ headings[1] }}</a></h4>
@@ -72,9 +74,9 @@
       <div  class="row font-weight-bold border-bottom pb-2 mb-2"
             style="width: 100%;"
       >
-        <div class="col">Product</div>
-        <div class="col">Discount (%)</div>
-        <div class="col">Revard</div>
+        <div class="col">{{ _('Product') }}</div>
+        <div class="col">{{ _('Discount') }} (%)</div>
+        <div class="col">{{ _('Revard') }}</div>
       </div>
     `;
     let accordionHTML = '';

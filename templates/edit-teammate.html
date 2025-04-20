@@ -58,7 +58,7 @@
             style="width: 100%;padding: 15px;"
         >
 
-        <div class="form-group row" id="rolesDropDown"></div>
+        <div class="form-group row" id="rolesDropDown" style="width: 100%;"></div>
         
         <div  class="dropzone" id="myDropzone" >
             <div class="dz-message dz-button" style="margin: 4.5em 0;">{{ _('Avatar') }}</div>
@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
             select.appendChild(defaultOption);
 
             roles.data.forEach(val => {
-                const optVal = val['Rol'];
+                const optVal = val['Position'];
                 if (optVal !== null) {
                     const option = document.createElement('option');
                     option.value = val['ID'];
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     option.textContent = optVal;
 
                     // option.selected = true;
-                    if (row['RoleID'] === val['ID']) {
+                    if (row['positionID'] === val['ID']) {
                             option.selected = true;
                         }
                     select.appendChild(option);
@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        let RoleID = selectElement.value;
+        let positionID = selectElement.value;
         let teammateID = document.getElementById('teammateID').value;
         let languageID = document.getElementById('language-id').value;
         let firstname = document.getElementById('firstname').value;
@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('Firstname', firstname);
         formData.append('Lastname', lastname);
         formData.append('Email', email);
-        formData.append('RoleID', RoleID);
+        formData.append('positionID', positionID);
         formData.append('Status', status);
         formData.append('languageID', languageID);
 

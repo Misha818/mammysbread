@@ -3,7 +3,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import check_rol_id, check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -27,6 +27,16 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 app = Flask(__name__)
+
+
+@app.before_request
+def init_template_data():
+    g.rolls = []
+    g.activeRoleID = None
+
+@app.context_processor
+def inject_dynamic_data():
+    return dict(rolls=g.get("rolls", []), activeRoleID=g.get("activeRoleID", None))
 
 @app.context_processor
 def inject_current_year():
@@ -109,6 +119,23 @@ def handle_csrf_error(e):
 
 def side_bar_stuff():
     stuffID = session.get("user_id")
+    if session.get('roll_id'):
+        rollID = session.get('roll_id')
+    else:
+        sqlQueryRollID = """
+                  SELECT `rolIDS` FROM `position` 
+                    LEFT JOIN `stuff` ON `stuff`.`PositionID` = `position`.`ID`
+                WHERE `stuff`.`ID` = %s;
+            """
+        resultRollID = sqlSelect(sqlQueryRollID, (stuffID,), True)
+        if resultRollID['length'] == 0:
+            return render_template('error.html', current_locale=get_locale())
+
+        rollIDstr = resultRollID['data'][0]['rolIDS']  
+        if ',' in rollIDstr:
+            rollID = int(rollIDstr.split(',')[0])
+        else:
+            rollID = int(rollIDstr)
 
     sqlQuery = f"""
     SELECT 
@@ -123,14 +150,23 @@ def side_bar_stuff():
         `languages`.`Language`,
         `languages`.`Prefix`
     FROM `stuff`
-    LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID`
-    LEFT JOIN `actions` ON find_in_set(`actions`.`ID`, `rol`.`ActionIDs`)
-    LEFT JOIN `languages` ON `languages`.`Language_ID` = `stuff`.`languageID`
-    WHERE `stuff`.`ID` = %s AND `stuff`.`Status` = 1 AND `ActionType` = 1;    
+        LEFT JOIN `position` ON `position`.`ID` = `stuff`.`PositionID`
+        LEFT JOIN `rol` ON find_in_set(`rol`.`ID`, `position`.`rolIDs`)
+        LEFT JOIN `actions` ON find_in_set(`actions`.`ID`, `rol`.`ActionIDs`)
+        LEFT JOIN `languages` ON `languages`.`Language_ID` = `stuff`.`languageID`
+    WHERE `stuff`.`ID` = %s AND `stuff`.`Status` = 1 AND`rol`.`ID` = %s AND `ActionType` = 1;    
     """
 
-    sqlValTuple = (stuffID,)
+    sqlValTuple = (stuffID, rollID)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    print('result result result result result result result result result result result ')
+    print('result result result result result result result result result result result ')
+    print('result result result result result result result result result result result ')
+    print('result result result result result result result result result result result ')
+    print(result)
+    print(sqlQuery)
+    print(sqlValTuple)
 
     supportedLangsData = supported_langs()
 
@@ -178,7 +214,7 @@ def login():
         #     return jsonify({'status': "0", 'answer': gettext("CAPTCHA verification failed.")})
     else:
         if 'user_id' in session:
-            return redirect('/stuff')
+            return redirect(url_for('stuff'))
         
         return render_template("login.html", current_locale=get_locale())
 
@@ -266,16 +302,16 @@ def setlang():
 
     return redirect(request.referrer)
 
-# @app.route('/setlang')
-# def setlang():
-#     defLang = getDefLang()
-#     lang = request.args.get('lang', defLang['Prefix'])
-#     session['lang'] = lang
-#     print('request.referrer request.referrer request.referrer request.referrer request.referrer')
-#     print(request.referrer)
-#     print('request.referrer request.referrer request.referrer request.referrer request.referrer')
-#     return
-#     return redirect(request.referrer)
+@app.route('/setroll/<rollID>')
+def setroll(rollID):
+   
+    if rollID is None or not rollID.isdigit():
+        return render_template('error.html', current_locale=get_locale())
+    if check_rol_id(rollID):
+        session['roll_id'] = int(rollID)
+
+    return redirect(url_for('stuff'))
+
 
 @app.route('/changeprorder', methods=['POST'])
 @login_required
@@ -714,7 +750,7 @@ def confirmation_page(pdID):
 
 
 @app.route('/orders/<filter>', methods=['Get'])
-# @login_required
+@login_required
 def orders(filter): 
     newCSRFtoken = generate_csrf()
     filters = {}
@@ -1255,7 +1291,7 @@ def get_email_content():
 
 
 @app.route('/get-associated-employees', methods=['POST'])
-# @login_required
+@login_required
 def get_associated_employees():
     newCSRFtoken = generate_csrf()
             
@@ -1273,14 +1309,14 @@ def get_associated_employees():
                         CONCAT(`stuff`.`FirstName`, ' ', `stuff`.`LastName`) AS `Initials`,
                         `stuff`.`email`,
                         `corporate_emails`.`email` AS `CorporateEmail`,
-                        `rol`.`Rol`,
+                        `position`.`Position`,
                         `ceID`
                     FROM `corporate_email_relatives`
                         LEFT JOIN `corporate_emails` ON `corporate_email_relatives`.`ceID` = `corporate_emails`.`ID`
                         LEFT JOIN `stuff` ON `corporate_email_relatives`.`stuffID` = `stuff`.`ID`
-                        LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID`
+                        LEFT JOIN `position` ON `position`.`ID` = `stuff`.`PositionID`
                     WHERE `stuff`.`Status` = 1 AND `corporate_email_relatives`.`ceID` = %s
-                    ORDER BY `rol`.`ID` DESC;
+                    ORDER BY `position`.`ID` DESC;
                 """
 
     result = sqlSelect(sqlQuery, (emailID,), True)
@@ -1346,7 +1382,7 @@ def rm_email_em():
 
 
 @app.route('/edit-corporate-email-view', methods=['POST'])
-# @login_required
+@login_required
 def edit_ce_view():
     newCSRFtoken = generate_csrf()
     if not request.form.get('emailID') or not request.form.get('emailID').isdigit():
@@ -2679,9 +2715,10 @@ def team():
                     `stuff`.`Status`,
                     `stuff`.`Avatar`,
                     `stuff`.`AltText`,
-                    `rol`.`Rol`
+                    `position`.`Position` AS `Rol`
                 FROM `stuff`
-                LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID` 
+                LEFT JOIN `position` ON `position`.`ID` = `stuff`.`positionID` 
+                -- LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID` 
                 LIMIT 0, {int(PAGINATION)}
                 ; 
                """
@@ -2694,10 +2731,10 @@ def team():
 
 
 @app.route('/affiliates', methods=['GET'])
-# @login_required
+@login_required
 def affiliates():
     
-    where = "WHERE `rol`.`Rol` = 'Affiliate'"
+    where = "WHERE find_in_set('1', `position`.`rolIDs`) AND `stuff`.`Status` = 1 "
     sqlQuery = f"""
                 SELECT 
                     `stuff`.`ID`,
@@ -2707,9 +2744,9 @@ def affiliates():
                     `stuff`.`Status`,
                     `stuff`.`Avatar`,
                     `stuff`.`AltText`,
-                    `rol`.`Rol`
+                    `position`.`Position`
                 FROM `stuff`
-                    LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID` 
+                    LEFT JOIN `position` ON `position`.`ID` = `stuff`.`PositionID`                
                 {where} 
                 LIMIT 0, {int(PAGINATION)}
                 ; 
@@ -2816,11 +2853,11 @@ def edit_teammate(teammateID):
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
         
         # Check if Role exists
-        if len(request.form.get('RoleID')) == 0:
-            answer = gettext('Please specify the role')
+        if len(request.form.get('positionID')) == 0:
+            answer = gettext('Please specify the position!')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
        
-        RoleID  = request.form.get('RoleID').strip()
+        positionID  = request.form.get('positionID').strip()
         
         # Check if Status exists
         if len(request.form.get('Status')) == 0:
@@ -2831,7 +2868,7 @@ def edit_teammate(teammateID):
 
         AltText = ''
         avatar = ''
-        sqlValTuple = (Firstname, Lastname, Email, RoleID, AltText, Status, teammateID)
+        sqlValTuple = (Firstname, Lastname, Email, positionID, AltText, Status, teammateID)
         
         if request.form.get('imageState') == '0': # No image uploaded
             avatar = " Avatar = '', "
@@ -2846,7 +2883,7 @@ def edit_teammate(teammateID):
         if request.form.get('imageState') == '1': # Same image (it was not changed)
             
             AltText  = request.form.get('AltText')
-            sqlValTuple = (Firstname, Lastname, Email, RoleID, AltText, Status, teammateID)
+            sqlValTuple = (Firstname, Lastname, Email, positionID, AltText, Status, teammateID)
 
         if request.form.get('imageState') == '2': # New image is uploaded
             sqlQ = "SELECT `Avatar` FROM `stuff` WHERE `ID` = %s;"
@@ -2860,14 +2897,14 @@ def edit_teammate(teammateID):
             file = request.files.get('file')
             Avatar = fileUpload(file, 'images/stuff')
             avatar = "Avatar = %s,"
-            sqlValTuple = (Firstname, Lastname, Email, RoleID, Avatar, AltText, Status, teammateID)
+            sqlValTuple = (Firstname, Lastname, Email, positionID, Avatar, AltText, Status, teammateID)
 
         sqlQuery = f"""
             UPDATE `stuff` SET
                 `Firstname` = %s,
                 `Lastname` = %s,
                 `Email` = %s,
-                `RolID` = %s,
+                `PositionID` = %s,
                 {avatar}
                 `AltText` = %s,
                 `Status` = %s
@@ -2892,10 +2929,10 @@ def edit_teammate(teammateID):
                         `stuff`.`Avatar`,
                         `stuff`.`AltText`,
                         `stuff`.`Status`,
-                        `rol`.`ID` AS `RoleID`,
-                        `rol`.`Rol`
+                        `position`.`ID` AS `positionID`,
+                        `position`.`Position`
                     FROM `stuff`
-                    LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID` 
+                        LEFT JOIN `position` ON `position`.`ID` = `stuff`.`positionID` 
                     WHERE `stuff`.`ID` = %s
                     ; 
                 """
@@ -2905,8 +2942,8 @@ def edit_teammate(teammateID):
         sqlQueryR = """
                         SELECT 
                             `ID`,
-                            `Rol`
-                        FROM `rol`
+                            `Position`
+                        FROM `position`
                         ; 
                     """
         sqlValTupleR = ()
@@ -3050,7 +3087,7 @@ def add_teammate():
         # insert into buffer table
         uniqueURL = generate_random_string()
 
-        sqlQuery = "INSERT INTO `buffer` (`Email`, `RoleID`, `Url`, `Deadline`, `Status`) VALUES (%s, %s, %s, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 15 MINUTE), 0);"
+        sqlQuery = "INSERT INTO `buffer` (`Email`, `PositionID`, `Url`, `Deadline`, `Status`) VALUES (%s, %s, %s, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 15 MINUTE), 0);"
         sqlValTuple = (Email, RoleID,  uniqueURL)
 
         result = sqlInsert(sqlQuery, sqlValTuple)
@@ -3073,8 +3110,8 @@ def add_teammate():
         sqlQuery = """
                     SELECT 
                         `ID`,
-                        `Rol`
-                    FROM `rol`
+                        `Position`
+                    FROM `position`
                     ; 
                 """
         sqlValTuple = ()
@@ -3085,9 +3122,10 @@ def add_teammate():
 
 
 @app.route('/create-email', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def create_email():
     if request.method == "POST":
+      
         newCSRFtoken = generate_csrf()
         if len(request.form.get('languageID')) == 0:
             answer = gettext('Something wrong!')
@@ -3125,14 +3163,14 @@ def create_email():
 
         result = sqlInsert(sqlQuery, sqlValTuple)
         
-        if result['inserted_id'] is not None:
+        if result['inserted_id']:
             if request.form.get('stuffID'):
                 stuffID  = int(request.form.get('stuffID').strip())
                 sqlQueryInsert = "INSERT INTO `corporate_email_relatives` (`ceID`, `stuffID`, `Status`) VALUES (%s, %s, %s);"
                 sqlValTuple = (result['inserted_id'], stuffID, 1)
                 result = sqlInsert(sqlQueryInsert, sqlValTuple)
 
-            return jsonify({'status': '0', 'answer': gettext('Done!'), 'newCSRFtoken': newCSRFtoken}) 
+            return jsonify({'status': '1', 'answer': gettext('Done!'), 'newCSRFtoken': newCSRFtoken}) 
         else:
             answer = gettext("Something is wrong!")
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
@@ -3143,9 +3181,9 @@ def create_email():
                     SELECT 
                         `stuff`.`ID`,
                         CONCAT(' ', `stuff`.`Firstname`, `stuff`.`Lastname`) AS `Initials`,
-                        `rol`.`Rol`
+                        `position`.`Position`
                     FROM `stuff`
-                    LEFT JOIN `rol` ON `stuff`.`RolID` = `rol`.`ID`
+                    LEFT JOIN `position` ON `stuff`.`PositionID` = `position`.`ID`
                     WHERE `stuff`.`Status` = 1
                     ; 
                 """
@@ -3156,7 +3194,7 @@ def create_email():
 
 
 @app.route('/assign-email', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def assign_email():
     if request.method == "POST":
         newCSRFtoken = generate_csrf()
@@ -3214,9 +3252,9 @@ def assign_email():
                     SELECT 
                         `stuff`.`ID`,
                         CONCAT(' ', `stuff`.`Firstname`, `stuff`.`Lastname`) AS `Initials`,
-                        `rol`.`Rol`
+                        `position`.`Position`
                     FROM `stuff`
-                    LEFT JOIN `rol` ON `stuff`.`RolID` = `rol`.`ID`
+                    LEFT JOIN `position` ON `position`.`ID` = `stuff`.`PositionID`
                     WHERE `stuff`.`Status` = 1
                     ; 
                 """
@@ -3320,13 +3358,13 @@ def stuff_signup(uniqueURL):
         
         row = result['data'][0]
         Email = row['Email']
-        RoleID = row['RoleID']
+        PositionID = row['PositionID']
         BufferID = row['ID']
 
-        sqlQuery = """INSERT INTO `stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `RolID`, `LanguageID`, `Avatar`, `AltText`, `Status`)
+        sqlQuery = """INSERT INTO `stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `PositionID`, `LanguageID`, `Avatar`, `AltText`, `Status`)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 1);"""
 
-        sqlValTuple = (Username, Hash, Email, Firstname, Lastname, RoleID,  LanguageID, unique_filename, AltText)
+        sqlValTuple = (Username, Hash, Email, Firstname, Lastname, PositionID,  LanguageID, unique_filename, AltText)
 
         result = sqlInsert(sqlQuery, sqlValTuple)
         
@@ -3444,27 +3482,24 @@ def edit_role(RoleID):
 @app.route('/stuff', methods=['GET'])
 @login_required
 def stuff():
-
+    newCSRFtoken = generate_csrf()
     stuffID = session['user_id']
-    
-
     sqlQuery = f"""
-    SELECT 
-        `stuff`.`Firstname`,
-        `stuff`.`Lastname`,
-        `rol`.`Rol`,
-        `actions`.`ActionName`,
-        `actions`.`ActionDir`,
-        `actions`.`ActionGroup`,
-        `actions`.`ActionType`,
-        `actions`.`Img`,
-        `languages`.`Language`,
-        `languages`.`Prefix`
-    FROM `stuff`
-        LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID`
-        LEFT JOIN `actions` ON find_in_set(`actions`.`ID`, `rol`.`ActionIDs`)
-        LEFT JOIN `languages` ON `languages`.`Language_ID` = `stuff`.`languageID`
-    WHERE `stuff`.`ID` = %s AND `stuff`.`Status` = 1 AND `ActionType` = 1;    
+        SELECT 
+            `stuff`.`Firstname`,
+            `stuff`.`Lastname`,
+            `stuff`.`Avatar`,
+            `stuff`.`AltText`,
+            `rol`.`ID` AS `rolID`,
+            `rol`.`Rol`,
+            `languages`.`Language`,
+            `languages`.`Prefix`
+        FROM `stuff`
+            LEFT JOIN `position` ON `position`.`ID` = `stuff`.`positionID`
+            LEFT JOIN `rol` ON find_in_set(`rol`.`ID`, `position`.`rolIDs`)
+            LEFT JOIN `languages` ON `languages`.`Language_ID` = `stuff`.`languageID`
+        WHERE `stuff`.`ID` = %s AND `stuff`.`Status` = 1 
+        ORDER BY `rol`.`ID` DESC;        
     """
 
     sqlValTuple = (stuffID,)
@@ -3473,39 +3508,60 @@ def stuff():
     if result['length'] == 0:
         return render_template('error.html', current_locale=get_locale())
 
+    g.rolls = result['data'] 
+    if session.get('roll_id'):
+        g.activeRoleID = session['roll_id']  
+    else:
+        g.activeRoleID = result['data'][0]['rolID']  
+
+    sqlQueryActions = f"""  SELECT 
+                                `rol`.`ID` AS `rolID`,
+                                `rol`.`Rol`,
+                                `actions`.`ActionName`,
+                                `actions`.`ActionDir`,
+                                `actions`.`ActionGroup`,
+                                `actions`.`img`
+                            FROM `rol`
+                                LEFT JOIN `actions` ON find_in_set(`actions`.`ID`, `rol`.`ActionIDs`)
+                            WHERE `rol`.`ID` = %s AND `actions`.`ActionType` = 1
+                            ORDER BY `actions`.`ActionGroup`;"""
+    
+    resultActions = sqlSelect(sqlQueryActions, (g.activeRoleID,), True)
+    if resultActions['length'] == 0:
+        return render_template('error.html', current_locale=get_locale())
         
     supportedLangsData = supported_langs()
     view = 'admin_panel.html'
     resultP, resultRevardsList = ['', '']
-    if result['data'][0]['Rol'] == 'Affiliate':
-        sqlQueryPromo = f"""
-                    SELECT 
-                        `promo_code`.`Promo`,
-                        `promo_code`.`expDate`,
-                        `promo_code`.`Status`
-                    FROM `promo_code`
+    # if result['data'][0]['Rol'] == 'Affiliate':
+    #     sqlQueryPromo = f"""
+    #                 SELECT 
+    #                     `promo_code`.`Promo`,
+    #                     `promo_code`.`expDate`,
+    #                     `promo_code`.`Status`
+    #                 FROM `promo_code`
                         
-                    WHERE `promo_code`.`affiliateID` = %s;    
-                    """
+    #                 WHERE `promo_code`.`affiliateID` = %s;    
+    #                 """
 
-        sqlValTuplePromo = (stuffID,)
-        resultP = sqlSelect(sqlQueryPromo, sqlValTuplePromo, True)
+    #     sqlValTuplePromo = (stuffID,)
+    #     resultP = sqlSelect(sqlQueryPromo, sqlValTuplePromo, True)
         
-        view = 'affiliate.html'
-        resultRevards = get_affiliate_reward_progress(stuffID)
+    #     view = 'affiliate.html'
+    #     resultRevards = get_affiliate_reward_progress(stuffID)
 
-        row = {}
-        if resultRevards['length'] > 0:
-            row = resultRevards['data'][0]
+    #     row = {}
+    #     if resultRevards['length'] > 0:
+    #         row = resultRevards['data'][0]
     
-        resultRevardsList = {
-            '0': [gettext('Voided'),    row.get('Voided') or 0, 'Voided', 'affiliate-orders/page=1&status=0'],
-            '1': [gettext('Pending'),   row.get('Pending') or 0, 'Pending', 'affiliate-orders/page=1&status=pending'],
-            '2': [gettext('Approved'),  row.get('Approved') or 0, 'Approved', 'affiliate-orders/page=1&status=5'],
-            '3': [gettext('Settled'),   row.get('Settled') or 0, 'Settled', 'affiliate-transfers/page=1']
-        }
+    #     resultRevardsList = {
+    #         '0': [gettext('Voided'),    row.get('Voided') or 0, 'Voided', 'affiliate-orders/page=1&status=0'],
+    #         '1': [gettext('Pending'),   row.get('Pending') or 0, 'Pending', 'affiliate-orders/page=1&status=pending'],
+    #         '2': [gettext('Approved'),  row.get('Approved') or 0, 'Approved', 'affiliate-orders/page=1&status=5'],
+    #         '3': [gettext('Settled'),   row.get('Settled') or 0, 'Settled', 'affiliate-transfers/page=1']
+    #     }
 
-    return render_template(view, result=result, resultP=resultP, resultRevardsList=json.dumps(resultRevardsList), supportedLangsData=supportedLangsData, currentDate=date.today(), current_locale=get_locale())
+    return render_template(view, result=result, resultActions=resultActions, resultP=resultP, resultRevardsList=json.dumps(resultRevardsList), supportedLangsData=supportedLangsData, currentDate=date.today(), newCSRFtoken=newCSRFtoken, current_locale=get_locale())
 
 
 @app.route('/affiliate/<affID>', methods=['GET'])
@@ -3827,7 +3883,8 @@ def pt_specifications():
                         `sub_product_specification`.`Status`
                     FROM `sub_product_specification`
                     LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
-                    WHERE `sps_relatives`.`Language_ID` = %s;
+                    WHERE `sps_relatives`.`Language_ID` = %s
+                    ORDER BY `sub_product_specification`.`ID` DESC;
                     """
         sqlValTuple = (languageID,)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
@@ -4128,7 +4185,7 @@ def add_sps_view(spsRefKey=None):
 
 
 @app.route("/emails/<filters>", methods=['GET'])
-# @login_required
+@login_required
 def emails(filters):
     languageID = getLangID()
     if request.method == "GET":
@@ -4213,7 +4270,7 @@ def emails(filters):
 
 
 @app.route("/corporate-emails/<filters>", methods=['GET'])
-# @login_required
+@login_required
 def corporate_emails(filters):
     languageID = getLangID()
     if request.method == "GET":
@@ -4295,7 +4352,7 @@ def corporate_emails(filters):
 
 
 @app.route("/transfers/<filters>", methods=['GET'])
-# @login_required
+@login_required
 def transfers(filters):
     if request.method == "GET":
         newCSRFtoken = generate_csrf()
@@ -4335,25 +4392,20 @@ def transfers(filters):
                         `notes`.`ID` AS `notesID`,
                         `notes`.`note`,
                         CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`,
-                        `rol`.`Rol`
+                        `position`.`Position`
                     FROM `partner_payments`
                         LEFT JOIN `notes` ON `notes`.`refID` = `partner_payments`.`ID`
                         LEFT JOIN `stuff` ON `stuff`.`ID` = `partner_payments`.`affiliateID`
-                        LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`rolID`
+                        LEFT JOIN `position` ON `position`.`ID` = `stuff`.`PositionID`
                     {where}
                     ORDER BY `partner_payments`.`ID` DESC
                     LIMIT {rowsToSelect}, {int(PAGINATION)};
                     """
         
         result = sqlSelect(sqlQuery, sqlValTuple, True)
-        # if result['length'] == 0:
-        #     return render_template('error.html', current_locale=get_locale())
-        
-        # resultAff = get_affiliates('AND `rol`.`ID` = 2')
         resultAff = get_affiliates()
         
         numRows = totalNumRows('partner_payments', where, sqlValTuple)
-        
 
         sideBar = side_bar_stuff()
         return render_template('transfers.html', result=result, resultAff=resultAff, affID=affiliateID, sideBar=sideBar, numRows=numRows, page=int(page), pagination=int(PAGINATION), pbc=int(PAGINATION_BUTTONS_COUNT), newCSRFtoken=newCSRFtoken, current_locale=get_locale())
@@ -4389,11 +4441,10 @@ def affiliate_transfers(page):
                     LIMIT {rowsToSelect}, {int(PAGINATION)};
                     """
         
+        print(sqlQuery)
         sqlValTuple = (session['user_id'],)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
-        if result['length'] == 0:
-            return render_template('error.html', current_locale=get_locale())
-        
+
         numRows = totalNumRows('partner_payments', where, sqlValTuple)
         
 
@@ -4404,7 +4455,7 @@ def affiliate_transfers(page):
 
 @app.route("/transfer-funds/<stuffID>", methods=['GET', 'POST'])
 @app.route("/transfer-funds", methods=['GET', 'POST'])
-# @login_required
+@login_required
 def transfer_funds(stuffID=0):
     newCSRFtoken = generate_csrf()
     if request.method == "GET":
@@ -4450,7 +4501,7 @@ def transfer_funds(stuffID=0):
 
 @app.route("/send-email/<filters>", methods=['GET', 'POST'])
 @app.route("/send-email", methods=['GET', 'POST'])
-# @login_required
+@login_required
 def send_email(filters=''):
     newCSRFtoken = generate_csrf()
     if request.method == "GET":
@@ -4523,11 +4574,17 @@ def send_email(filters=''):
             'Content': request.form.get('content')
         }
         msg_id = send_email_mailgun(credentials)
-        if msg_id:
-            check_delivery_status(msg_id)
-            return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
+        if msg_id.get('emailID'):
+            emailID = msg_id.get('emailID')[1:-1]
+            dst = check_delivery_status(emailID) #returns Bool
+            if dst: 
+                return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
+            else:
+                return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
         else:
             return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+
+# Event: delivered, Timestamp: 1745149909.2146144
 
 
 # Subproduct situation and situations adding function
@@ -4646,13 +4703,11 @@ def add_sps():
 
 @app.route("/logout")
 def logout():
-    """Log user out"""
-
     # Forget any user_id
     session.clear()
 
     # Redirect user to login form
-    return redirect("/")
+    return redirect(url_for('login'))
 
 
 
@@ -5508,7 +5563,7 @@ def add_to_store(ptID=None):
 
 
 @app.route("/create-promo-code", methods=["GET", "POST"])
-# @login_required
+@login_required
 def create_promo_code():
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -5529,7 +5584,14 @@ def create_promo_code():
         result = sqlSelect(sqlQuery, sqlValTuple, True)
         prData = json.dumps(result['data']) 
 
-        sqlQueryAffiliate = "SELECT `ID`, `Firstname`, `Lastname`, `email` FROM `stuff` WHERE `rolID` = 2 AND `Status` = 1;"
+        sqlQueryAffiliate = """SELECT 
+                                `stuff`.`ID`, 
+                                `stuff`.`Firstname`, 
+                                `stuff`.`Lastname`, `email` 
+                            FROM `stuff` 
+                                LEFT JOIN `position` ON `position`.`ID` = `stuff`.`PositionID`
+                            WHERE find_in_set('1', `position`.`rolIDs`) AND `stuff`.`Status` = 1;
+                            """
         affiliates = sqlSelect(sqlQueryAffiliate, (), True)
 
         sideBar = side_bar_stuff()
@@ -5612,7 +5674,7 @@ def create_promo_code():
 
 
 @app.route('/promo-codes', methods=['GET'])
-# @login_required
+@login_required
 def promo_codes():
 
     sqlQuery = """
@@ -5824,7 +5886,13 @@ def edit_promo_code(promoID):
     discounts = json.dumps(discountsResult['data']) 
 
 
-    sqlQueryAffiliate = "SELECT `ID`, `Firstname`, `Lastname`, `email` FROM `stuff` WHERE `rolID` = 2 AND `Status` = 1;"
+    sqlQueryAffiliate = """SELECT 
+                            `stuff`.`ID`, 
+                            `stuff`.`Firstname`, 
+                            `stuff`.`Lastname`, `email` 
+                        FROM `stuff` 
+                            LEFT JOIN `position` ON `position`.`ID` = `stuff`.`PositionID`
+                        WHERE find_in_set('1', `position`.`rolIDs`) AND `stuff`.`Status` = 1;"""
     affiliates = sqlSelect(sqlQueryAffiliate, (), True)
 
     sqlQuery = """SELECT 

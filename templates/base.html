@@ -21,9 +21,9 @@
     });
         
       // Function to get the CSRF token from the meta tag
-      function getCsrfToken() {
-          return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-      }
+      // function getCsrfToken() {
+      //     return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      // }
       
       
     </script>
@@ -34,28 +34,39 @@
   </head>
   <body>
     {% if userBool != False %}
-      <div class="header-stuff">
-        <img src="{{ url_for('static', filename='images/logo.jpg')}}" onclick="toggleSidebar()" style="cursor: pointer;" >
-        
-        <!-- <div class="header-stuff-right">
-          <a class="" href="{{ url_for('home') + 'logout' }}"><i class="fas fa-right-from-bracket"></i>{{ _('Logout') }}</a>
-        </div> -->
-        
-        <div class="header-stuff-right" style="display: flex; align-items: center;">
-          
-          {% if supportedLangsData | length > 1 %}     
-            <select onchange="location = '/setlang?lang=' + this.value;" class="lang-drop-down">
-              {% for lang in supportedLangsData %}
-                <option value="{{ lang['Prefix'] }}" {{ 'selected' if get_locale() ==  lang['Prefix']  else '' }}>{{ lang['Language'] }}</option>
-              {% endfor %}
-            </select>
+    <div class="header-stuff">
+      <img src="{{ url_for('static', filename='images/logo.jpg')}}" onclick="toggleSidebar()" style="cursor: pointer;" >
+      
+      <!-- <div class="header-stuff-right">
+        <a class="" href="{{ url_for('home') + 'logout' }}"><i class="fas fa-right-from-bracket"></i>{{ _('Logout') }}</a>
+      </div> -->
+      
+      <div class="header-stuff-right" style="display: flex; align-items: center;">
+        {% if rolls | length > 1 %}
+        {% for row in rolls %}
+          {% set rollClass = 'rolls margin-right'%}
+          {% if row['rolID'] == activeRoleID %}
+            {% set rollClass = 'rolls margin-right selectedRole' %}
           {% endif %}
-          <a class="" href="{{ url_for('home') + 'logout' }}" title="{{ _('Logout') }}"><i class="fas fa-right-from-bracket" style="font-size: 25px; color: #fff;"></i></a>
-          
-        </div>
-          
+
+            <a class='{{ rollClass }}' href="{{ url_for('home', _external=True) + 'setroll/' + row['rolID'] | string }}">{{ row['Rol']}}</a>
+          {% endfor %}
+        {% endif %}
+
+        {% if supportedLangsData | length > 1 %}     
+        <select onchange="location = '/setlang?lang=' + this.value;" class="lang-drop-down">
+          {% for lang in supportedLangsData %}
+          <option value="{{ lang['Prefix'] }}" {{ 'selected' if get_locale() ==  lang['Prefix']  else '' }}>{{ lang['Language'] }}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+        <a class="" href="{{ url_for('home') + 'logout' }}" title="{{ _('Logout') }}"><i class="fas fa-right-from-bracket" style="font-size: 25px; color: #fff;"></i></a>
+        
       </div>
+      
+    </div>
     {% endif %}
+    
     {% block content %}
     
 
@@ -112,6 +123,7 @@
         }
         
       }
+
       
       </script>
        

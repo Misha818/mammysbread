@@ -279,7 +279,7 @@ msgstr "Վճարված"
 
 #: app.py:3654
 msgid "Order Changed Successfully!"
-msgstr "Պատվերը հաջողությամբ փոփոխվել է։"
+msgstr "Հաջորդականությունը փոխվեց։"
 
 #: app.py:3679
 msgid "Status changed successfully!"

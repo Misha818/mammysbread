@@ -123,7 +123,7 @@
         <i class="fas fa-search" style="margin-right: 5px;"></i>
       </button>
       
-      <a  href="{{ url_for('emails', filters='page=1') }}"
+      <a  href="{{ url_for('corporate_emails', filters='page=1') }}"
       class="dropbtn" style="flex: 0 0 auto;">
       <i class="fas fa-chevron-down" style="margin-right: 5px;"></i>
     </a>
@@ -276,7 +276,7 @@ window.addEventListener('load', () => {
             if (xhr.status === 200) {
                 const response = JSON.parse(xhr.responseText);
                 if (response.status === '1') {
-                    document.querySelector('#injectEmail').innerHTML = `{{ _('Employees associated with email')}}` + response.data[0]['CorporateEmail'];
+                    document.querySelector('#injectEmail').innerHTML = `{{ _('Employees associated with email') }} ` + response.data[0]['CorporateEmail'];
                     let tableContent = '';
                     response.data.forEach(row => {
                       tableContent += `<tr id="target_row_${row['ID']}">
@@ -285,7 +285,7 @@ window.addEventListener('load', () => {
                                         </td>
                                         
                                         <td data-label="{{ _('Position') }}" class="flex" style="display: table-cell; padding: 0px 15px;">
-                                          ${row['Rol'] }
+                                          ${row['Position'] }
                                         </td>
 
                                         <td class="edit-user" style="padding: 0px 15px;">

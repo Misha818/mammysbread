@@ -117,9 +117,10 @@ CREATE A WRAPPER FOR ACTION PERMISSIONS
 ===========================================================
 
     TO DO
+    prevent rate condition on checkout ???
     add/edit price image size control
-    control max length of each submited form
-    mailing for add stuff
+    control max length of each submited form ???
+    mailing for add stuff -- do on server
 
 
 

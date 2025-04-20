@@ -117,7 +117,7 @@
         {% set selected = 'selected' %}
         {% endif %}
         
-        <option value="{{ row['ID'] }}"  {{ selected }}>{{ row['Initials'] + ' ' + row['Rol'] }}</option>
+        <option value="{{ row['ID'] }}"  {{ selected }}>{{ row['Initials'] + ' ' + row['Position'] }}</option>
         {% endfor %}
         
         {% endif %} 
@@ -215,7 +215,7 @@
         </td>
         
         <td data-label="{{ _('Amount') }}" class="flex" style="display: table-cell;">
-          {{ row['Initials'] + ' ' + row['Rol'] }}
+          {{ row['Initials'] + ' ' + row['Position'] }}
         </td>
         
         <td data-label="{{ _('Amount') }}" class="flex" style="display: table-cell;">

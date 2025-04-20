@@ -583,9 +583,10 @@ def login_required(f):
 def permissions(stuffID, Action):
     sqlQuery =  """
                 SELECT `actions`.`Action`
-                    FROM `actions` 
+                FROM `actions` 
                     LEFT JOIN `rol` ON find_in_set(`actions`.`ID`, `rol`.`actionIDs`)
-                    LEFT JOIN `stuff` ON `stuff`.`RolID` = `rol`.`ID`
+                    LEFT JOIN `position` ON find_in_set(`rol`.`ID`, `position`.`rolIDs`)
+                    LEFT JOIN `stuff` ON `stuff`.`PositionID` = `position`.`ID`
                 WHERE `stuff`.`ID` = %s AND `stuff`.`Status` = 1
                 """
     sqlValTuple = (stuffID,)
@@ -1296,9 +1297,9 @@ def get_affiliates(filters=''):
     sqlQuery =  f"""SELECT 
                             `stuff`.`ID`,
                             CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`, 
-                            `rol`.`Rol`
+                            `position`.`Position`
                         FROM `stuff`
-                            LEFT JOIN `rol` ON `rol`.`ID` = `stuff`.`RolID`
+                            LEFT JOIN `position` ON `position`.`ID` = `stuff`.`PositionID`
                         WHERE `stuff`.`Status` = %s {filters}; 
                     """
     return sqlSelect(sqlQuery, (1,), True) 
@@ -1352,12 +1353,14 @@ def send_email_mailgun(credentials):
     )
     
     if response.status_code == 200:
-        return jsonify({'status': '1', 'emailID': response.json().get('id')})  # Message ID for tracking
+        print("This is email ID ", response.json().get('id'))
+        return {'status': '1', 'emailID': response.json().get('id')}  # Message ID for tracking
     else:
-        return jsonify({'status': '0', 'answer': "Failed to send email:" + response.text})  
+        print("This is Error Message ", response.text)
+        return {'status': '0', 'answer': "Failed to send email:" + response.text} 
 
 def check_delivery_status(message_id):
-    print("Waiting for status update...")
+    # print("Waiting for status update...")
     time.sleep(10)  # Wait a bit to allow Mailgun to process
     response = requests.get(
         f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/events",
@@ -1367,10 +1370,33 @@ def check_delivery_status(message_id):
     
     if response.status_code == 200:
         events = response.json().get('items', [])
+        answer = False
         for event in events:
-            print(f"Event: {event.get('event')}, Timestamp: {event.get('timestamp')}")
+            # print(f"Event: {event.get('event')}, Timestamp: {event.get('timestamp')}")
+            if event.get('event') == 'delivered':
+                answer = True
+                
+        return answer
     else:
-        print("Failed to fetch delivery status:", response.text)
+        # print("Failed to fetch delivery status:", response.text)
+        return answer
+
+
+def check_rol_id(rollID):
+    if not rollID.isdigit():
+        return False
+    
+    sqlQuery =  """SELECT 
+                        `stuff`.`ID`
+                    FROM `stuff`
+                        LEFT JOIN `position` ON `position`.`ID` = `stuff`.`PositionID`
+                    WHERE `stuff`.`ID` = %s AND find_in_set(%s, `position`.`rolIDs`);
+                """
+    result = sqlSelect(sqlQuery, (session.get('user_id'), rollID), True)
+    if result['length'] == 0:
+        return False
+    return True
+
 
 # Usage
 # msg_id = send_email_mailgun()
