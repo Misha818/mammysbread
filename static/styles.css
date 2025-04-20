@@ -563,7 +563,7 @@ button[type="submit"] {
 .pcButtonS {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #6be6b2;
+    background-color: #0bc275;
     color: white;
     border: none;
     border-radius: 5px;
@@ -575,7 +575,7 @@ button[type="submit"] {
 .pcButtonS1 {
     display: block;
     padding: 10px 20px;
-    background-color: #6be6b2;
+    background-color: #0bc275;
     color: white;
     border: none;
     border-radius: 5px;
@@ -1010,8 +1010,8 @@ button[type="submit"] {
 
 .filter-button, .add-to-store-btn {
   margin-bottom: 7px;
-  color: #6be6b2;
-  border: 2px solid #6be6b2;
+  color: #0bc275;
+  border: 2px solid #0bc275;
   width: 100px;
   text-align: center;
   padding: 5px 10px;
@@ -1022,7 +1022,7 @@ button[type="submit"] {
 .filter-button:hover {
   cursor: pointer;
   color: white;
-  background-color: #6be6b2;
+  background-color: #0bc275;
 
 }
 
@@ -1820,7 +1820,7 @@ h2 {
 
   width: 100%;
   overflow: hidden;
-  background-color: #6be6b2;
+  background-color: #0bc275;
   padding: 20px 10px;
   margin-bottom: 20px;
   border-bottom:  solid #e0e0e0;
@@ -7314,7 +7314,7 @@ tr:nth-child(even) {
 
 
 .status-open {
-  background-color: #6be6b2;
+  background-color: #0bc275;
 }
 
 .status-closed {
@@ -7376,14 +7376,14 @@ tr:nth-child(even) {
 .pagination div {
   margin: 0 4px;
   padding: 6px 12px;
-  color: #4e73df;
+  color: #0bc275;
   border-radius: 4px;
   border: 1px solid #ddd;
   cursor: pointer;
 }
 
 .pagination a.active, div.active {
-  background-color: #4e73df;
+  background-color: #0bc275;
   color: #fff;
 }
 
@@ -7407,13 +7407,13 @@ tr:nth-child(even) {
 }
 
 .edit-user {
-  color: #6be6b2;
+  color: #0bc275;
   font-size: 18px;
   text-decoration: none;
 }
 
 .edit-user a {
-  color: #6be6b2;
+  color: #0bc275;
 }
 
 

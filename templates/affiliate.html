@@ -87,7 +87,7 @@
     }
     /* Completed steps style */
     .step.completed .circle {
-      background-color: #6be6b2;
+      background-color: #0bc275;
     }
     /* active1 (current) step style */
     .step.active1 .circle {
@@ -96,19 +96,19 @@
 
     
     .Voided {
-      border: 5px solid #6be6b2;
+      border: 5px solid #0bc275;
     }
 
     .Pending {
-      border: 5px solid #6be6b2;
+      border: 5px solid #0bc275;
     }
 
     .Approved  {
-      border: 5px solid #6be6b2;
+      border: 5px solid #0bc275;
     }
 
     .Settled {
-      border: 5px solid #6be6b2;
+      border: 5px solid #0bc275;
     }
 
     a {
@@ -243,10 +243,10 @@
           {% set promoDetailsUrl = url_for('home') + 'stuff-promo-code-details/promoCode=' + row['Promo'] + '&affiliate=' + affID %}
           {% set affiliateOrdersUrl = url_for('home') + 'stuff-affiliate-orders/page=1&status=all&promoCode=' + row['Promo'] + '&affiliate=' + affID %}
         {% endif %}
-        <a href="{{ promoDetailsUrl }}" title="{{ _('Details') }}"><i class="fas fa-eye" style="font-size: 20px; color: #6be6b2;"></i></a>
+        <a href="{{ promoDetailsUrl }}" title="{{ _('Details') }}"><i class="fas fa-eye" style="font-size: 20px; color: #0bc275;"></i></a>
       </td>
       <td>
-        <a href="{{ affiliateOrdersUrl }}" title="{{ _('Purchase History') }}"><i class="fas fa-info-circle" style="font-size: 20px; color: #6be6b2;"></i></a>
+        <a href="{{ affiliateOrdersUrl }}" title="{{ _('Purchase History') }}"><i class="fas fa-info-circle" style="font-size: 20px; color: #0bc275;"></i></a>
       </td>
     </tr>
     
