@@ -127,30 +127,16 @@
 </form>
 
   </footer>
-      <p style="color: #6c757d; margin-top: 15px;
-      text-align: center;
-      background-color: white;
-      padding: 10px; width: 100%;">&copy; {{ current_year }} {{ _('Your Company. All rights reserved.') }} </p>
+      <p style="position: fixed;
+                bottom: 0;
+                color: #6c757d; 
+                margin-top: 15px;
+                margin-bottom: unset!important;
+                text-align: center;
+                background-color: white;
+                padding: 10px; width: 100%;">&copy; {{ current_year }} {{ _('Your Company. All rights reserved.') }} 
+      </p>
     
-      <!-- Full-Screen Overlay Nav -->
-      <div class="mobile-nav-overlay">
-        <nav class="mobile-nav-content">
-          <button class="mobile-menu-close" aria-label="Close Mobile Menu">
-            ✕
-          </button>
-          <ul class="mobile-nav-links">
-            <li><a href="{{ url_for('home') }}">{{ _('Home') }}</a></li>
-            <li><a href="{{ url_for('favorites') }}">{{ _('Favorites') }}</a></li>
-            <li><a href="{{ url_for('products_client') }}">{{ _('Products') }}</a></li>
-            <li><a href="{{ url_for('about') }}">{{ _('Our History') }}</a></li>
-            <li><a href="{{ url_for('contacts') }}">{{ _('Contacts') }}</a></li>
-          </ul>
-
-          </select>
-        </nav>
-      </div>
-
-  
     <script>
       let xhr = new XMLHttpRequest();
       let csrfToken = "{{ csrf_token() }}";

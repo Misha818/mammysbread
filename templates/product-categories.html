@@ -30,10 +30,10 @@ tr:nth-child(even) {
 {% block content %}
 
 {{ sideBar | safe }}
-<div class="container" >
+<div class="container" style="width: 75%;">
   
 {% if result.length > 0 %}
-<div class="table-container toRight" id="tableDaddy">
+<div class="table-container toRight" id="tableDaddy" style="max-width: unset;">
   <table id="myTable">
     <thead>
       <tr>

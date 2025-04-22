@@ -116,6 +116,7 @@
     }
 
 
+
     /* Mobile adjustments: stack steps vertically */
     @media (max-width: 576px) {
       .stepper {
@@ -133,11 +134,21 @@
         width: 30px;
         height: 30px;
         line-height: 30px;
-      } */
-      .step p {
-        font-size: 0.9rem;
+        } */
+        .step p {
+          font-size: 0.9rem;
+        }
+      }
+
+
+    @media (min-width: 576px) {
+
+      .last-container {
+        margin-bottom: 100px;
       }
     }
+
+      
     </style>
 {% endblock %}
 
@@ -159,9 +170,8 @@
   <div id="stepper" class="stepper"></div>
 </div>
 
-<div class="container" >
-  
-{% if resultP.length > 0 %}
+<div class="container last-container" >
+{% if resultP.length > 0 %}  
 <div class="table-container toRight" id="tableDaddy">
   <table id="myTable">
     <thead>
@@ -217,41 +227,53 @@
         </th>
       </tr>
       </thead>
-{% for row in resultP.data %}
-  {% set status = _('Active') %}
-  {% if row['Status'] == 0 %}
-    {% set status = _('Inactive') %}
-  {% elif row['expDate'] < currentDate %}
-    {% set status = _('Expired') %}
-  {% endif %}
-  {% set expDateStyle = '' %}
-  {% if row['expDate'] is not none and row['expDate'] < currentDate %}
-  {% set expDateStyle = 'color: red;' %}
-  {% endif %}
+
+  {% for row in resultP.data %}
+    {% set status = _('Active') %}
+    {% if row['Status'] == 0 %}
+      {% set status = _('Inactive') %}
+    {% elif row['expDate'] is not none %}
+      {% if row['expDate'] < currentDate %}
+        {% set status = _('Expired') %}
+      {% endif %}
+    {% endif %}
+    {% set expDateStyle = '' %}
+    {% if row['expDate'] is not none and row['expDate'] < currentDate %}
+    {% set expDateStyle = 'color: red;' %}
+    {% endif %}
   
   
     <tr>
-      <td>{{ row['Promo'] }}</td>
+      {% if row['Promo'] is none %}
+        <td style="text-align: left; font-size: 18px;;">{{ _('No promo code registered') }}</td>
+      {% else %}
+        <td>{{ row['Promo'] }}</td>
 
-      <td style="{{ expDateStyle }}">{{ row['expDate'] }}</td>
-      <td>{{ status }}</td>
-      <td>
-        {% set promoDetailsUrl = url_for('promo_code_details', promo=row['Promo']) %}
-        {% set affiliateOrdersUrl = url_for('home') + 'affiliate-orders/page=1&status=all&promoCode=' + row['Promo'] %}
-        
-        {% if stuff == True %}
-          {% set promoDetailsUrl = url_for('home') + 'stuff-promo-code-details/promoCode=' + row['Promo'] + '&affiliate=' + affID %}
-          {% set affiliateOrdersUrl = url_for('home') + 'stuff-affiliate-orders/page=1&status=all&promoCode=' + row['Promo'] + '&affiliate=' + affID %}
-        {% endif %}
-        <a href="{{ promoDetailsUrl }}" title="{{ _('Details') }}"><i class="fas fa-eye" style="font-size: 20px; color: #0bc275;"></i></a>
-      </td>
-      <td>
-        <a href="{{ affiliateOrdersUrl }}" title="{{ _('Purchase History') }}"><i class="fas fa-info-circle" style="font-size: 20px; color: #0bc275;"></i></a>
-      </td>
-    </tr>
-    
-    
-{% endfor %}
+        <td style="{{ expDateStyle }}">{{ row['expDate'] }}</td>
+        <td>{{ status }}</td>
+        <td>
+          {% set promoDetailsUrl = '' %}
+          {% set affiliateOrdersUrl = '' %}
+
+          {% if row['Promo'] %}
+            {% set promoDetailsUrl = url_for('promo_code_details', promo=row['Promo']) %}
+            {% set affiliateOrdersUrl = url_for('home') + 'affiliate-orders/page=1&status=all&promoCode=' + row['Promo'] %}
+            
+              {% if stuff == True %}
+                {% set promoDetailsUrl = url_for('home') + 'stuff-promo-code-details/promoCode=' + row['Promo'] + '&affiliate=' + affID %}
+                {% set affiliateOrdersUrl = url_for('home') + 'stuff-affiliate-orders/page=1&status=all&promoCode=' + row['Promo'] + '&affiliate=' + affID %}
+              {% endif %}
+          {% endif %}
+          <a href="{{ promoDetailsUrl }}" title="{{ _('Details') }}"><i class="fas fa-eye" style="font-size: 20px; color: #0bc275;"></i></a>
+        </td>
+        <td>
+          <a href="{{ affiliateOrdersUrl }}" title="{{ _('Purchase History') }}"><i class="fas fa-info-circle" style="font-size: 20px; color: #0bc275;"></i></a>
+        </td>
+      </tr>
+      
+      
+      {% endif %}
+    {% endfor %}
 
   </table>
 </div>
@@ -260,7 +282,6 @@
 <h3 style="text-align: center;">{{ _('No promo code registered') }}</h3>
 {% endif %}
 </div>
-
 
 <script>
 

@@ -142,7 +142,7 @@ input[type=submit]:hover {
   <nav class="nav-buttons">
     <div class="btn_landing contacts">{{ _('Contact US') }}</div>
     <div class="btn_landing btn-highlight order-now">{{ _('Order Now!') }}</div>
-    <div class="btn_landing about">{{ _('Our History') }}</div>
+    <div class="btn_landing about">{{ _('About') }}</div>
   </nav>
 
 
@@ -240,20 +240,20 @@ input[type=submit]:hover {
       document.querySelector('body').classList.add('loaded');
     });
         
-    document.addEventListener('click', function(event) {
-      if (event.target.classList.contains('about')) {
-          let target_to_navigate = document.getElementById('about');
-           // Scroll the window to the target div with smooth behavior
-          target_to_navigate.scrollIntoView({ behavior: 'smooth' });             
-      }
+    // document.addEventListener('click', function(event) {
+    //   if (event.target.classList.contains('about')) {
+    //       let target_to_navigate = document.getElementById('about');
+    //        // Scroll the window to the target div with smooth behavior
+    //       target_to_navigate.scrollIntoView({ behavior: 'smooth' });             
+    //   }
 
-      if (event.target.classList.contains('contacts')) {
-        let target_to_navigate = document.getElementById('contacts');
-          // Scroll the window to the target div with smooth behavior
-          target_to_navigate.scrollIntoView({ behavior: 'smooth' });
-      }
+    //   if (event.target.classList.contains('contacts')) {
+    //     let target_to_navigate = document.getElementById('contacts');
+    //       // Scroll the window to the target div with smooth behavior
+    //       target_to_navigate.scrollIntoView({ behavior: 'smooth' });
+    //   }
 
-    });
+    // });
     
   });
 
@@ -278,16 +278,20 @@ input[type=submit]:hover {
       }
   });
 
-  document.querySelector('.contacts').addEventListener('click', function(event) {
-      event.preventDefault(); // Prevent default action if it's a link
-      document.querySelector('.messageForm').classList.remove('hidden')
+  if (document.querySelector('.contacts')) {
+      document.querySelectorAll('.contacts').forEach(contact => {
+        contact.addEventListener('click', function(event) {
+          event.preventDefault(); // Prevent default action if it's a link
+          document.querySelector('.messageForm').classList.remove('hidden')
 
-      const targetElement = document.querySelector('#contacts');
-      
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-  });
+          const targetElement = document.querySelector('#contacts');
+          
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+  }
 
 function check_quantity(ptID) {
   let Cart = cookie.get('Cart', false);

@@ -623,25 +623,25 @@ VALUES
 -- If ActionType = 1 show on dushboard, 2 => actions with POST requests.
 INSERT INTO `actions` (`Action`, `ActionDir`, `ActionName`, `ActionGroup`, `ActionType`, `Img`)
 VALUES 
-    ('products', 'products', 'Products', 1, 1, 'products.png'),    
-    ('pd', 'product/new', 'Add Product', 1, 1, 'add-products.png'),    
+    ('products', 'products', 'Products', 1, 1, 'fas fa-shopping-basket'),    
+    ('pd', 'product/new', 'Add Product', 1, 1, 'fas fa-plus'),    
     ('add_pr', 'add_product', 'Add Product', 1, 2, 'add-product.png'),    
     ('pd', 'product/', 'Product Page', 1, 2, 'product.png'), 
 
-    ('product_categories', 'product-categories', 'Product Categories', 2, 1, 'product-categories.png'),    
-    ('addPC', 'add-product-category', 'Add Product Category', 2, 1, 'add-product-category.png'),    
+    ('product_categories', 'product-categories', 'Product Categories', 2, 1, 'fas fa-layer-group'),    
+    ('addPC', 'add-product-category', 'Add Product Category', 2, 1, 'fas fa-plus'),    
     ('add_p_c', 'add_product_category', 'Add Product Category', 2, 2, 'add-product-category.png'),    
     ('edit_product_category', 'edit-product-category/', 'Edit Product Category', 2, 2, 'edit-product-category.png'),    
     ('edit_p_c', 'edit_product_category', 'Edit Product Category', 2, 2, 'edit-product-category.png'),    
     
-    ('pt_specifications', 'pt-specifications', 'Product Type Specifications', 3, 1, 'pt-specifications.png'),  
-    ('add_sps_view', 'add-sps', 'Add Product Type Specification', 3, 1, 'add-pt-specifications.png'),  
+    ('pt_specifications', 'pt-specifications', 'Product Type Specifications', 3, 1, 'fas fa-flask'),  
+    ('add_sps_view', 'add-sps', 'Add Product Type Specification', 3, 1, 'fas fa-plus'),  
     ('add_sps', 'add_sps', 'Add Product Type Specification', 3, 2, 'add-pt-specifications.png'),  
     ('edit_pts_view', 'edit-pts/', 'Edit Product Type Specification', 3, 2, 'edit-pt-specifications.png'),  
     ('edit_pts', 'edit-pts', 'Edit Product Type Specification', 3, 2, 'edit-pt-specifications.png'),  
     
-    ('store', 'store', 'Store', 4, 1, 'store.png'),    
-    ('add_to_store', 'add-to-store', 'Add To Store', 4, 1, 'add-to-store.png'),    
+    ('store', 'store', 'Store', 4, 1, 'fas fa-store'),    
+    ('add_to_store', 'add-to-store', 'Add To Store', 4, 1, 'fas fa-plus'),    
     ('add_to_store', 'add-to-store/', 'Add To Store', 4, 2, 'add-to-store.png'),    
     ('add_to_store', 'add-to-store', 'Add To Store', 4, 2, 'add-to-store.png'),    
     ('edit_store', 'edit-store', 'Edit Store', 4, 2, 'edit-store.png'),  
@@ -653,10 +653,10 @@ VALUES
     ('edit_pr_thumbnail', 'edit_pr_thumbnail', 'Edit Thumbnail', 5, 3, 'edit_thumbnail.png'),  
     ('publishP', 'publish-product', 'Publish Product', 5, 3, 'publish-product.png'),
 
-    ('team', 'team', 'Team', 6, 1, 'tema.png'),
-    ('add_teammate', 'add-teammate', 'Add teammate', 6, 1, 'new-teammate.png'),
-    ('teampage', 'team/', 'Team', 6, 2, 'tema.png'),
-    ('edit_teammate', 'edit-teammate/', 'Edit Teammate', 6, 2, 'edit-teammate.png'),
+    ('team', 'team', 'Team', 6, 1, 'fas fa-people-group'),
+    ('add_teammate', 'add-teammate', 'Add teammate', 6, 1, 'fas fa-user-plus'),
+    ('teampage', 'team/', 'Team', 6, 2, ''),
+    ('edit_teammate', 'edit-teammate/', 'Edit Teammate', 6, 2, ''),
 
     ('roles', 'roles', 'Roles', 7, 1, 'roles.png'),  
     ('add_role', 'add-role', 'Add Role', 7, 1, 'add-role.png'),
@@ -678,45 +678,44 @@ VALUES
     ('submit_product_t', 'submit_product_text', 'Submit Product Text', 9, 2, 'change-type-order.png'), 
     ('get_slides', 'get_slides', 'Get Slides', 9, 2, 'get_slides.png'),
 
-    ('promo_codes', 'promo-codes', 'Promo Codes', 10, 1, 'promo_codes.png'),
-    ('create_promo_code', 'create-promo-code', 'Create Promo Code', 10, 1, 'create_promo_code.png'), -- G/P
+    ('promo_codes', 'promo-codes', 'Promo Codes', 10, 1, 'fas fa-tag'),
+    ('create_promo_code', 'create-promo-code', 'Create Promo Code', 10, 1, 'fas fa-plus'), -- G/P
     ('edit_promo_code', 'edit-promo-code/', 'Edit Promo Code', 10, 2, 'edit_promo_code.png'), 
     ('stuff_promo_code_details', 'stuff-promo-code-details/', 'Promo Code Details', 10, 2, 'stuff_promo_code_details.png'), 
     ('edit_promo', 'edit-promo', 'Edit Promo', 10, 2, 'edit_promo.png'), 
 
-    ('orders', 'orders/page=1&status=all', 'Orders', 11, 1, 'orders.png'), 
-    ('order_details', 'order-details/', 'Order Details', 11, 2, 'order_details.png'), 
+    ('orders', 'orders/page=1&status=all', 'Orders', 11, 1, 'fas fa-clipboard-list'), 
+    ('order_details', 'order-details/', 'Order Details', 11, 2, ''), 
     ('get_order_details', 'get-order-details', 'Get Order Details', 11, 2, ''), 
     ('edit_order_details', 'edit-order-details', 'Edit Order Details', 11, 2, ''), 
     
-    ('affiliates', 'affiliates', 'Affiliates', 12, 1, 'affiliates.png'), 
+    ('affiliates', 'affiliates', 'Affiliates', 12, 1, 'fas fa-people-arrows'), 
     ('affiliate', 'affiliate/', 'Affiliate', 12, 2, 'affiliate.png'), 
     ('stuff_affiliate_orders', 'stuff-affiliate-orders/', 'Affiliate Orders', 12, 2, 'stuff_affiliate_orders.png'), 
    
-    ('transfers', 'transfers/page=1', 'Transfers', 13, 1, 'transfers.png'), 
-    ('transfer_funds', 'transfer-funds', 'Transfer Funds', 13, 1, 'transfer-funds.png'), -- G/P
+    ('transfers', 'transfers/page=1', 'Transfers', 13, 1, 'fas fa-coins'), 
+    ('transfer_funds', 'transfer-funds', 'Transfer Funds', 13, 1, 'fas fa-hand-holding-dollar'), -- G/P
     ('transfer_funds', 'transfer-funds/', 'Transfer Funds', 13, 2, 'transfer-funds.png'), -- G/P
     ('get_transfer_details', 'get-transfer-details', 'Get Transfer Details', 13, 2, ''),
     
-    ('emails', 'emails/page=1', 'Emails', 14, 1, 'emails.png'),
-    ('create_email', 'create-email', 'Create Email', 14, 1, 'create_email.png'), -- G/P
-    ('assign_email', 'assign-email', 'Assign Email', 14, 1, 'assign_email.png'), -- G/P
-    ('send_email', 'send-email', 'Send Email', 14, 1, 'send_email.png'), -- G/P
+    ('emails', 'emails/page=1', 'Emails', 14, 1, 'fas fa-envelopes-bulk'),
+    ('create_email', 'create-email', 'Create Email', 14, 1, 'fas fa-envelope-circle-check'), -- G/P
+    ('assign_email', 'assign-email', 'Assign Email', 14, 1, 'fas fa-at'), -- G/P
+    ('send_email', 'send-email', 'Send Email', 14, 1, 'fas fa-paper-plane'), -- G/P
     ('send_email', 'send-email/', 'Send Email', 14, 2, 'send_email.png'), -- G/P
-    ('corporate_emails', 'corporate-emails/page=1', 'Corporate Emails', 14, 1, 'corporate_emails.png'),
+    ('corporate_emails', 'corporate-emails/page=1', 'Corporate Emails', 14, 1, 'fas fa-envelope-open-text'),
     ('get_email_content', 'get-email-content', 'Get Email Content', 14, 2, ''),
     ('get_associated_employees', 'get-associated-employees', 'Get Associated Employees', 14, 2, ''),
     ('rm_email_em', 'remove-email-from-employee', 'Remove Email From Employee', 14, 2, ''),
     ('edit_ce_view', 'edit-corporate-email-view', 'Edit Corporate Email View', 14, 2, ''),
     ('edit_ce', 'edit-corporate-email', 'Edit Corporate Email', 14, 2, ''),
     
-    ('affiliate_orders', 'affiliate-orders/page=1&status=all', 'Affiliate Orders', 15, 1, 'affiliate_orders.png'),
+    ('affiliate_orders', 'affiliate-orders/page=1&status=all', 'Affiliate Orders', 15, 1, 'fas fa-clipboard-list'),
     ('affiliate_order_details', 'affiliate-order-details/', 'Affiliate Order Details', 15, 2, 'affiliate_order_details.png'),
-    ('affiliate_transfers', 'affiliate-transfers/page=1', 'Affiliate Transfers', 15, 1, 'affiliate_transfers.png'),
+    ('affiliate_transfers', 'affiliate-transfers/page=1', 'Affiliate Transfers', 15, 1, 'fas fa-coins'),
     ('promo_code_details', 'promo-code-details/', 'Promo Code Details', 15, 2, 'promo_code_details.png'),
     ('get_affiliate_transfer_details', 'get-affiliate-transfer-details', 'Get Affiliate Transfer Details', 15, 2, '') 
     ;
-
 
 
 INSERT INTO `languages` (`Language`, `Prefix`) VALUES

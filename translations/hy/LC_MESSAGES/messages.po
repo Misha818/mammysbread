@@ -1609,7 +1609,7 @@ msgstr "Սեղմեք քարտերի վրայի «Ավելին» կոճակը յ�
 
 #: templates/index.html:148
 msgid "contact with us"
-msgstr "կապվեք մեզ հետ։"
+msgstr "կապ հաստատեք մեզ հետ։"
 
 #: templates/index.html:149
 msgid "aboutText5"

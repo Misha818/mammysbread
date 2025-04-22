@@ -60,7 +60,7 @@
   display: flex; 
   gap: 10px; 
   align-items: center; 
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
 }
 
 .cancelled {
@@ -101,10 +101,10 @@
 {{ sideBar | safe }}
 
 <div class="container" >
-  <h2 style="text-align: center; margin: 20px auto;">{{ _("Transfers' history") }} </h2>
   
   <div class="table-container toRight tableDaddy" style="max-width: 1320px; box-shadow: unset; background-color: unset">
-    <div class="filter-container" style="margin: 5px auto 5px 70%;">
+    <div class="filter-container">
+      <h2 style="text-align: left; flex: 1;">{{ _("Transfers' history") }} </h2>
       <select id="affiliates" style="flex: 1; max-width: 250px;">
         <option value="" >{{ _('Filter by staff member') }}</option>
         

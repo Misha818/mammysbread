@@ -27,6 +27,7 @@
         padding: unset!important;
     }
 
+
   </style>  
 
 {% endblock %}
@@ -37,15 +38,15 @@
 <div class="container my-5">
 {% if headings[2] %}  
   {% if headings[0] is not none %}
-    <h2>{{ _('Affiliate') + ': ' }}  <a href="{{ url_for('affiliate', affID=headings[2]) }}" >{{ headings[0] }}</a></h2>
+    <h2 class="toRight tableDaddy">{{ _('Affiliate') + ': ' }}  <a href="{{ url_for('affiliate', affID=headings[2]) }}" >{{ headings[0] }}</a></h2>
   {% endif %}
-  <h4>{{ _('Promo Code') + ': ' }}  <a href="{{ url_for('home') + 'stuff-affiliate-orders/page=1&status=all&promoCode=' + headings[1] + '&affiliate=' + headings[2] }}" >{{ headings[1] }}</a></h4>
+  <h4 class="toRight tableDaddy">{{ _('Promo Code') + ': ' }}  <a href="{{ url_for('home') + 'stuff-affiliate-orders/page=1&status=all&promoCode=' + headings[1] + '&affiliate=' + headings[2] }}" >{{ headings[1] }}</a></h4>
 {% else %}
-<h2>{{ _('Affiliate') + ': ' }}  <a href="{{ url_for('stuff') }}" >{{ headings[0] }}</a></h2>
-<h4>{{ _('Promo Code') + ': ' }}  <a href="{{ url_for('home') + 'affiliate-orders/page=1&status=all&promoCode=' + headings[1]}}" >{{ headings[1] }}</a></h4>
+<h2 class="toRight tableDaddy">{{ _('Affiliate') + ': ' }}  <a href="{{ url_for('stuff') }}" >{{ headings[0] }}</a></h2>
+<h4 class="toRight tableDaddy">{{ _('Promo Code') + ': ' }}  <a href="{{ url_for('home') + 'affiliate-orders/page=1&status=all&promoCode=' + headings[1]}}" >{{ headings[1] }}</a></h4>
 {% endif %}
 <br>
-    <div id="accordion"></div>
+    <div id="accordion" class="toRight tableDaddy"></div>
 </div>
 
 <script>

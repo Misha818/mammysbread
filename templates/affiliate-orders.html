@@ -71,6 +71,13 @@
   text-decoration: line-through !important;
 }
 
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1200px!important;
+  }
+}
+
+
 </style>
 
 {% endblock %}
@@ -80,11 +87,11 @@
 {{ sideBar | safe }}
 <div class="container" >
 {% if affID and result['length'] > 0 %}
-  <h2 style="text-align: center; margin: 20px auto;">{{ _('Purchase history related to promo code of') }}  <a href="{{ url_for('affiliate', affID=affID) }}">{{ result['data'][0]['affiliate'] }}</a> </h2>
+  <h2 class="toRight tableDaddy" style="text-align: left; margin: 20px auto;">{{ _('Purchase history related to promo code of') }}  <a href="{{ url_for('affiliate', affID=affID) }}">{{ result['data'][0]['affiliate'] }}</a> </h2>
 {% else %}
-  <h2 style="text-align: center; margin: 20px auto;">{{ _('Purchase history related to promo code') }} </h2>
+  <h2 class="toRight tableDaddy" style="text-align: left; margin: 20px auto;">{{ _('Purchase history related to promo code') }} </h2>
 {% endif %}
-  <div class="filter-container toRight">
+  <div class="filter-container toRight tableDaddy">
     <select id="orderStatus" style="flex: 1; max-width: 135px;">
       <option value="" {% if filters['status'] != 'pending' %}disabled{% endif %}>{{ _('Chose Order Status') }}</option>
       <option value="all" {% if filters['status'] == 'all' %}selected{% endif %}>{{ _('All Orders') }}</option>
@@ -217,8 +224,8 @@
       <th></th>
       </tr>
     </thead>
-  {% if result.length > 0 %}
     <tbody>
+  {% if result.length > 0 %}
       {% for row in result.data %}
       {% set statusStyle = 'status-open' %}
       {% set status = _('Purchased') %}
@@ -301,10 +308,14 @@
       {% endfor %}
       
       {% else %}
-      <tr><td><p style="padding: 15px; font-size: 26px;">{{ _('Nothing found.') }}</p></td></tr>  
+      <tr><td><p style="padding: 15px; font-size: 26px;">{{ _('Nothing found.') }}</p></td></tr> 
+     
     {% endif %}
-  </tbody>
+  </tbody>  
   </table>
+
+</div> 
+</div>
 
   {% if numRows > pagination %}
 

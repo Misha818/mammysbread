@@ -2,7 +2,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #fdf6ec;
+    background-color: #fdf6ec!important;
     /* margin: 0; */
     /* font-family: Arial, sans-serif; */
     /* padding-top: 60px; */
@@ -1376,8 +1376,17 @@ h2 {
         height: auto;
       }
       
-      .card-content, .card-content-stuff {
+      .card-content {
         padding: 20px;
+      }
+      
+      .card-content-stuff {
+        padding: 20px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 15px;
       }
       
       .card-title {
@@ -1435,11 +1444,26 @@ h2 {
       
       
       @media (min-width: 1200px) and (max-width: 2500px) {
-          .card-container {
+          /* .card-container {
               grid-template-columns: repeat(2, 1fr); 
-              width: 90%;
+              width: 65%;
               height: 0px;
+            } */
+
+            .card-container {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              grid-auto-rows: auto;
+              width: 65%;
+              /* remove height: 0px; */
             }
+
+            .card-container > :last-child:nth-child(odd) {
+              /* Option A: span it across both columns and center */
+              grid-column: 1 / -1;
+              justify-self: center;
+            }
+            
           
             .card-container-user {
               grid-template-columns: repeat(4, 1fr); 
@@ -1457,7 +1481,8 @@ h2 {
             }
 
             .header-stuff img {
-              margin: -15px -15px -15px 10px;
+              /* margin: -15px -15px -15px 10px; */
+              margin: -10px 10px;
             }
           }
           
@@ -7218,7 +7243,7 @@ h2 {
 
 .sidebar-menu li a i {
   margin-right: 10px;
-  color: #5856d6;
+  color: #0bc275;
   font-size: 18px;
 }
 
@@ -8023,6 +8048,7 @@ tr:nth-child(even) {
   text-align: left;
   width: 100%;
   margin-top: 40px;
+  margin-bottom: 55px;
 }
 
 .contact-follow {

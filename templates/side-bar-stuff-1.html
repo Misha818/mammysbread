@@ -38,10 +38,10 @@
     <!-- <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a> -->
     
     <ul class="sidebar-menu">
-      <li><a href="{{ url_for('home') + 'stuff' }}"><i class="fas fa-home"></i><span>{{ _('Dashboards') }}</span></a></li>
+      <li style="border-bottom: 1px solid;"><a href="{{ url_for('home') + 'stuff' }}"><i class="fas fa-home"></i><span>{{ _('Dashboard') }}</span></a></li>
       
     {% for row in result %}
-      <li><a href="{{ url_for('home') + row['ActionDir']}}"><i class="fas fa-home"></i><span></span>{{ _(row['ActionName']) }}</span></a></li>
+      <li><a href="{{ url_for('home') + row['ActionDir']}}"><i class="{{ row['Img'] }}"></i><span></span>{{ _(row['ActionName']) }}</span></a></li>
     {% endfor %}
     
     </ul>

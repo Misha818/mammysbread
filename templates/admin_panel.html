@@ -3,14 +3,16 @@
     {{ _('Admin Panel') }}
 {% endblock %}
 {% block content %}
-  
-<div class="card-container">
+<div class="card-container" style="margin: 5% 0% 3% 0%;">
 {% if resultActions.length > 0 %}
   {% for row in resultActions.data %}
   <a href="{{ url_for('home', _external=True) + row['ActionDir'] }}" style="text-decoration: none;">
     <div class="card">
       <div class="card-content-stuff">
-        <h2 class="card-title">{{ row['ActionName'] }}</h2>
+        <i class="{{ row['img']}}" style="font-size: 22px; color: #0bc275;"></i>
+        <h2 class="card-title">
+          {{ row['ActionName'] }}
+        </h2>
         
       </div>
     </div>

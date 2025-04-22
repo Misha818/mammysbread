@@ -93,6 +93,12 @@
   cursor: pointer;
 }
 
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1200px!important;
+  }
+}
+
 
 </style>
 
@@ -102,7 +108,7 @@
 
 {{ sideBar | safe }}
 <div class="container" >
-  <h2 style="text-align: center; margin: 20px auto;">{{ _('Your transfers history') }} </h2>
+  <h2 class="toRight tableDaddy" style="text-align: left; margin: 20px auto;">{{ _('Your transfers history') }} </h2>
 
   <div class="table-container toRight" id="tableDaddy" style="max-width: 1320px;">
 
@@ -202,6 +208,9 @@
     {% endif %}
   </tbody>
   </table>
+
+  </div>
+</div>
 
   {% if numRows > pagination %}
 

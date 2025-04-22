@@ -3533,33 +3533,37 @@ def stuff():
     supportedLangsData = supported_langs()
     view = 'admin_panel.html'
     resultP, resultRevardsList = ['', '']
-    # if result['data'][0]['Rol'] == 'Affiliate':
-    #     sqlQueryPromo = f"""
-    #                 SELECT 
-    #                     `promo_code`.`Promo`,
-    #                     `promo_code`.`expDate`,
-    #                     `promo_code`.`Status`
-    #                 FROM `promo_code`
+
+    # View file and data for affiliate Role
+    if resultActions['data'][0]['Rol'] == 'Affiliate':
+        sqlQueryPromo = f"""
+                    SELECT 
+                        `promo_code`.`Promo`,
+                        `promo_code`.`expDate`,
+                        `promo_code`.`Status`
+                    FROM `promo_code`
                         
-    #                 WHERE `promo_code`.`affiliateID` = %s;    
-    #                 """
+                    WHERE `promo_code`.`affiliateID` = %s;    
+                    """
 
-    #     sqlValTuplePromo = (stuffID,)
-    #     resultP = sqlSelect(sqlQueryPromo, sqlValTuplePromo, True)
+        sqlValTuplePromo = (stuffID,)
+        resultP = sqlSelect(sqlQueryPromo, sqlValTuplePromo, True)
         
-    #     view = 'affiliate.html'
-    #     resultRevards = get_affiliate_reward_progress(stuffID)
+        view = 'affiliate.html'
+        resultRevards = get_affiliate_reward_progress(stuffID)
 
-    #     row = {}
-    #     if resultRevards['length'] > 0:
-    #         row = resultRevards['data'][0]
+        row = {}
+        if resultRevards['length'] > 0:
+            row = resultRevards['data'][0]
     
-    #     resultRevardsList = {
-    #         '0': [gettext('Voided'),    row.get('Voided') or 0, 'Voided', 'affiliate-orders/page=1&status=0'],
-    #         '1': [gettext('Pending'),   row.get('Pending') or 0, 'Pending', 'affiliate-orders/page=1&status=pending'],
-    #         '2': [gettext('Approved'),  row.get('Approved') or 0, 'Approved', 'affiliate-orders/page=1&status=5'],
-    #         '3': [gettext('Settled'),   row.get('Settled') or 0, 'Settled', 'affiliate-transfers/page=1']
-    #     }
+        resultRevardsList = {
+            '0': [gettext('Voided'),    row.get('Voided') or 0, 'Voided', 'affiliate-orders/page=1&status=0'],
+            '1': [gettext('Pending'),   row.get('Pending') or 0, 'Pending', 'affiliate-orders/page=1&status=pending'],
+            '2': [gettext('Approved'),  row.get('Approved') or 0, 'Approved', 'affiliate-orders/page=1&status=5'],
+            '3': [gettext('Settled'),   row.get('Settled') or 0, 'Settled', 'affiliate-transfers/page=1']
+        }
+        # End of view file and data for affiliate Role
+
 
     return render_template(view, result=result, resultActions=resultActions, resultP=resultP, resultRevardsList=json.dumps(resultRevardsList), supportedLangsData=supportedLangsData, currentDate=date.today(), newCSRFtoken=newCSRFtoken, current_locale=get_locale())
 
@@ -3576,20 +3580,14 @@ def affiliate(affID):
                     `promo_code`.`Promo`,
                     `promo_code`.`expDate`,
                     `promo_code`.`Status`
-                FROM `promo_code`
-                    LEFT JOIN `stuff` ON `stuff`.`ID` = `promo_code`.`affiliateID`                    
-                WHERE `promo_code`.`affiliateID` = %s;    
+                FROM `stuff`
+                    LEFT JOIN `promo_code` ON `stuff`.`ID` = `promo_code`.`affiliateID`                    
+                WHERE `stuff`.`ID` = %s;    
                 """
 
     sqlValTuple = (affID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
-    print(result['data'])
-    print(result['error'])
-
-    if result['length'] == 0:
-        return render_template('error.html')
-    
     resultRevards = get_affiliate_reward_progress(affID)
 
     row = {}
