@@ -602,7 +602,6 @@ ALTER TABLE `client_contacts` AUTO_INCREMENT = 1;
 -- End of billing tables
 
 
-
 INSERT INTO `stuff` (`Username`, `Password`, `Email`, `Firstname`, `Lastname`, `PositionID`, `LanguageID`, `Status`)
 VALUES 
     ('superuser', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'test@test.com', 'John', 'Smith', 6, 2, 1),
@@ -611,14 +610,16 @@ VALUES
     ('Manager', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'manager@test.com', 'Avi', 'Manavi', 3, 2, 1),
     ('Editor', 'scrypt:32768:8:1$gA4uJNdnHmDVnE7E$5f5ab03f948509ea13d2807eb5f48f85b202e2d09bc99cb8476f26e1f8151b0ba3e0e5c5a85b4b351d628b0a1757c017e9e0ea52ad6802b1ebc644002024e64c', 'editor@test.com', 'Lyubov', 'Uspenskaia', 2, 2, 1);
 
+
 INSERT INTO `rol` (`Rol`, `ActionIDs`, `Status`)
 VALUES 
     ('Affiliate', '33,74,75,76,77,78', 1),
     ('Editor', '33,1,2,3,4,5,6,7,8,9,10,11,12,13,14,21,22,23,24,25,34,35,36,37,38,39,41,42,43,44,45,46', 1),
     ('Manager', '33,15,16,17,18,19,20,40,59,60,61,62,66,67', 1),
-    ('Sales AND Marketing', '47,48,49,50,51,52,53,54,55,56,57,58,59,62,66,67', 1),
-    ('HR', '26,27,28,29,63,69,64,65,68,70,71,72,73,66,67', 1),
-    ('Master User', '33,66,67,30,31,32', 1);
+    ('Sales AND Marketing', '47,48,49,50,51,52,53,54,55,56,57,58,59,62', 1),
+    ('HR', '26,27,28,29,63,69,64,65,68,70,71,72,73', 1),
+    ('CEO', '33,30,31,32,79,80', 1);
+
 
 -- If ActionType = 1 show on dushboard, 2 => actions with POST requests.
 INSERT INTO `actions` (`Action`, `ActionDir`, `ActionName`, `ActionGroup`, `ActionType`, `Img`)
@@ -658,8 +659,8 @@ VALUES
     ('teampage', 'team/', 'Team', 6, 2, ''),
     ('edit_teammate', 'edit-teammate/', 'Edit Teammate', 6, 2, ''),
 
-    ('roles', 'roles', 'Roles', 7, 1, 'roles.png'),  
-    ('add_role', 'add-role', 'Add Role', 7, 1, 'add-role.png'),
+    ('roles', 'roles', 'Roles', 7, 1, 'fas fa-user-tie'),  
+    ('add_role', 'add-role', 'Add Role', 7, 1, 'fas fa-plus'),
     ('edit_role', 'edit-role/', 'Edit Role', 7, 2, 'add-role.png'), 
 
     ('stuff', 'stuff', 'Stuff', 8, 2, 'stuff.png'), 
@@ -714,9 +715,11 @@ VALUES
     ('affiliate_order_details', 'affiliate-order-details/', 'Affiliate Order Details', 15, 2, 'affiliate_order_details.png'),
     ('affiliate_transfers', 'affiliate-transfers/page=1', 'Affiliate Transfers', 15, 1, 'fas fa-coins'),
     ('promo_code_details', 'promo-code-details/', 'Promo Code Details', 15, 2, 'promo_code_details.png'),
-    ('get_affiliate_transfer_details', 'get-affiliate-transfer-details', 'Get Affiliate Transfer Details', 15, 2, '') 
-    ;
+    ('get_affiliate_transfer_details', 'get-affiliate-transfer-details', 'Get Affiliate Transfer Details', 15, 2, ''),
 
+    ('positions', 'positions', 'Positions', 16, 1, 'fas fa-chair'),
+    ('edit_position', 'edit-position/', 'Edit Positions', 16, 2, '')
+    ;
 
 INSERT INTO `languages` (`Language`, `Prefix`) VALUES
 ('Հայերեն', 'hy'),

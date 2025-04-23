@@ -1,4 +1,4 @@
-from flask import session, redirect, jsonify, request
+from flask import Flask, session, redirect, jsonify, request, g
 from dotenv import load_dotenv
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from werkzeug.utils import secure_filename
@@ -60,6 +60,16 @@ pool = mysql.connector.pooling.MySQLConnectionPool(
 # To get a connection from the pool
 db_connection = pool.get_connection()
 
+def action_info():
+    return session.get('action_info')
+
+def init_sysadmin_context(app):
+    @app.context_processor
+    def inject_action_info():
+        # whatever keys you return here will be global in templates
+        return {
+            'actionInfo': action_info()
+        }
 
 def get_db_connection(use_dict_cursor=False):
     retries = 3
@@ -582,7 +592,10 @@ def login_required(f):
 
 def permissions(stuffID, Action):
     sqlQuery =  """
-                SELECT `actions`.`Action`
+                SELECT 
+                    `actions`.`Action`,
+                    `actions`.`ActionName`,
+                    `rol`.`Rol`
                 FROM `actions` 
                     LEFT JOIN `rol` ON find_in_set(`actions`.`ID`, `rol`.`actionIDs`)
                     LEFT JOIN `position` ON find_in_set(`rol`.`ID`, `position`.`rolIDs`)
@@ -600,6 +613,8 @@ def permissions(stuffID, Action):
     for actionTuple in result['data']:
         # print(actionTuple[0] + ' ' + Action + '\n')
         if actionTuple[0] == Action:
+            session['action_info'] = {'actionName': actionTuple[1], 'role': actionTuple[2]}
+            action_info()
             return True
         
     return False

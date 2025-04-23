@@ -375,6 +375,9 @@ affiliate_transfers
 promo_code_details
 get_affiliate_transfer_details
 
+positions
+edit_position
+
 
 
 // To continue, please, add at least one product category.

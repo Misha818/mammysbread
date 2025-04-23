@@ -3,7 +3,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import check_rol_id, check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import init_sysadmin_context, check_rol_id, check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -27,7 +27,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 app = Flask(__name__)
-
+init_sysadmin_context(app)
 
 @app.before_request
 def init_template_data():
@@ -3013,7 +3013,8 @@ def add_role():
         result = sqlInsert(sqlQuery, sqlValTuple)
         
         if result['inserted_id'] is not None:
-            answer = result['answer']
+            answer = gettext('Done')
+            # answer = result['answer']
             return jsonify({'status': '1', 'answer': answer}) 
         else:
             answer = " Something is wrong!"
@@ -3033,6 +3034,102 @@ def add_role():
         sideBar = side_bar_stuff()
 
         return render_template('add-role.html', result=result, sideBar=sideBar, languageID=languageID, current_locale=get_locale())
+
+
+@app.route('/positions', methods=['GET'])
+# @login_required
+def positions():
+    languageID = getLangID()
+    sqlQuery = """
+                SELECT 
+                    `position`.`ID`,
+                    `position`.`Position`,
+                    `position`.`Status`
+                FROM `position`
+                ORDER BY `position`.`ID` DESC 
+                ; 
+               """
+    sqlValTuple = ()
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+    sideBar = side_bar_stuff()
+
+    return render_template('positions.html', result=result, sideBar=sideBar, current_locale=get_locale())
+
+
+@app.route('/edit-position/<positionID>', methods=['GET', 'POST'])
+# @login_required
+def edit_position(positionID):
+    if request.method == "POST":
+        newCSRFtoken = generate_csrf()
+                        
+        if not request.form.get('positionID'):
+            answer = gettext('Something wrong!')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+        
+        positionID  = request.form.get('positionID')
+        
+        if not request.form.get('languageID'):
+            answer = gettext('Something wrong!')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+        
+        languageID  = request.form.get('languageID')
+
+        if not request.form.get('Position'):
+            answer = gettext('Please specify the position')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+        Position  = request.form.get('Position').strip()
+
+        if not request.form.get('Roles'):
+            answer = gettext('Please choose at least on role')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+        Roles = request.form.get('Roles').strip()
+
+        # Check whether the position exists or not
+        sqlQuery = "SELECT `Position` FROM `positions` WHERE `Position` = %s AND `ID` != %s;"
+        sqlValTuple = (Position, positionID)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        if result['length'] > 0:
+            answer = f""" There is already a position called "{Position}" """
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+        
+
+        sqlQuery = "UPDATE `position` SET `Position` = %s, `rolIDs` = %s WHERE `ID` = %s;"
+        sqlValTuple = (Position, Roles, positionID)
+        result = sqlUpdate(sqlQuery, sqlValTuple)
+        
+        if result['status'] == '1':
+            # answer = result['answer']
+            answer = 'Done'
+            return jsonify({'status': '1', 'answer': answer}) 
+        else:
+            # answer = result['answer']
+            answer = gettext("Something is wrong!")
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    else:
+        languageID = getLangID()
+        sqlQuery = "SELECT `ID`, `Position`, `rolIDs` FROM `position` WHERE `ID` = %s;"
+        sqlValTuple = (positionID,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        
+        if result['length'] != 1:
+            return render_template('error.html', current_locale=get_locale()) 
+
+        sqlQueryRols = """
+                    SELECT 
+                        `ID`,
+                        `Rol` AS `Name`
+                    FROM `rol`
+                    ; 
+                """
+        sqlValTupleRols = ()
+        resultRols = sqlSelect(sqlQueryRols, sqlValTupleRols, True)
+        sideBar = side_bar_stuff()
+
+        return render_template('edit-position.html', row=result['data'][0], sideBar=sideBar, resultActions=resultRols, languageID=languageID, current_locale=get_locale())
 
 
 @app.route('/add-teammate', methods=['GET', 'POST'])
@@ -3448,11 +3545,11 @@ def edit_role(RoleID):
         
         if result['status'] == '1':
             # answer = result['answer']
-            answer = 'Done'
+            answer = gettext('Done')
             return jsonify({'status': '1', 'answer': answer}) 
         else:
-            answer = result['answer']
-            # answer = "Something is wrong!"
+            # answer = result['answer']
+            answer = gettext("Something is wrong!")
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     else:
         languageID = getLangID()

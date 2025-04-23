@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}">  
+
+    <style>
+        .dz-details:hover {
+            cursor: pointer;
+        }
+    
+        .dz-remove-btn:hover {
+            background-color: #c82333;
+            cursor: pointer;
+        }
+    
+    
+        .alt-input:hover {
+            cursor: auto;
+        }
+    
+    </style>
+{% endblock %}
+{% block title %}
+    {{ _('Edit Position') }}
+{% endblock %}
+
+
+
+{% block content %}
+{{ sideBar | safe }}
+
+<div class="overlay" id="overlay"></div>
+<div class="containerS">
+    <h1 style="padding-bottom: 15px;">{{ _('Edit Position') }}</h1>
+    <!-- Form for adding a product -->
+    <div id="mistakes" style="width: 85%;"></div>
+
+    <form id="add-product-form">
+        <input type="text" id="Position" placeholder="{{ _('Position') }}" value="{{ row['Position'] }}" 
+            style="width: 100%;padding: 15px;"
+        >
+        <div class="form-group row" id="actionsDropDown"></div>
+
+            
+        <input type="hidden" id="language-id" value="{{ languageID }}">
+        <input type="hidden" id="Position-id" value="{{ row['ID'] }}">
+        
+        <div id="saveButton" class="pcButtonS" style="width: 100%">{{ _('Submit') }}</div>
+        <div id="saving" class="pcButtonS hidden" style="width: 100%">{{ _('Saving...') }}</div>
+    </form>
+
+
+</div>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    let csrfToken = "{{ csrf_token() }}"
+
+    function actionsDropDown() {
+
+        const actions = {{ resultActions | tojson }}
+        const preselectedValues = {{ row['rolIDs'] | tojson }};
+        const dropdownContainer = document.getElementById('actionsDropDown');
+
+        if (actions['length'] > 0) {
+            const select = document.createElement('select');
+            select.name = 'actions';
+            select.id = 'actions';
+            select.classList.add('form-control');
+            select.classList.add('styled-select');
+            select.style = 'height: 250px';
+            select.multiple = true; // Adds the multiple attribute
+
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '{{ _("Choose actions") }}';
+            defaultOption.disabled = true;
+            select.appendChild(defaultOption);
+
+            
+            actions.data.forEach(val => {
+                const optVal = val['Name'];
+                if (optVal !== null) {
+                    const option = document.createElement('option');
+                    option.value = val['ID'];
+                 
+                    option.textContent = optVal;
+
+                    // Check if this option should be pre-selected
+                    if (preselectedValues.includes(val['ID'])) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                }
+            });
+
+            dropdownContainer.appendChild(select); // Append the select element to the body or any other specific location
+        }
+    };
+
+    actionsDropDown();
+
+    // When the form is submitted
+    const saveButton = document.getElementById('saveButton');
+
+    saveButton.addEventListener('click', function (event) {
+
+        event.preventDefault();
+                
+        const selectElement = document.getElementById('actions');
+        const Roles = [];
+
+        for (let i = 0; i < selectElement.options.length; i++) {
+        if (selectElement.options[i].selected) {
+            Roles.push(selectElement.options[i].value);
+        }
+        }
+      
+        const saveButton = document.getElementById('saveButton');
+        const saving = document.getElementById('saving');
+        
+        saveButton.classList.add('hidden');
+        saving.classList.remove('hidden');
+        
+        let formData = new FormData();
+         
+        let languageID = document.getElementById('language-id').value;
+        let Position = document.getElementById('Position').value;
+        let PositionID = document.getElementById('Position-id').value;
+        
+
+        
+        // Create a new FormData object
+        formData.append('languageID', languageID);
+        formData.append('positionID', PositionID);
+        formData.append('Position', Position);
+        formData.append('Roles', Roles);
+        
+
+        // Create a new XMLHttpRequest object
+        let xhr = new XMLHttpRequest();
+
+        // Configure the request
+        const requestURL = '/edit-position/' + PositionID;
+        xhr.open('POST', requestURL);
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+        // Define what happens on successful data submission
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText);
+
+                let mistakesDiv = document.getElementById('mistakes');
+                mistakesDiv.innerHTML = ''; // Clear previous messages
+
+                if (response.status === '0') {
+                    // Handle empty product name
+                    mistakesDiv.innerHTML = response.answer;
+                    mistakesDiv.style.color = 'red';
+                    mistakesDiv.style.display = 'flex';
+
+                    // Scroll the window to the mistakesDiv with smooth behavior
+                    mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                    saveButton.classList.remove('hidden');
+                    saving.classList.add('hidden');
+
+                } 
+                
+                if (response.status === '1') {
+                    // Handle success
+                    let prURL = window.location.origin  + '/positions';
+                    location.href = prURL;
+
+                    // location.reload();
+                }
+            } else {
+                // Handle error response
+                saveButton.classList.remove('hidden');
+                saving.classList.add('hidden');
+
+                console.error('Error adding category:', xhr.responseText);
+            }
+        };
+
+        // Send the request with the FormData object
+        xhr.send(formData);
+    });
+
+});
+
+</script>
+
+
+{% endblock %}

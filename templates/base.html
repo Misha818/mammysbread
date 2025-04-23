@@ -37,7 +37,11 @@
     {% if userBool != False %}
     <div class="header-stuff" style="display: flex; flex-direction: row; justify-content: space-between;">
       {% if rolls | length == 0 %}
-        <img src="{{ url_for('static', filename='images/stuff-tools.png') }}" onclick="toggleSidebar()" alt="{{ _('Tools') }}" style="cursor: pointer; width: 70px; height: 70px;" >
+      <div class="flex avatar-stuff" style="gap: 10px;">
+        <img src="{{ url_for('static', filename='images/stuff-tools.png') }}" onclick="toggleSidebar()" alt="{{ _('Tools') }}" class="avatar" style="cursor: pointer; width: 70px; height: 70px;">
+        <span style="font-size: 20px; font-weight: bold; color: #ffffff;"> {{ _(actionInfo.role) + ' | ' + _(actionInfo.actionName) }}</span>
+      </div>
+        <!-- <img src="{{ url_for('static', filename='images/stuff-tools.png') }}" onclick="toggleSidebar()" alt="{{ _('Tools') }}" style="cursor: pointer; width: 70px; height: 70px;" > -->
       {% else %}
         {% if rolls[0]['Avatar'] %}
           <div class="flex avatar-stuff" style="gap: 10px;">
@@ -62,14 +66,32 @@
       
       <div class="header-stuff-right" style="display: flex; align-items: center;">
         {% if rolls | length > 1 %}
-        {% for row in rolls %}
-          {% set rollClass = 'rolls margin-right'%}
-          {% if row['rolID'] == activeRoleID %}
-            {% set rollClass = 'rolls margin-right selectedRole' %}
+        
+          {% if rolls | length > 3 %}
+
+            {% for row in rolls %}
+              {% set rollClass = 'rolls margin-right'%}
+              {% if row['rolID'] == activeRoleID %}
+                {% set rollClass = 'rolls margin-right selectedRole' %}
+              {% endif %}
+
+                <a class='{{ rollClass }}' href="{{ url_for('home', _external=True) + 'setroll/' + row['rolID'] | string }}">{{ row['Rol']}}</a>
+            {% endfor %}
+            
+          {% else %}
+
+            {% for row in rolls %}
+                {% set rollClass = 'rolls margin-right'%}
+                {% if row['rolID'] == activeRoleID %}
+                  {% set rollClass = 'rolls margin-right selectedRole' %}
+                {% endif %}
+
+                  <a class='{{ rollClass }}' href="{{ url_for('home', _external=True) + 'setroll/' + row['rolID'] | string }}">{{ row['Rol']}}</a>
+              {% endfor %}
+
           {% endif %}
 
-            <a class='{{ rollClass }}' href="{{ url_for('home', _external=True) + 'setroll/' + row['rolID'] | string }}">{{ row['Rol']}}</a>
-          {% endfor %}
+
         {% endif %}
 
         {% if supportedLangsData | length > 1 %}     
@@ -148,16 +170,7 @@
       
       </script>
 
-<p style="  position: fixed;
-bottom: 0;
-color: #6c757d; 
-margin-top: 15px;
-margin-bottom: unset!important;
-text-align: center;
-background-color: white;
-padding: 10px; width: 100%;">&copy; {{ current_year }} {{ _('Your Company. All rights reserved.') }} 
-</p>
-       
+
   </body>
 
 </html>

@@ -810,9 +810,9 @@ button[type="submit"] {
 /* Container for the overall dropdown */
 .dropdown {
   width: 250px;
-      margin-bottom: 20px;
-      position: relative; /* Key: children can be absolutely positioned relative to this */
-      display: inline-block; /* So it sizes to content, not full width */
+  margin-bottom: 5px;
+  position: relative; /* Key: children can be absolutely positioned relative to this */
+  display: inline-block; /* So it sizes to content, not full width */
 
 }
 
@@ -979,7 +979,7 @@ button[type="submit"] {
 
 .store-quantity {
   width: 250px; 
-  margin: 15px 0px 15px 0px; 
+  margin: 5px 0px; 
   padding: 12px 8px; 
   text-align: left;
   border: 1px solid #ccc;
@@ -1856,7 +1856,7 @@ h2 {
   color: black;
   text-align: center;
   padding: 12px;
-  text-decoration: none;
+  text-decoration: none!important;
   font-size: 18px; 
   line-height: 25px;
   border-radius: 4px;
@@ -8100,11 +8100,17 @@ tr:nth-child(even) {
 }
 
 .selectedRole {
-  background-color: #f0f0f0;
+  background-color: #0bc275;
+    color: #fff !important;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 5px;
+    border: 3px solid #fff;
+  /* background-color: #fcf5eb;
   color: #000;
   text-decoration: none;
   border-radius: 5px;
-  border: 1px solid #ccc;
+  border: 1px solid #ccc; */
 }
 
 /* .cart-container {
