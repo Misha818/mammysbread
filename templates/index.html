@@ -89,7 +89,7 @@ input[type=submit]:hover {
 }
 
 .card-container-user, #about p{
-  font-family: cursive!important;
+  font-family: 'Kurland', cursive, Georgia, 'Times New Roman', Times, serif!important;
 }
 
 #about {
@@ -98,7 +98,7 @@ input[type=submit]:hover {
   border-radius: 0px 0px 20px 20px;
   box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
   background-color: #fdf6ec;
-  padding: 40px !important;
+  padding: 40px;
   max-width: 1200px;
   max-width: 1200px;
   margin: 55px 20px 0px 20px;
@@ -146,14 +146,23 @@ input[type=submit]:hover {
   </nav>
 
 
+  <div id="offset"></div>
   <div id="about">
     <div style="text-align:center">
-      <!-- <h2>{{ _('About') }}</h2> -->
-      <p>{{ _('aboutText1') }}</p>
-      <p>{{ _('aboutText2') }}</p>
-      <p style="font-style: italic; font-weight: 600;">{{ _('aboutText3') }}</p>
-      <p>{{ _('aboutText4') }}<span class="contacts contact-with-us">{{ _('contact with us') }}</span></p>
-      <p>{{ _('aboutText5') }} 😊 </p>
+       
+      <p>
+        {{ _('aboutText1') }}
+        <span class="show-more visible">... {{ _('show more') }}</span>
+      </p>
+      <span class="show-more-text">
+        
+        <p>{{ _('aboutText2') }}</p>
+        <p style="font-style: italic; font-weight: 600;">{{ _('aboutText3') }}</p>
+        <p>{{ _('aboutText4') }}<span class="contacts contact-with-us">{{ _('contact with us') }}</span></p>
+        <p>{{ _('aboutText5') }} 😊 </p>
+        <p class="show-less">{{ _('show less') }}</p>
+      </span>
+      
     </div>
   </div>
   
@@ -357,7 +366,6 @@ function createShoppingCartModal(prData) {
     shoppingCart.style.gridTemplateColumns = 'repeat(1, 1fr)';
   }  
 
-  console.log(`type of ${typeof(dataLen)}`)
   prData.forEach(row => {
       let fullPath = "{{ url_for('home') }}" + row.url + '&' + row.ptTitle.replace(' ', '-')
       let quantityState = check_quantity(row.ptID)
@@ -530,30 +538,6 @@ return modalBackdrop;
 
 }
 
-
-// function myLoader(color, gearID) {
-//     if (color === undefined) {
-//       color = 'crimson'
-//     }
-
-//     alert(`color is ${color}`)
-//     alert(`gearID is ${gearID}`)
-
-//     console.log(`gearID is ${gearID}`)
-//     console.log(`type of gearID is ${typeof(gearID)}`)
-
-//     if (gearID === undefined) {
-//       gearID = 'gear'
-//     }
-//     let loader = document.createElement('div'); // Create a div element for the loader
-//       loader.id = gearID;
-//       loader.style.color = color;
-//       loader.style.fontSize = '20px';
-//       loader.style.display = 'inline-block';
-//       loader.textContent = '⚙';
-//       return loader;
-// }
-
 function rotate(gearElement) {
   let angle = 0;
   setInterval(() => {
@@ -612,7 +596,6 @@ if (addToCartButtons) {
               
               if (response.status === '1') {
                   // Handle success
-                  console.log(response.data);
                   prData = response.data
                   
                   const newShoppingCartModal = createShoppingCartModal(response.data);
@@ -671,7 +654,6 @@ if (addToCartButtons) {
                               if (flag === true) {
                                 return;
                               }
-                              console.log('I am here')  
                               flag = true;
 
                               let ptID = clickedButton.dataset.value;
@@ -844,8 +826,6 @@ if (addToCartButtons) {
                 
             if (response.status === '0') {
               modal_message(response.answer)
-              console.log(response.answer);
-              console.log('response.answer');
             }
               
           } else {
@@ -957,8 +937,6 @@ async function get_pt_quantity(ptID, quantity) {
     // Add to card
     async function addToCart(ptID, num, clickedBotton) {
         let checkPtQuantity = await check_pt_quantity(ptID, num);
-
-        // console.log(`checkPtQuantity is ${checkPtQuantity.status}`)
 
         if (checkPtQuantity.status === '0') {
             // const textContent = document.getElementById('outOfStock').value;
@@ -1337,18 +1315,11 @@ async function get_pt_quantity(ptID, quantity) {
       const modalBackdropHeight = parseInt(document.querySelector('.modal-backdrop').offsetHeight, 10);
       const modalContentHeight = parseInt(document.querySelector('.modal-content').offsetHeight, 10);
       
-      // console.log('fartherActionsHeight:', fartherActionsHeight);
-      // console.log('addToCartModalHeight:', addToCartModalHeight);
-      // console.log('modalBackdropHeight:', modalBackdropHeight);
-      // console.log('modalContentHeight:', modalContentHeight);
-      // console.log('Combined Height:', modalBackdropHeight - fartherActionsHeight);
-      
       document.querySelector('.add-to-cart-modal').style.maxHeight = (modalBackdropHeight - fartherActionsHeight * 2).toString() + 'px'
     
       // 
       
       window.addEventListener('resize', () => {
-        // console.log('Window width changed to:', window.innerWidth);
         change_modal_height()
       });
 
@@ -1356,6 +1327,25 @@ async function get_pt_quantity(ptID, quantity) {
     }
     
   }
+
+
+  let showMoreText = document.querySelector('.show-more-text');
+    document.querySelector('.show-more').addEventListener('click', function() {
+      showMoreText.classList.toggle('vis');
+      document.querySelector('.show-more').style.display = 'none';
+      
+      document.querySelector('#offset').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      
+    });
+    
+    document.querySelector('.show-less').addEventListener('click', function() {
+      showMoreText.classList.toggle('vis');
+      setTimeout(() => {
+        document.querySelector('.show-more').style.display = '';
+        document.querySelector('#offset').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300); 
+  });
+
 
         
 </script>

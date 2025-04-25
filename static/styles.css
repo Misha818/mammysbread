@@ -1,3 +1,101 @@
+@font-face {
+  font-family: 'ArmCoronetU';
+  src:
+    /* woff2 first */
+    url('/static/fonts/ArmCoronetU.woff2') format('woff2'),
+    /* then the woff fallback */
+    url('/static/fonts/ArmCoronetU.woff')  format('woff'),
+    /* lastly, the TTF */
+    url('/static/fonts/ArmCoronetU.ttf')   format('truetype');
+  font-weight: normal;
+  font-style: normal;  
+  font-display: swap;
+
+  unicode-range: U+0530-058F; /* Armenian alphabet */
+
+}
+
+@font-face {
+  font-family: 'ARM HMK Script';
+  src:
+    url('/static/fonts/ARM-HMKS-SCRIPT.woff2') format('woff2'),
+    url('/static/fonts/ARM-HMKS-SCRIPT.woff')  format('woff'),
+    url('/static/fonts/ARM-HMKS-SCRIPT.ttf')   format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+
+  unicode-range: U+0530-058F; /* Armenian alphabet */
+
+}
+
+@font-face {
+  font-family: 'Eurotype2016';
+  src:
+    url('/static/fonts/Eurotype2016.woff2') format('woff2'),
+    url('/static/fonts/Eurotype2016.woff')  format('woff'),
+    url('/static/fonts/Eurotype2016.ttf')   format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+
+  unicode-range: U+0530-058F; /* Armenian alphabet */
+
+}
+
+
+@font-face {
+  font-family: 'Kurland';
+  src:
+    url('/static/fonts/Kurland.woff2') format('woff2'),
+    url('/static/fonts/Kurland.woff')  format('woff'),
+    url('/static/fonts/Kurland.ttf')   format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+
+  unicode-range: U+0530-058F; /* Armenian alphabet */
+}
+
+@font-face {
+  font-family: 'HindsightUnicode';
+  src:
+    url('/static/fonts/HindsightUnicode.woff2') format('woff2'),
+    url('/static/fonts/HindsightUnicode.woff')  format('woff'),
+    url('/static/fonts/HindsightUnicode.ttf')   format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+
+  unicode-range: U+0530-058F; /* Armenian alphabet */
+}
+
+@font-face {
+  font-family: 'FMBFNotr';
+  src:
+    url('/static/fonts/FMBFNotr.woff2') format('woff2'),
+    url('/static/fonts/FMBFNotr.woff')  format('woff'),
+    url('/static/fonts/FMBFNotr.ttf')   format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+
+  unicode-range: U+0530-058F; /* Armenian alphabet */
+}
+
+
+
+
+/* @font-face { */
+  /* font-family: 'ARM HMK Script'; */
+  /* src:  url('fonts/ARM-HMKS-SCRIPT.ttf')   format('truetype'); */
+        /* url('../fonts/ARM-HMKS-SCRIPT.woff2') format('woff2'),
+        url('../fonts/ARM-HMKS-SCRIPT.woff')  format('woff'), */
+       
+  /* optional: only if you want to swap in quickly */
+  /* font-display: swap; */
+/* } */
+
 body {
     display: flex;
     flex-direction: column;
@@ -1177,7 +1275,8 @@ button[type="submit"] {
     padding: 5px;
     text-align: center;
     position: relative;
-    z-index: 2;
+    /* z-index: 2; */
+    z-index: 4;
   }
     
 
@@ -1191,7 +1290,7 @@ button[type="submit"] {
     max-width: 150px;
     height: auto;
     border-radius: 150px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 1.5px 3px rgba(0,0,0,0.6);
   }
   
   /* Hero Section Styles */
@@ -1225,7 +1324,7 @@ button[type="submit"] {
     color: #fff;
     text-decoration: none;
     padding: 10px 15px;
-    font-size: 16px;
+    font-size: 18px;
     border-radius: 30px;
     /* border-radius: 5px 5px 0px 0px; */
     transition: background-color 0.3sease;
@@ -1424,6 +1523,7 @@ h2 {
         color: #666;
         line-height: 1.4;
         word-wrap: break-word;
+        text-align: center;
       }
       
      
@@ -1450,6 +1550,7 @@ h2 {
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 3;
+        /* font-weight: 600; */
     }
       
     .change-language {
@@ -3198,6 +3299,12 @@ h2 {
 
 @media screen and (min-width: 700px) and  (max-width: 800px) {
 
+  #about {
+    margin: -10px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
+
   .public-footer {
     padding: unset!important;
   }
@@ -3222,7 +3329,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -3425,6 +3532,12 @@ h2 {
 
 @media screen and (min-width: 600px) and  (max-width: 700px) {
 
+  #about {
+    margin: -20px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
+
   .public-footer {
     padding: unset!important;
   }
@@ -3449,7 +3562,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -3729,6 +3842,12 @@ h2 {
 
 @media screen and (min-width: 500px) and  (max-width: 600px) {
 
+  #about {
+    margin: -40px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
+
   .public-footer {
     padding: unset!important;
   }
@@ -3753,7 +3872,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -3967,6 +4086,13 @@ h2 {
 
 @media screen and (min-width: 475px) and  (max-width: 500px) {
 
+  #about {
+    margin: -35px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
+
+
   .public-footer {
     padding: unset!important;
   }
@@ -3991,7 +4117,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -4223,6 +4349,12 @@ h2 {
 
 @media screen and (min-width: 450px) and  (max-width: 475px) {
 
+  #about {
+    margin: -40px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
+
   .public-footer {
     padding: unset!important;
   }
@@ -4247,7 +4379,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -4482,6 +4614,12 @@ h2 {
 
 @media screen and (min-width: 425px) and  (max-width: 450px) {
 
+  #about {
+    margin: -35px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
+
   .public-footer {
     padding: unset!important;
   }
@@ -4506,7 +4644,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -4747,6 +4885,12 @@ h2 {
 
 @media screen and (min-width: 400px) and  (max-width: 425px) {
 
+  #about {
+    margin: -40px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
+
   .public-footer {
     padding: unset!important;
   }
@@ -4771,7 +4915,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -5009,6 +5153,12 @@ h2 {
 
 @media screen and (min-width: 375px) and  (max-width: 400px) {
 
+  #about {
+    margin: -40px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
+
   .public-footer {
     padding: unset!important;
   }
@@ -5033,7 +5183,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -5285,6 +5435,12 @@ h2 {
 }
 
 @media screen and (min-width: 350px) and  (max-width: 375px) {
+
+  #about {
+    margin: -40px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
   
   .public-footer {
     padding: unset!important;
@@ -5310,7 +5466,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -5561,6 +5717,11 @@ h2 {
 
 @media screen and (min-width: 325px) and  (max-width: 350px) {
 
+  #about {
+    margin: -40px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
   
   .public-footer {
     padding: unset!important;
@@ -5586,7 +5747,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -5842,6 +6003,11 @@ h2 {
 
 @media screen and (min-width: 300px) and  (max-width: 325px) {
 
+  #about {
+    margin: -40px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
   
   .public-footer {
     padding: unset!important;
@@ -5867,7 +6033,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -6141,6 +6307,11 @@ h2 {
 
 @media screen and (min-width: 275px) and  (max-width: 300px) {
 
+  #about {
+    margin: -40px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
 
   .public-footer {
     padding: unset!important;
@@ -6167,7 +6338,7 @@ h2 {
   .shopping-cart {
     padding: 10px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -6431,6 +6602,12 @@ h2 {
 
 
 @media screen and (min-width: 250px) and  (max-width: 275px) {
+
+  #about {
+    margin: -40px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
   
   .public-footer {
     padding: unset!important;
@@ -6457,7 +6634,7 @@ h2 {
   .shopping-cart {
     padding: 1px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -6720,6 +6897,13 @@ h2 {
 }
 
 @media screen and (min-width: 200px) and  (max-width: 250px) {
+
+  
+  #about {
+    margin: -60px 20px 20px 20px!important;
+    padding: 40px 0px 3px 0px !important;
+    box-shadow: unset!important;
+  }
   
   .public-footer {
     padding: unset!important;
@@ -6746,7 +6930,7 @@ h2 {
   .shopping-cart {
     padding: 1px;
     background-color: unset;
-    box-shadow: unset;
+    box-shadow: unset!important;
   }
   
   .shopping-cart-container {
@@ -7940,6 +8124,14 @@ tr:nth-child(even) {
 
 }
 
+
+@media (max-width: 770px) {
+  .btn-group-urls a {
+    width: 100%;
+  }
+} 
+
+
 /* End of slider/slideShow */
 
 
@@ -8178,3 +8370,63 @@ tr:nth-child(even) {
 .popover {
   border-radius: 8px!important;
 }
+
+/* .btn-group-urls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+} */
+
+.btn-group-urls a {
+  /* text-decoration: none!important; */
+  /* color: #E76F51; */
+  font-size: 1.2em;
+  font-weight: 600;
+  /* border: 1px solid #E76F51; */
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 5px;  
+}
+.show-more,
+.show-less {
+  font-weight: 600;
+  color: #E76F51;
+  cursor: pointer;
+  font-family: cursive, Georgia, 'Times New Roman', Times, serif;
+  
+}
+
+.show-more-text {
+  /* hidden-by-default for animation */
+  display: block;           /* never toggle this with JS */
+  overflow: hidden;         /* clip the content when height is 0 */
+  max-height: 0;            /* start fully collapsed */
+  opacity: 0;               /* start fully transparent */
+  transform: translateY(-10px);
+  transition:
+    max-height 0.4s ease-in-out,
+    opacity    0.4s ease-in-out,
+    transform  0.4s ease-in-out;
+
+  font-family:
+    'Kurland',
+    cursive,
+    Georgia, 'Times New Roman', Times, serif;
+}
+  
+
+/* hover effect remains simple */
+.show-more:hover,
+.show-less:hover {
+  opacity: 0.8;
+}
+
+/* when this class is present, the element “drops in” */
+.show-more-text.vis {
+  max-height: 1200px!important;        
+  opacity: 1!important;
+  transform: translateY(0)!important;
+}
+
+

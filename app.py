@@ -1766,6 +1766,12 @@ def editprice():
     if not request.form.get('title') or len(request.form.get('title').strip())  == 0:
         answer = gettext('Please specify the title!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    
+    
+    if len(request.form.get('title')) > 20:
+        answer = gettext('Max allowed number of chars for title is 20')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
+
 
     # Check weather Product Type Title exists for current product
     sqlQuery = """SELECT `Title` FROM `product_type` 
@@ -2092,6 +2098,10 @@ def upload_slides():
         if not request.form.get('title'):
             answer = gettext('Please specify title!')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
+        
+        if len(request.form.get('title')) > 20:
+            answer = gettext('Max allowed number of chars for title is 20')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
 
         # Check weather Product Type Title exists for current product
         sqlQuery = """SELECT `Title` FROM `product_type` WHERE `Product_ID` = %s AND `Title` = %s;"""
@@ -2392,6 +2402,9 @@ def add_pr():
     if not request.form.get('productName'):
         answer = gettext('Title is empty!')
         return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    elif len(request.form.get('productName')) > 20:
+        answer = gettext('Max allowed number of chars for title is 20')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
     elif not request.form.get('productLink'): 
         answer = gettext('Link is empty!')
         return jsonify({'status': '4', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
@@ -2432,12 +2445,16 @@ def add_pr():
 @app.route('/edit_product_headers', methods=['POST'])
 @login_required
 def edit_pr_headers():
+    newCSRFtoken = generate_csrf()
     if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
         answer = gettext('Something went wrong. Please try again!')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
     elif not request.form.get('productName'):
         answer = gettext('Product name is empty!')
         return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    elif len(request.form.get('productName')) > 20:
+        answer = gettext('Max allowed number of chars for title is 20')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
     elif not request.form.get('productLink'):
         answer = gettext('Product link is empty!')
         return jsonify({'status': '4', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
@@ -2857,11 +2874,27 @@ def edit_teammate(teammateID):
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
 
         Status  = request.form.get('Status')
-
+        
         AltText = ''
         avatar = ''
         sqlValTuple = (Firstname, Lastname, Email, positionID, AltText, Status, teammateID)
+
+        # Check for the last CEO
+        sqlQueryLCEO = "SELECT `ID`, `PositionID` FROM `stuff` WHERE `PositionID` = (SELECT `PositionID` FROM `stuff` WHERE `ID` = %s) AND `Status` = 1"
+        sqlValTupleLCEO = (teammateID,)
+        resultLCEO = sqlSelect(sqlQueryLCEO, sqlValTupleLCEO, True)
+
+
+        if resultLCEO['length'] == 1 and resultLCEO['data'][0]['PositionID'] == 6:# 6 is the positionID of CEO
+            if int(positionID) != resultLCEO['data'][0]['PositionID']: 
+                answer = gettext('You can not change the position of the last CEO!')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+            if Status == '0': # 0 is the status of inactive
+                answer = gettext('You can not deactivate the last CEO!')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
         
+
         if request.form.get('imageState') == '0': # No image uploaded
             avatar = " Avatar = '', "
             sqlQ = "SELECT `Avatar` FROM `stuff` WHERE `ID` = %s;"

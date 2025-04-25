@@ -70,6 +70,17 @@
         padding: 0rem 1rem 1rem 1rem!important;
     }
 
+    #mistakes_modal {
+        color: red;
+        text-align: center;
+        border: 1px solid red;
+        /* justify-content: center; */
+        align-items: center;
+        padding: 10px;
+        border-radius: 5px;
+        display: none;
+    }
+
     /* #editorContent {
         margin-top: 100px;
     } */
@@ -711,7 +722,7 @@ function closeImageEditorModal(modal) {
             <div class="form-group row">
                 <label for="product-name" class="col-sm-3 col-form-label">{{ _('Product name') }}</label>
                 <div class="col-sm-9">
-                    <input type="text" class="form-control" value="${ProductName}" id="product-name" >
+                    <input type="text" class="form-control" value="${ProductName}" id="product-name" placeholder="{{ _('Max allowed number of chars is 20') }}">
                 </div>
             </div>
             <div class="form-group row">
@@ -731,7 +742,7 @@ function closeImageEditorModal(modal) {
             <div class="form-group row">
                 <label for="long-description" class="col-sm-3 col-form-label">{{ _('Long Description') }}</label>
                 <div class="col-sm-9">
-                    <textarea id="long-description" class="form-control" placeholder="{{ _('Long description') }}" style="padding: 21px; font-family: Arial, sans-serif;">${LongDescription}</textarea>
+                    <textarea id="long-description" class="form-control" placeholder="{{ _('Suggested max number of chars is 125') }}" style="padding: 21px; font-family: Arial, sans-serif;">${LongDescription}</textarea>
                 </div>
             </div>
 
@@ -814,7 +825,7 @@ function closeImageEditorModal(modal) {
             if (response.status === '2') {
                 // Handle empty product name
                 mistakesDiv.innerHTML = response.answer;
-                mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'block';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -825,7 +836,7 @@ function closeImageEditorModal(modal) {
             } else if (response.status === '3') {
                 // Handle existing product name
                 mistakesDiv.textContent = response.answer;
-                mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'block';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -836,7 +847,7 @@ function closeImageEditorModal(modal) {
             } else if (response.status === '4') {
                 // Handle empty product link
                 mistakesDiv.textContent = response.answer;
-                mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'block';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -847,7 +858,7 @@ function closeImageEditorModal(modal) {
             } else if (response.status === '5') {
                 // Handle existing product link
                 mistakesDiv.textContent = response.answer;
-                mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'block';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -858,7 +869,7 @@ function closeImageEditorModal(modal) {
             }  else if (response.status === '6') {
                 // Handle product category error
                 mistakesDiv.textContent = response.answer;
-                mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'block';
                 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });
@@ -869,7 +880,7 @@ function closeImageEditorModal(modal) {
             }  else if (response.status === '0') {
                 // Handle Unknown Error
                 mistakesDiv.textContent = response.answer;
-                mistakesDiv.style.color = 'red';
+                mistakesDiv.style.display = 'block';
 
                 // Scroll the window to the mistakesDiv with smooth behavior
                 mistakesDiv.scrollIntoView({ behavior: 'smooth' });

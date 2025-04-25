@@ -45,7 +45,7 @@
     <input type="hidden" id="RefKey" value="{{ RefKey }}" >
     <input type="hidden" id="PT_Ref_Key" value="{{ PT_Ref_Key }}" >
 
-    <input type="text" name="title" id="title" placeholder="{{ _('Add Product Type Title') }}" class="imageInput">
+    <input type="text" name="title" id="title" placeholder="{{ _('Add Product Type Title') + ' | ' + _('Max allowed number of chars is 20') }}" class="imageInput">
     <div class="input-group">
         <input type="number" name="price" id="price" placeholder="{{ _('Add Product Type Price') }}" class="imageInput">
         <label for="price">{{ mainCurrency }}</label>

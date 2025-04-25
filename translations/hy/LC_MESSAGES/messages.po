@@ -1331,7 +1331,7 @@ msgstr ""
 
 #: templates/cart.html:122 templates/index.html:511
 msgid "Proceed to Checkout"
-msgstr "Շարունակել"
+msgstr "Դեպի վճարման էջ"
 
 #: templates/checkout.html:4
 msgid "Checkout"
