@@ -337,28 +337,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll(".quantity");
     inputs.forEach(input => {
         input.addEventListener("keyup", (e) => {
-            console.log(input);
             if (e.target) {
-
+                console.log(typeof(input.value))
                 if (input.value == "") {
-                    // input.value = 1;
                     return;
                 }    
                 
                 let quantity = 0;
-                if (input.value !== "" && input.value < 1) {
+                if (input.value !== "" && parseInt(input.value) < 1) {
                     input.value = 1;
+                    quantity = 1; 
                 } else {
                     quantity = input.value.replace(/^0+/, ''); // Remove leading zeros
                     input.value = quantity;
                     
                 }
+
                 
                 clickedBotton = input.parentNode.querySelector('.add-to-cart-btn');
                 ptID = clickedBotton.value;   
                 addToCart(ptID, quantity, clickedBotton);
                 
-                console.log(quantity)
             }    
         
         });

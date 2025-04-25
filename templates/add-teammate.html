@@ -39,7 +39,7 @@
     <div id="mistakes" style="width: 75%;"></div>
     
     <form>
-        <div class="title" style="margin-top: 10px">{{ _('Add Teammate') }}</div>
+        <h1 class="title" style="margin-top: 10px">{{ _('Add Teammate') }}</h1>
         
         <input type="text" id="email" placeholder="{{ _('Email') }}" style="padding: 15px; width: 100%;">
         <div class="form-group row" id="rolesDropDown"></div>
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
            
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = '{{ _("Choose Role") }}';
+            defaultOption.textContent = '{{ _("Choose Position") }}';
             // defaultOption.disabled = true;
             select.appendChild(defaultOption);
 

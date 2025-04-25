@@ -7,10 +7,10 @@
 {% block head %}
 
 <link rel="stylesheet" href="{{ url_for('static', filename='quill.snow.css') }}">
-<link href="https://fonts.googleapis.com/css?family=Roboto|Montserrat|Lato|Oswald|Playfair+Display|Raleway" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto|Lato|Oswald|Playfair+Display|Raleway" rel="stylesheet">
 <style>
 .ql-snow .ql-picker.ql-font .ql-picker-label::before, .ql-snow .ql-picker.ql-font .ql-picker-item::before {
-    content: 'Roboto';
+    content: 'Montserrat';
 }
 
 .ql-snow .ql-picker.ql-font {
@@ -115,34 +115,19 @@ document.addEventListener('DOMContentLoaded', function() {
             quill.insertEmbed(range.index, 'image', base64String);
         }
 
+    const Font = Quill.import('formats/font');
+    const fonts = [
+        'montserrat',
+        'lato',
+        'roboto',
+        // 'oswald',
+        'playfair-display',
+        'raleway',
+        'cursive'
+    ];
 
-
-
-
-
-
-
-
-        
-
-        // 1. Import the Font format from Quill
-const Font = Quill.import('formats/font');
-
-// 2. Create an array of font keys
-//    Use simple, lowercase strings (no spaces) to avoid Quill confusion
-//    For multi-word fonts like "Playfair Display", pick a single string, e.g. 'playfair-display'
-const fonts = [
-  'roboto',
-  'montserrat',
-  'lato',
-  'oswald',
-  'playfair-display',
-  'raleway'
-];
-
-// 3. Whitelist the fonts and register them
-Font.whitelist = fonts;
-Quill.register(Font, true);
+    Font.whitelist = fonts;
+    Quill.register(Font, true);
 
        
     // Initialize Quill.js editor

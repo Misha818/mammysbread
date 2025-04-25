@@ -244,9 +244,9 @@
       <td>{{ row['Product_Category_Name'] }}</td>
       <td>{{ status }}</td>
       <td class="actions">
-        <a href="{{ url_for('home', _external=True) + editUrl }}" target="_blank" title="{{ _('Edit') }}"><i class="fas fa-pencil" style=" color: #0bc275;"></i></a>
+        <a href="{{ url_for('home', _external=True) + editUrl }}" target="_blank" title="{{ _('Edit') }}"><i class="fas fa-pencil" style=" color: #E76F51;"></i></a>
         {% if row['Product_Status'] == 2 %}
-        <a href="{{ url_for('home', _external=True) + row['Url'] }}" target="_blank" title="{{ _('View') }}"><i class="fas fa-eye" style="font-size: 20px; color: #0bc275; margin-right: 20px;"></i></a>
+        <a href="{{ url_for('home', _external=True) + row['Url'] }}" target="_blank" title="{{ _('View') }}"><i class="fas fa-eye" style="font-size: 20px; color: #E76F51; margin-right: 20px;"></i></a>
         {% endif %}
       </td>
     </tr>
@@ -309,7 +309,7 @@ function constract_table_rows(data, mainUrl, langUrl, prID, transparent='', drag
                           </label>
                       </div>
                       
-                      <a href="${editUrl+langUrl}" target="_BLANK" title="${editTitle}"><i class="fas ${editIconClass}" style=" color: #0bc275;"></i></a>
+                      <a href="${editUrl+langUrl}" target="_BLANK" title="${editTitle}"><i class="fas ${editIconClass}" style=" color: #E76F51;"></i></a>
                   </div>`;
 
       rows = rows + perRow;
@@ -377,9 +377,9 @@ window.addEventListener('load', () => {
                   // console.log(row.P_Ref_Key);
                   let editUrl = 'product/' + row.P_Ref_Key.toString();
                   
-                  let actionBtns = `<a href="{{ url_for('home', _external=True) }}${editUrl}&langID={{ languageID }}" target="_blank" title="{{ _('Translate') }}"><i class="fas fa-language" style=" color: #0bc275;"></i></a>`;
+                  let actionBtns = `<a href="{{ url_for('home', _external=True) }}${editUrl}&langID={{ languageID }}" target="_blank" title="{{ _('Translate') }}"><i class="fas fa-language" style=" color: #E76F51;"></i></a>`;
                   if (row['Product_Status'] == 2) {
-                    actionBtns += `<a href="{{ url_for('home', _external=True) }}${row['Url']}" target="_blank" title="{{ _('View') }}"><i class="fas fa-eye" style="font-size: 20px; color: #0bc275; margin-right: 20px;"></i></a>`;
+                    actionBtns += `<a href="{{ url_for('home', _external=True) }}${row['Url']}" target="_blank" title="{{ _('View') }}"><i class="fas fa-eye" style="font-size: 20px; color: #E76F51; margin-right: 20px;"></i></a>`;
                   } 
                   
                   let status = `{{ _('Published') }}`;

@@ -117,7 +117,6 @@
 
     function scrollThumbnailsFromPrice(num) {
         let scrollChecker = Math.ceil((num + 1) / maxShownThumbnails);
-        console.log(`scrollChecker is ${scrollChecker} AND num is ${num} AND scrollNumber is ${scrollNumber}`)
             if (scrollChecker === scrollNumber) { // shows last group of images
                 scrollCounter = scrollChecker;
                 if (images.length % maxShownThumbnails > 0) { // if num of last image group is less then maxShownThumbnails
@@ -240,7 +239,6 @@
         } else {
             // Scroll down
             if (stop === true) { // Sliders
-                console.log(`itemHeight is ${itemHeight} AND marginBottom is ${marginBottom}`)
                 let scrollChecker = Math.floor(scrollPosition / maxShownThumbnails) + 1;
                 if (scrollChecker !== scrollCounter) {
                     if (scrollChecker === scrollNumber) { // shows last group of images
@@ -415,9 +413,10 @@ document.addEventListener("DOMContentLoaded", function() {
     //     });
     // });
 
-    const hiddenPtID = document.getElementById('hiddenPtID').value;
-
-    if (hiddenPtID) {
+    const hiddenPt = document.getElementById('hiddenPtID');
+    
+    if (hiddenPt) {
+        const hiddenPtID = document.getElementById('hiddenPtID').value;
         // scrollThumbnailsFromPrice(1);
         if (document.querySelectorAll('.add-to-cart-btn')) {
             let btns = document.querySelectorAll('.add-to-cart-btn');
@@ -442,7 +441,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
             const imgElement = document.querySelector(`img[data-ptid="${hiddenPtID}"]`);
 
-            const dataValue = parseInt(imgElement.getAttribute('data-value'));
+            let dataValue = 0;
+            if (imgElement) {
+                // dataValue = imgElement.getAttribute('data-value');
+                dataValue = parseInt(imgElement.getAttribute('data-value'));
+            } 
 
 
             imgs[flag].classList.add('selectedThumbnail');

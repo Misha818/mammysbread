@@ -1290,6 +1290,10 @@ async function get_pt_quantity(ptID, quantity) {
     function headerScroll() {
           let scrollTo = "{{ scrollTo }}";  
           if (scrollTo) {
+
+            if (scrollTo === 'contacts') {
+              document.querySelector('.messageForm').classList.remove('hidden');
+            }
             let target_to_navigate = document.getElementById(scrollTo);
 
 

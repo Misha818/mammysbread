@@ -3,13 +3,19 @@
     {{ _('Admin Panel') }}
 {% endblock %}
 {% block content %}
+<style>
+  .card:hover {
+    filter: brightness(1.1);          /* 1.05 = +5%; 1.1 = +10% */
+  }
+</style>
+
 <div class="card-container" style="margin: 5% 0% 3% 0%;">
 {% if resultActions.length > 0 %}
   {% for row in resultActions.data %}
   <a href="{{ url_for('home', _external=True) + row['ActionDir'] }}" style="text-decoration: none;">
-    <div class="card">
+    <div class="card" style="background-color: #FFFFFF">
       <div class="card-content-stuff">
-        <i class="{{ row['img']}}" style="font-size: 22px; color: #0bc275;"></i>
+        <i class="{{ row['img']}}" style="font-size: 22px; color: #E76F51;"></i>
         <h2 class="card-title">
           {{ row['ActionName'] }}
         </h2>

@@ -53,7 +53,7 @@
 
     {% for row in resultIMG.data %}
 
-        <div class="pc_slide active">
+        <div class="pc_slide active" style="background-color: unset;">
             <img src="{{ url_for('static', filename='images/pr_thumbnails/' + row['thumbnail'] ) }}"  >
             <input type="hidden" alt="{{ row['AltText'] }}" class="altText" />
         </div>

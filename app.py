@@ -160,14 +160,6 @@ def side_bar_stuff():
     sqlValTuple = (stuffID, rollID)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
-    print('result result result result result result result result result result result ')
-    print('result result result result result result result result result result result ')
-    print('result result result result result result result result result result result ')
-    print('result result result result result result result result result result result ')
-    print(result)
-    print(sqlQuery)
-    print(sqlValTuple)
-
     supportedLangsData = supported_langs()
 
     return render_template('side-bar-stuff-1.html', result=result['data'], supportedLangsData=supportedLangsData, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
@@ -839,7 +831,7 @@ def orders(filter):
     
 
 @app.route('/affiliate-orders/<filter>', methods=['Get'])
-# @login_required
+@login_required
 def affiliate_orders(filter): 
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -962,7 +954,7 @@ def affiliate_orders(filter):
 
 
 @app.route('/stuff-affiliate-orders/<filter>', methods=['Get'])
-# @login_required
+@login_required
 def stuff_affiliate_orders(filter): 
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -1088,7 +1080,7 @@ def stuff_affiliate_orders(filter):
     
 
 @app.route('/order-details/<pdID>', methods=['GET'])
-# @login_required
+@login_required
 def order_details(pdID):
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -1141,7 +1133,7 @@ def order_details(pdID):
     
 
 @app.route('/affiliate-order-details/<pdID>', methods=['GET'])
-# @login_required
+@login_required
 def affiliate_order_details(pdID):
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -1220,7 +1212,7 @@ def affiliate_order_details(pdID):
     
 
 @app.route('/get-affiliate-transfer-details', methods=['POST'])
-# @login_required
+@login_required
 def get_affiliate_transfer_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('notesID'):
@@ -1242,7 +1234,7 @@ def get_affiliate_transfer_details():
         
 
 @app.route('/get-transfer-details', methods=['POST'])
-# @login_required
+@login_required
 def get_transfer_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('notesID'):
@@ -1259,7 +1251,7 @@ def get_transfer_details():
     
 
 @app.route('/get-email-content', methods=['POST'])
-# @login_required
+@login_required
 def get_email_content():
     newCSRFtoken = generate_csrf()
             
@@ -1328,7 +1320,7 @@ def get_associated_employees():
     
 
 @app.route('/get-order-details', methods=['POST'])
-# @login_required
+@login_required
 def get_order_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('orderID'):
@@ -1366,7 +1358,7 @@ def get_order_details():
 
 
 @app.route('/remove-email-from-employee', methods=['POST'])
-# @login_required
+@login_required
 def rm_email_em():
     newCSRFtoken = generate_csrf()
     if not request.form.get('stuffID') or not request.form.get('emailID'):
@@ -1398,7 +1390,7 @@ def edit_ce_view():
 
 
 @app.route('/edit-corporate-email', methods=['POST'])
-# @login_required
+@login_required
 def edit_ce():
     newCSRFtoken = generate_csrf()
     if not request.form.get('emailID') or not request.form.get('emailID').isdigit() or not request.form.get('emailToEdit'):
@@ -1427,7 +1419,7 @@ def edit_ce():
 
 
 @app.route('/edit-order-details', methods=['POST'])
-# @login_required
+@login_required
 def edit_order_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('orderID') or not request.form.get('firstname') or not request.form.get('lastname') or not request.form.get('phone') or not request.form.get('address') or not request.form.get('status'):
@@ -3037,7 +3029,7 @@ def add_role():
 
 
 @app.route('/positions', methods=['GET'])
-# @login_required
+@login_required
 def positions():
     languageID = getLangID()
     sqlQuery = """
@@ -3058,7 +3050,7 @@ def positions():
 
 
 @app.route('/edit-position/<positionID>', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def edit_position(positionID):
     if request.method == "POST":
         newCSRFtoken = generate_csrf()
@@ -3666,7 +3658,7 @@ def stuff():
 
 
 @app.route('/affiliate/<affID>', methods=['GET'])
-# @login_required
+@login_required
 def affiliate(affID):
     supportedLangsData = supported_langs()
     
@@ -3703,7 +3695,7 @@ def affiliate(affID):
 
 
 @app.route('/promo-code-details/<promo>', methods=['GET'])
-# @login_required
+@login_required
 def promo_code_details(promo):
     languageID = getLangID()
     sqlQuery = """
@@ -3750,7 +3742,7 @@ def promo_code_details(promo):
 
 
 @app.route('/stuff-promo-code-details/<filters>', methods=['GET'])
-# @login_required
+@login_required
 def stuff_promo_code_details(filters):
     languageID = getLangID()
     promo, affID = (item.split('=')[1] for item in filters.split('&'))
@@ -4507,7 +4499,7 @@ def transfers(filters):
 
 
 @app.route("/affiliate-transfers/<page>", methods=['GET'])
-# @login_required
+@login_required
 def affiliate_transfers(page):
     if request.method == "GET":
         newCSRFtoken = generate_csrf()
@@ -5796,7 +5788,7 @@ def promo_codes():
 
     
 @app.route('/edit-promo', methods=['POST'])
-# @login_required
+@login_required
 def edit_promo():
     newCSRFtoken = generate_csrf()
     if not request.form.get('products') or not request.form.get('promoID') or not request.form.get('expDate') or not request.form.get('promo'):
@@ -5948,7 +5940,7 @@ def edit_promo():
 
 
 @app.route('/edit-promo-code/<promoID>', methods=['GET'])
-# @login_required
+@login_required
 def edit_promo_code(promoID):
     languageID = getLangID()
 

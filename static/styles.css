@@ -43,13 +43,14 @@ body.loaded {
     flex-direction: column;
     align-items: center;
     margin-bottom: 10px;
-    margin-top: 60px;
+    margin-top: -50px;
+    /* margin-top: 60px; */
 }
 
 .title {
-  font-family: "Font Awesome 6 Free";
+  /* font-family: "Font Awesome 6 Free"; */
   font-weight: 900;
-  font-size: x-large;
+  /* font-size: x-large; */
 }
 
 .imageInput {
@@ -563,7 +564,7 @@ button[type="submit"] {
 .pcButtonS {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #0bc275;
+    background-color: #E76F51;
     color: white;
     border: none;
     border-radius: 5px;
@@ -575,7 +576,7 @@ button[type="submit"] {
 .pcButtonS1 {
     display: block;
     padding: 10px 20px;
-    background-color: #0bc275;
+    background-color: #E76F51;
     color: white;
     border: none;
     border-radius: 5px;
@@ -687,11 +688,18 @@ button[type="submit"] {
 }
 
 #toolbar .ql-formats {
-    display: flex;
-    align-items: center;
+  display: inline-flex;
 }
 
+/* .ql-toolbar .ql-formats {
+    display: flex;
+    align-items: center;
+} */
 
+
+.pickr {
+  margin-right: 5px;
+}
 
 .customToolbar {
     position: fixed;
@@ -702,6 +710,22 @@ button[type="submit"] {
     top: 40px;
 }
 
+/* never show the tiny Quill color-swatch menu */
+.ql-color-picker .ql-picker-options {
+  display: none !important;
+}
+
+.ql-snow .ql-picker.ql-size {
+  width: 40px!important;
+}
+
+.ql-snow .ql-picker.ql-header {
+  width: 90px!important;
+}
+
+.ql-toolbar.ql-snow .ql-formats {
+  margin-right: 7px!important;
+}
 
 /* body, html {
     width: fit-content;
@@ -1010,8 +1034,8 @@ button[type="submit"] {
 
 .filter-button, .add-to-store-btn {
   margin-bottom: 7px;
-  color: #0bc275;
-  border: 2px solid #0bc275;
+  color: #E76F51;
+  border: 2px solid #E76F51;
   width: 100px;
   text-align: center;
   padding: 5px 10px;
@@ -1022,7 +1046,7 @@ button[type="submit"] {
 .filter-button:hover {
   cursor: pointer;
   color: white;
-  background-color: #0bc275;
+  background-color: #E76F51;
 
 }
 
@@ -1391,7 +1415,7 @@ h2 {
       
       .card-title {
         font-size: 1.5rem;
-        color: #333333bd;
+        color: #333333;
         /* margin-bottom: 10px; */
       }
       
@@ -1845,7 +1869,8 @@ h2 {
 
   width: 100%;
   overflow: hidden;
-  background-color: #0bc275;
+  /* background-color: #E76F51; */
+  background-color: #2A9D8F;
   padding: 20px 10px;
   margin-bottom: 20px;
   border-bottom:  solid #e0e0e0;
@@ -2147,6 +2172,11 @@ h2 {
 
 .subproduct {
   margin-top: 10px;
+}
+
+.subproduct:hover {
+  cursor: zoom-in;
+  
 }
 
 .price {
@@ -2627,7 +2657,7 @@ h2 {
 
 #editor-container {
   width: 800px;
-  margin-top: 100px;
+  margin-top: 40px;
   margin-bottom: 5%;
   height: auto;
 }
@@ -7238,12 +7268,13 @@ h2 {
 }
 
 .sidebar-menu li a:hover {
-  background-color: #e4e5fa;
+  /* background-color: #e4e5fa; */
+  filter: brightness(1.1);  
 }
 
 .sidebar-menu li a i {
   margin-right: 10px;
-  color: #0bc275;
+  color: #E76F51;
   font-size: 18px;
 }
 
@@ -7339,7 +7370,7 @@ tr:nth-child(even) {
 
 
 .status-open {
-  background-color: #0bc275;
+  background-color: #E76F51;
 }
 
 .status-closed {
@@ -7401,14 +7432,14 @@ tr:nth-child(even) {
 .pagination div {
   margin: 0 4px;
   padding: 6px 12px;
-  color: #0bc275;
+  color: #E76F51;
   border-radius: 4px;
   border: 1px solid #ddd;
   cursor: pointer;
 }
 
 .pagination a.active, div.active {
-  background-color: #0bc275;
+  background-color: #E76F51;
   color: #fff;
 }
 
@@ -7432,13 +7463,13 @@ tr:nth-child(even) {
 }
 
 .edit-user {
-  color: #0bc275;
+  color: #E76F51;
   font-size: 18px;
   text-decoration: none;
 }
 
 .edit-user a {
-  color: #0bc275;
+  color: #E76F51;
 }
 
 
@@ -7999,22 +8030,24 @@ tr:nth-child(even) {
 }
 
 /* Quill.JS fonts */
-.ql-font-roboto { font-family: 'Roboto', sans-serif; }
 .ql-font-montserrat { font-family: 'Montserrat', sans-serif; }
+.ql-font-roboto { font-family: 'Roboto', sans-serif; }
 .ql-font-lato { font-family: 'Lato', sans-serif; }
 .ql-font-oswald { font-family: 'Oswald', sans-serif; }
 .ql-font-playfair { font-family: 'Playfair Display', serif; }
 .ql-font-raleway { font-family: 'Raleway', sans-serif; }
+.ql-font-raleway { font-family: 'cursive', sans-serif; }
 
 
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="roboto"]::before {
-  content: 'Roboto';
-  font-family: 'Roboto', sans-serif;
-}
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="montserrat"]::before {
   content: 'Montserrat';
   font-family: 'Montserrat', sans-serif;
 }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="roboto"]::before {
+  content: 'Roboto';
+  font-family: 'Roboto', sans-serif;
+}
+
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="lato"]::before {
   content: 'Lato';
   font-family: 'Lato', sans-serif;
@@ -8030,6 +8063,14 @@ tr:nth-child(even) {
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="raleway"]::before {
   content: 'Raleway';
   font-family: 'Raleway', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="cursive"]::before {
+  content: 'Cursive';
+  font-family: 'cursive', sans-serif;
+}
+
+.ql-font-cursive {
+  font-family: cursive;
 }
 
 /* End of Quill.JS fonts */
@@ -8100,7 +8141,8 @@ tr:nth-child(even) {
 }
 
 .selectedRole {
-  background-color: #0bc275;
+  background-color: #2A9D8F;
+  /* background-color: #E76F51; */
     color: #fff !important;
     font-weight: 600;
     text-decoration: none;
@@ -8113,18 +8155,26 @@ tr:nth-child(even) {
   border: 1px solid #ccc; */
 }
 
-/* .cart-container {
-  flex-direction: row;
-  position: fixed;
-  bottom: 0;
+.popover-body {
+  display: flex;
   gap: 5px;
-  width: 100%;
-  background-color: white;
-  max-width: 100%;
-  margin: 0 auto;
-  left: 0;
-  right: 0;
-} */
 
+}
 
+.popover-body a {
+  text-decoration: none!important;
+  color: #E76F51;
+  font-size: 1.2em;
+  font-weight: 600;
+  border: 1px solid #E76F51;
+  border-radius: 8px;
+  padding: 8px;
+}
+.popover-body a:hover {
+  color: #E76F51;
+  opacity: 0.8;
+}
 
+.popover {
+  border-radius: 8px!important;
+}

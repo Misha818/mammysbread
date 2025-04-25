@@ -8,7 +8,11 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
+    <style>
+      body {
+        background-color: #FAF9F6!important;
+      }
+    </style> 
     <title>
         {% block title %}
 
@@ -37,9 +41,16 @@
     {% if userBool != False %}
     <div class="header-stuff" style="display: flex; flex-direction: row; justify-content: space-between;">
       {% if rolls | length == 0 %}
+      {% set role = '' %}
+      {% set actionName = '' %}
+      {% if actionInfo is not none %}
+        {% set role = _(actionInfo.role) %}
+        {% set actionName = _(actionInfo.actionName) %}
+      {% endif %}
+
       <div class="flex avatar-stuff" style="gap: 10px;">
         <img src="{{ url_for('static', filename='images/stuff-tools.png') }}" onclick="toggleSidebar()" alt="{{ _('Tools') }}" class="avatar" style="cursor: pointer; width: 70px; height: 70px;">
-        <span style="font-size: 20px; font-weight: bold; color: #ffffff;"> {{ _(actionInfo.role) + ' | ' + _(actionInfo.actionName) }}</span>
+        <span style="font-size: 20px; font-weight: bold; color: #ffffff;"> {{ role + ' | ' + actionName }}</span>
       </div>
         <!-- <img src="{{ url_for('static', filename='images/stuff-tools.png') }}" onclick="toggleSidebar()" alt="{{ _('Tools') }}" style="cursor: pointer; width: 70px; height: 70px;" > -->
       {% else %}
@@ -68,15 +79,12 @@
         {% if rolls | length > 1 %}
         
           {% if rolls | length > 3 %}
-
+          <select onchange="location = '/setroll/' + this.value;" class="lang-drop-down" style="margin-right: 5px;">
             {% for row in rolls %}
-              {% set rollClass = 'rolls margin-right'%}
-              {% if row['rolID'] == activeRoleID %}
-                {% set rollClass = 'rolls margin-right selectedRole' %}
-              {% endif %}
-
-                <a class='{{ rollClass }}' href="{{ url_for('home', _external=True) + 'setroll/' + row['rolID'] | string }}">{{ row['Rol']}}</a>
+            <option value="{{ row['rolID'] }}" {{ 'selected' if activeRoleID ==  row['rolID']  else '' }}>{{ row['Rol'] }}</option>
             {% endfor %}
+          </select>
+          
             
           {% else %}
 
