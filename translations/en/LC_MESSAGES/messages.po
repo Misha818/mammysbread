@@ -1483,7 +1483,7 @@ msgstr "Confirmation Page"
 
 #: templates/confirmation-page.html:112
 msgid "Order Confirmed!"
-msgstr "Order Confirmed!"
+msgstr "Payment Confirmed!"
 
 #: templates/confirmation-page.html:113
 msgid "Thank you for shopping with us. We are preparing your order now!"

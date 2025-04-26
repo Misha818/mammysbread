@@ -626,6 +626,21 @@ def generate_random_string():
     return random_string
 
 
+def generate_random_unique_string(table):
+    randomStr = generate_random_string()
+    sqlQuery = f"SELECT `Url` FROM {table} WHERE `Url` = %s;"
+    sqlValTuple = (randomStr,)
+    result = sqlSelect(sqlQuery, sqlValTuple, True)
+    while result['length'] > 0:
+        randomStr = generate_random_string()
+        sqlQuery = f"SELECT `Url` FROM {table} WHERE `Url` = %s;"
+        sqlValTuple = (randomStr,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+    
+    return randomStr
+
+
+
 def get_full_website_name():
     # Get the scheme (http or https)
     scheme = request.scheme
@@ -835,7 +850,7 @@ def clientID_contactID(data): # returns clientID from table `clients` and contac
 
 
     if data['email'] and emailID == None:
-        langID = getLangdata(session['lang'])['ID']
+        langID = getLangID()
         sqlQueryInsert = "INSERT INTO `emails` (`email`, `clientID`, `langID`) VALUES (%s, %s, %s);"
         sqlQueryTuple = (data['email'].strip(), clientID, langID)
         result = sqlInsert(sqlQueryInsert, sqlQueryTuple)

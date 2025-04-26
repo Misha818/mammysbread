@@ -599,6 +599,16 @@ CREATE TABLE `client_contacts` (
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `client_contacts` AUTO_INCREMENT = 1;
+
+
+DROP TABLE IF EXISTS `pd_buffer`;
+CREATE TABLE `pd_buffer` (
+    `ID` INT AUTO_INCREMENT,
+    `pdID` INT,
+    `Url` VARCHAR(255),
+    PRIMARY KEY (`ID`)
+) ENGINE=InnoDB;
+ALTER TABLE `pd_buffer` AUTO_INCREMENT = 1;
 -- End of billing tables
 
 

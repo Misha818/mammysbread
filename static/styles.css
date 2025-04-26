@@ -8161,7 +8161,7 @@ tr:nth-child(even) {
   display: flex;
   flex-direction: column;
   justify-content: flex-start; /* Align elements at the top */
-  align-items: flex-start;     /* Align elements to the left */
+  align-items: center;    
 }
 
 /* Close Button */
@@ -8228,7 +8228,7 @@ tr:nth-child(even) {
 .ql-font-oswald { font-family: 'Oswald', sans-serif; }
 .ql-font-playfair { font-family: 'Playfair Display', serif; }
 .ql-font-raleway { font-family: 'Raleway', sans-serif; }
-.ql-font-raleway { font-family: 'cursive', sans-serif; }
+.ql-font-raleway { font-family: 'cursive', 'Kurland'; }
 
 
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="montserrat"]::before {
@@ -8258,11 +8258,11 @@ tr:nth-child(even) {
 }
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="cursive"]::before {
   content: 'Cursive';
-  font-family: 'cursive', sans-serif;
+  font-family: cursive, 'Kurland';
 }
 
 .ql-font-cursive {
-  font-family: cursive;
+  font-family: cursive, 'Kurland';
 }
 
 /* End of Quill.JS fonts */
@@ -8393,7 +8393,7 @@ tr:nth-child(even) {
   font-weight: 600;
   color: #E76F51;
   cursor: pointer;
-  font-family: cursive, Georgia, 'Times New Roman', Times, serif;
+  font-family: 'Kurland', cursive, Georgia, 'Times New Roman', Times, serif;
   
 }
 
@@ -8409,11 +8409,13 @@ tr:nth-child(even) {
     opacity    0.4s ease-in-out,
     transform  0.4s ease-in-out;
 
-  font-family:
-    'Kurland',
-    cursive,
-    Georgia, 'Times New Roman', Times, serif;
+  font-family: cursive, 'Kurland', Georgia, 'Times New Roman', Times, serif;
 }
+
+.mobile-nav-content a {
+  font-family: cursive, 'Kurland', Georgia, 'Times New Roman', Times, serif;
+}
+
   
 
 /* hover effect remains simple */

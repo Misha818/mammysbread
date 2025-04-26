@@ -1355,7 +1355,7 @@ msgstr "Հաստատման էջ"
 
 #: templates/confirmation-page.html:112
 msgid "Order Confirmed!"
-msgstr "Պատվերը հաստատված է։"
+msgstr "Գնումը հաստատված է։"
 
 #: templates/confirmation-page.html:113
 msgid "Thank you for shopping with us. We are preparing your order now!"

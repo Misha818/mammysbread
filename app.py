@@ -3,7 +3,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import init_sysadmin_context, check_rol_id, check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import init_sysadmin_context, check_rol_id, check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_unique_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -23,10 +23,11 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # app = Flask(__name__)
-# limiter = Limiter(get_remote_address, app=app)
 
 
 app = Flask(__name__)
+limiter = Limiter(get_remote_address, app=app)
+
 init_sysadmin_context(app)
 
 @app.before_request
@@ -66,13 +67,13 @@ def is_digit(value):
 
 
 # Initialize limiter with in-memory storage explicitly.
-# limiter = Limiter(
-#     app=app,
-#     key_func=get_remote_address,
-#     default_limits=["200 per day", "50 per hour"],
-#     storage_uri="memory://",  # explicitly using in-memory storage
-#     strategy="fixed-window"
-# )
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://",  # explicitly using in-memory storage
+    strategy="fixed-window"
+)
 
 
 
@@ -166,7 +167,7 @@ def side_bar_stuff():
 
 
 @app.route("/login", methods=["GET", "POST"])
-# @limiter.limit("3 per minute")
+@limiter.limit("5 per minute")
 def login():
     if request.method == "POST":
         # if recaptcha.verify():
@@ -449,6 +450,14 @@ def products_client():
 @app.route('/order-tracker/<pdID>')
 def order_tracker(pdID):
     languageID = getLangID()
+
+    sqlQueryPdID = "SELECT `pdID` FROM `pd_buffer` WHERE `Url` = %s;"
+    sqlValTuple = (pdID,)
+    resultPdID = sqlSelect(sqlQueryPdID, sqlValTuple, True)
+    if resultPdID['length'] == 0:
+        return render_template('error.html', current_locale=get_locale())
+    
+    pdID = resultPdID['data'][0]['pdID']
     sqlQuery =  f"""SELECT `ID`, `Status` FROM `payment_details` 
                     WHERE `ID` = %s
                 """
@@ -686,7 +695,16 @@ def checkout():
 
             # answer = gettext('Payment passed successfully') + ' ' + str(amount) + ' ' + MAIN_CURRENCY
             purchseData = json.dumps(purchseData['answer'])
-            return jsonify({'status': "1", 'pdID': pdID, 'purchseData': purchseData, 'newCSRFtoken': newCSRFtoken})    
+            uniqueURL = generate_random_unique_string('pd_buffer')
+
+            sqlInsertBuffer = "INSERT INTO `pd_buffer` (`pdID`, `Url`) VALUES (%s, %s);"
+            sqlValTupleBuffer = (pdID, uniqueURL)
+            resultBuffer = sqlInsert(sqlInsertBuffer, sqlValTupleBuffer)
+            if resultBuffer['status'] == 0:
+                return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+
+
+            return jsonify({'status': "1", 'pdID': uniqueURL, 'purchseData': purchseData, 'newCSRFtoken': newCSRFtoken})    
                 
 
         # delete from bufer and update table quantity
@@ -701,6 +719,14 @@ def confirmation_page(pdID):
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
 
+    sqlQueryPdID = "SELECT `pdID` FROM `pd_buffer` WHERE `Url` = %s;"
+    sqlValTuple = (pdID,)
+    resultPdID = sqlSelect(sqlQueryPdID, sqlValTuple, True)
+    if resultPdID['length'] == 0:
+        return render_template('error.html', current_locale=get_locale())
+    
+    pdUrl = pdID
+    pdID = resultPdID['data'][0]['pdID']
     sqlQuery = f"""
     SELECT 
         `payment_details`.`ID`,
@@ -738,7 +764,7 @@ def confirmation_page(pdID):
     if result['length'] == 0:
         return render_template('error.html')
     
-    return render_template('confirmation-page.html', result=result['data'], mainCurrency = MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
+    return render_template('confirmation-page.html', result=result['data'], pdUrl=pdUrl, mainCurrency = MAIN_CURRENCY, newCSRFtoken=newCSRFtoken,  current_locale=get_locale())
 
 
 @app.route('/orders/<filter>', methods=['Get'])
@@ -3207,7 +3233,7 @@ def add_teammate():
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
          
         # insert into buffer table
-        uniqueURL = generate_random_string()
+        uniqueURL = generate_random_unique_string('buffer')
 
         sqlQuery = "INSERT INTO `buffer` (`Email`, `PositionID`, `Url`, `Deadline`, `Status`) VALUES (%s, %s, %s, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 15 MINUTE), 0);"
         sqlValTuple = (Email, RoleID,  uniqueURL)
