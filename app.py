@@ -13,7 +13,6 @@ from OpenSSL import SSL
 from flask_recaptcha import ReCaptcha
 from io import BytesIO
 from datetime import datetime, date, UTC
-from bs4 import BeautifulSoup
 import os
 import json
 import re

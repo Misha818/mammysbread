@@ -731,6 +731,16 @@ VALUES
     ('edit_position', 'edit-position/', 'Edit Positions', 16, 2, '')
     ;
 
+    INSERT INTO `position` (`Position`, `rolIDs`, `Status`)
+    VALUES 
+    ('Affiliate', '1', 1),
+    ('Editor', '2,1', 1),
+    ('Manager', '3,2,1', 1),
+    ('Sales AND Marketing', '4,3,2,1', 1),
+    ('HR', '5,4,3,2,1', 1),
+    ('CEO', '6,5,4,3,2,1', 1);
+
+
 INSERT INTO `languages` (`Language`, `Prefix`) VALUES
 ('Հայերեն', 'hy'),
 ('English', 'en'),
