@@ -1,13 +1,13 @@
 -- Drop the existing database if it exists
-DROP DATABASE IF EXISTS `db`;
+DROP DATABASE IF EXISTS `mmb_db`;
 
 -- Create the database again
-CREATE DATABASE `db`
+CREATE DATABASE `mmb_db`
     DEFAULT CHARACTER SET utf8
     DEFAULT COLLATE utf8_general_ci;
 
 -- Select the newly created database
-USE `db`;
+USE `mmb_db`;
 
 -- Drop tables if they exist and create them again
 DROP TABLE IF EXISTS `product`;
@@ -42,8 +42,6 @@ CREATE TABLE `product_type` (
     `User_ID` INT,
     `Product_ID` INT,
     `spsID` INT,
-    -- `Slides` TEXT,
-    -- `Language_ID` INT,
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
@@ -96,86 +94,6 @@ CREATE TABLE `product_relatives` (
     PRIMARY KEY (`product_relatives_ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `product_relatives` AUTO_INCREMENT = 1;
-
-
--- DROP TABLE IF EXISTS `sub_product`; -- Not used, replaced with product_type
--- CREATE TABLE `sub_product` (
---     `ID` INT AUTO_INCREMENT,
---     `Title` VARCHAR(255),
---     `Order` INT,
---     `Product_ID` INT,
---     `User_ID` INT,
---     `Status` INT,
---     PRIMARY KEY (`ID`)
--- ) ENGINE=InnoDB;
--- ALTER TABLE `sub_product` AUTO_INCREMENT = 1;
-
--- DROP TABLE IF EXISTS `sp_relatives`; -- Not used, replaced with product_type_relatives 
--- CREATE TABLE `sp_relatives` (
---     `ID` INT AUTO_INCREMENT,
---     `Ref_Key` INT,
---     `User_ID` INT,
---     `SP_ID` INT,
---     `Order` INT,
---     `Language_ID` INT,
---     PRIMARY KEY (`ID`)
--- ) ENGINE=InnoDB;
--- ALTER TABLE `sp_relatives` AUTO_INCREMENT = 1;
-
--- Drop tables if they exist and create them again
-DROP TABLE IF EXISTS `article`;
-CREATE TABLE `article` (
-    `ID` INT NOT NULL AUTO_INCREMENT,
-    `Title` VARCHAR(255),
-    `Url` VARCHAR(255),
-    `AltText` VARCHAR(255),
-    `Thumbnail` VARCHAR(255),
-    `ShortDescription` VARCHAR(255) NOT NULL,
-    `LongDescription` TEXT NOT NULL,
-    `Text` TEXT,
-    `DatePublished` DATE,
-    `DateModified` DATE,
-    `Article_Category_ID` INT,
-    `Article_Status` INT,
-    `Language_ID` INT,
-    `User_ID` INT,
-    PRIMARY KEY (`ID`)
-) ENGINE=InnoDB;
-ALTER TABLE `article` AUTO_INCREMENT = 1;
-
-DROP TABLE IF EXISTS `article_category`;
-CREATE TABLE `article_category` (
-    `Article_Category_ID` INT NOT NULL AUTO_INCREMENT,
-    `Article_Category_Name` VARCHAR(255),
-    `Article_Category_Images` TEXT,
-    `AltText` VARCHAR(255),
-    `User_ID` INT,
-    `Article_Category_Status` INT,
-    PRIMARY KEY (`Article_Category_ID`)
-) ENGINE=InnoDB;
-ALTER TABLE `article_category` AUTO_INCREMENT = 1;
-
-DROP TABLE IF EXISTS `article_c_relatives`;
-CREATE TABLE `article_c_relatives` (
-    `article_c_relatives_ID` INT AUTO_INCREMENT,
-    `AC_Ref_Key` INT,
-    `User_ID` INT,
-    `AC_ID` INT,
-    `Language_ID` INT,
-    PRIMARY KEY (`article_c_relatives_ID`)
-) ENGINE=InnoDB;
-ALTER TABLE `article_c_relatives` AUTO_INCREMENT = 1;
-
-DROP TABLE IF EXISTS `article_relatives`;
-CREATE TABLE `article_relatives` (
-    `article_relatives_ID` INT AUTO_INCREMENT,
-    `A_Ref_Key` INT,
-    `User_ID` INT,
-    `A_ID` INT,
-    `Language_ID` INT,
-    PRIMARY KEY (`article_relatives_ID`)
-) ENGINE=InnoDB;
-ALTER TABLE `article_relatives` AUTO_INCREMENT = 1;
 
 DROP TABLE IF EXISTS `languages`;
 CREATE TABLE `languages` (
@@ -273,6 +191,7 @@ CREATE TABLE `sub_product_specification` (
 ) ENGINE=InnoDB;
 ALTER TABLE `sub_product_specification` AUTO_INCREMENT = 1;
 
+
 DROP TABLE IF EXISTS `sub_product_specifications`;
 CREATE TABLE `sub_product_specifications` (
     `ID` INT AUTO_INCREMENT,
@@ -283,7 +202,6 @@ CREATE TABLE `sub_product_specifications` (
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
 ALTER TABLE `sub_product_specifications` AUTO_INCREMENT = 1;
-
 
 
 DROP TABLE IF EXISTS `sps_relatives`;
@@ -740,6 +658,21 @@ VALUES
     ('HR', '5,4,3,2,1', 1),
     ('CEO', '6,5,4,3,2,1', 1);
 
+INSERT INTO `store` (`Name`, `Address`, `userID`, `Status`) Values('Main', 'Main str.', 1, 1);
+
+INSERT INTO `sub_product_specification` (`Name`, `User_ID`, `Status`) VALUES ('Sourdough Bread', 0, 1);
+INSERT INTO `sps_relatives` (`SPS_ID`, `Ref_Key`, `Language_ID`, `User_ID`, `Status`) VALUES (1, 0, 2, 0, 1);
+
+INSERT INTO `sub_product_specifications` (`Name`, `Order`, `spsID`, `Status`) 
+    VALUES ('Weight', 0, 1, 1),
+           ('Ingredients', 1, 1, 1),
+           ('Baking Method', 2, 1, 1),
+           ('Fermentation Time', 3, 1, 1),
+           ('Crust Color', 4, 1, 1),
+           ('Flavor Profile', 5, 1, 1);
+
+INSERT INTO `product_category` (`Product_Category_Name`, `User_ID`, `Product_Category_Status`, `spsID`) VALUES ('Sourdough Bread', 0, 1, 1);
+INSERT INTO `product_c_relatives` (`PC_Ref_Key`, `PC_ID`, `Language_ID`, `User_ID`) VALUES (0, 1, 2, 0);
 
 INSERT INTO `languages` (`Language`, `Prefix`) VALUES
 ('Հայերեն', 'hy'),
@@ -749,32 +682,5 @@ INSERT INTO `languages` (`Language`, `Prefix`) VALUES
 ('हिन्दी', 'hi'),
 ('বাংলা', 'bn'),
 ('Português', 'pt'),
-('Русский', 'ru'),
-('日本語', 'ja'),
-('پنجابی (ਪੰਜਾਬੀ)', 'pa'),
-('मराठी', 'mr'),
-('తెలుగు', 'te'),
-('吴语', 'wuu'),
-('Türkçe', 'tr'),
-('한국어', 'ko'),
-('Français', 'fr'),
-('Deutsch', 'de'),
-('Tiếng Việt', 'vi'),
-('தமிழ்', 'ta'),
-('粤语 (廣東話)', 'yue'),
-('اردو', 'ur'),
-('ꦧꦱꦗꦮ', 'jv'),
-('Italiano', 'it'),
-('اللغة العربية المصرية', 'arz'),
-('ગુજરાતી', 'gu'),
-('فارسی', 'fa'),
-('भोजपुरी', 'bho'),
-('閩南語', 'nan'),
-('客家话', 'hak'),
-('晋语', 'cjy'),
-('Hausa', 'ha')
+('Русский', 'ru')
 ;
-
-INSERT INTO `store` (`Name`, `Address`, `userID`, `Status`) Values('Main', 'Main str.', 1, 1);
-
-

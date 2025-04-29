@@ -184,6 +184,7 @@
             {{ _('Buy now') }}
           </button>
         </div>
+        
         {% set ns = namespace(flag = resultSpss.data[0].ptID) %}
         {% set spanID = namespace(i=0) %}
 
@@ -227,13 +228,13 @@
                 </button>
               </div>
               {% if row['Text'] is not none %}
-                <p><strong> {{ row['Title'] }}:</strong> {{ row['Text'] }} </p>
+                <p class="spss spss-view"><strong> {{ row['Title'] }}:</strong> {{ row['Text'] }} </p>
               {% endif %}
             
           
             {% else %}
               {% if row['Text'] is not none %}
-                <p><strong> {{ row['Title'] }}:</strong> {{ row['Text'] }} </p>
+                <p class="spss spss-view"><strong> {{ row['Title'] }}:</strong> {{ row['Text'] }} </p>
               {% endif %}
           
           {% endif %}
@@ -241,9 +242,12 @@
         
         {% endfor %}
       {% set lastIndex = resultSpss.data | length - 1 %}
-      <!-- <p>Price {{ resultSpss.data[lastIndex].Price }}</p> -->
+
+
       <!-- <p class="inStock">Quantity {{ resultSpss.data[lastIndex].Quantity }}</p>   -->
-      </span>  
+    </span>  
+    <div class="spss-button">⮝</div>
+    <!-- <div class="spss-button hidden">⮝</div> -->
         
     {% endif %}
 

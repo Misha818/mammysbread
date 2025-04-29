@@ -46,3 +46,13 @@ mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS db"
 mysql -u root -p db < Dump.sql
 
 ==============================================================
+Ngnx image dir permissions
+
+# recursively hand ownership to your service user
+sudo chown -R www-data:www-data /var/www/mammysbread/static/images
+
+# directories need `+x` so they can be entered
+sudo find /var/www/mammysbread/static/images -type d -exec chmod 755 {} \;
+
+# files only need read/write
+sudo find /var/www/mammysbread/static/images -type f -exec chmod 644 {} \;

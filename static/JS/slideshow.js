@@ -457,6 +457,28 @@ document.addEventListener("DOMContentLoaded", function() {
 
   
 
+    function toggle_spss_elements() {
+        document.querySelectorAll('.spss').forEach(el => {
+            console.log(el.style.display);
+            el.classList.toggle('spss-view');
+
+          });
+          
+    }
+
+    document.querySelectorAll('.spss-button').forEach(btn => {
+        btn.addEventListener('click', function() {
+            toggle_spss_elements();
+            if (btn.textContent === '⮟'){
+                btn.textContent = '⮝';
+            } else {
+                btn.textContent = '⮟';
+            }
+        });
+    
+
+    });
+
 });
       
       

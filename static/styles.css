@@ -8103,6 +8103,12 @@ tr:nth-child(even) {
 
 @media screen and (min-width: 200px) and (max-width: 1365px) {  
   
+  .spss-view {
+    display: none!important;
+  }
+  .spss-button {
+    display: block!important;
+  }
 
   .product-details {
     text-align: center;
@@ -8429,6 +8435,21 @@ tr:nth-child(even) {
   max-height: 1200px!important;        
   opacity: 1!important;
   transform: translateY(0)!important;
+}
+
+.spss-button {
+  display: none;
+  border: 1px solid grey;
+  width: 45px;
+  margin: auto;
+  font-size: 28px;
+  padding: -16px 0px;
+  border-radius: 25px;
+  cursor: pointer;
+}
+
+.spss-view {
+  display: block;
 }
 
 
