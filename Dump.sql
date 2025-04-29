@@ -42,6 +42,8 @@ CREATE TABLE `product_type` (
     `User_ID` INT,
     `Product_ID` INT,
     `spsID` INT,
+    -- `Slides` TEXT,
+    -- `Language_ID` INT,
     `Status` INT,
     PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB;
