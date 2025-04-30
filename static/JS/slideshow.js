@@ -447,9 +447,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 dataValue = parseInt(imgElement.getAttribute('data-value'));
             } 
 
+            if (imgs[flag]) {
+                imgs[flag].classList.add('selectedThumbnail');
+            }
+            if (productTypeBlocks[flag]) {
+                productTypeBlocks[flag].style.display = 'block';
+            }
 
-            imgs[flag].classList.add('selectedThumbnail');
-            productTypeBlocks[flag].style.display = 'block';
             scrollThumbnailsFromPrice(dataValue);
             showImage(dataValue);
         }
