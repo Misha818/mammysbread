@@ -1707,13 +1707,13 @@ document.addEventListener('DOMContentLoaded', () => {
             let saving = document.getElementById("saveUploads");
             
             uploadButton.addEventListener("click", function () {
-                uploadButton.style.display = 'none';
-                saving.style.display = 'inline-block';
+                uploadButton.classList.toggle('hidden');
+                saving.classList.toggle('hidden');
 
                 // Create a FormData object to hold the files
                 let formData = new FormData();
 
-                console.log(myDropzone.files)
+                // console.log(myDropzone.files)
 
         let i = 0
         myDropzone.files.forEach(function (file) {
@@ -1779,8 +1779,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             // mistakesDiv.style.color = 'red';
                             mistakesDiv.style.display = 'flex';
 
-                            saving.style.display = 'none';
-                            uploadButton.style.display = 'inline-block';
+                            uploadButton.classList.toggle('hidden');
+                            saving.classList.toggle('hidden');
                             
                             // Scroll the window to the mistakesDiv with smooth behavior
                             mistakesDiv.scrollIntoView({ behavior: 'smooth' });                              
@@ -1788,10 +1788,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                         } else if (response.status === '1') {
                             mistakesDiv.style.display = 'none';
-                            saving.style.display = 'none';
-                            uploadButton.style.display = 'inline-block';
-
-                            console.log(response.answer)
+                            uploadButton.classList.toggle('hidden');
+                            saving.classList.toggle('hidden');
+                            
                             // Handle success
                             alert(response.answer);
                             let currentUrl = window.location.href;
@@ -1799,8 +1798,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     } else {
                         // Handle error response
-                        uploadButton.classList.remove('hidden');
-                        saving.classList.add('hidden');
+                        uploadButton.classList.toggle('hidden');
+                        saving.classList.toggle('hidden');
 
                         console.error('Error adding category:', xhr.responseText);
                     }
