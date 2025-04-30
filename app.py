@@ -3921,11 +3921,11 @@ def store():
                             SUM(`quantity`.`Quantity`) AS `TotalQuantity`,
                             (SELECT 
                                 SUM(`quantity`.`Quantity`)
-                                FROM `Quantity`
+                                FROM `quantity`
                                     LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
                                     LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                                     LEFT JOIN `product` p ON `product_type`.`Product_ID` = `p`.`ID`
-                                WHERE `Quantity`.`expDate` < CURRENT_DATE() AND `p`.`ID` = `product`.`ID`) 
+                                WHERE `quantity`.`expDate` < CURRENT_DATE() AND `p`.`ID` = `product`.`ID`) 
                             AS `expired`
                         FROM `quantity`
                             LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
