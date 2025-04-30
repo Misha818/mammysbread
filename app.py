@@ -5059,7 +5059,7 @@ def get_product_types():
                 WHERE `product_type`.`Product_ID` = (SELECT `P_ID` FROM `product_relatives` 
                             WHERE `product_relatives`.`P_Ref_Key` = (SELECT `P_Ref_Key` FROM `product_relatives` WHERE `product_relatives`.`P_ID` = %s) 
                                 AND `product_relatives`.`Language_ID` = %s) 
-                    AND not find_in_set(`product_type_relatives`.`PT_Ref_Key`, (SELECT GROUP_CONCAT(`product_Type_relatives`.`PT_Ref_Key`) FROM `product_type_relatives` WHERE `product_type_relatives`.`Language_ID` = %s))
+                    AND not find_in_set(`product_type_relatives`.`PT_Ref_Key`, (SELECT GROUP_CONCAT(`product_type_relatives`.`PT_Ref_Key`) FROM `product_type_relatives` WHERE `product_type_relatives`.`Language_ID` = %s))
                 ORDER BY `SubPrOrder` 
                 ;"""
         sqlValTupleOriginalPR = (prID, getDefLang()['id'], getLangID())
