@@ -122,7 +122,7 @@ def submit_notes_text(html_content, type, refID, addresseeType):
     # Regular expression to extract the base64 string from the <img> tag
     pattern = r'<img\s+[^>]*src="data:image/([^;]+);filename=([^;]+);base64,([^"]+)"[^>]*>'
     matches = re.findall(pattern, html_content)
-    target_directory = os.path.join(static_folder_path, r'images\documents')
+    target_directory = os.path.join(static_folder_path, 'images', 'documents')
     os.makedirs(target_directory, exist_ok=True)
 
     # Placeholder for the modified HTML content
