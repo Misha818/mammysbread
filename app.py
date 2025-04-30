@@ -5154,7 +5154,7 @@ def get_product_types_quantity():
                             (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
                             (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
                             SUM(`quantity`.`Quantity`) AS `Quantity`,
-                            (SELECT SUM(`q`.`Quantity`) FROM `Quantity` as q
+                            (SELECT SUM(`q`.`Quantity`) FROM `quantity` as q
                                 WHERE `q`.`expDate` < CURRENT_DATE() AND `q`.`ptRefKey` = `quantity`.`ptRefKey`
                             ) AS `expired`,
                             `product_type`.`ID` AS `ptID`,
