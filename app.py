@@ -4980,7 +4980,7 @@ def getSlides(PrID, languageID):
                         (SELECT SUM(`Quantity`) FROM `quantity` WHERE `productTypeID` = `ptID` AND `expDate` >= CURDATE()) AS `Quantity`
                     FROM `product_type`
                         LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_ID` = `product_type`.`ID` 
-                        LEFT JOIN `product_type_details` ON `Product_Type`.`ID` = `product_type_details`.`ProductTypeID`
+                        LEFT JOIN `product_type_details` ON `product_type`.`ID` = `product_type_details`.`ProductTypeID`
                         LEFT JOIN `sub_product_specifications` ON `product_type_details`.`spssID` = `sub_product_specifications`.`ID`
                         LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
                     WHERE `product_type`.`Product_ID` = %s
