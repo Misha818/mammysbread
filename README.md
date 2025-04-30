@@ -66,3 +66,15 @@ sudo chown -R www-data:www-data /var/www/mammysbread/static/images
 # Give owner (www-data) and group (www-data) read/write/execute,
 # others read/execute only:
 sudo chmod -R 775 /var/www/mammysbread/static/images
+
+
+======================
+
+# 1. Update your remote‐tracking branch
+git fetch origin
+
+# 2. Discard any staged changes in templates/ and reset them to origin/main
+git restore --source=origin/main --staged -- templates/
+
+# 3. Discard any unstaged (working‐tree) changes in templates/
+git restore --source=origin/main -- templates/
