@@ -46,11 +46,11 @@
 <div class="overlay" id="overlay"></div>
 {{ sideBar | safe }}
 <div class="containerS" style="width: 80%;">
-    <h1 class="title" style="margin-top: 10px;">{{ _('Add Product')  + ' | ' + _('Max allowed number of chars is 20') }}</h1>
+    <h1 class="title" style="margin-top: 10px;">{{ _('Add Product') }}</h1>
     <!-- Form for adding a product -->
     <div id="mistakes" style="width: 70%"></div>
     <form id="product-category-form">
-        <input type="text" class="form_input" id="product-name" placeholder="{{ _('Product Title') }}" >
+        <input type="text" class="form_input" id="product-name" placeholder="{{ _('Product Title')  + ' | ' + _('Max allowed number of chars is 20') }}" >
         <input type="text" class="form_input" id="product-link" placeholder="{{ _('Product Url') }}  {{ root_url }}{{ _('This-is-Your-Product-Link') }} " >
         <input type="text" id="short-description" class="form_input" placeholder="{{ _('Short description') }}" />
         <textarea id="long-description" class="form_input" placeholder="{{ _('Long description') }}" ></textarea>

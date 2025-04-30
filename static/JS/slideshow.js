@@ -469,10 +469,10 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('.spss-button').forEach(btn => {
         btn.addEventListener('click', function() {
             toggle_spss_elements();
-            if (btn.textContent === '⮟'){
-                btn.textContent = '⮝';
+            if (btn.innerHTML === '&#11167;'){
+                btn.innerHTML = '&#11165;'; // ⮝
             } else {
-                btn.textContent = '⮟';
+                btn.innerHTML = '&#11167;';
             }
         });
     

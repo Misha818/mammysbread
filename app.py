@@ -480,7 +480,7 @@ def other_products():
                         LEFT JOIN `product_relatives`
                         ON  `product_relatives`.`P_ID` = `product`.`ID`
                         WHERE `product_relatives`.`Language_ID` = %s
-                            AND `Product`.`ID` != %s
+                            AND `product`.`ID` != %s
                             AND `Product_Status` = 2
                         ORDER BY `product`.`Order` ASC
                     """

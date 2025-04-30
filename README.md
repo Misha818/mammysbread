@@ -56,3 +56,13 @@ sudo find /var/www/mammysbread/static/images -type d -exec chmod 755 {} \;
 
 # files only need read/write
 sudo find /var/www/mammysbread/static/images -type f -exec chmod 644 {} \;
+
+
+-------------------
+
+# Make www-data own the folder (and everything inside)
+sudo chown -R www-data:www-data /var/www/mammysbread/static/images/product_slider
+
+# Give owner (www-data) and group (www-data) read/write/execute,
+# others read/execute only:
+sudo chmod -R 775 /var/www/mammysbread/static/images/product_slider
