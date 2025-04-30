@@ -8438,14 +8438,15 @@ tr:nth-child(even) {
 }
 
 .spss-button {
+  font-size: 40px;
+  color: #ff7f50;
   display: none;
-  border: 1px solid grey;
-  width: 45px;
-  margin: auto;
-  font-size: 28px;
-  padding: -16px 0px;
-  border-radius: 25px;
+}
+
+.spss-button:hover {
+  color: #ff7f50;
   cursor: pointer;
+  opacity: 0.8;
 }
 
 .spss-view {

@@ -466,13 +466,15 @@ document.addEventListener("DOMContentLoaded", function() {
           
     }
 
-    document.querySelectorAll('.spss-button').forEach(btn => {
+    document.querySelectorAll('.spss-button i').forEach(btn => {
         btn.addEventListener('click', function() {
             toggle_spss_elements();
-            if (btn.innerHTML === '&#11167;'){
-                btn.innerHTML = '&#11165;'; // ⮝
+            if (btn.classList.contains('fa-circle-up')){
+                btn.classList.remove('fa-circle-up');
+                btn.classList.add('fa-circle-down');
             } else {
-                btn.innerHTML = '&#11167;';
+                btn.classList.remove('fa-circle-down');
+                btn.classList.add('fa-circle-up');
             }
         });
     

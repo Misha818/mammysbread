@@ -1904,11 +1904,10 @@ def editprice():
             file = request.files.get('file_' + str(i))
             file_size = len(file.read())  # Get the file size in bytes
             file.seek(0)  # Reset the file pointer to the beginning after reading
-                    
             filename = secure_filename(file.filename)
 
             if file_size > max_file_size:
-                answer = '<<' +filename + '>>' + gettext('image size is more than 5MB')
+                answer = '"' +filename + '" ' + gettext('image size is more than 5MB')
                 return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
         
         # End of checking the image size
