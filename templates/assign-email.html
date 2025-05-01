@@ -130,6 +130,37 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             dropdownContainerEmails.appendChild(select); // Append the select element to the body or any other specific location
+        } else {
+            const message = "{{ _('No emails available') }}";
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = message;
+            messageDiv.style.color = 'red'; 
+            messageDiv.style.fontSize = '22px';
+            messageDiv.style.width = '100%';
+            messageDiv.style.textAlign = 'center';
+            messageDiv.style.border = '1px solid red';
+            messageDiv.style.padding = '10px';
+            messageDiv.style.borderRadius = '7px';
+
+            const creatMessageBtn = document.createElement('a');
+            creatMessageBtn.textContent = "{{ _('Create an email') }}";
+            creatMessageBtn.classList.add('pcButtonS');
+            creatMessageBtn.classList.add('modifiedB');
+            creatMessageBtn.href = "{{ url_for('create_email') }}";
+            creatMessageBtn.style.textDecoration = 'none';
+
+            const parentDiv = document.createElement('div');
+            parentDiv.style.display = 'flex';   
+            parentDiv.style.flexDirection = 'column';
+            parentDiv.style.alignItems = 'center';  
+            parentDiv.style.justifyContent = 'center';
+            parentDiv.style.width = '100%';
+            parentDiv.style.marginTop = '10px';
+            parentDiv.style.marginBottom = '10px';
+            parentDiv.appendChild(messageDiv);
+            parentDiv.appendChild(creatMessageBtn); // Append the button to the parent div
+            dropdownContainerEmails.appendChild(parentDiv); // Append the parent div to the dropdown container
+
         }
     };
 

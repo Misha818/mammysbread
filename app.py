@@ -3326,7 +3326,7 @@ def create_email():
         sqlQuery = """
                     SELECT 
                         `stuff`.`ID`,
-                        CONCAT(' ', `stuff`.`Firstname`, `stuff`.`Lastname`) AS `Initials`,
+                        CONCAT(`stuff`.`Firstname`, ' ',  `stuff`.`Lastname`) AS `Initials`,
                         `position`.`Position`
                     FROM `stuff`
                     LEFT JOIN `position` ON `stuff`.`PositionID` = `position`.`ID`
@@ -4670,7 +4670,8 @@ def send_email(filters=''):
         
         result = sqlSelect(sqlQuery, (session['user_id'],), True)
         if result['length'] == 0:
-            return render_template('error.html', current_locale=get_locale())
+            setUrlText = gettext('No email address found associated with your account!')
+            return render_template('error.html', setUrlText=setUrlText, current_locale=get_locale())
 
         sideBar = side_bar_stuff()
         return render_template('send-email.html', result=result, filterContent=filterContent, sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
