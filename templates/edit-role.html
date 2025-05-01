@@ -66,6 +66,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const actions = {{ resultActions | tojson }}
         const preselectedValues = {{ row['ActionIDs'] | tojson }};
         const dropdownContainer = document.getElementById('actionsDropDown');
+        const selectedArr = preselectedValues.split(',')
+        
 
         if (actions['length'] > 0) {
             const select = document.createElement('select');
@@ -90,11 +92,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     option.value = val['ID'];
                  
                     option.textContent = optVal;
-
                     // Check if this option should be pre-selected
-                    if (preselectedValues.includes(val['ID'])) {
-                        option.selected = true;
-                    }
+                    selectedArr.forEach(actionID => {
+                        if (parseInt(actionID) === parseInt(val['ID'])) {
+                            option.selected = true;
+                        }
+                    });    
+                    
                     select.appendChild(option);
                 }
             });
