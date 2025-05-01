@@ -187,17 +187,22 @@ def login():
                 response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
                 return jsonify(response)
             
-            sqlQuery = "SELECT * FROM `stuff` WHERE `Username` = %s AND `Status` = 1"
+            sqlQuery = "SELECT * FROM `stuff` WHERE BINARY `Username` = %s AND `Status` = 1"
             sqlValTuple  = (username,)
             result = sqlSelect(sqlQuery, sqlValTuple, True)    
             
 
-            if result['length'] == 1 and check_password_hash(result['data'][0]["Password"], password): 
-                session['user_id'] = result['data'][0]['ID']
-                session['PositionID'] = result['data'][0]['PositionID']
-                session['lang'] = getLangdatabyID(result['data'][0]['LanguageID'])['Prefix']  
-                response = {'status': '1'}
-                return jsonify(response)
+            if result['length'] == 1:
+                if check_password_hash(result['data'][0]["Password"], password): 
+                    session['user_id'] = result['data'][0]['ID']
+                    session['PositionID'] = result['data'][0]['PositionID']
+                    session['lang'] = getLangdatabyID(result['data'][0]['LanguageID'])['Prefix']  
+                    response = {'status': '1'}
+                    return jsonify(response)
+                else:
+                    answer = gettext('The username or password do not match')
+                    response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+                    return jsonify(response)
             else:
                 answer = gettext('The username or password do not match')
                 response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
