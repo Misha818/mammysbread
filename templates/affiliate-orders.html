@@ -87,14 +87,11 @@
 {{ sideBar | safe }}
 <div class="container" >
 {% set filtersUrl = url_for('affiliate_orders', filter='page=1&status=all') %}  
-{% if affID %}
-  {% set fragments = 'page=1&status=all&promoCode=' + filters.promoCode + '&affiliate=' + affID %}
-  {% set filtersUrl = url_for('stuff_affiliate_orders', filter=fragments) %}  
-{% endif %}
-
 
 {% if affID and result['length'] > 0 %}
   <h2 class="toRight tableDaddy" style="text-align: left; margin: 20px auto;">{{ _('Purchase history related to promo code of') }}  <a href="{{ url_for('affiliate', affID=affID) }}">{{ result['data'][0]['affiliate'] }}</a> </h2>
+  {% set fragments = 'page=1&status=all&promoCode=' + filters.promoCode + '&affiliate=' + affID %}
+  {% set filtersUrl = url_for('stuff_affiliate_orders', filter=fragments) %}  
 {% else %}
   <h2 class="toRight tableDaddy" style="text-align: left; margin: 20px auto;">{{ _('Purchase history related to promo code') }} </h2>
 {% endif %}
