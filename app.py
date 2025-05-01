@@ -997,7 +997,6 @@ def stuff_affiliate_orders(filter):
                 else:    
                     protoTuple.append(val)
 
-
     else:
         key, val = filter.split('=')
         filters[key] = val
