@@ -8453,4 +8453,17 @@ tr:nth-child(even) {
   display: block;
 }
 
+.shopping-cart-container .item-info {
+  display: flex;
+  align-items: center;
+  margin: auto;
+}
 
+
+@media (max-width: 800px) {
+  .shopping-cart-container .item-info {
+    flex-direction: column;
+    margin: 0px auto;
+  }
+
+}
