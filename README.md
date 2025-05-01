@@ -80,3 +80,13 @@ git restore --source=origin/main --staged -- templates/
 git restore --source=origin/main -- templates/
 
 
+======================
+
+# Instal and run redis server
+
+sudo apt update
+sudo apt install redis-server
+
+sudo systemctl enable redis-server
+sudo systemctl start  redis-server
+
