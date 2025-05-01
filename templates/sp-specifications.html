@@ -114,6 +114,13 @@
                 response.innerHTML = "";
                 response.style.display = 'none';
 
+                const clickedBtn = document.getElementById('submit');
+                const savingBtn = document.getElementById('saving');
+
+                clickedBtn.classList.toggle('hidden');
+                savingBtn.classList.toggle('hidden');
+
+
                 let answer;
                 let flag = false;
                 const docFormData = new FormData(document.getElementById("myForm"));
@@ -123,6 +130,8 @@
                     response.innerHTML = "{{ _('Please specify subproduct situation name!') }}";
                     response.style.display = 'flex';
                     document.getElementById("name").style.borderColor = "red";
+                    clickedBtn.classList.toggle('hidden');
+                    savingBtn.classList.toggle('hidden');
                     return;
                 }
 
@@ -181,6 +190,8 @@
                     answer = "{{ _('Please improve all red fields!') }}";
                     response.textContent = answer;
                     response.style.display = 'flex';
+                    clickedBtn.classList.toggle('hidden');
+                    savingBtn.classList.toggle('hidden');
                     return;
                 }
         let spsRefKey = document.querySelector("#spsRefKey").value;
@@ -209,20 +220,33 @@
                 if (response.status === '0') {
                     document.querySelector("#response").textContent = response.answer;
                     document.querySelector("#response").style.display = 'flex';
+
+                    clickedBtn.classList.toggle('hidden');
+                    savingBtn.classList.toggle('hidden');
                 } 
                 
                 if (response.status === 'test') {
                     const jsonString = JSON.stringify(response.message);
                     document.querySelector('#response').textContent = jsonString;
+
+                    clickedBtn.classList.toggle('hidden');
+                    savingBtn.classList.toggle('hidden');
                 }
             } else {
                 console.error('Request failed with status: ' + xhr.status);
+
+                clickedBtn.classList.toggle('hidden');
+                savingBtn.classList.toggle('hidden');
             }
         };
 
         // Define what happens in case of error
         xhr.onerror = function () {
             console.error('Request failed.');
+
+            clickedBtn.classList.toggle('hidden');
+            savingBtn.classList.toggle('hidden');
+                        
         };
 
         // Send the request with the JSON data

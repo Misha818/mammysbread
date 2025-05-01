@@ -230,6 +230,11 @@ function formatFontName(fontKey) {
         let csrfToken = "{{ csrf_token() }}";
         document.getElementById('submit').onclick = function() {
             event.preventDefault(); // Prevent form submission
+            let saving = document.getElementById("saving");
+            let submit = document.getElementById("submit");
+            saving.classList.toggle('hidden');
+            submit.classList.toggle('hidden');
+
             let response = document.querySelector("#response");
             response.innerHTML = "";
             response.style.display = 'none';
@@ -244,6 +249,8 @@ function formatFontName(fontKey) {
                 response.innerHTML = "{{ _('Please specify the recipient!') }}";
                 response.style.display = 'flex';
                 document.getElementById("recipient").style.borderColor = "red";
+                saving.classList.toggle('hidden');
+                submit.classList.toggle('hidden');
                 return;
             }
             
@@ -252,6 +259,8 @@ function formatFontName(fontKey) {
                 response.innerHTML = "{{ _('Please specify the type!') }}";
                 response.style.display = 'flex';
                 document.getElementById("type").style.borderColor = "red";
+                saving.classList.toggle('hidden');
+                submit.classList.toggle('hidden');
                 return;
             }
             
@@ -260,6 +269,8 @@ function formatFontName(fontKey) {
                 response.innerHTML = "{{ _('Please specify the amount!') }}";
                 response.style.display = 'flex';
                 document.getElementById("amount").style.borderColor = "red";
+                saving.classList.toggle('hidden');
+                submit.classList.toggle('hidden');
                 return;
             }
 
@@ -297,6 +308,8 @@ function formatFontName(fontKey) {
                     if (response.status === '0') {
                         document.querySelector("#response").textContent = response.answer;
                         document.querySelector("#response").style.display = 'flex';
+                        saving.classList.toggle('hidden');
+                        submit.classList.toggle('hidden');
                         return;
                     } 
                     

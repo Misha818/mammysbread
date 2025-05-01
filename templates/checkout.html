@@ -234,7 +234,13 @@ body {
                         style=" background-color: white;
                                 color: #FCC628;
                                 border-color: #FCC628;" 
-                  >{{ _('Continue')}}</div>
+                  >{{ _('Continue')}}
+                  </div>
+                  <div  class="w-100 btn btn-lg hidden checkoutLoader" 
+                        style=" background-color: white;
+                                color: #FCC628;
+                                border-color: #FCC628;" 
+                  ></div>
               </form>
           </div>
       </div>
@@ -1359,9 +1365,29 @@ function isValidPhoneString(str) {
 }
 
 
-document.querySelector('.btn-primary ').addEventListener('click', function(event) {
+document.querySelector('.btn-primary').addEventListener('click', function(event) {
   let mistakes = document.querySelector('#mistakes');
   mistakes.style.display = 'none';
+
+  const clickedButton = event.target;
+  const loaderBtn = document.querySelector('.checkoutLoader');
+  
+  let loader = myLoader('#FCC628', 'gearCheckout');
+
+      loaderBtn.textContent = '';
+      loaderBtn.appendChild(loader);
+
+      let gearElement = document.getElementById('gearCheckout');
+      if (!gearElement) {
+        return;
+      } 
+
+      
+    clickedButton.classList.toggle('hidden');    
+    loaderBtn.classList.toggle('hidden');    
+    rotate(gearElement);
+
+    
 
   let forms = document.querySelectorAll('.needs-validation')
   Array.prototype.slice.call(forms).forEach(function (form) {
@@ -1391,7 +1417,12 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
           
       });
       if (phones[0].value == '' && phones[1].value == '') {
-        return;
+
+          clickedButton.classList.toggle('hidden');    
+          loaderBtn.classList.toggle('hidden');    
+          gearElement.remove();
+          return;
+
       } else {
 
         if (phones[0].value != phones[1].value) {
@@ -1413,6 +1444,11 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
       mistakes.style.display = 'block';
       mistakes.scrollIntoView({ behavior: 'smooth' });
 
+      clickedButton.classList.toggle('hidden');    
+      loaderBtn.classList.toggle('hidden');    
+      gearElement.remove();
+
+
       return;
     }
 
@@ -1422,11 +1458,16 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
       // countryCodes.forEach(countryCode => {
       // });
       if (countryCodes[0].getAttribute('title') != countryCodes[1].getAttribute('title')) {
+        
         mistakes.textContent = "{{ _('Country codes of phone numbers do not match!') }}";
         mistakes.style.display = 'block';
         mistakes.scrollIntoView({ behavior: 'smooth' });
 
+        clickedButton.classList.toggle('hidden');    
+        loaderBtn.classList.toggle('hidden');    
+        gearElement.remove();
         return;
+
       }
         
     }
@@ -1460,12 +1501,7 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
       promo = document.querySelector('#promo').value;
     }
     data['promo'] = promo;
-    
-
-    // console.log(flag)
-    // console.log(data)
-    // return
-    
+        
     let formData = new FormData();
 
     formData.append('data', JSON.stringify(data));
@@ -1485,6 +1521,11 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
             mistakes.textContent = response.answer;
             mistakes.style.display = 'block';
             mistakes.scrollIntoView({ behavior: 'smooth' });
+
+            clickedButton.classList.toggle('hidden');    
+            loaderBtn.classList.toggle('hidden');    
+            gearElement.remove();
+
             return;
           }
 
@@ -1551,6 +1592,12 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
         } else {
             // Handle error response
             console.error('Error adding category:', xhr.responseText);
+            clickedButton.classList.toggle('hidden');    
+            loaderBtn.classList.toggle('hidden');    
+            gearElement.remove();
+            mistakes.textContent = "{{ _('Something went wrong!') }}";
+            mistakes.style.display = 'block';
+
         }
 
     };
