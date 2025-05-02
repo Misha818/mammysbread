@@ -388,7 +388,6 @@ if (addToCartButtons) {
               
               if (response.status === '1') {
                   // Handle success
-                  // console.log(response.data);
                   prData = response.data
                   
                   const newShoppingCartModal = createShoppingCartModal(response.data);
@@ -447,7 +446,6 @@ if (addToCartButtons) {
                               if (flag === true) {
                                 return;
                               }
-                              // console.log('I am here')  
                               flag = true;
 
                               let ptID = clickedButton.dataset.value;
@@ -614,8 +612,6 @@ if (addToCartButtons) {
                 
             if (response.status === '0') {
               modal_message(response.answer)
-              // console.log(response.answer);
-              // console.log('response.answer');
             }
               
           } else {
@@ -687,14 +683,11 @@ async function get_pt_quantity(ptID, quantity) {
             aTag.href = window.location.origin + '/cart';
         } else {
             // let oddCart = prDataGlobal.ptID + '-' + prDataGlobal.quantity
-            // console.log(Cart)
             get_cart_content(Cart).then(response => {
                 let prData = response.content.result.data;
 
-                // console.log(prData)
 
                 let arr = Cart.split('&');
-                console.log(`arr is ${arr}`)
                 let cartCount = 0;
                 let totlaPrice = 0;
 
@@ -769,13 +762,6 @@ async function get_pt_quantity(ptID, quantity) {
 
                 });
 
-                // document.querySelector('.basket').src = document.getElementById('full-basket').value;
-
-
-                // notification.textContent = cartCount.toString();
-                // notification.style.display = 'block';
-
-                console.log(`cartCount is ${cartCount}`)
                 document.querySelector('.badge').textContent = cartCount.toString();
     
                 aTag.href = window.location.origin + '/cart/' + Cart;
@@ -792,10 +778,7 @@ async function get_pt_quantity(ptID, quantity) {
     async function addToCart(ptID, num, clickedBotton) {
         let checkPtQuantity = await check_pt_quantity(ptID, num);
 
-        // console.log(`checkPtQuantity is ${checkPtQuantity.status}`)
-
         if (checkPtQuantity.status === '0') {
-            // const textContent = document.getElementById('outOfStock').value;
             modal_message(checkPtQuantity.answer);
             return true;
         }
@@ -1290,7 +1273,6 @@ async function get_pt_quantity(ptID, quantity) {
       // 
       
       window.addEventListener('resize', () => {
-        // console.log('Window width changed to:', window.innerWidth);
         change_modal_height()
       });
 
@@ -1304,28 +1286,10 @@ async function get_pt_quantity(ptID, quantity) {
     utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/8.4.6/js/utils.js"
   });
   
-  // (function () {
-      // 'use strict'
-      // let forms = document.querySelectorAll('.needs-validation')
-      // Array.prototype.slice.call(forms).forEach(function (form) {
-      //     // console.log(form)
-      //     form.addEventListener('submit', function (event) {
-      //         if (!form.checkValidity()) {
-      //             event.preventDefault()
-      //             event.stopPropagation()
-      //             mistakes.textContent = "{{ _('Please improve all field marked in red') }}";
-      //             mistakes.style.display = 'block';
-      //         }
-      //         form.classList.add('was-validated')
-      //     }, false)
-      // })
-  // })()
-
 function validateNumericInput(input) {
   // Remove any non-digit characters
   input.value = input.value.replace(/\D/g, '');
-}  
-
+} 
 
 $(document).ready(function() {
   phone_validation();
@@ -1500,9 +1464,6 @@ document.querySelector('.btn-primary').addEventListener('click', function(event)
       promo = document.querySelector('#promo').value;
     }
     data['promo'] = promo;
-    
-
-    console.log(data)
     
     let formData = new FormData();
 
