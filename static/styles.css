@@ -2604,6 +2604,10 @@ h2 {
   text-align: center;
 }
 
+.item-title {
+  margin-top: 5px;
+}
+
 
 .item-title a, .item-title-cart a {
   text-decoration: none;
@@ -8459,24 +8463,28 @@ tr:nth-child(even) {
   margin: auto;
 }
 
-.cpParent {
-  flex-direction: column;
-  margin: 5px auto 5px auto;
-}
 
 
 @media (max-width: 800px) {
+  .cpParent {
+    flex-direction: column;
+    margin: 0px auto 5px auto;
+  }
+  
   .shopping-cart-container .item-info {
     flex-direction: column;
     margin: 0px auto;
   }
 
-  .item-price-modal {
+  /* .item-price-modal {
     margin-right: unset;
-  }
+  } */
 
   .item-controls {
     margin-left: unset;
   }
 
+  .card-content {
+    padding: 3px;
+  }
 }
