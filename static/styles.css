@@ -2622,7 +2622,7 @@ h2 {
   display: flex;
   flex-direction: row; /* Change from column to row */
   align-items: center;
-  margin-left: 5px;
+  margin-left: auto;
   /* margin-top: 70px; */
 }
 
@@ -8457,6 +8457,11 @@ tr:nth-child(even) {
   display: flex;
   align-items: center;
   margin: auto;
+}
+
+.cpParent {
+  flex-direction: column;
+  margin: 5px auto 5px auto;
 }
 
 
