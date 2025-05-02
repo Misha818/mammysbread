@@ -6235,8 +6235,8 @@ def index(myLinks):
                 myHtml = 'product_client.html'
                             
                 metaContent = prData
-                metaContent['SiteName'] = request.host
-                metaContent['Url'] = request.host + '/' + prData['Url']
+                prData['SiteName'] = gettext("site name")
+                metaContent['Url'] = url_for('home', _external=True) + prData['Url']
                 imageDir = 'images/pr_thumbnails/' + prData['Thumbnail']
                 metaContent['ImageUrl'] = url_for('static', filename=imageDir)
 
@@ -6245,7 +6245,6 @@ def index(myLinks):
 
                 # Get active languages
                 RefKey = content['RefKey']
-                # sqlQueryL = "SELECT `Language_ID` FROM `article_relatives` WHERE `A_Ref_Key` = %s;"
                 sqlQueryL = """
                             SELECT 
                                 `product_relatives`.`Language_ID`,

@@ -5,35 +5,25 @@
 
 
 {% block head %}
+  <meta property="og:title"       content="{{ _('metaTitle') }}" />
+  <meta property="og:description" content="{{ _('metaDescription') }}" />
+  <meta property="og:image"       content="{{ url_for('home', _external=True) }}images/homeSlides/background-1.png" />
+  <meta property="og:url"         content="{{ url_for('home', _external=True) }}" />
+  <meta property="og:type"        content="website" />
+  <link rel="canonical" href="{{ url_for('home', _external=True) }}" />
+  <meta property="og:site_name"   content="{{ _('site name') }}" />
 
-    <!-- Required meta tags -->
-    <!-- <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-    <title>
-        {{ _('Home') }}
-    </title> -->
-
-    <!-- <script>
-      document.addEventListener('DOMContentLoaded', function(){
-        document.addEventListener('click', function(event) {
-          if (event.target.classList.contains('nav-to')) {
-              let target_val = event.target.getAttribute('value');
-              let target_to_navigate = document.getElementById(target_val);
-              
-              // Scroll the window to the target div with smooth behavior
-              target_to_navigate.scrollIntoView({ behavior: 'smooth' });
-              
-            }
-          });
-        });
-
-      
-    </script> -->
-    <style>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "{{ _('metaTitle') }}",
+      "url": "{{ url_for('home', _external=True) }}",
+      "description": "{{ _('metaDescription') }}",
+      "image": "{{ url_for('home', _external=True) }}images/homeSlides/background-1.png",
+    }
+    </script>
+<style>
 body {
   /* font-family: Arial, Helvetica, sans-serif; */
   font-family: Georgia, sans-serif;

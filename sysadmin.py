@@ -490,7 +490,6 @@ def getFileName(colonName, tableName, idName, idVal):
     
 
 def get_meta_tags(content):
-    
     ImageUrl = os.path.join(static_folder_path, 'static', content['ImageUrl'])
 
     # Facebook and instagram metatags
@@ -500,6 +499,7 @@ def get_meta_tags(content):
         <meta property="og:image" content="{ImageUrl}" />
         <meta property="og:url" content="{content['Url']}" />
         <meta property="og:type" content="website" />
+        <link rel="canonical" href="{content['Url']}" />
         <meta property="og:site_name" content="{content['SiteName']}" />
     """
 
@@ -533,7 +533,7 @@ def get_meta_tags(content):
         <script type="application/ld+json">
         {{
         "@context": "https://schema.org",
-        "@type": "Article",
+        "@type": "Product",
         "headline": "{headline}",
         "description": "{description}",
         "image": "{image_url}",
