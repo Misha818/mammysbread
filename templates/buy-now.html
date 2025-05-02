@@ -6,7 +6,7 @@
 
 
 {% block head %}
-
+<meta name="robots" content="noindex, nofollow" />
 <!-- jQuery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
@@ -69,8 +69,11 @@ body {
   margin: 0;
 }
 
+.text-primary {
+    color: #000 !important;
+}
 
-    </style>
+</style>
 {% endblock %}
 
 
@@ -234,7 +237,15 @@ body {
                         style="background-color: white;
                         color: #FCC628;
                         border-color: #FCC628;"
-                  >{{ _('Continue')}}</div>
+                  >{{ _('Continue')}}
+                </div>
+                <div  class="w-100 btn btn-lg hidden checkoutLoader" 
+                      style=" background-color: white;
+                              color: #FCC628;
+                              border-color: #FCC628;" 
+                ></div>
+
+
               </form>
           </div>
       </div>
@@ -1361,9 +1372,28 @@ function isValidPhoneString(str) {
 }
 
 
-document.querySelector('.btn-primary ').addEventListener('click', function(event) {
+document.querySelector('.btn-primary').addEventListener('click', function(event) {
   let mistakes = document.querySelector('#mistakes');
   mistakes.style.display = 'none';
+
+  const clickedButton = event.target;
+  const loaderBtn = document.querySelector('.checkoutLoader');
+  
+  let loader = myLoader('#FCC628', 'gearCheckout');
+
+      loaderBtn.textContent = '';
+      loaderBtn.appendChild(loader);
+
+      let gearElement = document.getElementById('gearCheckout');
+      if (!gearElement) {
+        return;
+      } 
+
+      
+    clickedButton.classList.toggle('hidden');    
+    loaderBtn.classList.toggle('hidden');    
+    rotate(gearElement);
+
 
   let forms = document.querySelectorAll('.needs-validation')
   Array.prototype.slice.call(forms).forEach(function (form) {
@@ -1415,6 +1445,10 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
       mistakes.style.display = 'block';
       mistakes.scrollIntoView({ behavior: 'smooth' });
 
+      clickedButton.classList.toggle('hidden');    
+      loaderBtn.classList.toggle('hidden');    
+      gearElement.remove();
+
       return;
     }
 
@@ -1427,6 +1461,10 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
         mistakes.textContent = "{{ _('Country codes of phone numbers do not match!') }}";
         mistakes.style.display = 'block';
         mistakes.scrollIntoView({ behavior: 'smooth' });
+
+        clickedButton.classList.toggle('hidden');    
+        loaderBtn.classList.toggle('hidden');    
+        gearElement.remove();
 
         return;
       }
@@ -1485,6 +1523,11 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
             mistakes.textContent = response.answer;
             mistakes.style.display = 'block';
             mistakes.scrollIntoView({ behavior: 'smooth' });
+
+            clickedButton.classList.toggle('hidden');    
+            loaderBtn.classList.toggle('hidden');    
+            gearElement.remove();
+
             return;
           }
 
@@ -1497,53 +1540,7 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
             const cpageURL = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/confirmation-page/${response.pdID}`;
             window.location.href = cpageURL;
 
-            // if (Cart) {
-            //     let purchaseDataArray = JSON.parse(response.purchseData);
-            //     let array = Cart.split('&');
-            //     array.forEach(item => {
-            //         let arr = item.split('-');
-            //         let ptID = parseInt(arr[0]);
-            //         let quantity = parseInt(arr[1]);
-            //         let newCart = '';
-                    
-            //         purchaseDataArray.forEach(row => {
-            //             if (parseInt(row.ptID) === ptID ) {
-            //               console.log(`row.ptID in if is ${row.ptID} ptID is ${ptID}`)
-            //               console.log(`type of row.ptID in if is ${typeof(row.ptID)} type of ptID is ${typeof(ptID)}`)
-            //               if (quantity - row.quantity > 0) {
-            //                 console.log(`quantity in if if is ${quantity} and row.quantity is ${row.quantity}`)
-            //                 console.log(`quantity type is ${typeof(quantity)} and row.quantity type is ${typeof(row.quantity)}`)
-            //                 newCart = newCart + '&' + ptID + '-' + quantity - row.quantity;
-            //               } 
-            //             } else {
-            //                 console.log(`item in else is ${item}`)
-            //                 newCart = newCart + '&' + item;
-            //             }
-            //         });
-
-            //          // Check if the first character of newCart is '&' and remove it if it is
-            //         if (newCart !== '') {
-            //           if (newCart.charAt(0) === '&') {
-            //             newCart = newCart.substring(1);
-            //           }
-            //           cookie.set('Cart', newCart, { expires: 7, path: '/' });
-            //         } else {
-            //           cookie.remove('Cart', { path: '/' });
-            //         }
-            
-            //         // Construct the base URL
-            //         const cpageURL = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/confirmation-page/${response.pdID}`;
-            //         // window.location.href = cpageURL;
-
-            //         // console.log(purchaseDataArray)
-            //         // console.log(response.answer)
-
-
-            //         // basket();
-            //     });
-            // }
-            // console.log(response.purchseData);
-            // alert(response.answer)
+           
           }
 
 
@@ -1551,6 +1548,10 @@ document.querySelector('.btn-primary ').addEventListener('click', function(event
         } else {
             // Handle error response
             console.error('Error adding category:', xhr.responseText);
+
+            clickedButton.classList.toggle('hidden');    
+            loaderBtn.classList.toggle('hidden');    
+            gearElement.remove();
         }
 
     };

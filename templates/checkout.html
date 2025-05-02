@@ -71,6 +71,11 @@ body {
   margin: 0;
 }
 
+.text-primary {
+    color: #000 !important;
+}
+
+
 
     </style>
 {% endblock %}
@@ -1387,9 +1392,7 @@ document.querySelector('.btn-primary').addEventListener('click', function(event)
       
     clickedButton.classList.toggle('hidden');    
     loaderBtn.classList.toggle('hidden');    
-    rotate(gearElement);
-
-    
+    rotate(gearElement);    
 
   let forms = document.querySelectorAll('.needs-validation')
   Array.prototype.slice.call(forms).forEach(function (form) {
@@ -1449,8 +1452,7 @@ document.querySelector('.btn-primary').addEventListener('click', function(event)
       clickedButton.classList.toggle('hidden');    
       loaderBtn.classList.toggle('hidden');    
       gearElement.remove();
-
-
+      
       return;
     }
 
