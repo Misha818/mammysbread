@@ -1372,6 +1372,7 @@ document.querySelector('.btn-primary').addEventListener('click', function(event)
   })
 
 
+
   const phones = document.querySelectorAll('.my-phone-control');
   let flag = true;
     if (phones) {
@@ -1387,6 +1388,10 @@ document.querySelector('.btn-primary').addEventListener('click', function(event)
           
       });
       if (phones[0].value == '' && phones[1].value == '') {
+        clickedButton.classList.toggle('hidden');    
+        loaderBtn.classList.toggle('hidden');    
+        gearElement.remove();
+
         return;
       } else {
 
@@ -1403,6 +1408,8 @@ document.querySelector('.btn-primary').addEventListener('click', function(event)
         
       }
     }
+
+    
     
     if (flag === false) {
       mistakes.textContent = "{{ _('Please improve all field marked in red') }}";
