@@ -2042,8 +2042,9 @@ def pd(RefKey):
     if len(getLangdatabyID(languageID)) == 0:
         return render_template('error.html')
     
-    productCategory = get_product_categories(None, languageID)
+    productCategory = get_product_categories(None, languageID) # sa stegh chpiti lini
     defLangProductCategory = {'length': 0}
+    defaultLangDict = getDefLang()
     prData = ''
    
    
@@ -2051,7 +2052,14 @@ def pd(RefKey):
         productTemplate = 'add_product.html'
 
         if len(RefKey) > 3:
-            errorMessage = True
+            render_template('error.html', current_locale=get_locale())
+
+        if defaultLangDict['id'] != languageID:
+            productCategory = get_product_categories(None, languageID)
+            defLangProductCategory = get_product_categories(None, defaultLangDict['id'])
+            productCategoriesToBeTranslated = product_categories_translate(defaultLangDict['id'], defLangProductCategory['product_category'], productCategory['product_category'])
+            productTemplate = 'add_product_lang.html'
+        
     else: 
         if RefKey.isdigit(): # Check if the variable is numeric
             prData = constructPrData(RefKey, '', languageID)
@@ -2065,20 +2073,21 @@ def pd(RefKey):
                 pr_id = prData['ID']
 
                 productCategory = get_product_categories(pr_id, languageID)
-                defaultLangDict = getDefLang()
+                
                 if defaultLangDict['id'] != languageID:
                     defLangProductCategory = get_product_categories(None, defaultLangDict['id'])
-                    
-                    if defLangProductCategory['product_category']['length'] > productCategory['product_category']['length']:
-                        productCategoryRefKeys = filter_multy_dict(productCategory['product_category']['data'], 'PC_Ref_Key')
-                        defLangProductCategoryRefKeys = filter_multy_dict(defLangProductCategory['product_category']['data'], 'PC_Ref_Key')
-                        
-                        refKeysToBeTranslated = productCategoryRefKeys ^ defLangProductCategoryRefKeys 
+                    productCategoriesToBeTranslated = product_categories_translate(defaultLangDict['id'], defLangProductCategory['product_category'], productCategory['product_category'])
 
-                        for value in defLangProductCategory['product_category']['data']:
-                            for val in refKeysToBeTranslated:
-                                if value['PC_Ref_Key'] == val:
-                                    productCategoriesToBeTranslated.append(value) 
+                    # if defLangProductCategory['product_category']['length'] > productCategory['product_category']['length']:
+                    #     productCategoryRefKeys = filter_multy_dict(productCategory['product_category']['data'], 'PC_Ref_Key')
+                    #     defLangProductCategoryRefKeys = filter_multy_dict(defLangProductCategory['product_category']['data'], 'PC_Ref_Key')
+                        
+                    #     refKeysToBeTranslated = productCategoryRefKeys ^ defLangProductCategoryRefKeys 
+
+                    #     for value in defLangProductCategory['product_category']['data']:
+                    #         for val in refKeysToBeTranslated:
+                    #             if value['PC_Ref_Key'] == val:
+                    #                 productCategoriesToBeTranslated.append(value) 
                                            
 
                 pcRefKey = get_pc_ref_key(prData['Product_Category_ID']) 
@@ -2100,6 +2109,23 @@ def pd(RefKey):
         emptyCategory = gettext('To continue, please, add at least one product category.')
     
     return render_template(productTemplate, prData=prData, ordering=get_pr_order(), slideShow=slideShow, sideBar=sideBar, productCategory=productCategory, productCategoriesToBeTranslated=productCategoriesToBeTranslated, defLangProductCategory=defLangProductCategory, supportedLangsData=supportedLangsData, errorMessage=errorMessage, root_url=root_url, languageID=languageID, emptyCategory=emptyCategory, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
+
+
+def product_categories_translate(defLangID, defLangPrCategory, productCategory):
+    productCategoriesToBeTranslated = []
+    defLangProductCategory = get_product_categories(None, defLangID)
+    if defLangPrCategory['length'] > productCategory['length']:
+        productCategoryRefKeys = filter_multy_dict(productCategory['data'], 'PC_Ref_Key')
+        defLangProductCategoryRefKeys = filter_multy_dict(defLangPrCategory['data'], 'PC_Ref_Key')
+        
+        refKeysToBeTranslated = productCategoryRefKeys ^ defLangProductCategoryRefKeys 
+
+        for value in defLangPrCategory['data']:
+            for val in refKeysToBeTranslated:
+                if value['PC_Ref_Key'] == val:
+                    productCategoriesToBeTranslated.append(value) 
+
+    return productCategoriesToBeTranslated
 
 
 # Edit product'd thumbnail client-server transaction
@@ -6040,6 +6066,10 @@ def edit_promo_code(promoID):
                     ORDER BY `product`.`Order` ASC, `product_type`.`Order` ASC; 
                 """
     discountsResult = sqlSelect(sqlQuery, (promoID, languageID), True)
+    if discountsResult['length'] == 0:
+        return render_template('error.html', current_locale=get_locale())
+
+
     discounts = json.dumps(discountsResult['data']) 
 
 

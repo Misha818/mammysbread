@@ -431,16 +431,26 @@ def edit_p_c_sql(categoryName, file, AltText, pc_id, image, categoryStatus, relI
 
 def edit_p_c_view(pc_ref_key):  
                                  
+    # This checks if there is corresponding product category in any of available languages 
+    # If no, returns {'content': False}
     sqlCheck = "SELECT `PC_ID` FROM `product_c_relatives` WHERE `PC_Ref_Key` = %s;"
     sqlCheckValTuple = (pc_ref_key,)
     rCheck = sqlSelect(sqlCheck, sqlCheckValTuple, True)
 
-    if rCheck['length'] == 0:
+    if rCheck['length'] == 0: 
+        
         content = {'content': False}
         return content
+    
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
+    print(rCheck)
+    # return
 
     langID = getLangID()
     
+    # This checks if there is a registered product category in corresponding language
+    # If there is, it will return dict with corresponding data
+    # If no it will insert one
     sqlQuery =  f"""SELECT * FROM `product_category` 
                     WHERE `Product_Category_ID` = (SELECT `PC_ID` FROM `product_c_relatives` WHERE `PC_Ref_Key` = %s AND `Language_ID` = %s);
                 """
@@ -492,9 +502,9 @@ def edit_p_c_view(pc_ref_key):
                     'name': myName, 
                     'image': image1, 
                     'AltText': AltText, 
-                    'status': result1['data'][0]['Product_Category_Status'], 
-                    'spsID': result['data'][0]['spsID'], 
-                    'pc_id': result1['data'][0]['Product_Category_ID'],
+                    'status': result1['data'][0].get('Product_Category_Status'), 
+                    'spsID': result1['data'][0].get('spsID'), 
+                    'pc_id': result1['data'][0].get('Product_Category_ID'),
                     'content': True
                 }
         else:
@@ -517,9 +527,9 @@ def edit_p_c_view(pc_ref_key):
             'name': myName, 
             'image': myImage, 
             'AltText': AltText, 
-            'spsID': result['data'][0]['spsID'], 
-            'status': result['data'][0]['Product_Category_Status'], 
-            'pc_id': result['data'][0]['Product_Category_ID'],
+            'spsID': result['data'][0].get('spsID'), 
+            'status': result['data'][0].get('Product_Category_Status'), 
+            'pc_id': result['data'][0].get('Product_Category_ID'),
             'content': True
         }
 
@@ -641,7 +651,10 @@ def get_product_categories(pc_id, languageID):
                         FROM `product_category`
                         LEFT JOIN `product_c_relatives`
                             ON `product_c_relatives`.`PC_ID` = `product_category`.`Product_Category_ID`
-                        WHERE `Product_Category_Status` = 1 AND `product_c_relatives`.`Language_ID` = %s;
+                        WHERE `Product_Category_Status` = 1 
+                            AND `product_c_relatives`.`Language_ID` = %s
+                            AND `Product_Category_Name` != 'null'
+                            ;
                         """
     sqlQueryCatVal = (languageID,)
     resultCategory = sqlSelect(sqlQueryCategory, sqlQueryCatVal, True)

@@ -46,6 +46,7 @@
 <div class="overlay" id="overlay"></div>
 {{ sideBar | safe }}
 <div class="containerS" style="width: 80%;">
+
     <h1 class="title" style="margin-top: 10px;">{{ _('Add Product') }}</h1>
     <!-- Form for adding a product -->
     <div id="mistakes" style="width: 70%"></div>
@@ -73,23 +74,19 @@
         </select>
         
         
-        <!-- Provide a link to translate categories -->
-        <!-- {% for val in productCategory.product_category.data %}
-            {% set optVal = val['Product_Category_Name'] %}
-            {% if optVal is none %}
-                <p>
-                    <a target="_blank" href="{{ root_url }}/edit-product-category/{{ val['PC_Ref_Key'] }}">
-                        {{ _('Translate category name') }}
-                    </a>
-                </p>
-            {% endif %}
-        {% endfor %}
-         -->
      
         {% endif %}    
         <a  href="{{ root_url }}add-product-category"
             target="_blank"    
-            class="add-pr-category">{{ _('Add Product Category') }}</a>
+            class="add-pr-category"
+            style="
+                display: block;
+                margin-bottom: unset;
+                background-color: #e76f51;
+                color: #fff;
+                margin-bottom: 5px;"
+            >{{ _('Add Product Category') }}
+        </a>
 
 
         

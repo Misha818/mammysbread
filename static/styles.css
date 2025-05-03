@@ -8488,3 +8488,14 @@ tr:nth-child(even) {
     padding: 3px;
   }
 }
+
+
+.add-spss-btn {
+  text-align: center;
+  border: 1px solid #e76f51;
+  border-radius: 5px;
+  text-decoration: none;
+  padding: 5px;
+  color: #e76f51;
+  margin: 5px auto;
+}

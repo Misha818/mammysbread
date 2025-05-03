@@ -95,10 +95,12 @@
             {% set optVal = val['Product_Category_Name'] %}
             {% if optVal is none %}
                 <p>
-                    <a target="_blank" href="{{ root_url }}/edit-product-category/{{ val['PC_Ref_Key'] }}">
+                    <a target="_blank" href="{{ url_for('edit_product_category', RefKey=val['PC_Ref_Key']) }}">
                         {{ _('Translate subproduct situation name') }}
                     </a>
                 </p>
+
+                
             {% endif %}
         {% endfor %}
         
@@ -106,7 +108,7 @@
         {% else %}
             <p>{{ _('You have not entered any product type situation name yet.') }}</p>
             <p>{{ _('Click on the link below to add a product type situation!') }}</p>
-            <a href="{{ root_url }}add-sps">{{ _('Add subproduct situation name') }}</a>
+            <a class="add-spss-btn" href="{{ url_for('add_sps_view') }}">{{ _('Add subproduct situation name') }}</a>
 
         {% endif %}    
         

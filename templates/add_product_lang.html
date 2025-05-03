@@ -89,12 +89,14 @@
             }
         </style>
         <div class="card" style="cursor:pointer; width: 100%; background-color: #f8f8f8;" id="accordion">
-            <div class="card-header" id="headingId">
+            <div class="card-header" id="headingId" style="background-color: #e76f51;">
               <span class="d-block" 
                     data-toggle="collapse-accordion" 
                     data-target="collapseId" 
                     aria-expanded="false" 
-                    aria-controls="collapseId">
+                    aria-controls="collapseId"
+                    style="color: #fff;"
+                    >
                 {{ _('Translate category name') }}
               </span>
             </div>
@@ -143,10 +145,15 @@
 
         
         <div style="margin: 5px auto; width: 100%;">
-            <a  href="{{ root_url }}/add-product-category" 
+        <a  href="{{ root_url }}/add-product-category" 
             target="_blank"    
             class="add-pr-category" 
-            style="display: block; margin-bottom: unset; background-color: #f8f8f8;">
+            style="                
+                display: block;
+                margin-bottom: unset;
+                background-color: #e76f51;
+                color: #fff;
+                margin-bottom: 5px;">
             {{ _('Add Product Category') }}
         </a>
         </div>
