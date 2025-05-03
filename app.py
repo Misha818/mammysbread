@@ -3907,11 +3907,12 @@ def products():
                         LEFT JOIN `product_relatives` ON  `product_relatives`.`P_ID` = `product`.`ID`
                         LEFT JOIN `product_category` ON `product_category`.`Product_Category_ID` = `product`.`Product_Category_ID`
                     WHERE `product_relatives`.`Language_ID` = %s
-                        AND not find_in_set(`product_relatives`.`P_Ref_Key`, (SELECT GROUP_CONCAT(`product_relatives`.`P_Ref_Key`) FROM `product_relatives` WHERE `product_relatives`.`Language_ID` = %s))
+                         AND not find_in_set(`product_relatives`.`P_Ref_Key`, (SELECT  IFNULL(GROUP_CONCAT(`product_relatives`.`P_Ref_Key`), "") FROM `product_relatives` WHERE `product_relatives`.`Language_ID` = %s))
                     ORDER BY `product`.`Order` ASC                 
                     """
              
             sqlValTuple = (DefLangID, languageID)
+            print(sqlValTuple)
             resultFilters = sqlSelect(sqlQuery, sqlValTuple, True)
             return jsonify({'status': '1', 'prData': resultFilters, 'newCSRFtoken': newCSRFtoken})
 

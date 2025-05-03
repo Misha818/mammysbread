@@ -565,7 +565,7 @@ msgstr "Add to cart"
 #: app.py:6268 templates/index.html:14
 #, fuzzy
 msgid "site name"
-msgstr "Last name"
+msgstr "Mammy's Bread"
 
 #: app.py:6340 app.py:6402
 #, fuzzy
@@ -1986,14 +1986,12 @@ msgid "Mammy's Bread"
 msgstr "Mammy's Bread"
 
 #: templates/index.html:8 templates/index.html:20
-#, fuzzy
 msgid "metaTitle"
-msgstr "Title"
+msgstr "Healthy & Delicious | Artisan Eco Sourdough Bread"
 
 #: templates/index.html:9 templates/index.html:22
-#, fuzzy
 msgid "metaDescription"
-msgstr "Short Description"
+msgstr "Discover flavorful, easily digestible 100% eco sourdough bread crafted by professionals with love and premium ingredients."
 
 #: templates/index.html:124 templates/index.html:366 templates/index.html:671
 #: templates/index.html:791
@@ -2018,35 +2016,23 @@ msgstr "About"
 
 #: templates/index.html:144
 msgid "aboutText1"
-msgstr ""
-"Looking for 100% eco bread, prepared with maternal care and tenderness, "
-"from top premium ingredients? Are you a gourmet who seeks new taste "
-"adventures? Then you are in the right place!"
+msgstr "Looking for 100% eco bread, prepared with maternal care and tenderness, from top premium ingredients? Are you a gourmet who seeks new taste adventures? Then you are in the right place!"
 
 #: templates/index.html:145
-#, fuzzy
 msgid "show more"
-msgstr "More"
+msgstr "show more"
 
 #: templates/index.html:149
 msgid "aboutText2"
-msgstr ""
-"Delicious and healthy sourdough bites prepared in the traditional way, "
-"with recipes passed down through generation to generation, quality that "
-"encapsulates the taste and warmth of the past and perfection of modern "
-"innovations."
+msgstr "Delicious and healthy sourdough bites prepared in the traditional way, with recipes passed down through generation to generation, quality that encapsulates the taste and warmth of the past and perfection of modern innovations."
 
 #: templates/index.html:150
 msgid "aboutText3"
-msgstr ""
-"Our breads excel by offering both exceptional nutritional benefits and "
-"unparalleled flavor nuances."
+msgstr "Our breads excel by offering both exceptional nutritional benefits and unparalleled flavor nuances."
 
 #: templates/index.html:151
 msgid "aboutText4"
-msgstr ""
-"Tap the ‘More’ button on each card to receive in-depth information about "
-"each bread, or feel free to "
+msgstr "Tap on any cart, then tap the ‘More’ button on to receive in-depth information about each bread, or feel free to "
 
 #: templates/index.html:151
 msgid "contact with us"
@@ -2054,9 +2040,7 @@ msgstr "contact us"
 
 #: templates/index.html:152
 msgid "aboutText5"
-msgstr ""
-"We are happy to answer your questions and assist you in making the right "
-"choice."
+msgstr "We are happy to answer your questions and assist you in making the right choice."
 
 #: templates/index.html:153
 msgid "show less"
