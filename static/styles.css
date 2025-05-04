@@ -1579,7 +1579,7 @@ h2 {
               display: grid;
               grid-template-columns: repeat(2, 1fr);
               grid-auto-rows: auto;
-              width: 65%;
+              /* width: 65%; */
               /* remove height: 0px; */
             }
 
@@ -8475,17 +8475,23 @@ tr:nth-child(even) {
     flex-direction: column;
     margin: 0px auto;
   }
-
+  
   /* .item-price-modal {
     margin-right: unset;
-  } */
-
-  .item-controls {
-    margin-left: unset;
+    } */
+    
+    .item-controls {
+      margin-left: unset;
+    }
+    
+    .card-content {
+      padding: 3px;
+    }
   }
-
-  .card-content {
-    padding: 3px;
+  
+@media (max-width: 650px) {
+  .card-content-stuff {
+    flex-direction: column;
   }
 }
 

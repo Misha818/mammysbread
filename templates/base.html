@@ -81,7 +81,7 @@
           {% if rolls | length > 3 %}
           <select onchange="location = '/setroll/' + this.value;" class="lang-drop-down" style="margin-right: 5px;">
             {% for row in rolls %}
-            <option value="{{ row['rolID'] }}" {{ 'selected' if activeRoleID ==  row['rolID']  else '' }}>{{ row['Rol'] }}</option>
+            <option value="{{ row['rolID'] }}" {{ 'selected' if activeRoleID ==  row['rolID']  else '' }}>{{ _(row['Rol']) }}</option>
             {% endfor %}
           </select>
           
@@ -94,7 +94,7 @@
                   {% set rollClass = 'rolls margin-right selectedRole' %}
                 {% endif %}
 
-                  <a class='{{ rollClass }}' href="{{ url_for('home', _external=True) + 'setroll/' + row['rolID'] | string }}">{{ row['Rol']}}</a>
+                  <a class='{{ rollClass }}' href="{{ url_for('home', _external=True) + 'setroll/' + row['rolID'] | string }}">{{ _(row['Rol']) }}</a>
               {% endfor %}
 
           {% endif %}
