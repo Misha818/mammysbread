@@ -3907,8 +3907,8 @@ def products():
                         LEFT JOIN `product_relatives` ON  `product_relatives`.`P_ID` = `product`.`ID`
                         LEFT JOIN `product_category` ON `product_category`.`Product_Category_ID` = `product`.`Product_Category_ID`
                     WHERE `product_relatives`.`Language_ID` = %s
-                         AND not find_in_set(`product_relatives`.`P_Ref_Key`, (SELECT  IFNULL(GROUP_CONCAT(`product_relatives`.`P_Ref_Key`), "") FROM `product_relatives` WHERE `product_relatives`.`Language_ID` = %s))
-                    ORDER BY `product`.`Order` ASC                 
+                        AND not find_in_set(`sps_relatives`.`Ref_Key`, (SELECT IFNULL(GROUP_CONCAT(`sps_relatives`.`Ref_Key`), "") FROM `sps_relatives` WHERE `sps_relatives`.`Language_ID` = %s))
+                    ORDER BY `product`.`Order` ASC;                 
                     """
              
             sqlValTuple = (DefLangID, languageID)
@@ -4089,9 +4089,12 @@ def pt_specifications():
                         LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
                         WHERE `sps_relatives`.`Language_ID` = %s
                             AND not find_in_set(`sps_relatives`.`Ref_Key`, (SELECT GROUP_CONCAT(`sps_relatives`.`Ref_Key`) FROM `sps_relatives` WHERE `sps_relatives`.`Language_ID` = %s));
-
                         """
             sqlValTuple = (getDefLang()['id'], languageID)
+            print(sqlValTuple)
+            print(sqlValTuple)
+            print(sqlValTuple)
+            print(sqlValTuple)
             result = sqlSelect(sqlQuery, sqlValTuple, True)
 
             return jsonify({'status': '1', 'data': result, 'newCSRFtoken': newCSRFtoken})
