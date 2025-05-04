@@ -954,7 +954,11 @@ function closeImageEditorModal(modal) {
     
 
 <!-- <div id="editorContentParent"> -->
-<div id="editorContentParent">
+{% set show = '' %} 
+{% if prData.Text is none %}
+   {% set show = 'display: none' %} 
+{% endif %}
+<div id="editorContentParent" style="{{ show }}">
     <span id="editorContent" class="ql-editor" style="{{ editorStyle }}"> 
         {% if prData.Text is not none %}
             <!-- {{ prData.Text | safe }} -->

@@ -1012,7 +1012,7 @@ msgstr "Ավելացնել ապրանքատեսակի բնութագրի անվ�
 
 #: templates/add_product_lang.html:55
 msgid "Add Product in another lang"
-msgstr "Ավելացնել/թարգմանել պրոդուկտ հայերենով"
+msgstr "Ավելացնել կամ թարգմանել ապրանքը հայերենով"
 
 #: copy.html:554 templates/add_product_lang.html:61 templates/product
 #: templates/product.html:728
