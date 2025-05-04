@@ -115,8 +115,8 @@
       <th></th>
       </tr>
     </thead>
-  {% if result.length > 0 %}
     <tbody>
+  {% if result.length > 0 %}
       {% for row in result.data %}
       {% set status = _('Active') %}
       {% set statusStyle = 'status-open' %}

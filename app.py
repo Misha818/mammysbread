@@ -4091,7 +4091,6 @@ def pt_specifications():
                             AND not find_in_set(`sps_relatives`.`Ref_Key`, (SELECT IFNULL(GROUP_CONCAT(`sps_relatives`.`Ref_Key`), "") FROM `sps_relatives` WHERE `sps_relatives`.`Language_ID` = %s));
                         """
             sqlValTuple = (getDefLang()['id'], languageID)
-            print(sqlValTuple)
             result = sqlSelect(sqlQuery, sqlValTuple, True)
 
             return jsonify({'status': '1', 'data': result, 'newCSRFtoken': newCSRFtoken})
