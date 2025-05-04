@@ -4088,7 +4088,7 @@ def pt_specifications():
                         FROM `sub_product_specification`
                         LEFT JOIN `sps_relatives` ON `sps_relatives`.`SPS_ID` = `sub_product_specification`.`ID` 
                         WHERE `sps_relatives`.`Language_ID` = %s
-                            AND not find_in_set(`sps_relatives`.`Ref_Key`, (SELECT IFNULL(GROUP_CONCAT(`sps_relatives`.`Ref_Key`), "") FROM `sps_relatives` WHERE `sps_relatives`.`Language_ID` = 1));
+                            AND not find_in_set(`sps_relatives`.`Ref_Key`, (SELECT IFNULL(GROUP_CONCAT(`sps_relatives`.`Ref_Key`), "") FROM `sps_relatives` WHERE `sps_relatives`.`Language_ID` = %s));
                         """
             sqlValTuple = (getDefLang()['id'], languageID)
             print(sqlValTuple)
