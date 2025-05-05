@@ -12,7 +12,8 @@ from flask_wtf.csrf import CSRFError, generate_csrf
 from OpenSSL import SSL
 from flask_recaptcha import ReCaptcha
 from io import BytesIO
-from datetime import datetime, date, UTC
+from datetime import datetime, date
+from pytz import UTC
 import os
 import json
 import re
