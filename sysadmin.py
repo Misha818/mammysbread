@@ -675,7 +675,8 @@ def supportedLangsValues():
     return supportedLangsData
 
 def getDefLang():
-    return {'id': 2, 'Prefix': 'en', 'Language': 'English'}
+    return {'id': 1, 'Prefix': 'hy', 'Language': 'Հայերեն'}
+    # return {'id': 2, 'Prefix': 'en', 'Language': 'English'}
 
 
 def getSupportedLangs():

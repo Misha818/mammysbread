@@ -108,17 +108,6 @@ MAIN_CURRENCY = os.getenv('MAIN_CURRENCY')
 key_file = os.path.join(basedir, 'certs', 'private.key')
 cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 
-
-# return = {
-#             '0': gettext('Cancelled'),
-#             '1': gettext('Panding'),
-#             '2': gettext('Purchased'),
-#             '3': gettext('Preparing'),
-#             '4': gettext('Ready'),
-#             '5': gettext('Delivered')
-#         }
-
-
 orderStatusList = get_order_status_list()
 
 @app.errorhandler(CSRFError)
@@ -219,6 +208,7 @@ def login():
         # else:
         #     return jsonify({'status': "0", 'answer': gettext("CAPTCHA verification failed.")})
     else:
+        setlang()
         if 'user_id' in session:
             return redirect(url_for('stuff'))
         
@@ -302,9 +292,10 @@ def setlang():
             newUrl = url_for('home', _external=True) + translated_path_segment
             return redirect(newUrl)
     
-    if 'langID' in request.referrer:
-        newUrl = request.referrer.split('&langID=')[0]
-        return redirect(newUrl)
+    if request.referrer:
+        if 'langID' in request.referrer:
+            newUrl = request.referrer.split('&langID=')[0]
+            return redirect(newUrl)
 
     return redirect(request.referrer)
 
@@ -378,6 +369,7 @@ def inject_babel():
 
 @app.route('/')
 def home():
+    setlang()
     languageID = getLangID()
     sqlQuery =  f"""SELECT * FROM `product` 
                     LEFT JOIN `product_relatives`
@@ -549,6 +541,7 @@ def pr_thumbnail(RefKey):
 
 @app.route('/buy-now/<surl>', methods=['GET'])
 def buy_now(surl):
+    setlang()
     newCSRFtoken = generate_csrf()
     mainCurrency = MAIN_CURRENCY
     key, val = surl.split('-')
@@ -559,6 +552,7 @@ def buy_now(surl):
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     newCSRFtoken = generate_csrf()
+    setlang()
     languageID = getLangID()
     if request.method == 'GET':
         mainCurrency = MAIN_CURRENCY
@@ -5228,8 +5222,8 @@ def typeof(var):
 @app.route("/cart/<productTypesQuantity>", methods=["GET", "POST"])
 @app.route("/cart", methods=["GET", "POST"])
 def cart(productTypesQuantity=None):
-    
     if request.method == "GET":
+        setlang()
         cartData = productTypesQuantity
 
         content = analyse_cart_data(cartData)
