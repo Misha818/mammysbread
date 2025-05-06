@@ -3721,7 +3721,7 @@ def edit_profile(stuffID):
         result = sqlUpdate(sqlQuery, sqlValTuple)
         if result['status'] == '-1':
             answer = gettext("Something is wrong!")
-            return jsonify({'status': '0', 'answer': sqlQuery, 'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': '0', 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken})
        
         return jsonify({'status': '1'}) 
 
