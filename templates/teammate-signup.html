@@ -42,8 +42,8 @@
         <input class="form_input" type="text" id="firstname" placeholder="{{ _('Firstname') }}">
         <input class="form_input" type="text" id="lastname" placeholder="{{ _('Lastname') }}">
         <input class="form_input" type="text" id="username" placeholder="{{ _('Username') }}">
-        <input class="form_input" type="password" id="password" placeholder="{{ _('Password') }}">
-        <input class="form_input" type="password" id="password2" placeholder="{{ _('Confirm assword') }}">
+        <input class="form_input" type="password" id="password" placeholder="{{ _('Password') }}" autocomplete="current-password">
+        <input class="form_input" type="password" id="password2" placeholder="{{ _('Confirm assword') }}" autocomplete="current-password">
 
         <!-- Choose prefared language -->
         <div class="form-group row" id="langDropDown" style="margin-left: 8px; width: 100%;"></div>
@@ -82,7 +82,7 @@
 
             dz.on("addedfile", function (file) {
                 // Check file type
-                const validTypes = ['image/jpeg', 'image/png'];
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
                 if (!validTypes.includes(file.type)) {
                     let ms = "{{ _('File should be in PNG or JPG/JPEG format.') }}"
                     alert(ms)
@@ -372,8 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
                    
                     errorList =  response.answer;
                     for (let i = 0; i < errorList.length; i++) {
-                        content = '<p>' + errorList[i] + '</p>';
-                        myHTML += content
+                        myHTML += '<p>' + errorList[i] + '</p>';
                     }
                     mistakesDiv.innerHTML = myHTML;
                     mistakesDiv.style.color = 'red';

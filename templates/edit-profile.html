@@ -2,11 +2,6 @@
 
 {% block head %}
 
-    <!-- Script for Dropzone (image upload) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='dropzon.css') }}">  
     <link rel="stylesheet" href="{{ url_for('static', filename='dropzone.min.css') }}">  
     <link rel="stylesheet" href="{{ url_for('static', filename='cropper.min.css') }}">  
@@ -29,76 +24,66 @@
     </style>
 {% endblock %}
 {% block title %}
-    {{ _('Edit Teammate') }}
+    {{ _('Edit Profile') }}
 {% endblock %}
 
 
 
 {% block content %}
-{{ sideBar | safe }}
-
-<!-- {{ row }} -->
-
 <div class="overlay" id="overlay"></div>
-<div class="containerS" style="min-width: 380px;">
-    <div class="title">{{ _('Edit Teammate') }}</div>
+<div class="containerS" style="width: 55%">
+    <!-- <h1 style="padding: 15px;">{{ _('Teammate Signup') }}</h1> -->
     <!-- Form for adding a product -->
-    <div id="mistakes" style="width: 100%;"></div>
+    
+    <form id="product-category-form">
+        <div id="mistakes" style="width: 100%; margin: 1%; padding: 3%;"></div>
+        <input type="hidden" id="buffer-id" value="{{ bufferID }}">
+        
+        <input class="form_input" type="text" id="firstname" value="{{ row.Firstname}}" placeholder="{{ _('Firstname') }}">
+        <input class="form_input" type="text" id="lastname" value="{{ row.Lastname }}" placeholder="{{ _('Lastname') }}">
+        <input class="form_input" type="text" id="username" value="{{ row.Username }}" placeholder="{{ _('Username') }}">
+        <input class="form_input" type="password" id="password" placeholder="{{ _('Current password') }}" autocomplete="current-password">
+        
+        <input class="form_input" type="password" id="password1" placeholder="{{ _('New password') }}" autocomplete="new-password">
+        <input class="form_input" type="password" id="password2" placeholder="{{ _('Confirm new password') }}" autocomplete="new-password">
 
-    <form id="product-category-form" style="width: 100%;">
-        <input type="text" id="firstname" placeholder="{{ _('Firstname') }}" value="{{ row['Firstname'] }}" 
-            style="width: 100%;padding: 15px;"
-        >
-        
-        <input type="text" id="lastname" placeholder="{{ _('Lastname') }}" value="{{ row['Lastname'] }}" 
-            style="width: 100%;padding: 15px;"
-        >
-        
-        <input type="text" id="email" placeholder="{{ _('Email') }}" value="{{ row['Email'] }}" 
-            style="width: 100%;padding: 15px;"
-        >
+        <!-- Choose prefared language -->
+        <div class="form-group row" id="langDropDown" style="width: 100%;"></div>
 
-        <div class="form-group row" id="rolesDropDown" style="width: 100%;"></div>
-        
-        <div  class="dropzone" id="myDropzone" >
-            <div class="dz-message dz-button" style="margin: 4.5em 0;">{{ _('Avatar') }}</div>
+        <div  class="dropzone" id="myDropzone">
+            <div class="dz-message dz-button">{{ _('Thumbnail image') }}</div>
         </div>
-
-        <div class="status-container" style="{{ statusWidth }}">
-            <label>{{ _('Status') }}</label>
-            <label><input type="radio" name="status" value="1" {% if row['Status'] == 1 %} checked {% endif %}> {{ _('Active') }}</label>
-            <label><input type="radio" name="status" value="0" {% if row['Status'] == 0 %} checked {% endif %}> {{ _('Passive') }}</label>
-        </div>
-
-
             
-        <input type="hidden" id="language-id" value="{{ languageID }}">
-        <input type="hidden" id="teammateID" value="{{ row['ID'] }}">
         
-        <div id="saveButton" class="pcButtonS" style="width: 100%">{{ _('Submit') }}</div>
-        <div id="saving" class="pcButtonS hidden" style="width: 100%">{{ _('Saving...') }}</div>
+        <div id="saveButton" class="pcButtonS">{{ _('Submit') }}</div>
+        <div id="saving" class="pcButtonS hidden">{{ _('Saving...') }}</div>
     </form>
-
-
+    <a href="{{ url_for('stuff') }}">{{ _('Back') }}</a>
 </div>
+
+<!-- Script for Dropzone (image upload) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
 
 <script>
-const content = {{ row | tojson  }};
-let cropperState = 0;
-let imageState = 0;
-let imgName = '';
-let imgAlt = '';
-let dzCancel = 'display: none;';
-
-if (content.Avatar) {
-    imgName = content.Avatar;
-    imgAlt = content.AltText;
-    imageState = 1;
-    dzCancel = 'display: true;';
-}
-
+    const userContent = {{ row | tojson  }};
+    let dzCancel = 'display: none;';
     let outputType = '';
+    let cropperState = 1;
+    let imageState = 0;
+    let imgName = '';
+    let imgAlt = '';
+
+    if (userContent.Avatar) {
+        imgName = userContent.Avatar;
+        imgAlt = userContent.AltText;
+        imageState = 1;
+        dzCancel = 'display: true;';
+        cropperState = 0;
+    }
+
     // Initialize Dropzone
     Dropzone.autoDiscover = false;
     let myDropzone = new Dropzone("#myDropzone", {
@@ -113,47 +98,11 @@ if (content.Avatar) {
             
 
             dz.on("addedfile", function (file) {
-
-                let previewElement = file.previewElement;
-                if (previewElement) {       
-                    
-                    previewElement.addEventListener('dblclick', function(event) {
-
-                        cropperState = 1;
-                        
-                        if (event.target.closest('.dz-preview')) {
-                            let file = myDropzone.getAcceptedFiles()[0];  // Get the file object associated with the clicked preview
-                        if (file) {
-
-                            let reader = new FileReader();
-
-                            reader.onload = function(event) {
-                                // Get the image data URL from the FileReader
-                                let imageUrl = event.target.result;
-
-                                // Open the image editor modal
-                                openImageEditorModal(imageUrl, function(editedImageBlob) {
-
-                                    // Create a new Dropzone file object from the edited image blob
-                                    var editedFile = new File([editedImageBlob], file.name, { type: file.type });
-                                    myDropzone.removeFile(file);
-                                    myDropzone.addFile(editedFile);
-                                });
-                            };
-
-                                // Read the image file as a data URL
-                                reader.readAsDataURL(file);
-                            }
-                        }
-
-                    });
-                }    
-
-
                 // Check file type
                 const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
                 if (!validTypes.includes(file.type)) {
                     let ms = "{{ _('File should be in PNG or JPG/JPEG format.') }}"
+                    console.log(`File type inside addFile is ${file.type}`)
                     alert(ms)
                     myDropzone.removeAllFiles(true);
                     return;
@@ -178,17 +127,14 @@ if (content.Avatar) {
                     // Get the image data URL from the FileReader
                     let imageUrl = event.target.result;
 
-                    
                     // Open the image editor modal
-                    
-                        openImageEditorModal(imageUrl, function (editedImageBlob) {
+                    openImageEditorModal(imageUrl, function (editedImageBlob) {
+                        // Create a new Dropzone file object from the edited image blob
 
-                            // Create a new Dropzone file object from the edited image blob
-                            let editedFile = new File([editedImageBlob], file.name, { type: file.type });
-                            dz.removeFile(file);
-                            dz.addFile(editedFile);
-                        });
-                        
+                        let editedFile = new File([editedImageBlob], file.name, { type: file.type });
+                        dz.removeFile(file);
+                        dz.addFile(editedFile);
+                    });
                 };
 
                 // Read the image file as a data URL
@@ -197,14 +143,12 @@ if (content.Avatar) {
                 // Add a custom remove button to the preview element
                 let removeButton = Dropzone.createElement("<button class='dz-remove-btn'>&times;</button>");
                 removeButton.addEventListener("click", function (e) {
-                    cropperState = 1;
                     imageState = 0;
                     e.preventDefault();
                     e.stopPropagation();
                     dz.removeFile(file);
                     dzCancel = 'display: none;';
                 });
-
                 file.previewElement.appendChild(removeButton);
 
                 let progressBars = file.previewElement.querySelectorAll("[data-dz-uploadprogress], .dz-progress");
@@ -213,7 +157,7 @@ if (content.Avatar) {
                 });
 
                 // Add a text input for the alt attribute
-                let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='{{ _('Enter alt text') }}'>");
+                let altInput = Dropzone.createElement("<input type='text' class='alt-input' placeholder='Enter alt text'>");
                 altInput.value = imgAlt;
                 file.previewElement.appendChild(altInput);
             });
@@ -228,17 +172,14 @@ if (content.Avatar) {
         }
 
     });
+    // console.log(myDropzone);
 
-        
     // Add image from url to dropzone
     function addImageFromUrl(imgName) {
         
         if (imgName.length > 0) {
 
-            
             let url = window.location.origin +'/static/images/stuff/' + imgName
-
-            
             let fileType = "image/" + imgName.split('.').pop() 
 
             fetch(url)
@@ -248,20 +189,23 @@ if (content.Avatar) {
                 myDropzone.addFile(file);
             })
             .catch(error => console.error('Error fetching the image:', error));
-            
+                
         }
             
     }
 
     addImageFromUrl(imgName);
+    
 
     // Image Editor Modal Logic
     let cropper;
 
     function openImageEditorModal(imageUrl, callback) {
         if (cropperState === 0) {
+            cropperState = 1;
             return;
-        }       
+        }
+       
         // Show the overlay
         document.getElementById('overlay').classList.add('show');
 
@@ -309,7 +253,7 @@ if (content.Avatar) {
                 dzCancel = 'display: true;';
                 closeImageEditorModal(imageEditorModal);
                 callback(blob);
-            }, outputType, 0.8); 
+            }, outputType, 0.8); // Pass output type and quality
             imageState = 2;
         };
 
@@ -317,6 +261,31 @@ if (content.Avatar) {
             closeImageEditorModal(imageEditorModal);
         };
 
+        // Event delegation to handle clicks on dynamically added .dz-preview elements
+        document.querySelector('.dz-preview').addEventListener('dblclick', function(event) {
+                if (event.target.closest('.dz-preview')) {
+                let file = myDropzone.getAcceptedFiles()[0];  // Get the file object associated with the clicked preview
+                if (file) {
+                    var reader = new FileReader();
+
+                    reader.onload = function(event) {
+                        // Get the image data URL from the FileReader
+                        var imageUrl = event.target.result;
+
+                        // Open the image editor modal
+                        openImageEditorModal(imageUrl, function(editedImageBlob) {
+                            // Create a new Dropzone file object from the edited image blob
+                            let editedFile = new File([editedImageBlob], file.name, { type: file.type });
+                            myDropzone.removeFile(file);
+                            myDropzone.addFile(editedFile);
+                        });
+                    };
+
+                    // Read the image file as a data URL
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
     }
 
     function closeImageEditorModal(modal) {
@@ -327,59 +296,59 @@ if (content.Avatar) {
     }
 
 
-
 document.addEventListener('DOMContentLoaded', function() {
-
     let csrfToken = "{{ csrf_token() }}"
+    const row = {{ row | tojson }}
 
-    function rolesDropDown() {
+    function langDropDown() {
 
-        const roles = {{ resultR | tojson }};
-        const row = {{ row | tojson }};
+        const languages = {{ languages | tojson }}
+        const dropdownContainer = document.getElementById('langDropDown');
 
-        const dropdownContainer = document.getElementById('rolesDropDown');
-        if (roles['length'] > 0) {
-            const select = document.createElement('select');
-            select.name = 'roles';
-            select.id = 'roles';
-            select.classList.add('form-control');
-            select.classList.add('styled-select');
-        
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = '{{ _("Choose Role") }}';
-            // defaultOption.disabled = true;
-            select.appendChild(defaultOption);
-
-            roles.data.forEach(val => {
-                const optVal = val['Position'];
-                if (optVal !== null) {
-                    const option = document.createElement('option');
-                    option.value = val['ID'];
+        if (languages.length > 1) {
+                const currentLangID = parseInt(`{{ row.LanguageID }}`);
+                const select = document.createElement('select');
+                select.name = 'languages';
+                select.id = 'language-id';
+                select.classList.add('form-control');
+                select.classList.add('styled-select');
                 
-                    option.textContent = optVal;
-
-                    // option.selected = true;
-                    if (row['positionID'] === val['ID']) {
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = '{{ _("Preferred language") }}';
+                select.appendChild(defaultOption);
+                
+                languages.forEach(val => {
+                    const optVal = val['Language'];
+                        const option = document.createElement('option');
+                        option.value = val['Language_ID'];
+                        option.textContent = optVal;
+                        if (val['Language_ID'] === currentLangID) {
                             option.selected = true;
                         }
-                    select.appendChild(option);
-                }
-            });
+                        select.appendChild(option);
+                });
+                
+                dropdownContainer.appendChild(select); // Append the select element to the body or any other specific location
+        } else {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'languages';
+                input.id = 'language-id';
+                input.value = languages[0]['ID'];
+                dropdownContainer.appendChild(input); // Append the select element to the body or any other specific location
+        }
+    };
 
-            dropdownContainer.appendChild(select); // Append the select element to the body or any other specific location
-        };
-        };
+    langDropDown();
 
-        rolesDropDown();
     // When the form is submitted
     const saveButton = document.getElementById('saveButton');
 
     saveButton.addEventListener('click', function (event) {
 
         event.preventDefault();
- 
-      
+        
         const saveButton = document.getElementById('saveButton');
         const saving = document.getElementById('saving');
         
@@ -387,60 +356,46 @@ document.addEventListener('DOMContentLoaded', function() {
         saving.classList.remove('hidden');
         
         let formData = new FormData();
-        let file = myDropzone.files[0];
-                          
-        const selectElement = document.getElementById('roles');
-        const Actions = [];
 
-        for (let i = 0; i < selectElement.options.length; i++) {
-            if (selectElement.options[i].selected) {
-                Actions.push(selectElement.options[i].value);
+        let file = myDropzone.files[0];
+        let altText = ""
+        if (file) {
+            if (file.previewElement.querySelector(".alt-input")) {
+                altText = file.previewElement.querySelector(".alt-input").value;
             }
         }
 
-        let positionID = selectElement.value;
-        let teammateID = document.getElementById('teammateID').value;
-        let languageID = document.getElementById('language-id').value;
-        let firstname = document.getElementById('firstname').value;
-        let lastname = document.getElementById('lastname').value;
-        let email = document.getElementById('email').value;
-        let status  = document.querySelector('input[name="status"]:checked').value;
-
-        // Stegh es!!!
-        // No image uploaded 
-        if (imageState === 0) {      
-            arr = JSON.stringify({ status: 0 }); 
-        }
-
-        // Same image (it was not changed)
-        if (imageState === 1) {      
-            imgAlt = file.previewElement.querySelector(".alt-input").value;
-        } 
-
-        // New image is uploaded
         if (imageState === 2) {            
             imgAlt = file.previewElement.querySelector(".alt-input").value;
-            formData.append('AltText', imgAlt);
             formData.append('file', file);
         }
-        
+       
+         
+        let firstname = document.getElementById('firstname').value;
+        let lastname = document.getElementById('lastname').value;
+        let username = document.getElementById('username').value;
+        let password = document.getElementById('password').value;
+        let password1 = document.getElementById('password1').value;
+        let password2 = document.getElementById('password2').value;
+        let languageID = document.getElementById('language-id').value;
         
         // Create a new FormData object
-        formData.append('imageState', imageState);
-        formData.append('AltText', imgAlt);
         formData.append('Firstname', firstname);
         formData.append('Lastname', lastname);
-        formData.append('Email', email);
-        formData.append('positionID', positionID);
-        formData.append('Status', status);
-        formData.append('languageID', languageID);
+        formData.append('Username', username);
+        formData.append('Password', password);
+        formData.append('Password1', password1);
+        formData.append('Password2', password2);
+        formData.append('LanguageID', languageID);
+        formData.append('altText', altText);
+        formData.append('imageState', imageState);
 
         // Create a new XMLHttpRequest object
         let xhr = new XMLHttpRequest();
 
         // Configure the request
-        const requestURL = '/edit-teammate/' + teammateID;
-        xhr.open('POST', requestURL);
+        uniqueUrl  = '/edit-profile/' + row['Url']
+        xhr.open('POST', uniqueUrl);
         xhr.setRequestHeader('X-CSRFToken', csrfToken);
 
         // Define what happens on successful data submission
@@ -457,6 +412,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     mistakesDiv.style.color = 'red';
                     mistakesDiv.style.display = 'flex';
 
+                    csrfToken = response.newCSRFtoken;
+
                     // Scroll the window to the mistakesDiv with smooth behavior
                     mistakesDiv.scrollIntoView({ behavior: 'smooth' });
 
@@ -465,10 +422,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 } 
                 
+                if (response.status === '2') {
+                    // Handle password mistakes
+                    myHTML = '';
+                   
+                    errorList =  response.answer;
+                    for (let i = 0; i < errorList.length; i++) {
+                        myHTML += '<p>' + errorList[i] + '</p>';
+                    }
+                    mistakesDiv.innerHTML = myHTML;
+                    mistakesDiv.style.color = 'red';
+                    mistakesDiv.style.display = 'flex';
+                    mistakesDiv.style.flexDirection = 'column';
+
+                    // Scroll the window to the mistakesDiv with smooth behavior
+                    mistakesDiv.scrollIntoView({ behavior: 'smooth' });
+
+                    saveButton.classList.remove('hidden');
+                    saving.classList.add('hidden');
+
+                } 
                 if (response.status === '1') {
+
                     // Handle success
-                    let prURL = window.location.origin  + '/team';
+                    let prURL = window.location.origin  + '/stuff';
                     location.href = prURL;
+
                 }
             } else {
                 // Handle error response
@@ -485,17 +464,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-
-
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('myDropzone').addEventListener('click', function() {
-            cropperState = 1;    
-        })
-
-    });
 </script>
 
 

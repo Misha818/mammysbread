@@ -129,7 +129,7 @@
 
             dz.on("addedfile", function (file) {
                 // Check file type
-                const validTypes = ['image/jpeg', 'image/png'];
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
                 if (!validTypes.includes(file.type)) {
                     let ms = "{{ _('File should be in PNG or JPG/JPEG format.') }}"
                     alert(ms)

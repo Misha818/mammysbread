@@ -343,7 +343,7 @@ msgstr ""
 #: app.py:3501
 #, fuzzy
 msgid "Passwords do not match!"
-msgstr "Phone numbers do not match!"
+msgstr "Passwords do not match!"
 
 #: app.py:3505
 #, fuzzy

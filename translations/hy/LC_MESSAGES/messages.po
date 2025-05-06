@@ -400,7 +400,7 @@ msgstr "Համապատասխան ապրանքատեսակի բնութագիրն
 
 #: app.py:4912
 msgid "The password must be between "
-msgstr "Գաղտնաբառը պետք է բաղկացած լինի հետևյալ քանակի թվերից "
+msgstr "Գաղտնաբառի երկարությունը պետք է լինի "
 
 #: app.py:4912
 msgid " and "
@@ -408,7 +408,7 @@ msgstr " և "
 
 #: app.py:4912
 msgid " characters long."
-msgstr " նիշ երկարությամբ։"
+msgstr " նիշերի միջակայքում"
 
 #: app.py:4916
 msgid "The password must contain at least one digit."

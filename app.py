@@ -22,9 +22,6 @@ import copy
 current_dir = os.path.dirname(os.path.abspath(__file__))
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-# app = Flask(__name__)
-
-
 app = Flask(__name__)
 limiter = Limiter(get_remote_address, app=app)
 
@@ -3448,8 +3445,8 @@ def assign_email():
 
 @app.route('/stuff-signup/<uniqueURL>', methods=['GET', 'POST'])
 def stuff_signup(uniqueURL):
+    newCSRFtoken = generate_csrf()        
     if request.method == "POST":
-        newCSRFtoken = generate_csrf()        
         
         if len(request.form.get('Firstname')) == 0:
             answer = gettext('Please specify firstname')
@@ -3470,7 +3467,7 @@ def stuff_signup(uniqueURL):
         Username = request.form.get('Username').strip()
         
         # Check if username exists in stuff tables
-        sqlQuery = "SELECT `Username` FROM `stuff` WHERE `Username` = %s;"
+        sqlQuery = "SELECT `Username` FROM `stuff` WHERE BINARY `Username` = %s;"
         sqlValTuple = (Username,)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
 
@@ -3507,7 +3504,7 @@ def stuff_signup(uniqueURL):
             file = request.files.get('file')
 
             # Check file type
-            valid_types = {'image/jpeg', 'image/png'}
+            valid_types = {'image/jpeg', 'image/jpg', 'image/png'}
             if file.mimetype not in valid_types:
                 answer = gettext('File should be in PNG or JPG/JPEG format')
                 return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
@@ -3549,7 +3546,7 @@ def stuff_signup(uniqueURL):
         
         if result['inserted_id'] is None:
             answer = gettext("Something is wrong!")
-            return jsonify({'status': '0', 'answer': result['answer'], 'newCSRFtoken': newCSRFtoken})
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
         
 
         # Change status of buffer
@@ -3577,7 +3574,156 @@ def stuff_signup(uniqueURL):
         if result['length'] > 0:
             row = result['data'][0]
 
-        return render_template(templateHTML,  row=row, languages=languages, current_locale=get_locale())
+        return render_template(templateHTML,  row=row, languages=languages, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+
+
+@app.route('/edit-profile/<stuffID>', methods=['GET', 'POST'])
+@login_required
+def edit_profile(stuffID):
+
+    
+    newCSRFtoken = generate_csrf()        
+    if request.method == 'GET':
+        if int(stuffID) != session['user_id']:
+            return render_template('error.html')
+        
+        sqlQuery = "SELECT `Username`, `Firstname`, `Lastname`, `Avatar`, `AltText`, `LanguageID` FROM `stuff` WHERE `ID` = %s;"
+        sqlValTuple = (stuffID,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+                
+        if result['length'] == 0:
+            return render_template('error.html')
+
+        languages = supported_langs()
+        row = result['data'][0]
+
+        return render_template('edit-profile.html',  row=row, languages=languages, newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+        
+    if request.method == 'POST':
+
+        # Check if user tries to make changes on his/her own account 
+        if not request.form.get('Firstname'):
+            answer = gettext('Please specify firstname')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+
+        if not request.form.get('Lastname'):
+            answer = gettext('Please specify the last name')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+        if not request.form.get('Username'):
+            answer = gettext('Please specify username')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+        Username = request.form.get('Username').strip()
+        
+        # Check if username exists in stuff tables
+        sqlQuery = "SELECT `Username` FROM `stuff` WHERE BINARY `Username` = %s AND `ID` != %s;"
+        sqlValTuple = (Username, session['user_id'])
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        if result['length'] > 0:
+            answer = gettext('Username exists')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+          
+        
+        if not request.form.get('Password'):
+            answer = gettext('Please specify Password')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+        
+        newPassword = ''
+        if request.form.get('Password1') or request.form.get('Password2'):
+            if not request.form.get('Password1') or not request.form.get('Password2') or request.form.get('Password1') != request.form.get('Password2'):
+                answer = gettext('Passwords do not match!')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+            passwordErrors = validate_password(request.form.get('Password1'))
+
+            if len(passwordErrors) > 0:
+                return jsonify({'status': '2', 'answer': passwordErrors, 'newCSRFtoken': newCSRFtoken})  
+
+            if len(request.form.get('Password2')) == 0:
+                answer = gettext('Password confirmation field is empty')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+            
+            if not request.form.get('LanguageID'):
+                answer = gettext('Please specify prefared language')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+            newPassword = request.form.get('Password1')
+
+
+        password = request.form.get('Password')
+        # Get current password to compare
+        sqlQuerySame = "SELECT `ID`, `Password`, `Avatar` FROM `stuff` WHERE `ID` = %s;"
+        sqlValTupleSame = (session['user_id'],)
+        resultSame = sqlSelect(sqlQuerySame, sqlValTupleSame, True)
+
+        if resultSame['length'] == 0:
+            answer = gettext('Something is wrong!')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+        if check_password_hash(resultSame['data'][0]["Password"], password) == False:   
+            answer = gettext('Incorrect password')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+        
+        AltText = request.form.get('altText')
+        Firstname = request.form.get('Firstname').strip()
+        Lastname = request.form.get('Lastname').strip()
+        LanguageID = request.form.get('LanguageID')
+                
+        fields = '`Username` = %s, `Firstname` = %s, `Lastname` = %s,  `AltText` = %s, `LanguageID` = %s,'
+        protoTuple = [Username, Firstname, Lastname, AltText, LanguageID]
+        
+        if request.form.get('imageState') == '2': # A new image is uploaded
+            file = request.files.get('file')
+            # Check file type
+            valid_types = {'image/jpeg', 'image/jpg', 'image/png'}
+            if file.mimetype not in valid_types:
+                answer = gettext('File should be in PNG or JPG/JPEG format')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+            
+            # # Check file size (1 MB = 1048576 bytes)
+            file_size = file.tell()
+            if file_size > 1048576:
+                answer = gettext('File size should not exceed 1MB.')
+                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+            file.seek(0)  # Reset the file pointer to the beginning after reading
+            
+            if resultSame['data'][0]["Avatar"]:
+                removeRedundantFiles(resultSame['data'][0]["Avatar"], 'images/stuff')
+
+            unique_filename = fileUpload(file, 'images/stuff')
+            fields = fields + ' `Avatar` = %s,'
+            protoTuple.append(unique_filename)  
+
+        if request.form.get('imageState') == '0': # No image uploaded 
+            if resultSame['data'][0]["Avatar"]:
+                removeRedundantFiles(resultSame['data'][0]["Avatar"], 'images/stuff')
+                fields = fields + ' `Avatar` = %s,'
+                protoTuple.append('')  
+
+        if newPassword != '':
+            Hash = generate_password_hash(newPassword)
+            fields = fields + '`Password` = %s,'
+            protoTuple.append(Hash)
+
+        sqlQuery = f"""
+                    UPDATE `stuff` 
+                    SET
+                        {fields[:-1]}     
+                    WHERE `ID` = %s
+                    """
+        protoTuple.append(session['user_id'])
+
+        sqlValTuple = tuple(protoTuple)
+
+        result = sqlUpdate(sqlQuery, sqlValTuple)
+        if result['status'] == '-1':
+            answer = gettext("Something is wrong!")
+            return jsonify({'status': '0', 'answer': sqlQuery, 'newCSRFtoken': newCSRFtoken})
+       
+        return jsonify({'status': '1'}) 
 
 
 @app.route('/edit-role/<RoleID>', methods=['GET', 'POST'])
@@ -3665,6 +3811,7 @@ def stuff():
     stuffID = session['user_id']
     sqlQuery = f"""
         SELECT 
+            `stuff`.`ID` AS `stuffID`,
             `stuff`.`Firstname`,
             `stuff`.`Lastname`,
             `stuff`.`Avatar`,
