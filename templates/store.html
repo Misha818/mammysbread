@@ -967,7 +967,7 @@ document.addEventListener('click', function(event) {
                   const actionLink = document.createElement('a');
                   actionLink.href = editUrl; 
                   actionLink.target = "_BLANK"; 
-                  actionLink.textContent = "Edit";
+                  actionLink.textContent = "{{ _('Edit') }}";
                   actionLink.className = "pt-quantity-action-btn";
                   actionCell.appendChild(actionLink);
                   row.appendChild(actionCell);

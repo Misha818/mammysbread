@@ -38,9 +38,6 @@
 {{ sideBar | safe }}
 
 <div class="containerS" style="width: 25%">
-    <h1 class="title" style="margin-top: 15px;">{{ _('Add Product Category') }}</h1>
-    <!-- Form for adding a product -->
-    
     <form id="product-category-form" style="width: 95%;">
         <div id="mistakes" style="width: 100%"></div>
         <input type="hidden" id="image" value="1">
@@ -96,12 +93,12 @@
         <input type="hidden" id="RefKey" value="{{ RefKey }}">
 
         <div id="saveButton" class="pcButtonS modifiedB" 
-            style=" width: 40%;
+            style=" width: 100%;
                     margin: 0px auto 0px auto;
                     display: block;"
                 >{{ _('Submit') }}</div>
         <div id="saving" class="pcButtonS1 modifiedB hidden" 
-            style=" width: 40%;
+            style=" width: 100%;
                     margin: 0px auto 0px auto;
                     "
                 >{{ _('Saving...') }}</div>

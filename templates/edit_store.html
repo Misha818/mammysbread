@@ -207,7 +207,7 @@ saveButton.addEventListener('click', function (event) {
             mistakesDiv.innerHTML = ''; // Clear previous messages
 
             if (response.status === '1') {
-                alert('Done!');
+                alert("{{ _('Done!') }}");
                 window.close();
             }
 

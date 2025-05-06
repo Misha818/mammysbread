@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-05-06 19:33+0400\n"
+"POT-Creation-Date: 2025-05-07 00:04+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -98,12 +98,12 @@ msgid "Update"
 msgstr ""
 
 #: app.py:1604 products.py:995 products.py:1040 templates/add-price.html:112
-#: templates/add-role.html:51 templates/add-teammate.html:51
+#: templates/add-role.html:49 templates/add-teammate.html:51
 #: templates/add_product copy.html:93 templates/add_product.html:101
 #: templates/add_product_category copy.html:45
-#: templates/add_product_category.html:107 templates/add_product_lang.html:170
-#: templates/add_to_store.html:130 templates/assign-email.html:51
-#: templates/create-email.html:51 templates/create-promo-code.html:152
+#: templates/add_product_category.html:104 templates/add_product_lang.html:170
+#: templates/add_to_store.html:130 templates/assign-email.html:50
+#: templates/create-email.html:50 templates/create-promo-code.html:152
 #: templates/edit-position.html:52 templates/edit-price.html:115
 #: templates/edit-profile.html:59 templates/edit-promo-code.html:210
 #: templates/edit-pts.html:39 templates/edit-role.html:52
@@ -159,7 +159,8 @@ msgid "image size is more than 5MB"
 msgstr ""
 
 #: app.py:2010 app.py:2366 app.py:3349 app.py:3420 app.py:4469 app.py:4823
-#: products.py:425
+#: products.py:425 templates/add_to_store.html:202
+#: templates/edit_store.html:210
 msgid "Done!"
 msgstr ""
 
@@ -261,7 +262,7 @@ msgid "Please choose at least on action"
 msgstr ""
 
 #: app.py:3095 app.py:3776 templates/add_product copy.html:188
-#: templates/add_product.html:218 templates/add_product_category.html:244
+#: templates/add_product.html:218 templates/add_product_category.html:241
 #: templates/add_product_lang.html:265 templates/edit-profile.html:220
 #: templates/edit-teammate.html:276 templates/edit_product_category.html:380
 #: templates/pr_thumbnail.html:339 templates/teammate-signup.html:172
@@ -603,8 +604,7 @@ msgstr ""
 
 #: templates/action-names-translate.html:14 templates/add_product copy.html:80
 #: templates/add_product.html:88 templates/add_product_category copy.html:27
-#: templates/add_product_category.html:30
-#: templates/add_product_category.html:41 templates/add_product_lang.html:157
+#: templates/add_product_category.html:30 templates/add_product_lang.html:157
 msgid "Add Product Category"
 msgstr ""
 
@@ -642,7 +642,6 @@ msgid "Roles"
 msgstr ""
 
 #: templates/action-names-translate.html:22 templates/add-role.html:27
-#: templates/add-role.html:38
 msgid "Add Role"
 msgstr ""
 
@@ -677,7 +676,6 @@ msgid "Emails"
 msgstr ""
 
 #: templates/action-names-translate.html:30 templates/create-email.html:27
-#: templates/create-email.html:38
 msgid "Create Email"
 msgstr ""
 
@@ -732,6 +730,67 @@ msgstr ""
 msgid "CEO"
 msgstr ""
 
+#: templates/action-names-translate.html:43
+#: templates/edit_product_category.html:3
+#: templates/edit_product_category.html:71
+msgid "Edit Product Category"
+msgstr ""
+
+#: templates/action-names-translate.html:44
+msgid "Edit Product Type Specification"
+msgstr ""
+
+#: templates/action-names-translate.html:45 templates/edit_store.html:3
+#: templates/edit_store.html:54
+msgid "Edit Store"
+msgstr ""
+
+#: templates/action-names-translate.html:46 templates/edit-teammate.html:32
+#: templates/edit-teammate.html:44
+msgid "Edit Teammate"
+msgstr ""
+
+#: templates/action-names-translate.html:47 templates/edit-role.html:27
+#: templates/edit-role.html:37
+msgid "Edit Role"
+msgstr ""
+
+#: templates/action-names-translate.html:48 templates/edit-price.html:3
+#: templates/slideshow.html:104 templates/slideshow.html:161
+#: templates/slideshow.html:209
+msgid "Edit Price"
+msgstr ""
+
+#: templates/action-names-translate.html:49 templates/edit-promo-code.html:3
+#: templates/edit-promo-code.html:148
+msgid "Edit Promo Code"
+msgstr ""
+
+#: templates/action-names-translate.html:50
+msgid "Edit Promo"
+msgstr ""
+
+#: templates/action-names-translate.html:51
+msgid "Edit Order Details"
+msgstr ""
+
+#: templates/action-names-translate.html:52
+msgid "Edit Corporate Email View"
+msgstr ""
+
+#: templates/action-names-translate.html:53
+msgid "Edit Corporate Email"
+msgstr ""
+
+#: templates/action-names-translate.html:54
+msgid "Edit Positions"
+msgstr ""
+
+#: templates/action-names-translate.html:55 templates/base.html:74
+#: templates/base.html:87 templates/edit-profile.html:27
+msgid "Edit Profile"
+msgstr ""
+
 #: templates/add-price.html:3 templates/product copy.html:154
 #: templates/product.html:332
 msgid "Add Price"
@@ -777,17 +836,17 @@ msgstr ""
 msgid "Add Product Type Specifications"
 msgstr ""
 
-#: templates/add-price.html:111 templates/add-role.html:50
+#: templates/add-price.html:111 templates/add-role.html:48
 #: templates/add-teammate.html:50 templates/add_product copy.html:92
 #: templates/add_product.html:100 templates/add_product_category copy.html:44
-#: templates/add_product_category.html:102 templates/add_product_lang.html:169
-#: templates/add_to_store.html:129 templates/assign-email.html:50
+#: templates/add_product_category.html:99 templates/add_product_lang.html:169
+#: templates/add_to_store.html:129 templates/assign-email.html:49
 #: templates/buy-now.html:138 templates/buy-now.html:1171
 #: templates/buy-now.html:1215 templates/buy-now.html:1230
 #: templates/buy-now.html:1236 templates/checkout.html:142
 #: templates/checkout.html:1187 templates/checkout.html:1232
 #: templates/checkout.html:1247 templates/checkout.html:1253
-#: templates/corporate-emails.html:421 templates/create-email.html:50
+#: templates/corporate-emails.html:421 templates/create-email.html:49
 #: templates/create-promo-code.html:151 templates/edit-position.html:51
 #: templates/edit-price.html:114 templates/edit-profile.html:58
 #: templates/edit-promo-code.html:209 templates/edit-pts.html:38
@@ -821,7 +880,7 @@ msgid "Close"
 msgstr ""
 
 #: templates/add-price.html:308 templates/add_product copy.html:187
-#: templates/add_product.html:217 templates/add_product_category.html:243
+#: templates/add_product.html:217 templates/add_product_category.html:240
 #: templates/add_product_lang.html:264 templates/edit-price.html:313
 #: templates/edit-profile.html:219 templates/edit-teammate.html:275
 #: templates/edit_product_category.html:379 templates/pr_thumbnail.html:338
@@ -844,12 +903,12 @@ msgid ""
 "continue?"
 msgstr ""
 
-#: templates/add-role.html:44 templates/edit-role.html:42
+#: templates/add-role.html:42 templates/edit-role.html:42
 #: templates/roles.html:42 templates/stuff-signup.html:41
 msgid "Role"
 msgstr ""
 
-#: templates/add-role.html:79 templates/edit-position.html:81
+#: templates/add-role.html:77 templates/edit-position.html:81
 #: templates/edit-role.html:83
 msgid "Choose actions"
 msgstr ""
@@ -861,7 +920,7 @@ msgstr ""
 #: templates/add-teammate.html:44 templates/buy-now.html:178
 #: templates/checkout.html:182 templates/confirmation-page.html:190
 #: templates/corporate-emails.html:139 templates/corporate-emails.html:171
-#: templates/create-email.html:44 templates/edit-teammate.html:57
+#: templates/create-email.html:43 templates/edit-teammate.html:57
 #: templates/emails.html:151 templates/emails.html:210
 #: templates/order-details.html:205 templates/order-details.html:485
 #: templates/orders.html:94 templates/orders.html:163 templates/orders.html:265
@@ -912,7 +971,7 @@ msgid "You have not entered any product category yet."
 msgstr ""
 
 #: templates/add_product copy.html:86 templates/add_product.html:94
-#: templates/add_product_category.html:91 templates/add_product_lang.html:163
+#: templates/add_product_category.html:88 templates/add_product_lang.html:163
 #: templates/edit-profile.html:54 templates/teammate-signup.html:52
 msgid "Thumbnail image"
 msgstr ""
@@ -930,37 +989,37 @@ msgstr ""
 msgid "Article Category"
 msgstr ""
 
-#: templates/add_product_category.html:50
+#: templates/add_product_category.html:47
 #: templates/edit_product_category.html:81
 msgid "Product Category Name"
 msgstr ""
 
-#: templates/add_product_category.html:53
+#: templates/add_product_category.html:50
 #: templates/edit_product_category.html:84
 msgid "Choose subproduct situation name"
 msgstr ""
 
-#: templates/add_product_category.html:72
+#: templates/add_product_category.html:69
 #: templates/edit_product_category.html:99
 msgid "Translate subproduct situation name"
 msgstr ""
 
-#: templates/add_product_category.html:80
+#: templates/add_product_category.html:77
 #: templates/edit_product_category.html:109
 msgid "You have not entered any product type situation name yet."
 msgstr ""
 
-#: templates/add_product_category.html:81
+#: templates/add_product_category.html:78
 #: templates/edit_product_category.html:110
 msgid "Click on the link below to add a product type situation!"
 msgstr ""
 
-#: templates/add_product_category.html:82
+#: templates/add_product_category.html:79
 #: templates/edit_product_category.html:111
 msgid "Add subproduct situation name"
 msgstr ""
 
-#: templates/add_product_category.html:213 templates/edit-teammate.html:216
+#: templates/add_product_category.html:210 templates/edit-teammate.html:216
 #: templates/edit_product_category.html:317 templates/pr_thumbnail.html:286
 #: templates/thumbnail.html:282
 msgid "Enter alt text"
@@ -1310,35 +1369,31 @@ msgstr ""
 msgid "Affiliate Details"
 msgstr ""
 
-#: templates/assign-email.html:27 templates/assign-email.html:38
+#: templates/assign-email.html:27
 msgid "Assign an Email"
 msgstr ""
 
-#: templates/assign-email.html:78 templates/create-email.html:78
+#: templates/assign-email.html:77 templates/create-email.html:77
 msgid "Choose an employee"
 msgstr ""
 
-#: templates/assign-email.html:115
+#: templates/assign-email.html:114
 msgid "Choose an email"
 msgstr ""
 
-#: templates/assign-email.html:134
+#: templates/assign-email.html:133
 msgid "No emails available"
 msgstr ""
 
-#: templates/assign-email.html:146
+#: templates/assign-email.html:145
 msgid "Create an email"
 msgstr ""
 
-#: templates/base.html:60 templates/base.html:63
+#: templates/base.html:62 templates/base.html:65
 msgid "Tools"
 msgstr ""
 
-#: templates/base.html:72 templates/base.html:85 templates/edit-profile.html:27
-msgid "Edit Profile"
-msgstr ""
-
-#: templates/base.html:96 templates/base.html:133
+#: templates/base.html:98 templates/base.html:135
 #: templates/side-bar-stuff-1.html:63 templates/side-bar-stuff.html:19
 msgid "Logout"
 msgstr ""
@@ -1728,11 +1783,6 @@ msgstr ""
 msgid "Edit Position"
 msgstr ""
 
-#: templates/edit-price.html:3 templates/slideshow.html:104
-#: templates/slideshow.html:161 templates/slideshow.html:209
-msgid "Edit Price"
-msgstr ""
-
 #: templates/edit-price.html:48
 msgid "Edit Product Type Title"
 msgstr ""
@@ -1767,10 +1817,6 @@ msgstr ""
 msgid "Preferred language"
 msgstr ""
 
-#: templates/edit-promo-code.html:3 templates/edit-promo-code.html:148
-msgid "Edit Promo Code"
-msgstr ""
-
 #: templates/edit-pts.html:4
 msgid "Edit Product Type Specifications"
 msgstr ""
@@ -1783,25 +1829,12 @@ msgstr ""
 msgid "Please improve all red fields!"
 msgstr ""
 
-#: templates/edit-role.html:27 templates/edit-role.html:37
-msgid "Edit Role"
-msgstr ""
-
-#: templates/edit-teammate.html:32 templates/edit-teammate.html:44
-msgid "Edit Teammate"
-msgstr ""
-
 #: templates/edit-teammate.html:64
 msgid "Avatar"
 msgstr ""
 
 #: templates/edit-teammate.html:350
 msgid "Choose Role"
-msgstr ""
-
-#: templates/edit_product_category.html:3
-#: templates/edit_product_category.html:71
-msgid "Edit Product Category"
 msgstr ""
 
 #: templates/edit_product_category.html:41 templates/pr_thumbnail.html:43
@@ -1812,10 +1845,6 @@ msgstr ""
 #: templates/edit_product_category.html:116 templates/pr_thumbnail.html:83
 #: templates/thumbnail.html:79
 msgid "Image"
-msgstr ""
-
-#: templates/edit_store.html:3 templates/edit_store.html:54
-msgid "Edit Store"
 msgstr ""
 
 #: templates/emails.html:112
@@ -1940,7 +1969,7 @@ msgstr ""
 #: templates/order-details.html:186 templates/product-categories-copy.html:67
 #: templates/product-categories.html:88 templates/products.html:243
 #: templates/products.html:249 templates/products.html:298
-#: templates/promo-codes.html:108
+#: templates/promo-codes.html:108 templates/store.html:970
 msgid "Edit"
 msgstr ""
 

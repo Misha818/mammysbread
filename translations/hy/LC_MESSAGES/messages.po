@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-05-06 19:33+0400\n"
+"POT-Creation-Date: 2025-05-07 00:04+0400\n"
 "PO-Revision-Date: 2025-04-05 00:48+0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: hy\n"
@@ -100,11 +100,11 @@ msgstr "Թարմացնել"
 
 #: app.py:1604 copy.html:45 copy.html:93 copy.html:218 copy.html:880
 #: products.py:995 products.py:1040 templates/add-price.html:112
-#: templates/add-role.html:51 templates/add-teammate.html:51
+#: templates/add-role.html:49 templates/add-teammate.html:51
 #: templates/add_product templates/add_product.html:101
-#: templates/add_product_category templates/add_product_category.html:107
+#: templates/add_product_category templates/add_product_category.html:104
 #: templates/add_product_lang.html:170 templates/add_to_store.html:130
-#: templates/assign-email.html:51 templates/create-email.html:51
+#: templates/assign-email.html:50 templates/create-email.html:50
 #: templates/create-promo-code.html:152 templates/edit-position.html:52
 #: templates/edit-price.html:115 templates/edit-profile.html:59
 #: templates/edit-promo-code.html:210 templates/edit-pts.html:39
@@ -159,7 +159,8 @@ msgid "image size is more than 5MB"
 msgstr "Պատկերի չափը գերազանցում է 5ՄԲ-ը"
 
 #: app.py:2010 app.py:2366 app.py:3349 app.py:3420 app.py:4469 app.py:4823
-#: products.py:425
+#: products.py:425 templates/add_to_store.html:202
+#: templates/edit_store.html:210
 msgid "Done!"
 msgstr "Կատարված է"
 
@@ -263,7 +264,7 @@ msgid "Please choose at least on action"
 msgstr "Խնդրում ենք ընտրել առնվազն մեկ գործողություն։"
 
 #: app.py:3095 app.py:3776 copy.html:188 templates/add_product
-#: templates/add_product.html:218 templates/add_product_category.html:244
+#: templates/add_product.html:218 templates/add_product_category.html:241
 #: templates/add_product_lang.html:265 templates/edit-profile.html:220
 #: templates/edit-teammate.html:276 templates/edit_product_category.html:380
 #: templates/pr_thumbnail.html:339 templates/teammate-signup.html:172
@@ -608,7 +609,7 @@ msgstr "Ապրանքի կատեգորիաներ"
 #: copy.html:27 copy.html:80 templates/action-names-translate.html:14
 #: templates/add_product templates/add_product.html:88
 #: templates/add_product_category templates/add_product_category.html:30
-#: templates/add_product_category.html:41 templates/add_product_lang.html:157
+#: templates/add_product_lang.html:157
 msgid "Add Product Category"
 msgstr "Ավելացնել ապրանքի կատեգորիա"
 
@@ -631,7 +632,7 @@ msgstr "Խանութ"
 #: templates/slideshow.html:161 templates/slideshow.html:209
 #: templates/store.html:124 templates/store.html:376
 msgid "Add To Store"
-msgstr "Գրանցել ապրանք խանությում"
+msgstr "Գրանցել ապրանք"
 
 #: templates/action-names-translate.html:19 templates/team.html:3
 msgid "Team"
@@ -646,7 +647,6 @@ msgid "Roles"
 msgstr "Դերեր"
 
 #: templates/action-names-translate.html:22 templates/add-role.html:27
-#: templates/add-role.html:38
 msgid "Add Role"
 msgstr "Ավելացնել գործառնույթ"
 
@@ -681,7 +681,6 @@ msgid "Emails"
 msgstr "Էլ. փոստի հասցեներ"
 
 #: templates/action-names-translate.html:30 templates/create-email.html:27
-#: templates/create-email.html:38
 msgid "Create Email"
 msgstr "Ստեղծել էլ․ փոստ"
 
@@ -718,7 +717,7 @@ msgstr "Գործընկեր"
 #: copy.html:145 templates/action-names-translate.html:38 templates/product
 #: templates/product.html:323
 msgid "Editor"
-msgstr "Խմբագրիչ"
+msgstr "Խմբագիր"
 
 #: templates/action-names-translate.html:39
 msgid "Manager"
@@ -735,6 +734,67 @@ msgstr "Մարդկային ռեսուրսներ"
 #: templates/action-names-translate.html:42
 msgid "CEO"
 msgstr "Գործադիր տնօրեն"
+
+#: templates/action-names-translate.html:43
+#: templates/edit_product_category.html:3
+#: templates/edit_product_category.html:71
+msgid "Edit Product Category"
+msgstr "Խմբագրել ապրանքի կատեգորիան"
+
+#: templates/action-names-translate.html:44
+msgid "Edit Product Type Specification"
+msgstr "Խմբագրել ապրանքատեսակի բնութագրերը"
+
+#: templates/action-names-translate.html:45 templates/edit_store.html:3
+#: templates/edit_store.html:54
+msgid "Edit Store"
+msgstr "Խմբագրել խանութը"
+
+#: templates/action-names-translate.html:46 templates/edit-teammate.html:32
+#: templates/edit-teammate.html:44
+msgid "Edit Teammate"
+msgstr "Խմբագրել աշխատակցին"
+
+#: templates/action-names-translate.html:47 templates/edit-role.html:27
+#: templates/edit-role.html:37
+msgid "Edit Role"
+msgstr "Խմբագրել գործառնույթը"
+
+#: templates/action-names-translate.html:48 templates/edit-price.html:3
+#: templates/slideshow.html:104 templates/slideshow.html:161
+#: templates/slideshow.html:209
+msgid "Edit Price"
+msgstr "Խմբագրել գինը"
+
+#: templates/action-names-translate.html:49 templates/edit-promo-code.html:3
+#: templates/edit-promo-code.html:148
+msgid "Edit Promo Code"
+msgstr "Խմբագրել պռոմո կոդը"
+
+#: templates/action-names-translate.html:50
+msgid "Edit Promo"
+msgstr "Խմբագրել պռոմո կոդը"
+
+#: templates/action-names-translate.html:51
+msgid "Edit Order Details"
+msgstr "Խմբագրել պատվերը"
+
+#: templates/action-names-translate.html:52
+msgid "Edit Corporate Email View"
+msgstr "Խմբագրել կորպորատիվ էլ.փոստը"
+
+#: templates/action-names-translate.html:53
+msgid "Edit Corporate Email"
+msgstr "Խմբագրել կորպորատիվ էլ.փոստը"
+
+#: templates/action-names-translate.html:54
+msgid "Edit Positions"
+msgstr "Խմբագրել պաշտոնը"
+
+#: templates/action-names-translate.html:55 templates/base.html:74
+#: templates/base.html:87 templates/edit-profile.html:27
+msgid "Edit Profile"
+msgstr "Խմբագրել հաշիվը"
 
 #: copy.html:154 templates/add-price.html:3 templates/product
 #: templates/product.html:332
@@ -782,17 +842,17 @@ msgid "Add Product Type Specifications"
 msgstr "Ավելացնել ապրանքատեսակի բնութագրեր։"
 
 #: copy.html:44 copy.html:92 copy.html:216 copy.html:217 copy.html:879
-#: templates/add-price.html:111 templates/add-role.html:50
+#: templates/add-price.html:111 templates/add-role.html:48
 #: templates/add-teammate.html:50 templates/add_product
 #: templates/add_product.html:100 templates/add_product_category
-#: templates/add_product_category.html:102 templates/add_product_lang.html:169
-#: templates/add_to_store.html:129 templates/assign-email.html:50
+#: templates/add_product_category.html:99 templates/add_product_lang.html:169
+#: templates/add_to_store.html:129 templates/assign-email.html:49
 #: templates/buy-now.html:138 templates/buy-now.html:1171
 #: templates/buy-now.html:1215 templates/buy-now.html:1230
 #: templates/buy-now.html:1236 templates/checkout.html:142
 #: templates/checkout.html:1187 templates/checkout.html:1232
 #: templates/checkout.html:1247 templates/checkout.html:1253
-#: templates/corporate-emails.html:421 templates/create-email.html:50
+#: templates/corporate-emails.html:421 templates/create-email.html:49
 #: templates/create-promo-code.html:151 templates/edit-position.html:51
 #: templates/edit-price.html:114 templates/edit-profile.html:58
 #: templates/edit-promo-code.html:209 templates/edit-pts.html:38
@@ -826,7 +886,7 @@ msgstr "Փակել"
 
 #: copy.html:187 copy.html:425 templates/add-price.html:308
 #: templates/add_product templates/add_product.html:217
-#: templates/add_product_category.html:243 templates/add_product_lang.html:264
+#: templates/add_product_category.html:240 templates/add_product_lang.html:264
 #: templates/edit-price.html:313 templates/edit-profile.html:219
 #: templates/edit-teammate.html:275 templates/edit_product_category.html:379
 #: templates/pr_thumbnail.html:338 templates/product templates/product.html:604
@@ -848,12 +908,12 @@ msgid ""
 "continue?"
 msgstr "Բոլոր փոփոխությունները բնութագրերի դաշտերում կկորչեն, շարունակե՞լ։"
 
-#: templates/add-role.html:44 templates/edit-role.html:42
+#: templates/add-role.html:42 templates/edit-role.html:42
 #: templates/roles.html:42 templates/stuff-signup.html:41
 msgid "Role"
 msgstr "գործառնույթ"
 
-#: templates/add-role.html:79 templates/edit-position.html:81
+#: templates/add-role.html:77 templates/edit-position.html:81
 #: templates/edit-role.html:83
 msgid "Choose actions"
 msgstr "Ընտրեք գործողություններ"
@@ -865,7 +925,7 @@ msgstr "Ավելացնել աշխատակից"
 #: templates/add-teammate.html:44 templates/buy-now.html:178
 #: templates/checkout.html:182 templates/confirmation-page.html:190
 #: templates/corporate-emails.html:139 templates/corporate-emails.html:171
-#: templates/create-email.html:44 templates/edit-teammate.html:57
+#: templates/create-email.html:43 templates/edit-teammate.html:57
 #: templates/emails.html:151 templates/emails.html:210
 #: templates/order-details.html:205 templates/order-details.html:485
 #: templates/orders.html:94 templates/orders.html:163 templates/orders.html:265
@@ -917,7 +977,7 @@ msgid "You have not entered any product category yet."
 msgstr "Դուք դեռ որևէ ապրանքի կատեգորիա չեք մուտքագրել։"
 
 #: copy.html:86 templates/add_product templates/add_product.html:94
-#: templates/add_product_category.html:91 templates/add_product_lang.html:163
+#: templates/add_product_category.html:88 templates/add_product_lang.html:163
 #: templates/edit-profile.html:54 templates/teammate-signup.html:52
 msgid "Thumbnail image"
 msgstr "Գլխավոր նկար"
@@ -935,37 +995,37 @@ msgstr "Ավելացնել հոդվածի կատեգորիա"
 msgid "Article Category"
 msgstr "Հոդվածի կատեգորիա"
 
-#: templates/add_product_category.html:50
+#: templates/add_product_category.html:47
 #: templates/edit_product_category.html:81
 msgid "Product Category Name"
 msgstr "Ապրանքի կատեգորիայի անվանումը"
 
-#: templates/add_product_category.html:53
+#: templates/add_product_category.html:50
 #: templates/edit_product_category.html:84
 msgid "Choose subproduct situation name"
 msgstr "Ընտրեք ապրանքատեսակի բնութագրի անվանումը"
 
-#: templates/add_product_category.html:72
+#: templates/add_product_category.html:69
 #: templates/edit_product_category.html:99
 msgid "Translate subproduct situation name"
 msgstr "Թարգմանել ապրանքատեսակի բնութագրի անվանումը"
 
-#: templates/add_product_category.html:80
+#: templates/add_product_category.html:77
 #: templates/edit_product_category.html:109
 msgid "You have not entered any product type situation name yet."
 msgstr "Դուք դեռ չեք մուտքագրել որևէ ապրանքատեսակի բնութագրի անվանում։"
 
-#: templates/add_product_category.html:81
+#: templates/add_product_category.html:78
 #: templates/edit_product_category.html:110
 msgid "Click on the link below to add a product type situation!"
 msgstr "Սեղմեք ներքևի հղման վրա՝ ապրանքատեսակի բնութագիր ավելացնելու համար։"
 
-#: templates/add_product_category.html:82
+#: templates/add_product_category.html:79
 #: templates/edit_product_category.html:111
 msgid "Add subproduct situation name"
 msgstr "Ավելացնել ապրանքատեսակի բնութագրի անվանում"
 
-#: templates/add_product_category.html:213 templates/edit-teammate.html:216
+#: templates/add_product_category.html:210 templates/edit-teammate.html:216
 #: templates/edit_product_category.html:317 templates/pr_thumbnail.html:286
 #: templates/thumbnail.html:282
 msgid "Enter alt text"
@@ -1319,35 +1379,31 @@ msgstr "Անջատված"
 msgid "Affiliate Details"
 msgstr "Մանրամասներ գործընկերոջ մասին"
 
-#: templates/assign-email.html:27 templates/assign-email.html:38
+#: templates/assign-email.html:27
 msgid "Assign an Email"
 msgstr "Կցել էլ․ հասցե"
 
-#: templates/assign-email.html:78 templates/create-email.html:78
+#: templates/assign-email.html:77 templates/create-email.html:77
 msgid "Choose an employee"
 msgstr "Ընտրեք աշխատակից"
 
-#: templates/assign-email.html:115
+#: templates/assign-email.html:114
 msgid "Choose an email"
 msgstr "Ընտրեք էլ․ փոստ"
 
-#: templates/assign-email.html:134
+#: templates/assign-email.html:133
 msgid "No emails available"
 msgstr "Հասանելի էլ․ փոստ չկա"
 
-#: templates/assign-email.html:146
+#: templates/assign-email.html:145
 msgid "Create an email"
 msgstr "Ստեղծել էլ․ փոստ"
 
-#: templates/base.html:60 templates/base.html:63
+#: templates/base.html:62 templates/base.html:65
 msgid "Tools"
 msgstr "Գործիքներ"
 
-#: templates/base.html:72 templates/base.html:85 templates/edit-profile.html:27
-msgid "Edit Profile"
-msgstr "Խմբագրել հաշիվը"
-
-#: templates/base.html:96 templates/base.html:133
+#: templates/base.html:98 templates/base.html:135
 #: templates/side-bar-stuff-1.html:63 templates/side-bar-stuff.html:19
 msgid "Logout"
 msgstr "Ելք"
@@ -1739,11 +1795,6 @@ msgstr "Բեռնվում է ......"
 msgid "Edit Position"
 msgstr "Խմբագրել պաշտոնը"
 
-#: templates/edit-price.html:3 templates/slideshow.html:104
-#: templates/slideshow.html:161 templates/slideshow.html:209
-msgid "Edit Price"
-msgstr "Խմբագրել գինը"
-
 #: templates/edit-price.html:48
 msgid "Edit Product Type Title"
 msgstr "Խմբագրել ապրանքատեսակի անվանումը"
@@ -1778,10 +1829,6 @@ msgstr "Հաստատեք նոր գաղտնաբառը"
 msgid "Preferred language"
 msgstr "Նախընտրելի լեզու"
 
-#: templates/edit-promo-code.html:3 templates/edit-promo-code.html:148
-msgid "Edit Promo Code"
-msgstr "Խմբագրել պռոմո կոդը"
-
 #: templates/edit-pts.html:4
 msgid "Edit Product Type Specifications"
 msgstr "Խմբագրել ապրանքատեսակի բնութագրերը"
@@ -1794,14 +1841,6 @@ msgstr "Ապրանքատեսակի բնութագրի անվանումը"
 msgid "Please improve all red fields!"
 msgstr "Խնդրում ենք ուղղել բոլոր կարմիր դաշտերը։"
 
-#: templates/edit-role.html:27 templates/edit-role.html:37
-msgid "Edit Role"
-msgstr "Խմբագրել գործառնույթը"
-
-#: templates/edit-teammate.html:32 templates/edit-teammate.html:44
-msgid "Edit Teammate"
-msgstr "Խմբագրել աշխատակցին"
-
 #: templates/edit-teammate.html:64
 msgid "Avatar"
 msgstr "Ավատար"
@@ -1809,11 +1848,6 @@ msgstr "Ավատար"
 #: templates/edit-teammate.html:350
 msgid "Choose Role"
 msgstr "Ընտրեք գործառնույթը"
-
-#: templates/edit_product_category.html:3
-#: templates/edit_product_category.html:71
-msgid "Edit Product Category"
-msgstr "Խմբագրել ապրանքի կատեգորիան"
 
 #: templates/edit_product_category.html:41 templates/pr_thumbnail.html:43
 #: templates/thumbnail.html:39
@@ -1824,10 +1858,6 @@ msgstr "Ինչ-որ բան սխալ է։"
 #: templates/thumbnail.html:79
 msgid "Image"
 msgstr "Նկար"
-
-#: templates/edit_store.html:3 templates/edit_store.html:54
-msgid "Edit Store"
-msgstr "Խմբագրել խանութը"
 
 #: templates/emails.html:112
 msgid "Filter by email status"
@@ -1966,7 +1996,7 @@ msgstr "Պահպանում"
 #: templates/order-details.html:186 templates/product-categories-copy.html:67
 #: templates/product-categories.html:88 templates/products.html:243
 #: templates/products.html:249 templates/products.html:298
-#: templates/promo-codes.html:108
+#: templates/promo-codes.html:108 templates/store.html:970
 msgid "Edit"
 msgstr "Խմբագրել"
 
@@ -2362,7 +2392,7 @@ msgstr "Տվյալները բացակայում են"
 
 #: templates/store.html:1018
 msgid "Submitted By"
-msgstr "Ներկայացրել է"
+msgstr "Գրանցել է"
 
 #: templates/store.html:1020
 msgid "Max Quantity"
