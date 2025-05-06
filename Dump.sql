@@ -662,21 +662,29 @@ VALUES
     ('HR', '5,4,3,2,1', 1),
     ('CEO', '6,5,4,3,2,1', 1);
 
-INSERT INTO `store` (`Name`, `Address`, `userID`, `Status`) Values('Main', 'Main str.', 1, 1);
+INSERT INTO `store` (`Name`, `Address`, `userID`, `Status`) Values('Հիմնական', '', 1, 1);
 
-INSERT INTO `sub_product_specification` (`Name`, `User_ID`, `Status`) VALUES ('Sourdough Bread', 0, 1);
-INSERT INTO `sps_relatives` (`SPS_ID`, `Ref_Key`, `Language_ID`, `User_ID`, `Status`) VALUES (1, 0, 2, 0, 1);
+INSERT INTO `sub_product_specification` (`Name`, `User_ID`, `Status`) VALUES ('Թթխմորով Հաց', 0, 1);
+INSERT INTO `sps_relatives` (`SPS_ID`, `Ref_Key`, `Language_ID`, `User_ID`, `Status`) VALUES (1, 0, 1, 0, 1);
 
 INSERT INTO `sub_product_specifications` (`Name`, `Order`, `spsID`, `Status`) 
-    VALUES ('Weight', 0, 1, 1),
-           ('Ingredients', 1, 1, 1),
-           ('Baking Method', 2, 1, 1),
-           ('Fermentation Time', 3, 1, 1),
-           ('Crust Color', 4, 1, 1),
-           ('Flavor Profile', 5, 1, 1);
+    VALUES ('Քաշ', 0, 1, 1),
+           ('Բաղադրությունը', 1, 1, 1),
+           ('Պատրաստման եղանակը', 2, 1, 1),
+           ('Ֆերմենտացիայի տևողությունը', 3, 1, 1),
+           ('Կեղևի գույնը', 4, 1, 1),
+           ('Համային հատկանիշները', 5, 1, 1);
 
-INSERT INTO `product_category` (`Product_Category_Name`, `User_ID`, `Product_Category_Status`, `spsID`) VALUES ('Sourdough Bread', 0, 1, 1);
-INSERT INTO `product_c_relatives` (`PC_Ref_Key`, `PC_ID`, `Language_ID`, `User_ID`) VALUES (0, 1, 2, 0);
+-- INSERT INTO `sub_product_specifications` (`Name`, `Order`, `spsID`, `Status`) 
+--     VALUES ('Weight', 0, 1, 1),
+--            ('Ingredients', 1, 1, 1),
+--            ('Baking Method', 2, 1, 1),
+--            ('Fermentation Time', 3, 1, 1),
+--            ('Crust Color', 4, 1, 1),
+--            ('Flavor Profile', 5, 1, 1);
+
+INSERT INTO `product_category` (`Product_Category_Name`, `User_ID`, `Product_Category_Status`, `spsID`) VALUES ('Թթխմորով Հաց', 0, 1, 1);
+INSERT INTO `product_c_relatives` (`PC_Ref_Key`, `PC_ID`, `Language_ID`, `User_ID`) VALUES (0, 1, 1, 0);
 
 INSERT INTO `languages` (`Language`, `Prefix`) VALUES
 ('Հայերեն', 'hy'),
