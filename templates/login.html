@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
 <title>Login Form</title>
+
 
 <style>
   body {
@@ -40,7 +43,7 @@
     border: 2px solid #ddd;
     border-radius: 4px;
     box-sizing: border-box;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
   }
 
   .input-field:focus {
@@ -50,6 +53,7 @@
 
   .submit-button {
     padding: 10px;
+    margin-top: 10px;
     background-color: #007bff;
     color: white;
     font-size: 16px;
@@ -75,20 +79,26 @@
     margin: 0 auto 10px auto;
     display: none;
   }
+
+  form {
+    display: flex;
+    flex-direction: column;
+  }
 </style>
 
 </head>
 <body>
-<div class="login-container">
+<div class="login-container" style="min-width: 300px;">
   <h1>{{ _('Login') }}</h1>
   <form action="#" method="post">
-    <div id="mistakes" style="width: 90%;"></div>
-    <input type="text" id="username" class="input-field" name="username" placeholder="{{ _('Username') }}" required>
+    <div id="mistakes" style="width: 268px;"></div>
     
+    <input type="text" id="username" class="input-field" name="username" placeholder="{{ _('Username') }}" required>
     <input type="password" class="input-field" name="password" placeholder="{{ _('Password') }}" id="password" autocomplete="current-password" required>
 
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAABbxK2q02dheGui4"></div>
     <div id="login" class="submit-button">{{ _('Log In') }}</div>
-    <div id="saving" class="submit-button hidden">{{ _('Saveing') }}</div>
+    <div id="saving" class="submit-button hidden">{{ _('Loading...') }}</div>
   </form>
 </div>
 
@@ -98,13 +108,38 @@
 
   saveButton.addEventListener('click', function(event) {
       let saving = document.getElementById('saving');
-
+      
+      // Check if username and password are specified
       let username = document.getElementById('username').value;
       let password = document.getElementById('password').value;
+
+      let mistakesDiv = document.getElementById('mistakes');
+
+      if (!username) {
+        let answer = "{{ _('Please specify username') }}";
+        mistakesDiv.innerHTML = answer;
+        mistakesDiv.style.color = 'red';
+        mistakesDiv.style.display = 'flex';
+        return;
+      }
+      
+      if (!password) {
+        let answer = "{{ _('Please specify password') }}";
+        mistakesDiv.innerHTML = answer;
+        mistakesDiv.style.color = 'red';
+        mistakesDiv.style.display = 'flex';
+        return;
+      }
+
+      saveButton.classList.toggle('hidden')
+      saving.classList.toggle('hidden')
+
+      let cf_turnstile_response = document.querySelector('input[name="cf-turnstile-response"]').value;
 
       let formData = new FormData();
       formData.append('username', username);
       formData.append('password', password);
+      formData.append('cf-turnstile-response', cf_turnstile_response);
       
       // Create a new XMLHttpRequest object
       let xhr = new XMLHttpRequest();
@@ -117,11 +152,12 @@
       xhr.onload = function () {
           if (xhr.status === 200 || xhr.status === 429) {
               let response = JSON.parse(xhr.responseText);
-
-              let mistakesDiv = document.getElementById('mistakes');
+             
               mistakesDiv.innerHTML = ''; // Clear previous messages
 
               if (response.status === '0') {
+                  saveButton.classList.toggle('hidden')
+                  saving.classList.toggle('hidden')
                   // Handle empty product name
                   mistakesDiv.innerHTML = response.answer;
                   mistakesDiv.style.color = 'red';
@@ -138,11 +174,15 @@
               } 
               
               if (response.status === '1') {
+                saveButton.classList.toggle('hidden')
+                saving.classList.toggle('hidden')
                   // Handle success
                   let stuffURL = window.location.origin  + '/stuff';
                   location.href = stuffURL;
               }
           } else {
+              saveButton.classList.toggle('hidden')
+              saving.classList.toggle('hidden')
               // Handle error response
               saveButton.classList.remove('hidden');
               saving.classList.add('hidden');

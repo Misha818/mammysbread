@@ -152,7 +152,7 @@ msgstr "Максимально допустимое число символов 
 
 #: app.py:1914 app.py:2294
 msgid "image size is more than 5MB"
-msgstr "Размер изображения превышает 5 МБ"
+msgstr "Размер изображения превышает 3 МБ"
 
 #: app.py:2010 app.py:2366 app.py:3349 app.py:3420 app.py:4469 app.py:4823
 #: products.py:425 templates/add_to_store.html:202

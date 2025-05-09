@@ -14,6 +14,7 @@ from flask_recaptcha import ReCaptcha
 from io import BytesIO
 from datetime import datetime, date
 from pytz import UTC
+import requests
 import os
 import json
 import re
@@ -64,22 +65,22 @@ def is_digit(value):
 
 
 # Initialize limiter with in-memory storage explicitly.
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://",  # explicitly using in-memory storage
-    strategy="fixed-window"
-)
-
-# Initialize limiter with redis storage (for production)
 # limiter = Limiter(
 #     app=app,
 #     key_func=get_remote_address,
 #     default_limits=["200 per day", "50 per hour"],
-#     storage_uri="redis://localhost:6379/0",  # Use Redis storage
+#     storage_uri="memory://",  # explicitly using in-memory storage
 #     strategy="fixed-window"
 # )
+
+# Initialize limiter with redis storage (for production)
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="redis://localhost:6379/0",  # Use Redis storage
+    strategy="fixed-window"
+)
 
 
 
@@ -164,48 +165,64 @@ def side_bar_stuff():
 @limiter.limit("5 per minute")
 def login():
     if request.method == "POST":
-        # if recaptcha.verify():
-            session.clear()
-            newCSRFtoken = generate_csrf()
-            # Checking username
-            username = request.form.get('username') 
-            if not username:
-                answer = gettext('Please specify username')
-                response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
-                return jsonify(response)
-            
+        session.clear()
+        newCSRFtoken = generate_csrf()
+        token = request.form.get("cf-turnstile-response", "")
+        resp = requests.post(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data={
+                "secret": '0x4AAAAAABbxK-6wNJ8vUA0XomhmPextt2U',
+                # "secret": '2x0000000000000000000000000000000AA',
+                "response": token,
+                "remoteip": request.remote_addr
+            },
+        )
+        result = resp.json()
+        if not result.get("success"):
+            answer = "Please verify you are human"
+            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+            return jsonify(response)
 
-            # Checking passwords 
-            password = request.form.get('password') 
-            if not password:
-                answer = gettext('Please specify password')
-                response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
-                return jsonify(response)
-            
-            sqlQuery = "SELECT * FROM `stuff` WHERE BINARY `Username` = %s AND `Status` = 1"
-            sqlValTuple  = (username,)
-            result = sqlSelect(sqlQuery, sqlValTuple, True)    
-            
+        # Checking username
+        username = request.form.get('username') 
+        if not username:
+            answer = gettext('Please specify username')
+            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+            return jsonify(response)
+        
 
-            if result['length'] == 1:
-                if check_password_hash(result['data'][0]["Password"], password): 
-                    session['user_id'] = result['data'][0]['ID']
-                    session['PositionID'] = result['data'][0]['PositionID']
-                    session['lang'] = getLangdatabyID(result['data'][0]['LanguageID'])['Prefix']  
-                    response = {'status': '1'}
-                    return jsonify(response)
-                else:
-                    answer = gettext('The username or password do not match')
-                    response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
-                    return jsonify(response)
+        # Checking passwords 
+        password = request.form.get('password') 
+        if not password:
+            answer = gettext('Please specify password')
+            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+            return jsonify(response)
+        
+        sqlQuery = "SELECT * FROM `stuff` WHERE BINARY `Username` = %s AND `Status` = 1"
+        sqlValTuple  = (username,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)    
+        
+
+        if result['length'] == 1:
+            if check_password_hash(result['data'][0]["Password"], password): 
+                session['user_id'] = result['data'][0]['ID']
+                session['PositionID'] = result['data'][0]['PositionID']
+                session['lang'] = getLangdatabyID(result['data'][0]['LanguageID'])['Prefix']  
+                response = {'status': '1'}
+                return jsonify(response)
             else:
                 answer = gettext('The username or password do not match')
                 response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
                 return jsonify(response)
+        else:
+            answer = gettext('The username or password do not match')
+            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+            return jsonify(response)
         # else:
         #     return jsonify({'status': "0", 'answer': gettext("CAPTCHA verification failed.")})
     else:
-        setlang()
+        if session.get('lang') == None:
+            setlang()
         if 'user_id' in session:
             return redirect(url_for('stuff'))
         
@@ -366,7 +383,9 @@ def inject_babel():
 
 @app.route('/')
 def home():
-    setlang()
+    if session.get('lang') == None:
+        setlang()
+        
     languageID = getLangID()
     sqlQuery =  f"""SELECT * FROM `product` 
                     LEFT JOIN `product_relatives`
@@ -538,7 +557,8 @@ def pr_thumbnail(RefKey):
 
 @app.route('/buy-now/<surl>', methods=['GET'])
 def buy_now(surl):
-    setlang()
+    if session.get('lang') == None:
+        setlang()
     newCSRFtoken = generate_csrf()
     mainCurrency = MAIN_CURRENCY
     key, val = surl.split('-')
@@ -549,7 +569,8 @@ def buy_now(surl):
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     newCSRFtoken = generate_csrf()
-    setlang()
+    if session.get('lang') == None:
+        setlang()
     languageID = getLangID()
     if request.method == 'GET':
         mainCurrency = MAIN_CURRENCY
@@ -1897,7 +1918,7 @@ def editprice():
     imgDir = 'images/sub_product_slider'
     sqlUpdateSlide = "UPDATE `slider` SET `AltText` = %s, `Order` = %s WHERE `ID` = %s"  
     sqlInsertSlide = "INSERT INTO `slider`  (`Name`, `AltText`, `Order`, `ProductID`, `Type`) VALUES (%s, %s, %s, %s, %s);"
-    max_file_size = 5 * 1024 * 1024  # 5MB in bytes
+    max_file_size = 3 * 1024 * 1024  # 5MB in bytes
 
     while True:
         if not request.form.get('upload_status_' + str(i)):
@@ -2178,9 +2199,33 @@ def upload_slides():
             answer = gettext('The price should be higher then 0!')
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
         
+        if request.form.get('fileStatus') is not None:
+            i = 0
+            fileName = 'file_' + str(i)
+            max_file_size = 3 * 1024 * 1024  # 3MB in bytes
+
+            # Check image size and return an error if file is too big
+            while request.files.get(fileName):
+                file = request.files.get(fileName)
+
+                file_size = len(file.read())  # Get the file size in bytes
+                file.seek(0)  # Reset the file pointer to the beginning after reading
+                        
+                filename = secure_filename(file.filename)
+
+                if file_size > max_file_size:
+                    answer = '<<' +filename + '>>' + gettext('image size is more than 5MB')
+                    return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+                print(i)
+                print(request.files.get(fileName))
+                i = i + 1
+                fileName = 'file_' + str(i)
+            # End of checking the image size
+
         title = request.form.get('title')
         price = float(request.form.get('price'))
         spsID = 0
+        
         if request.form.get('spsID'):
             spsID = int(request.form.get('spsID'))
 
@@ -2277,25 +2322,12 @@ def upload_slides():
     if request.form.get('fileStatus') is not None:
         i = 0
         fileName = 'file_' + str(i)
-        max_file_size = 5 * 1024 * 1024  # 5MB in bytes
+        max_file_size = 3 * 1024 * 1024  # 5MB in bytes
         sqlUpdateSlide = "UPDATE `slider` SET `AltText` = %s, `Order` = %s WHERE `ID` = %s"  
         sqlInsertSlide = "INSERT INTO `slider`  (`Name`, `AltText`, `Order`, `ProductID`, `Type`) VALUES (%s, %s, %s, %s, %s);"
 
         while request.files.get(fileName):
             file = request.files.get(fileName)
-
-            # Check image size and return an error if file is too big
-            file_size = len(file.read())  # Get the file size in bytes
-            file.seek(0)  # Reset the file pointer to the beginning after reading
-                    
-            filename = secure_filename(file.filename)
-
-            if file_size > max_file_size:
-                answer = '<<' +filename + '>>' + gettext('image size is more than 5MB')
-                return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
-            
-            # End of checking the image size
-
 
             uStatus = 'upload_status_' + str(i)
             uploadStatus = request.form.get(uStatus)
@@ -5370,7 +5402,8 @@ def typeof(var):
 @app.route("/cart", methods=["GET", "POST"])
 def cart(productTypesQuantity=None):
     if request.method == "GET":
-        setlang()
+        if session.get('lang') == None:
+            setlang()
         cartData = productTypesQuantity
 
         content = analyse_cart_data(cartData)
@@ -6681,4 +6714,4 @@ ORDER BY `product`.`Order`, `product_type`.`Order`;   """
 
 
 if __name__ == '__main__':
-    app.run(ssl_context=(cert_file, key_file), debug=True)
+    app.run(debug=True)
