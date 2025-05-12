@@ -1,5 +1,6 @@
 from flask import Flask, session, redirect, jsonify, request, g
-from dotenv import load_dotenv
+from db import get_db
+# from dotenv import load_dotenv
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from werkzeug.utils import secure_filename
 from functools import wraps
@@ -16,7 +17,7 @@ import time
 import requests
 
 
-load_dotenv()
+# load_dotenv()
 
 # Determine the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -36,12 +37,12 @@ os.makedirs(target_directory, exist_ok=True)
 # )
 
 
-dbconfig = {
-    "database": os.getenv('DATABASE'),
-    "user": os.getenv('MYSQL_USER'),
-    "password": os.getenv('PASSWORD'),
-    "host": os.getenv('LOCALHOST')
-}
+# dbconfig = {
+#     "database": os.getenv('DATABASE'),
+#     "user": os.getenv('MYSQL_USER'),
+#     "password": os.getenv('PASSWORD'),
+#     "host": os.getenv('LOCALHOST')
+# }
 
 # dbconfig = {
 #     "database": os.getenv('MYSQL_DATABASE'),
@@ -51,14 +52,14 @@ dbconfig = {
 #     "port": int(os.getenv('MYSQL_PORT', 3306))  # Use the correct port number
 # }
 
-pool = mysql.connector.pooling.MySQLConnectionPool(
-    pool_name="mypool",
-    pool_size=5,
-    **dbconfig
-)
+# pool = mysql.connector.pooling.MySQLConnectionPool(
+#     pool_name="mypool",
+#     pool_size=5,
+#     **dbconfig
+# )
 
 # To get a connection from the pool
-db_connection = pool.get_connection()
+# db_connection = pool.get_connection()
 
 def action_info():
     return session.get('action_info')
@@ -100,6 +101,7 @@ def close_connection(db_connection):
 
 
 def sqlSelect(sqlQuery, sqlValuesTuple, myDict):
+    db_connection = get_db() 
     error_message = 'No errors detected'
     myData = []
     dataLen = 0
@@ -132,6 +134,7 @@ def sqlSelect(sqlQuery, sqlValuesTuple, myDict):
 
 def sqlInsert(sqlQuery, sqlValuesTuple):
     # Insert the content into the MySQL database
+    db_connection = get_db()
     inserted_id = None
     rows_affected = None
     status = 0
@@ -166,6 +169,7 @@ def sqlInsert(sqlQuery, sqlValuesTuple):
 
 def sqlUpdate(sqlQuery, sqlValuesTuple=''):
     # Update the content from the MySQL database
+    db_connection = get_db()
     rows_affected = None
     status = '-1'
     try:
@@ -200,7 +204,7 @@ def sqlDelete(sqlQuery, sqlValuesTuple):
     
     try:
         # Get a connection from the pool
-        conn = pool.get_connection()
+        conn = get_db()
         cursor = conn.cursor()
         
         # Execute the DELETE statement
@@ -240,12 +244,6 @@ def getLangID():
 
 def getLangdata(Prefix):
 
-    # sqlQuery = "SELECT * FROM `languages` WHERE `Prefix` = %s"
-    
-    # sqlValueTuple = (Prefix,)
-
-    # result = sqlSelect(sqlQuery, sqlValueTuple, True)
-
     content = {}
     supportedLangs = supported_langs()
     for lang in supportedLangs:
@@ -255,8 +253,6 @@ def getLangdata(Prefix):
             content['Prefix'] = lang['Prefix']
 
     return content
-
-
 
 
 def get_pc_ref_key(pc_id):

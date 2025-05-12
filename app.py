@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, g, url_for
+from db import get_db, close_db
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -24,6 +25,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
+
+# Register teardown so every request returns its connection
+app.teardown_appcontext(close_db)
+
 limiter = Limiter(get_remote_address, app=app)
 
 init_sysadmin_context(app)
@@ -65,22 +70,22 @@ def is_digit(value):
 
 
 # Initialize limiter with in-memory storage explicitly.
-# limiter = Limiter(
-#     app=app,
-#     key_func=get_remote_address,
-#     default_limits=["200 per day", "50 per hour"],
-#     storage_uri="memory://",  # explicitly using in-memory storage
-#     strategy="fixed-window"
-# )
-
-# Initialize limiter with redis storage (for production)
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
     default_limits=["200 per day", "50 per hour"],
-    storage_uri="redis://localhost:6379/0",  # Use Redis storage
+    storage_uri="memory://",  # explicitly using in-memory storage
     strategy="fixed-window"
 )
+
+# Initialize limiter with redis storage (for production)
+# limiter = Limiter(
+#     app=app,
+#     key_func=get_remote_address,
+#     default_limits=["200 per day", "50 per hour"],
+#     storage_uri="redis://localhost:6379/0",  # Use Redis storage
+#     strategy="fixed-window"
+# )
 
 
 
@@ -2726,7 +2731,12 @@ def edit_p_c():
                  """
 
     result = sqlUpdate(sqlQuery, sqlQueryVal)
-    return result
+    if result['status'] == '-1':
+        answer = gettext('Something is wrong!')
+        return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
+
+    answer = gettext('Done!')
+    return jsonify({'status': '1', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
 
 
 # Publish/Unpublish product
