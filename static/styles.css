@@ -8106,7 +8106,9 @@ tr:nth-child(even) {
 
 
 @media screen and (min-width: 200px) and (max-width: 1365px) {  
-  
+  .spss {
+    flex-direction: column;
+  }
   .spss-view {
     display: none!important;
   }
@@ -8504,4 +8506,9 @@ tr:nth-child(even) {
   padding: 5px;
   color: #e76f51;
   margin: 5px auto;
+}
+
+.spss {
+  display: flex;
+  gap: 5px;
 }

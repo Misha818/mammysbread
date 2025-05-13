@@ -228,13 +228,19 @@
                 </button>
               </div>
               {% if row['Text'] is not none %}
-                <p class="spss spss-view"><strong> {{ row['Title'] }}:</strong> {{ row['Text'] }} </p>
+                <p class="spss spss-view">
+                  <strong> {{ row['Title'] }}</strong> 
+                  <span>{{ row['Text'] }}</span> 
+                </p>
               {% endif %}
             
           
             {% else %}
               {% if row['Text'] is not none %}
-                <p class="spss spss-view"><strong> {{ row['Title'] }}:</strong> {{ row['Text'] }} </p>
+                <p class="spss spss-view">
+                  <strong> {{ row['Title'] }}</strong> 
+                  <span>{{ row['Text'] }}</span>
+                </p>
               {% endif %}
           
           {% endif %}
@@ -246,7 +252,7 @@
 
       <!-- <p class="inStock">Quantity {{ resultSpss.data[lastIndex].Quantity }}</p>   -->
     </span>  
-    <div class="spss-button"><i class="fa-regular fa-circle-up"></i></div>
+    <div class="spss-button"><i class="fa-regular fa-circle-down"></i></div>
     <!-- <div class="spss-button hidden">⮝</div> -->
         
     {% endif %}

@@ -1,33 +1,16 @@
 from flask import session, redirect, jsonify
-from dotenv import load_dotenv
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
-
 from sysadmin import checkForRedundantFiles, removeRedundantFiles, get_pr_id_by_lang, get_ar_id_by_lang, sqlInsert, sqlSelect, sqlUpdate, getLangID, getDefLang, getSupportedLangs, getUserID, get_pc_ref_key, get_pc_id_by_lang, pr_name_check, pr_url_check, fileUpload
-
-
-import mysql.connector
 import os
 import re
 import base64
-import uuid
 
-load_dotenv()
 
 # Determine the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Set the static folder path relative to the current script's directory
 static_folder_path = os.path.join(current_dir, 'static')
-
-
-
-# Create a connection to the MySQL database
-db_connection = mysql.connector.connect(
-    host=os.getenv('LOCALHOST'),
-    user=os.getenv('MYSQL_USER'),
-    password=os.getenv('PASSWORD'),
-    database=os.getenv('DATABASE')
-)
 
 
 def submit_product_text(html_content, productID):
