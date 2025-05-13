@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, g, url_for
-from db import get_db, close_db
+from mmb_db import get_db, close_db
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -70,22 +70,22 @@ def is_digit(value):
 
 
 # Initialize limiter with in-memory storage explicitly.
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://",  # explicitly using in-memory storage
-    strategy="fixed-window"
-)
-
-# Initialize limiter with redis storage (for production)
 # limiter = Limiter(
 #     app=app,
 #     key_func=get_remote_address,
 #     default_limits=["200 per day", "50 per hour"],
-#     storage_uri="redis://localhost:6379/0",  # Use Redis storage
+#     storage_uri="memory://",  # explicitly using in-memory storage
 #     strategy="fixed-window"
 # )
+
+# Initialize limiter with redis storage (for production)
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="redis://localhost:6379/0",  # Use Redis storage
+    strategy="fixed-window"
+)
 
 
 
@@ -172,21 +172,21 @@ def login():
     if request.method == "POST":
         session.clear()
         newCSRFtoken = generate_csrf()
-        token = request.form.get("cf-turnstile-response", "")
-        resp = requests.post(
-            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-            data={
-                "secret": '0x4AAAAAABbxK-6wNJ8vUA0XomhmPextt2U',
-                # "secret": '2x0000000000000000000000000000000AA',
-                "response": token,
-                "remoteip": request.remote_addr
-            },
-        )
-        result = resp.json()
-        if not result.get("success"):
-            answer = "Please verify you are human"
-            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
-            return jsonify(response)
+        # token = request.form.get("cf-turnstile-response", "")
+        # resp = requests.post(
+        #     "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        #     data={
+        #         "secret": '0x4AAAAAABbxK-6wNJ8vUA0XomhmPextt2U',
+        #         # "secret": '2x0000000000000000000000000000000AA',
+        #         "response": token,
+        #         "remoteip": request.remote_addr
+        #     },
+        # )
+        # result = resp.json()
+        # if not result.get("success"):
+        #     answer = "Please verify you are human"
+        #     response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+        #     return jsonify(response)
 
         # Checking username
         username = request.form.get('username') 
@@ -1826,7 +1826,6 @@ def editprice():
     if len(request.form.get('title')) > 20:
         answer = gettext('Max allowed number of chars for title is 20')
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
-
 
     # Check weather Product Type Title exists for current product
     sqlQuery = """SELECT `Title` FROM `product_type` 

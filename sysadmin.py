@@ -1,12 +1,13 @@
 from flask import Flask, session, redirect, jsonify, request, g
-from db import get_db
+from mmb_db import get_db
 # from dotenv import load_dotenv
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from werkzeug.utils import secure_filename
 from functools import wraps
 
+import logging
 import mysql.connector
-from mysql.connector import pooling
+from mysql.connector import pooling, Error
 import os
 import re
 import base64
@@ -16,6 +17,13 @@ import string
 import time
 import requests
 
+
+def with_conn(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        conn = get_db()
+        return f(conn, *args, **kwargs)
+    return wrapper
 
 # load_dotenv()
 
@@ -99,112 +107,203 @@ def close_connection(db_connection):
     if db_connection.is_connected():
         db_connection.close()
 
-
-def sqlSelect(sqlQuery, sqlValuesTuple, myDict):
-    db_connection = get_db() 
-    error_message = 'No errors detected'
-    myData = []
-    dataLen = 0
-
+@with_conn
+def sqlSelect(
+    conn,
+    sqlQuery: str,
+    sqlParams: tuple | None = None,
+    as_dict: bool = False
+):
+    """
+    Execute a SELECT query and return rows, row‐count, and any error.
+    Connections are returned to the pool automatically via Flask’s teardown.
+    """
+    # conn = get_db()
+    cursor = conn.cursor(dictionary=as_dict)
     try:
-        if myDict:
-            myData = {}
-            # cursor = db_connection.cursor(dictionary=True)
-            db_connection, cursor = get_db_connection(True)
-        else:
-            db_connection, cursor = get_db_connection()
+        cursor.execute(sqlQuery, sqlParams or ())
+        rows = cursor.fetchall()
+        return {
+            "data": rows,
+            "length": len(rows),
+            "error": None
+        }
+    except Error as e:
+        logging.exception("Failed to execute SELECT")
+        return {
+            "data": [],
+            "length": 0,
+            "error": str(e)
+        }
+    # finally:
+    #     cursor.close()
 
-        if sqlValuesTuple:
-            cursor.execute(sqlQuery, sqlValuesTuple)
-        else:
-            cursor.execute(sqlQuery)
+# def sqlSelect(sqlQuery, sqlParams, myDict):
+#     # db_connection = get_db() 
+#     error_message = 'No errors detected'
+#     myData = []
+#     dataLen = 0
 
-        myData = cursor.fetchall()
-        db_connection.commit()
-        close_connection(db_connection)
-        # cursor.close()
-        if myData is not None:
-            dataLen = len(myData)
+#     try:
+#         conn, cursor = get_db(dictionary=myDict)
+#         cursor.execute(sqlQuery, sqlParams or ())
+#         # if myDict:
+#         #     myData = {}
+#         #     # cursor = db_connection.cursor(dictionary=True)
+#         #     db_connection, cursor = get_db_connection(True)
+#         # else:
+#         #     db_connection, cursor = get_db_connection()
+
+#         # if sqlValuesTuple:
+#         #     cursor.execute(sqlQuery, sqlValuesTuple)
+#         # else:
+#         #     cursor.execute(sqlQuery)
+
+#         rows = cursor.fetchall()
+#         # db_connection.commit()
+#         # close_connection(db_connection)
+#         # cursor.close()
+#         if rows is not None:
+#             dataLen = len(rows)
         
-    except Exception as e:
-        error_message = f"An error occurred: {e}"
+#     except mysql.connector.Error as e:
+#         logging.exception("Failed to execute SELECT")
+#         error_message = f"An error occurred: {e}"
 
-    return {'data': myData, 'length': dataLen, 'error': error_message}
+#     return {'data': rows, 'length': dataLen, 'error': error_message}
 
 
-def sqlInsert(sqlQuery, sqlValuesTuple):
-    # Insert the content into the MySQL database
-    db_connection = get_db()
-    inserted_id = None
-    rows_affected = None
+# def sqlInsert(sqlQuery, sqlValuesTuple):
+#     # Insert the content into the MySQL database
+#     db_connection = get_db()
+#     inserted_id = None
+#     rows_affected = None
+#     status = 0
+#     try:
+#         cursor = db_connection.cursor()
+#         cursor.execute(sqlQuery, sqlValuesTuple)
+        
+#         # Commit the transaction
+#         db_connection.commit()
+        
+#         # Check how many rows were affected
+#         rows_affected = cursor.rowcount
+#         inserted_id = cursor.lastrowid        
+
+#         # Close the cursor
+#         cursor.close()
+        
+#         # Check if rows were affected
+#         if rows_affected > 0:
+#             status = 1
+#             answer = f"Query executed successfully, {rows_affected} rows affected."
+#         else:
+#             status = 1
+#             answer = "Query executed successfully, but no rows were affected."
+
+#     except Exception as e:
+#         answer = f"An error occurred: {e}"
+
+#     return {'answer': answer, 'inserted_id': inserted_id, 'rows_affected': rows_affected, 'status': status}
+
+@with_conn
+def sqlInsert(
+    conn,
+    sqlQuery: str,
+    sqlParams: tuple | None = None
+) -> dict:
+    """
+    Execute an INSERT statement and return status, inserted_id, and rows_affected.
+    """
+    # conn = get_db()
+    params = sqlParams or ()
     status = 0
+
     try:
-        cursor = db_connection.cursor()
-        cursor.execute(sqlQuery, sqlValuesTuple)
-        
-        # Commit the transaction
-        db_connection.commit()
-        
-        # Check how many rows were affected
-        rows_affected = cursor.rowcount
-        inserted_id = cursor.lastrowid        
+        # 1) Use a context-manager so the cursor is always closed
+        with conn.cursor() as cursor:
+            cursor.execute(sqlQuery, params)
+            conn.commit()
 
-        # Close the cursor
-        cursor.close()
-        
-        # Check if rows were affected
-        if rows_affected > 0:
+            rows = cursor.rowcount
+            new_id = cursor.lastrowid
+
+        # 2) Build a clear, typed response
+        if rows > 0:
+            msg = gettext(
+                "Inserted successfully, %(count)d rows affected.", count=rows
+            )
             status = 1
-            answer = f"Query executed successfully, {rows_affected} rows affected."
         else:
+            msg = gettext(
+                "Query executed successfully, but no rows were affected."
+            )
             status = 1
-            answer = "Query executed successfully, but no rows were affected."
 
-    except Exception as e:
-        answer = f"An error occurred: {e}"
+        return {
+            "status": status,               
+            "message": msg,
+            "inserted_id": new_id,
+            "rows_affected": rows,
+        }
 
-    return {'answer': answer, 'inserted_id': inserted_id, 'rows_affected': rows_affected, 'status': status}
+    except mysql.connector.Error as err:
+        # 3) Roll back on any DB error, and log the full stack
+        conn.rollback()
+        logging.exception("Failed to execute INSERT")
+        return {
+            "status": 0,
+            "message": gettext("An error occurred: %(error)s", error=str(err)),
+            "inserted_id": None,
+            "rows_affected": 0,
+        }
 
-
-
-def sqlUpdate(sqlQuery, sqlValuesTuple=''):
+@with_conn
+def sqlUpdate(conn, sqlQuery, sqlValuesTuple=''):
     # Update the content from the MySQL database
-    db_connection = get_db()
+    # db_connection = get_db()
+    db_connection = conn
     rows_affected = None
     status = '-1'
     try:
-        cursor = db_connection.cursor()
-        cursor.execute(sqlQuery, sqlValuesTuple)
-        
-        # Commit the transaction
-        db_connection.commit()
-        
-        # Check how many rows were affected
-        rows_affected = cursor.rowcount
+        with db_connection.cursor() as cursor:
+            cursor.execute(sqlQuery, sqlValuesTuple)
+            
+            # Commit the transaction
+            db_connection.commit()
+            
+            # Check how many rows were affected
+            rows_affected = cursor.rowcount
 
-        # Close the cursor
-        cursor.close()
-        
-        # Check if rows were affected
-        if rows_affected > 0:
-            answer = f"Query executed successfully, {rows_affected} rows affected."
-            status = '1'
-            # answer = gettext('Done!')
-        else:
-            answer = "Query executed successfully, but no rows were affected."
-            status = '1'
+            # Close the cursor
+            # cursor.close()
+            
+            # Check if rows were affected
+            if rows_affected > 0:
+                answer = f"Query executed successfully, {rows_affected} rows affected."
+                status = '1'
+                # answer = gettext('Done!')
+            else:
+                answer = "Query executed successfully, but no rows were affected."
+                status = '1'
 
     except Exception as e:
+        db_connection.rollback()
+        logging.exception("Failed to execute update query")
         answer = f"An error occurred: {e}"
+    # finally:
+    #     db_connection.close()        # returns to pool now
+    #     g.pop("db_conn", None)       # so teardown doesn’t double-close it
 
     return {'status': status, 'answer': answer, 'rows_affected': rows_affected}
 
 
-def sqlDelete(sqlQuery, sqlValuesTuple):
+@with_conn
+def sqlDelete(conn, sqlQuery, sqlValuesTuple):
     
     try:
         # Get a connection from the pool
-        conn = get_db()
+        # conn = get_db()
         cursor = conn.cursor()
         
         # Execute the DELETE statement
@@ -223,10 +322,11 @@ def sqlDelete(sqlQuery, sqlValuesTuple):
         # Close the cursor and connection
         if cursor:
             cursor.close()
-        if conn:
-            conn.close()
+        # if conn:
+        #     conn.close()
 
     return {'status': status, 'answer': answer}
+
 
 def getLangID():
 
