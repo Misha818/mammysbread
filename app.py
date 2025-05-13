@@ -172,21 +172,21 @@ def login():
     if request.method == "POST":
         session.clear()
         newCSRFtoken = generate_csrf()
-        # token = request.form.get("cf-turnstile-response", "")
-        # resp = requests.post(
-        #     "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-        #     data={
-        #         "secret": '0x4AAAAAABbxK-6wNJ8vUA0XomhmPextt2U',
-        #         # "secret": '2x0000000000000000000000000000000AA',
-        #         "response": token,
-        #         "remoteip": request.remote_addr
-        #     },
-        # )
-        # result = resp.json()
-        # if not result.get("success"):
-        #     answer = "Please verify you are human"
-        #     response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
-        #     return jsonify(response)
+        token = request.form.get("cf-turnstile-response", "")
+        resp = requests.post(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data={
+                "secret": '0x4AAAAAABbxK-6wNJ8vUA0XomhmPextt2U',
+                # "secret": '2x0000000000000000000000000000000AA',
+                "response": token,
+                "remoteip": request.remote_addr
+            },
+        )
+        result = resp.json()
+        if not result.get("success"):
+            answer = "Please verify you are human"
+            response = {'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}
+            return jsonify(response)
 
         # Checking username
         username = request.form.get('username') 
