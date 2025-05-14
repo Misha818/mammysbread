@@ -595,6 +595,7 @@ def checkout():
     # 10. delete data from buffer_store
     # 11. unlock locked tables
     if request.method == 'POST':
+        return
         if request.form.get('languageID'):
             if int(request.form.get('languageID')) in getSupportedLangIDs():
                 languageID = int(request.form.get('languageID'))
