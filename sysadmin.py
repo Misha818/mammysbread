@@ -242,7 +242,7 @@ def sqlInsert(
 
         return {
             "status": status,               
-            "message": msg,
+            "answer": msg,
             "inserted_id": new_id,
             "rows_affected": rows,
         }

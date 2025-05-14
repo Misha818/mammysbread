@@ -70,24 +70,24 @@ def is_digit(value):
 
 
 # Initialize limiter with in-memory storage explicitly.
-# limiter = Limiter(
-#     app=app,
-#     key_func=get_remote_address,
-#     # default_limits=["200 per day", "50 per hour"],
-#     default_limits=[],
-#     storage_uri="memory://",  # explicitly using in-memory storage
-#     strategy="fixed-window"
-# )
-
-# Initialize limiter with redis storage (for production)
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-   # default_limits=["200 per day", "50 per hour"],
+    # default_limits=["200 per day", "50 per hour"],
     default_limits=[],
-    storage_uri="redis://localhost:6379/0",  # Use Redis storage
+    storage_uri="memory://",  # explicitly using in-memory storage
     strategy="fixed-window"
 )
+
+# Initialize limiter with redis storage (for production)
+# limiter = Limiter(
+#     app=app,
+#     key_func=get_remote_address,
+#    # default_limits=["200 per day", "50 per hour"],
+#     default_limits=[],
+#     storage_uri="redis://localhost:6379/0",  # Use Redis storage
+#     strategy="fixed-window"
+# )
 
 
 
@@ -1946,7 +1946,7 @@ def editprice():
 
         altText = request.form.get('alt_text_' + str(i))
 
-        if request.form.get('upload_status_' + str(i)) == '1':
+        if request.form.get('upload_status_' + str(i)) == '1': # The file already exists in rep.
             if not request.form.get('slideID_' + str(i)):
                 answer = gettext('Something went wrong. Please try again!')
                 return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
@@ -2354,30 +2354,17 @@ def upload_slides():
                         answer = gettext('Something went wrong. Please try again!')
                         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
                 del shortKeys[int(slideID)]  
-                # sliderID = shortKeys[filename][0]
-                # order = shortKeys[filename][1]
-                # if order != i:
-                   
-                #     sqlQuery = "UPDATE `slider` SET `Order` = %s WHERE `ID` = %s;"
-                #     sqlValTuple = (i, sliderID)
-                #     sqlUpdate(sqlQuery, sqlValTuple) 
-
-                # del shortKeys[filename]
-            #  End
+                
 
             if uploadStatus == '0':
                 unique_filename = fileUpload(file, imgDir)
                 sqlValTuple = (unique_filename, altText, i, ProductID, productType)
                 result = sqlInsert(sqlInsertSlide, sqlValTuple)
                 if result['inserted_id']:
-                    # Stegh es grum file uploader
                     dataList.append(result['answer'])
                 else:
                     answer = gettext('Something went wrong. Please try again!')
                     return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
-         
-
-            
             
             i = i + 1    
             fileName = 'file_' + str(i)
@@ -5129,6 +5116,7 @@ def getSlides(PrID, languageID):
     sqlValTuple = (PrID,)
     resultTitle = sqlSelect(sqlQueryTitle, sqlValTuple, True)
 
+    # Select slides not linked to a prices
     sqlQuery = f"""SELECT `slider`.`ID` AS `sliderID`,
                           `slider`.`Name`,
                           `slider`.`Order`, 
@@ -5141,8 +5129,8 @@ def getSlides(PrID, languageID):
     sqlValTuple = (PrID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
 
+    # Select slides linked to prices
     sqlQuerySubProduct = f"""SELECT  
-                                -- `product_type`.`ID`,
                                 `product_type_relatives`.`PT_Ref_Key` AS `ID`,
                                 `product_type`.`Order` AS `SubPrOrder`,
                                 `slider`.`ID` AS `sliderID`,
@@ -5155,7 +5143,8 @@ def getSlides(PrID, languageID):
                             WHERE `product_type`.`Product_ID` = %s 
                                 AND `product_type_relatives`.`Language_ID` = %s
                                 AND `product_type`.`Status` = 1
-                                AND `slider`.`Type` = 2;
+                                AND `slider`.`Type` = 2
+                            ORDER BY `SubPrOrder`, `SliderOrder`;
                           """
     sqlSubPRValTuple = (PrID, languageID)
     resultSubPr = sqlSelect(sqlQuerySubProduct, sqlSubPRValTuple, True)
