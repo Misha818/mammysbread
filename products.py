@@ -782,7 +782,7 @@ def add_product(productName, productLink, languageID, CategoryID, file, AltText,
  
     unique_filename = fileUpload(file, 'images/pr_thumbnails')
     Order = 1
-    arrOrder = get_pr_order()
+    arrOrder = get_pr_order(languageID)
     if arrOrder['length'] > 0:
         Order = arrOrder['data'][arrOrder['length']-1]['Order'] + 1
 
@@ -1288,9 +1288,11 @@ def get_ptRefKey_by_title(title): # By product_type.Title
         return ''
 
 
-def get_pr_order():
+def get_pr_order(languageID=None):
+    if languageID is None:
+        languageID = getLangID()
     sqlQuery = "SELECT `Order` FROM `product` WHERE `Language_ID` = %s ORDER BY `Order`;"
     
-    result = sqlSelect(sqlQuery, (getLangID(),), True)
+    result = sqlSelect(sqlQuery, (languageID,), True)
     
     return result 
