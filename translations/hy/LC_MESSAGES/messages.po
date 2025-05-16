@@ -1598,7 +1598,7 @@ msgstr "Ընդհամենը"
 
 #: templates/cart.html:122
 msgid "items"
-msgstr "իրեր"
+msgstr "հատ"
 
 #: templates/cart.html:124 templates/index.html:500
 msgid "Proceed to Checkout"
