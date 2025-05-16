@@ -8216,7 +8216,7 @@ tr:nth-child(even) {
   /* background: #fff; */
   border: 1px solid #ccc;
   outline: none;
-  cursor: pointer;
+  /* cursor: pointer; */
   border-radius: 15px;
   width: auto;
   display: inline-block;
