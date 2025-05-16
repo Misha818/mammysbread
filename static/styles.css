@@ -1557,7 +1557,7 @@ h2 {
       width: 40px;
       padding: 10px;
       position: absolute;
-      left: 15px;
+      /* left: 15px; */
       border-radius: 25px;
       appearance: none;
       /* text-align: center;       */
@@ -8171,7 +8171,8 @@ tr:nth-child(even) {
   display: flex;
   flex-direction: column;
   justify-content: flex-start; /* Align elements at the top */
-  align-items: center;    
+  align-items: center;   
+  text-align: center; 
 }
 
 /* Close Button */
@@ -8212,7 +8213,7 @@ tr:nth-child(even) {
 .change-language-menu {
   font-size: 1rem;
   padding: 0.4rem;
-  background: #fff;
+  /* background: #fff; */
   border: 1px solid #ccc;
   outline: none;
   cursor: pointer;
@@ -8220,6 +8221,7 @@ tr:nth-child(even) {
   width: auto;
   display: inline-block;
   white-space: nowrap;  
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .transfer-funds {
@@ -8510,4 +8512,35 @@ tr:nth-child(even) {
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+
+.custom-language-select {
+  position: absolute;
+  /* width: 50px;
+  margin-top: 10px; */
+  cursor: pointer;
+}
+.selected-option,
+.option-lang {
+  padding: 4px;
+}
+.options {
+  display: none;
+  position: absolute;
+  padding: 5px 10px;
+  top: 100%;
+  left: 0;
+  /* background: #fdf6ec; */
+  /* border: 1px solid #ccc; */
+  border-radius: 5px;
+  z-index: 100;
+}
+.custom-language-select.open .options {
+  display: block;
+}
+.lang-flag {
+  width: 32px;
+  height: 24px;
+  display: block;
+  border-radius: 50%;
 }

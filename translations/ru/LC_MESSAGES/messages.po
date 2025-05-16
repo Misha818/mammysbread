@@ -2279,7 +2279,7 @@ msgstr "Избранное"
 
 #: templates/public.html:161
 msgid "Our History"
-msgstr "Наша история"
+msgstr "О нас"
 
 #: templates/public.html:162
 msgid "Contacts"

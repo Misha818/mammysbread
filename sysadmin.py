@@ -784,9 +784,9 @@ def getSupportedLangIDs():
 
 def supported_langs():
     arr = [
-            {'Language_ID': 2, 'Language': 'English', 'Prefix':	'en'},
-            {'Language_ID': 8, 'Language': 'Русский', 'Prefix':	'ru'},
-            {'Language_ID': 1, 'Language': 'Հայերեն', 'Prefix':	'hy'}
+            {'Language_ID': 1, 'Language': 'Հայերեն', 'Prefix':	'hy', 'Flag': 'am.svg'},
+            {'Language_ID': 2, 'Language': 'English', 'Prefix':	'en', 'Flag': 'gb.svg'},
+            {'Language_ID': 8, 'Language': 'Русский', 'Prefix':	'ru', 'Flag': 'ru.svg'}
           ]
     return arr
 

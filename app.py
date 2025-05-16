@@ -52,6 +52,14 @@ def inject_supportedLangsData():
     return {'supportedLangsData': supportedLangsData}
 
 @app.context_processor
+def inject_defLangPrefix():
+    return {'defLangPrefix': getDefLang()['Prefix']}
+
+@app.context_processor
+def inject_activeLangPrefix():
+    return {'activeLangPrefix': session.get('lang', getDefLang()['Prefix'])}
+
+@app.context_processor
 def inject_user_bool():
     userBool = session.get("user_id", False)
     return {'userBool': userBool}

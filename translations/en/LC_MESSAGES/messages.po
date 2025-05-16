@@ -1470,9 +1470,8 @@ msgid "Details"
 msgstr "See Details"
 
 #: templates/affiliate.html:223 templates/affiliate.html:274
-#, fuzzy
 msgid "Purchase History"
-msgstr "Our History"
+msgstr "Purchase History"
 
 #: templates/affiliate.html:225
 msgid "P/H"
@@ -2469,7 +2468,7 @@ msgstr "Favorites"
 
 #: templates/public.html:161
 msgid "Our History"
-msgstr "Our History"
+msgstr "About"
 
 #: templates/public.html:162
 msgid "Contacts"

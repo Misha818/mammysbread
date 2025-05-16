@@ -593,7 +593,7 @@ msgstr "Ինչ-որ բան սխալ է"
 #: templates/create-promo-code.html:110 templates/edit-promo-code.html:166
 #: templates/products.html:3 templates/public.html:160
 msgid "Products"
-msgstr "Ապրանքներ"
+msgstr "Տեսականի"
 
 #: copy.html:3 copy.html:37 templates/action-names-translate.html:12
 #: templates/add_product templates/add_product.html:3

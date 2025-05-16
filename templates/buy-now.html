@@ -110,7 +110,7 @@ body {
                 <li class="list-group-item d-flex justify-content-between bg-light" id="promo-value-parent" style="display: none!important;">
                   <div class="text-success">
                     <h6 class="my-0" style="text-align: left;">{{ _('Promo code') }}</h6>
-                    <small id="promo-code-value">Example</small>
+                    <small id="promo-code-value">{{ _('Example') }}</small>
                   </div>
                   <span class="text-success" id="promo-code-success">{{ mainCurrency|safe }} -5</span>
                 </li>
@@ -134,7 +134,7 @@ body {
                 </li>
       
                 <div class="input-group">
-                  <input type="text" class="form-control" id="promo" placeholder="Promo code">
+                  <input type="text" class="form-control" id="promo" placeholder="{{ _('Promo code') }}">
                   <button class="btn btn-secondary submit-promo">{{ _('Submit') }}</button>
                 </div>
               </div>

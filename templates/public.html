@@ -41,9 +41,36 @@
       <input type="hidden" id="full-basket" value="{{ url_for('static', filename='images/icons/full-basket.png') }}">
       <input type="hidden" id="empty-basket" value="{{ url_for('static', filename='images/icons/empty-basket.png') }}">
       <input type="hidden" id="redFields" value="{{ _('Please improve all field marked in red') }}">
+      {% set ns = namespace(selectedOption='', options='') %}
+      {% if supportedLangsData | length > 1%}
 
-        <!-- Header Section -->
+        {% for row in supportedLangsData %}
+          {% if row['Prefix'] == activeLangPrefix %}
+            {% set ns.selectedOption = '<div class="selected-option" data-value="' ~ row["Prefix"] ~ '"><img src="https://cdn.jsdelivr.net/npm/flag-icons@6.6.6/flags/4x3/' ~ row["Flag"] ~ '" alt="' ~ row["Language"] ~ '" class="lang-flag"></div>' %}
+          {% else %}
+            {% set ns.options = ns.options + '<div class="option-lang" data-value="' ~ row["Prefix"] ~ '"> <img src="https://cdn.jsdelivr.net/npm/flag-icons@6.6.6/flags/4x3/' ~ row["Flag"] ~ '" alt="' ~ row["Language"] ~ '" class="lang-flag"></div>'%}
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        {% set ns.selectedOption = '<div class="selected-option" data-value="' ~ supportedLangsData[0]["Prefix"] ~ '"><img src="https://cdn.jsdelivr.net/npm/flag-icons@6.6.6/flags/4x3/' ~ supportedLangsData[0]["Flag"] ~ '" alt="Armenia" class="lang-flag"></div>' %}
+      {% endif %}
+
+      <!-- Header Section -->
       <header class="header_public">
+        <div class="custom-language-select change-language">
+          <!-- <div class="selected-option" data-value="hy">
+            <img src="https://cdn.jsdelivr.net/npm/flag-icons@6.6.6/flags/4x3/am.svg" alt="Armenia" class="lang-flag">
+          </div>
+           -->
+
+           {{ ns.selectedOption | safe }}
+
+          <div class="options">
+            {{ ns.options | safe }}
+
+          </div>
+        </div>
+
         <div class="mobile-menu">
           <img src="{{ url_for('static', filename='images/icons/mobile-menu.png') }}" style="width: 50px;">
         </div>
@@ -60,11 +87,7 @@
           </div>
         </a>
       </header>
-
-
-
-
-
+      
       <script type="text/javascript" src="{{ url_for('static', filename='JS/cookie.umd.min.js') }}"></script>
       <script type="text/javascript" src="{{ url_for('static', filename='JS/header.js') }}"></script>
       <!-- End of Header -->
@@ -220,96 +243,99 @@
       }
 
 
+        
+
+
 
       // Define an array of language objects
-      let languages = [
-          { value: "en", text: "En", selected: true }
-      ];
+      // let languages = [
+      //     { value: "en", text: "En", selected: true }
+      // ];
 
-      // Create the select element and set its class
-      const select = document.createElement("select");
-      select.className = "change-language";
+      // // Create the select element and set its class
+      // const select = document.createElement("select");
+      // select.className = "change-language";
 
-      // Add an event listener for the change event
-      select.addEventListener("change", function() {
-        let refKey = '';
-        if (document.getElementById('RefKey')) {
-          refKey = document.getElementById('RefKey').value;
-        }
-        window.location.href = '/setlang?lang=' + this.value + '&RefKey=' + refKey;
+      // // Add an event listener for the change event
+      // select.addEventListener("change", function() {
+      //   let refKey = '';
+      //   if (document.getElementById('RefKey')) {
+      //     refKey = document.getElementById('RefKey').value;
+      //   }
+      //   window.location.href = '/setlang?lang=' + this.value + '&RefKey=' + refKey;
 
-      });
+      // });
 
       // Configure the request
-      xhr.open('POST', '/get_langs');  
-      xhr.setRequestHeader('X-CSRFToken', csrfToken);                 
+      // xhr.open('POST', '/get_langs');  
+      // xhr.setRequestHeader('X-CSRFToken', csrfToken);                 
 
-      // Define what happens on successful data submission
-      xhr.onload = function () {
-          if (xhr.status === 200) {
-            languages = JSON.parse(xhr.responseText);
+      // // Define what happens on successful data submission
+      // xhr.onload = function () {
+      //     if (xhr.status === 200) {
+      //       languages = JSON.parse(xhr.responseText);
 
-            // Loop through the languages array to create and append options
-            languages.forEach(lang => {
-              const option = document.createElement("option");
-              option.value = lang.value;
-              let text = lang.value.charAt(0).toUpperCase() + lang.value.slice(1);
-              option.textContent = text;
+      //       // Loop through the languages array to create and append options
+      //       languages.forEach(lang => {
+      //         const option = document.createElement("option");
+      //         option.value = lang.value;
+      //         let text = lang.value.charAt(0).toUpperCase() + lang.value.slice(1);
+      //         option.textContent = text;
               
-              if (lang.selected) {
-                option.setAttribute("selected", "selected");
-              } 
+      //         if (lang.selected) {
+      //           option.setAttribute("selected", "selected");
+      //         } 
                 
-              select.appendChild(option);
-            });
+      //         select.appendChild(option);
+      //       });
 
-          } else {
+      //     } else {
 
-            // Loop through the languages array to create and append options
-            languages.forEach(lang => {
-              const option = document.createElement("option");
-              option.value = lang.value;
-              let text = lang.value.charAt(0).toUpperCase() + lang.value.slice(1);
-              option.textContent = text;
+      //       // Loop through the languages array to create and append options
+      //       languages.forEach(lang => {
+      //         const option = document.createElement("option");
+      //         option.value = lang.value;
+      //         let text = lang.value.charAt(0).toUpperCase() + lang.value.slice(1);
+      //         option.textContent = text;
               
-              if (lang.selected) {
-                option.setAttribute("selected", "selected");
-              }
+      //         if (lang.selected) {
+      //           option.setAttribute("selected", "selected");
+      //         }
 
-              select.appendChild(option);
-            });
+      //         select.appendChild(option);
+      //       });
 
-          }
+      //     }
             
-          document.querySelector('.header_public').prepend(select);
+      //     // document.querySelector('.header_public').prepend(select);
 
-          let mobileNavSelect = select.cloneNode(true);
+      //     let mobileNavSelect = select.cloneNode(true);
 
-          mobileNavSelect.className = "change-language-menu";
-          // mobileNavSelect.addEventListener("change", function() {
-          //   window.location.href = '/setlang?lang=' + this.value;
-          // });
+      //     mobileNavSelect.className = "change-language-menu";
+      //     // mobileNavSelect.addEventListener("change", function() {
+      //     //   window.location.href = '/setlang?lang=' + this.value;
+      //     // });
 
-          // Add an event listener for the change language menu
-          mobileNavSelect.addEventListener("change", function() {
-            let refKey = '';
-            if (document.getElementById('RefKey')) {
-              refKey = document.getElementById('RefKey').value;
-            }
-            window.location.href = '/setlang?lang=' + this.value + '&RefKey=' + refKey;
+      //     // Add an event listener for the change language menu
+      //     mobileNavSelect.addEventListener("change", function() {
+      //       let refKey = '';
+      //       if (document.getElementById('RefKey')) {
+      //         refKey = document.getElementById('RefKey').value;
+      //       }
+      //       window.location.href = '/setlang?lang=' + this.value + '&RefKey=' + refKey;
 
-          });
+      //     });
 
-          if (document.querySelector('.mobile-nav-content')) {
-            document.querySelector('.mobile-nav-content').append(mobileNavSelect);
-          }
+      //     if (document.querySelector('.mobile-nav-content')) {
+      //       document.querySelector('.mobile-nav-content').append(mobileNavSelect);
+      //     }
 
 
 
-      };
+      // };
 
       // Send the request with the FormData object
-      xhr.send();
+      // xhr.send();
 
 
         // Grab elements
@@ -535,6 +561,84 @@
           this.style.border = '1px solid #ccc';
           this.style.color = '#000';
         });
+
+        let mobileNavSelect = document.querySelector('.custom-language-select').cloneNode(true);
+
+        mobileNavSelect.className = "change-language-menu";
+        // mobileNavSelect.addEventListener("change", function() {
+        //   window.location.href = '/setlang?lang=' + this.value;
+        // });
+
+        // Add an event listener for the change language menu
+        mobileNavSelect.addEventListener("change", function() {
+          let refKey = '';
+          if (document.getElementById('RefKey')) {
+            refKey = document.getElementById('RefKey').value;
+          }
+          window.location.href = '/setlang?lang=' + this.value + '&RefKey=' + refKey;
+
+        });
+
+        if (document.querySelector('.mobile-nav-content')) {
+          document.querySelector('.mobile-nav-content').append(mobileNavSelect);
+        }
+
+
+        document.querySelector('.selected-option').addEventListener('click', function () {
+          this.parentNode.classList.toggle('open');
+        });
+        document.querySelectorAll('.option-lang').forEach(function (opt) {
+          opt.addEventListener('click', function () {
+
+            let refKey = '';
+            if (document.getElementById('RefKey')) {
+              refKey = document.getElementById('RefKey').value;
+            }
+            // console.log('/setlang?lang=' + this.getAttribute('data-value') + '&RefKey=' + refKey)
+            window.location.href = '/setlang?lang=' + this.getAttribute('data-value') + '&RefKey=' + refKey;
+
+          });
+        });
+
+        // document.querySelector('.change-language-menu').addEventListener('click', function () {
+          document.querySelector('.change-language-menu .options').style.position = 'unset';
+          document.querySelector('.change-language-menu .options').style.padding = 'unset';
+          document.querySelector('.change-language-menu .options').style.background = 'unset';
+          document.querySelectorAll('.change-language-menu img').forEach(function (img) {
+            img.style.width = '42px';
+            img.style.height = '32px';
+          });
+
+          let x = 0;
+          document.querySelector('.change-language-menu .selected-option').addEventListener('click', function () {
+            let mobileOptions = document.querySelector('.change-language-menu .options');
+            if (x == 0) {
+              mobileOptions.style.display = 'block';
+              x = 1;
+            } else {
+              mobileOptions.style.display = 'none';
+              x = 0;
+            }
+            
+          });
+
+
+          // document.querySelectorAll('.change-language-menu .option-lang').forEach(function (opt) {
+          //   opt.addEventListener('click', function () {
+              
+          //     let refKey = '';
+          //     if (document.getElementById('RefKey')) {
+          //       refKey = document.getElementById('RefKey').value;
+          //     }
+          //     // console.log('/setlang?lang=' + this.getAttribute('data-value') + '&RefKey=' + refKey)
+          //     window.location.href = '/setlang?lang=' + this.getAttribute('data-value') + '&RefKey=' + refKey;
+              
+          //   });
+          // });
+          
+        // });
+
+
 
       </script>
 
