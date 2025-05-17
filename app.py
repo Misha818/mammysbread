@@ -78,24 +78,24 @@ def is_digit(value):
 
 
 # Initialize limiter with in-memory storage explicitly.
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    # default_limits=["200 per day", "50 per hour"],
-    default_limits=[],
-    storage_uri="memory://",  # explicitly using in-memory storage
-    strategy="fixed-window"
-)
-
-# Initialize limiter with redis storage (for production)
 # limiter = Limiter(
 #     app=app,
 #     key_func=get_remote_address,
-#    # default_limits=["200 per day", "50 per hour"],
+#     # default_limits=["200 per day", "50 per hour"],
 #     default_limits=[],
-#     storage_uri="redis://localhost:6379/0",  # Use Redis storage
+#     storage_uri="memory://",  # explicitly using in-memory storage
 #     strategy="fixed-window"
 # )
+
+# Initialize limiter with redis storage (for production)
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+   # default_limits=["200 per day", "50 per hour"],
+    default_limits=[],
+    storage_uri="redis://localhost:6379/0",  # Use Redis storage
+    strategy="fixed-window"
+)
 
 
 
@@ -6461,8 +6461,7 @@ def index(myLinks):
                 RefKey = content['RefKey']
                 sqlQueryL = """
                             SELECT 
-                                `product_relatives`.`Language_ID`,
-                                `Url`
+                                `product_relatives`.`Language_ID`
                             FROM `product_relatives`
                                 LEFT JOIN `product` ON `product`.`ID` = `product_relatives`.`P_ID`
                             WHERE `P_Ref_Key` = %s AND `product`.`Product_Status` = 2;
@@ -6470,15 +6469,14 @@ def index(myLinks):
                 sqlValL = (RefKey,)
                 resultL = sqlSelect(sqlQueryL, sqlValL, False)
                 supportedLangsData = []
-                if resultL['length'] > 1:                    
+                if resultL['length'] > 0:                    
                     langueges = supported_langs()
 
-                    for langdata in resultL['data']:                        
+                    for langdata in resultL['data']:              
+                        print(langdata[0])          
                         for lang in langueges:
                             if lang['Language_ID'] == langdata[0]:
-                                arr = (langdata[1], lang['Language'], lang['Prefix'])
-                                supportedLangsData.append(arr)
-                                    
+                                supportedLangsData.append(lang)
             else:
                 myHtml = 'error.html'            
     else:
