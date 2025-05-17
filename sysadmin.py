@@ -1,6 +1,6 @@
 from flask import Flask, session, redirect, jsonify, request, g
 from mmb_db import get_db
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from werkzeug.utils import secure_filename
 from functools import wraps
@@ -25,7 +25,7 @@ def with_conn(f):
         return f(conn, *args, **kwargs)
     return wrapper
 
-# load_dotenv()
+load_dotenv()
 
 # Determine the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1460,8 +1460,8 @@ def get_order_status_list():
 
 # Send email
 
-MAILGUN_DOMAIN = 'sandboxc21c9204634846bbbbefd1f0470f7a79.mailgun.org'  # e.g. sandbox12345.mailgun.org
-MAILGUN_API_KEY = '703c25778b5be98867330de2867fbc37-3d4b3a2a-3a467097'
+MAILGUN_DOMAIN = os.getenv('MAILGUN_DOMAIN')  
+MAILGUN_API_KEY = os.getenv('MAILGUN_API_KEY')
 
 # recipient = 'misha818m@gmail.com'
 

@@ -98,8 +98,6 @@ limiter = Limiter(
 )
 
 
-
-
 defLang = getDefLang()
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
