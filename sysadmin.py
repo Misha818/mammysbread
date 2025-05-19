@@ -1427,9 +1427,11 @@ def get_affiliates(filters=''):
                             `position`.`Position`
                         FROM `stuff`
                             LEFT JOIN `position` ON `position`.`ID` = `stuff`.`PositionID`
-                        WHERE `stuff`.`Status` = %s {filters}; 
+                        WHERE `stuff`.`Status` = %s 
+                            AND find_in_set(%s, `position`.`rolIDs`)
+                            {filters}; 
                     """
-    return sqlSelect(sqlQuery, (1,), True) 
+    return sqlSelect(sqlQuery, (1,1), True) 
 
 
 def check_alias(alias, languageID):
@@ -1438,9 +1440,7 @@ def check_alias(alias, languageID):
 
     sqlValTuple = (alias, languageID)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
-    print(result)
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
+    
     if result['length'] > 0:
         return result['data'][0]['url']
     else:

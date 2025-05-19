@@ -1,15 +1,140 @@
 {% extends 'base.html' %}
-{% block title %}
-    {{ _('Admin Panel') }}
-{% endblock %}
-{% block content %}
+
+{% block head %}
+{% if 2 < resultActions.data[0]['rolID'] < 5 %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .chart-wrapper {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .chart-filters {
+      display: inline-flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .chart-filters select {
+      padding: 6px 10px;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      background: #fff;
+      font: inherit;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .chart-filters select:hover {
+      border-color: #888;
+    }
+
+    /* make your chart fill its container */
+    .chart-wrapper {
+      width: 700px; height: 400px;
+    }
+    /* when in fullscreen mode, let it expand to viewport */
+    :fullscreen .chart-wrapper {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    * ensure the full-screen wrapper stays white */
+    .chart-wrapper:fullscreen {
+      background-color: #fff;
+    }
+    /* WebKit/Blink */
+    .chart-wrapper:-webkit-full-screen {
+      background-color: #fff;
+    }
+    /* Firefox */
+    .chart-wrapper:-moz-full-screen {
+      background-color: #fff;
+    }
+    /* IE11 */
+    .chart-wrapper:-ms-fullscreen {
+      background-color: #fff;
+    }
+
+    .secondary {
+        border: unset;
+        background-color: unset;
+        cursor: pointer;
+        font-size: 28px;
+        color: #e76f51;
+    }
+
+    #filter {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    #filter:hover {
+      filter: brightness(1.1);         
+    }
+  </style>
+{% endif %}
+
 <style>
   .card:hover {
     filter: brightness(1.1);          /* 1.05 = +5%; 1.1 = +10% */
   }
+
 </style>
 
-<div class="card-container" style="margin: 5% 0% 3% 0%;">
+{% endblock %}
+
+
+{% block title %}
+    {{ _('Admin Panel') }}
+{% endblock %}
+{% block content %}
+
+{% set margins = "margin: 5% 0% 3% 0%;" %}
+{% if 2 < resultActions.data[0]['rolID'] < 5 %}
+{% set margins = "margin: 2% 0% 3% 0%;" %}
+<div class="chart-wrapper">
+    <canvas id="myChart"></canvas>
+    
+    <!-- ▼ your three dropdowns ▼ -->
+    <div class="chart-filters">
+      <select id="yearSelect">
+        <option>2025</option>
+        <option>2024</option>
+        <option>2023</option>
+      </select>
+
+      <select id="monthSelect">
+        <option value="">{{ _('All Months') }}</option>
+        <option value="01">{{ _('January') }}</option>
+        <option value="02">{{ _('February') }}</option>
+        <option value="03">{{ _('March') }}</option>
+        <option value="04">{{ _('April') }}</option>
+        <option value="05">{{ _('May') }}</option>
+        <option value="06">{{ _('June') }}</option>
+        <option value="07">{{ _('July') }}</option>
+        <option value="08">{{ _('August') }}</option>
+        <option value="09">{{ _('September') }}</option>
+        <option value="10">{{ _('October') }}</option>
+        <option value="11">{{ _('November') }}</option>
+        <option value="12">{{ _('December') }}</option>
+      </select>
+
+      <select id="person">
+        <option value="">{{ _('All Affiliates') }}</option>
+        <option value="0">{{ _("Mammy's Bread") }}</option>
+      </select>
+
+      <button id="filter" class="primary">{{ _('Submit') }}</button>
+      <button id="downloadPdf" class="secondary" title="Download PDF"><i class="fa-solid fa-file-arrow-down"></i></button>
+    </div>
+</div>
+
+
+{% endif %}
+
+<div class="card-container" style="{{ margins }}">
 {% if resultActions.length > 0 %}
   {% for row in resultActions.data %}
   <a href="{{ url_for('home', _external=True) + row['ActionDir'] }}" style="text-decoration: none;">
@@ -28,5 +153,185 @@
   <h3>{{ _('No data to show!') }}</h3>
 {% endif %}
 </div>
+
+{% if 2 < resultActions.data[0]['rolID'] < 5 %}
+<script>
+    let csrfToken = "{{ csrf_token() }}";
+    // Prepare dataset as an array of objects:
+    // let fullData = [
+    //   { year: '2025', month: 'January', person: 'John Smith',   value: 55 },
+    //   { year: '2025', month: 'January', person: 'Jimmy',   value: 500 },
+    //   { year: '2025', month: 'January', person: 'Jacky Chann',  value: 49 },
+    //   { year: '2025', month: 'January', person: 'Mak Chann',  value: 49 },
+    //   { year: '2025', month: 'January', person: 'Bek sd',  value: 49 },
+    //   { year: '2025', month: 'January', person: 'Chann Man',  value: 49 },
+    //   // … all your records …
+    // ];
+
+    
+
+    const fullscreenPlugin = {
+        id: 'fullscreen',
+        afterInit(chart, args, opts) {
+            const btn = document.createElement('button');
+            btn.textContent = opts.buttonText || '⛶';
+            Object.assign(btn.style, {
+            position: 'absolute',
+            top: '-2px',
+            right: '8px',
+            padding: '4px 8px',
+            backgroundColor: 'white',
+            borderRadius: '5px',
+            border: '1px solid #f1f1ef',
+            cursor: 'pointer',
+            zIndex: 10
+            });
+            btn.onclick = () => {
+            const container = chart.canvas.parentNode;
+            if (!document.fullscreenElement) {
+                container.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+            };
+            // position needs the parent to be relative
+            chart.canvas.parentNode.style.position = 'relative';
+            chart.canvas.parentNode.appendChild(btn);
+
+            document.addEventListener('fullscreenchange', () => {
+            chart.resize();
+            });
+        }
+    };
+
+    // Initialize chart 
+    const ctx = document.getElementById('myChart').getContext('2d');
+    let chart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label: '', data: [], backgroundColor: '#2A9D8F' }] },
+      options: {
+        responsive: true,
+        plugins: { 
+            legend: {display:false}, 
+            title: {display:true, text:''},
+            fullscreen: { buttonText: '⛶' },
+        },
+        scales: { x:{title:{display:true,text:''}}, y:{beginAtZero:true} }
+      },
+      plugins: [ fullscreenPlugin ]
+    });
+
+    // 3) A helper to redraw based on current filters:
+    function applyFilters(load=false) {
+      const languageID = `{{ languageID }}`;
+
+      
+
+      // Create a new FormData object
+      let formData = new FormData();
+      formData.append('language-id', languageID);
+      // formData.append('rol', resultActions.data[0]['rolID']);
+      if (load === true) {
+        formData.append('affiliates', '1');
+      } else {
+        const year    = document.getElementById('yearSelect').value;
+        const month   = document.getElementById('monthSelect').value;
+        const person = document.getElementById('person').value;
+
+        formData.append('year', year);
+        formData.append('month', month);
+        formData.append('person', person);
+      }
+
+
+
+      // Create a new XMLHttpRequest object
+      let xhr = new XMLHttpRequest();
+
+      // Configure the request
+      xhr.open('POST', '/get-chart-data');
+      xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+      // Define what happens on successful data submission
+      xhr.onload = function() {
+          if (xhr.status === 200) {
+              let response = JSON.parse(xhr.responseText);
+              
+              if (response.status === '1') {
+                  if (load === true) {
+                    response.chartData.affiliates.forEach(affiliate => {
+                      const option = document.createElement('option');
+                      option.value = affiliate.ID;
+                      option.textContent = affiliate.Initials + ' - ' + affiliate.Position;
+                      document.getElementById('person').appendChild(option);
+                    });
+                  }
+
+                  let fullData = response.chartData.data;
+
+                  // Map to labels & values:
+                  if (document.getElementById('person').value) {
+                      chart.data.labels = fullData.map(d => document.querySelector(`select[id="monthSelect"] option[value="${d.month}"]`).textContent + ' (' + d.value + ')');
+                  } else {
+
+                    chart.data.labels = fullData.map(d => {
+                      let personLabel;
+                      personLabel = d.person;
+                      if (d.person == null) {
+                        personLabel = document.querySelector('select[id="person"] option[value="0"]').textContent;
+                      } 
+                      return personLabel + ' (' + d.value + ')';
+                    });
+                  }
+                  chart.data.datasets[0].data = fullData.map(d => d.value);
+
+
+
+                  chart.update();
+                  
+              }
+              
+              if (response.status === '0') {
+                  alert(response.answer);
+              }
+          } else {
+              // Handle error response
+              console.error('Error adding category:', xhr.responseText);
+          }
+      };
+
+      // Send the request with the FormData object
+      xhr.send(formData);
+
+    }
+
+    // 4) Hook all three dropdowns to re-filter on change:
+    // ['yearSelect','monthSelect','person']
+    //   .forEach(id => 
+    //     document.getElementById(id).addEventListener('change', applyFilters)
+    //   );
+    document.getElementById('filter').addEventListener('click', applyFilters)
+
+    // 5) Initial draw:
+    applyFilters(true);
+
+    // const fsBtn = document.getElementById('fsBtn');
+    // const wrapper = document.getElementById('chartWrapper');
+
+    // Download PDF
+    const { jsPDF } = window.jspdf;
+
+    document
+      .getElementById('downloadPdf')
+      .addEventListener('click', () => {
+        const imgData = chart.canvas.toDataURL('image/png', 1.0);
+        const pdf = new jsPDF('landscape', 'pt', [myChart.width, myChart.height]);
+        pdf.addImage(imgData, 'PNG', 0, 0, myChart.width, myChart.height);
+        pdf.save('sales.pdf');
+      });
+
+
+</script>
+{% endif %}
 
 {% endblock %}

@@ -78,24 +78,24 @@ def is_digit(value):
 
 
 # Initialize limiter with in-memory storage explicitly.
-# limiter = Limiter(
-#     app=app,
-#     key_func=get_remote_address,
-#     # default_limits=["200 per day", "50 per hour"],
-#     default_limits=[],
-#     storage_uri="memory://",  # explicitly using in-memory storage
-#     strategy="fixed-window"
-# )
-
-# Initialize limiter with redis storage (for production)
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-   # default_limits=["200 per day", "50 per hour"],
+    # default_limits=["200 per day", "50 per hour"],
     default_limits=[],
-    storage_uri="redis://localhost:6379/0",  # Use Redis storage
+    storage_uri="memory://",  # explicitly using in-memory storage
     strategy="fixed-window"
 )
+
+# Initialize limiter with redis storage (for production)
+# limiter = Limiter(
+#     app=app,
+#     key_func=get_remote_address,
+#    # default_limits=["200 per day", "50 per hour"],
+#     default_limits=[],
+#     storage_uri="redis://localhost:6379/0",  # Use Redis storage
+#     strategy="fixed-window"
+# )
 
 
 defLang = getDefLang()
@@ -603,7 +603,7 @@ def checkout():
     # 10. delete data from buffer_store
     # 11. unlock locked tables
     if request.method == 'POST':
-        return
+        # return
         if request.form.get('languageID'):
             if int(request.form.get('languageID')) in getSupportedLangIDs():
                 languageID = int(request.form.get('languageID'))
@@ -885,6 +885,7 @@ def orders(filter):
                 ORDER BY `payment_details`.`ID` DESC
                 LIMIT {rowsToSelect}, {int(PAGINATION)}; 
                """
+    
     result = sqlSelect(sqlQuery, sqlValTuple, True)
     sideBar = side_bar_stuff()
 
@@ -3904,8 +3905,7 @@ def stuff():
                         `promo_code`.`Promo`,
                         `promo_code`.`expDate`,
                         `promo_code`.`Status`
-                    FROM `promo_code`
-                        
+                    FROM `promo_code`                        
                     WHERE `promo_code`.`affiliateID` = %s;    
                     """
 
@@ -3928,7 +3928,7 @@ def stuff():
         # End of view file and data for affiliate Role
 
 
-    return render_template(view, result=result, resultActions=resultActions, resultP=resultP, resultRevardsList=json.dumps(resultRevardsList), supportedLangsData=supportedLangsData, currentDate=date.today(), newCSRFtoken=newCSRFtoken, current_locale=get_locale())
+    return render_template(view, result=result, resultActions=resultActions, resultP=resultP, resultRevardsList=json.dumps(resultRevardsList), supportedLangsData=supportedLangsData, currentDate=date.today(), newCSRFtoken=newCSRFtoken, languageID=getLangID(), current_locale=get_locale())
 
 
 @app.route('/affiliate/<affID>', methods=['GET'])
@@ -4170,24 +4170,27 @@ def store():
         return render_template('store.html', result=result, storeData=storeData, productsData=productsData, languageID=languageID, mainCurrency=MAIN_CURRENCY,  sideBar=sideBar, newCSRFtoken=newCSRFtoken, current_locale=get_locale()) 
     else:
         
-        filters = ''
+        filters, storeFilter = ['', '']
         sqlValList = [getLangID()]
+        
+        if request.form.get('storeID'):
+            filters = filters + ' AND `storeID` = %s ' 
+            sqlValList[0] = request.form.get('storeID')
+            sqlValList.append(getLangID())
+            sqlValList.append(request.form.get('storeID'))
+            storeFilter = " AND `storeID` = %s "
 
         if request.form.get('productionDate'):
-            filters = filters + ' AND productionDate = %s ' 
+            filters = filters + ' AND `productionDate` = %s ' 
             sqlValList.append(request.form.get('productionDate'))
 
         if request.form.get('expDate'):
-            filters = filters + ' AND expDate = %s ' 
+            filters = filters + ' AND `expDate` = %s ' 
             sqlValList.append(request.form.get('expDate'))
 
         if request.form.get('addDate'):
-            filters = filters + ' AND addDate = %s ' 
+            filters = filters + ' AND `addDate` = %s ' 
             sqlValList.append(request.form.get('addDate'))
-
-        if request.form.get('storeID'):
-            filters = filters + ' AND storeID = %s ' 
-            sqlValList.append(request.form.get('storeID'))
 
         if request.form.get('productID'):
             filters = filters + ' AND `product`.`ID` = %s ' 
@@ -4215,7 +4218,7 @@ def store():
                                     LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
                                     LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
                                     LEFT JOIN `product` p ON `product_type`.`Product_ID` = `p`.`ID`
-                                WHERE `quantity`.`expDate` < CURRENT_DATE() AND `p`.`ID` = `product`.`ID`) 
+                                WHERE `quantity`.`expDate` < CURRENT_DATE() AND `p`.`ID` = `product`.`ID` {storeFilter}) 
                             AS `expired`
                         FROM `quantity`
                             LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `quantity`.`ptRefKey`
@@ -4225,6 +4228,9 @@ def store():
                         GROUP BY `product`.`ID`, `product`.`Title`, `product`.`Thumbnail`
                     ;               
                     """
+        
+        print(sqlQuery)
+        print(sqlValTuple)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
 
         response = {'status': '1', 'answer': result['data'], 'length': result['length'], 'newCSRFtoken': newCSRFtoken}
@@ -6710,6 +6716,76 @@ ORDER BY `product`.`Order`, `product_type`.`Order`;   """
         return jsonify({'status': "0", 'answer': gettext("Out of stock."), 'newCSRFtoken': newCSRFtoken})
     
     return jsonify({'status': "1", 'data': result['data'], 'newCSRFtoken': newCSRFtoken})
+
+@app.route("/get-chart-data", methods=["POST"])
+# @login_required
+def get_chart_data():
+ 
+    newCSRFtoken = generate_csrf()
+    languageID = getLangID()
+    if request.form.get('languageID'):
+        if int(request.form.get('languageID')) in getSupportedLangIDs():
+            languageID = int(request.form.get('languageID'))
+
+    chartData = {}
+    if request.form.get('affiliates'):
+        affiliates = get_affiliates()
+        chartData['affiliates'] = affiliates['data']
+
+    if session.get('roll_id') == 4:
+        orderBy = "ORDER BY `value` DESC"
+        monthFilter, personFilter, monthQuery, month = ['', '', '', '']
+        # Prepare protoTuple for SQL parameters
+        protoTuple = [datetime.now().year]
+        yearFilter = "AND YEAR(`payment_details`.`timestamp`) = %s "
+        if request.form.get('year'):
+            year = request.form.get('year')
+            protoTuple[0] = year
+        
+        if request.form.get('month'):
+            month = request.form.get('month')
+            protoTuple.append(month)
+            monthQuery = "DATE_FORMAT(`payment_details`.`timestamp`, '%m') AS `month`,"
+            month = "`month`,"
+            monthFilter = " AND DATE_FORMAT(`payment_details`.`timestamp`, '%m') = %s "
+
+        if request.form.get('person'):
+            person = request.form.get('person')
+            if person == '0':
+                personFilter = " AND `payment_details`.`affiliateID` IS NULL "
+            else:
+                protoTuple.append(person)
+                personFilter = " AND `payment_details`.`affiliateID` = %s "
+            
+            if not request.form.get('month'):
+                monthQuery = "DATE_FORMAT(`payment_details`.`timestamp`, '%m') AS `month`,"
+                month = "`month`,"
+                orderBy = "ORDER BY `month`"
+
+        filters = yearFilter + monthFilter + personFilter
+        sqlQuery = f"""
+            SELECT
+                DATE_FORMAT(`payment_details`.`timestamp`, '%Y') AS `year`,
+                {monthQuery}            
+                -- DATE_FORMAT(`payment_details`.`timestamp`, '%M') AS `monthname`,
+                CONCAT(`stuff`.`FirstName`, ' ', `stuff`.`LastName`) AS `person`,
+                SUM(`payment_details`.`final_price`) AS `value`,
+                `stuff`.`Email`
+            FROM `payment_details`
+                LEFT JOIN `stuff` ON `stuff`.`ID` = `payment_details`.`affiliateID`
+            WHERE  `payment_details`.`Status` = 5
+                {filters}
+                GROUP BY `year`, {month} `person`, `stuff`.`Email`
+                {orderBy}
+        """
+        sqlValTuple = tuple(protoTuple)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+        chartData['data'] = result['data']
+        
+    if session.get('roll_id') == 3:
+        pass
+
+    return jsonify({'status': "1", 'chartData': chartData, 'answer': gettext('Done!'), 'newCSRFtoken': newCSRFtoken})
 
 
 # @app.route("/timer", methods=["GET"])
