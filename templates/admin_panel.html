@@ -193,10 +193,13 @@
           <option value="11">{{ _('November') }}</option>
           <option value="12">{{ _('December') }}</option>
         </select>
+        
+        <select id="top" title="{{ _('Chose the number of top products') }}">
+          <option value="">{{ _('Top') }}</option>
+        </select>
 
-        <select id="top">
-          <option value="10">10</option>
-          <option value="20">20</option>
+        <select id="products" style="width: 115px;">
+          <option value="">{{ _('Product') }}</option>
         </select>
 
         <button id="filterPie" class="primary">{{ _('Submit') }}</button>
@@ -231,18 +234,7 @@
 {% if 2 < resultActions.data[0]['rolID'] < 5 %}
 <script>
     let csrfToken = "{{ csrf_token() }}";
-    // Prepare dataset as an array of objects:
-    // let fullData = [
-    //   { year: '2025', month: 'January', person: 'John Smith',   value: 55 },
-    //   { year: '2025', month: 'January', person: 'Jimmy',   value: 500 },
-    //   { year: '2025', month: 'January', person: 'Jacky Chann',  value: 49 },
-    //   { year: '2025', month: 'January', person: 'Mak Chann',  value: 49 },
-    //   { year: '2025', month: 'January', person: 'Bek sd',  value: 49 },
-    //   { year: '2025', month: 'January', person: 'Chann Man',  value: 49 },
-    //   // … all your records …
-    // ];
 
-    
     //  BAR CHART
     const fullscreenPlugin = {
         id: 'fullscreen',
@@ -451,11 +443,11 @@
         plugins: { 
             legend: {display:false}, 
             title: {display:false,},
-            fullscreen: { buttonText: '⛶' },            
+            fullscreen: { buttonText: '⛶' },  
         },
         scales: { x:{title:{display:true,text:''}}, y:{beginAtZero:true} }
       },
-      plugins: [ fullscreenPluginPie ]
+      plugins: [ fullscreenPluginPie  ]
     });
 
     // 3) A helper to redraw based on current filters:
@@ -471,9 +463,13 @@
       if (loadPie === false) {
         const year    = document.getElementById('yearSelectPie').value;
         const month   = document.getElementById('monthSelectPie').value;
+        const top   = document.getElementById('top').value;
+        const product   = document.getElementById('products').value;
 
         formData.append('year', year);
         formData.append('month', month);
+        formData.append('top', top);
+        formData.append('product', product);
       }
 
 
@@ -492,13 +488,32 @@
               
               if (response.status === '1') {
                   if (loadPie === true) {
-                    // response.chartData.affiliates.forEach(affiliate => {
-                    //   const option = document.createElement('option');
-                    //   option.value = affiliate.ID;
-                    //   option.textContent = affiliate.Initials + ' - ' + affiliate.Position;
-                    //   document.getElementById('person').appendChild(option);
-                    // });
+                    let dataLen = response.chartData.data.length;
+                    let limit = response.chartData.limit;
+                    num = limit;
+                    const topSelect = document.getElementById('top');
+                    while (true) {
+                      const option = document.createElement('option');
+                      option.value = num;
+                      option.textContent = num;
+                      topSelect.appendChild(option);
+                      num = num + limit;
+                      if (num > dataLen) {
+                        option.value = dataLen;
+                        option.textContent = dataLen;
+                        topSelect.appendChild(option);
+                        break;
+                      }
+                    }
                   }
+
+                  const productSelect = document.getElementById('products');
+                  response.chartData.products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.ID;
+                    option.textContent = product.Title;
+                    productSelect.appendChild(option);
+                  });
 
                   let fullData = response.chartData.data;
 

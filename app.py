@@ -6783,8 +6783,11 @@ def get_chart_data():
             chartData['data'] = result['data']
            
         if request.form.get('sales') == '1':
+            label_value = "`product`.`Title` AS `label`, COUNT(`product`.`ID`) AS `value`"
             orderBy = "ORDER BY `value` DESC"
-            monthFilter, personFilter, monthQuery, month = ['', '', '', '']
+            limit = 5
+            LIMIT = ""
+            monthFilter, productFilter, monthQuery, month = ['', '', '', '']
             # Prepare protoTuple for SQL parameters
             protoTuple = [languageID, datetime.now().year]
             yearFilter = "AND YEAR(`payment_details`.`timestamp`) = %s "
@@ -6795,28 +6798,25 @@ def get_chart_data():
             if request.form.get('month'):
                 month = request.form.get('month')
                 protoTuple.append(month)
-                # monthQuery = "DATE_FORMAT(`payment_details`.`timestamp`, '%m') AS `month`,"
-                # month = "`month`,"
                 monthFilter = " AND DATE_FORMAT(`payment_details`.`timestamp`, '%m') = %s "
 
-            if request.form.get('person'):
-                person = request.form.get('person')
-                if person == '0':
-                    personFilter = " AND `payment_details`.`affiliateID` IS NULL "
-                else:
-                    protoTuple.append(person)
-                    personFilter = " AND `payment_details`.`affiliateID` = %s "
-                
-                if not request.form.get('month'):
-                    monthQuery = "DATE_FORMAT(`payment_details`.`timestamp`, '%m') AS `month`,"
-                    month = "`month`,"
-                    orderBy = "ORDER BY `month`"
 
-            filters = yearFilter + monthFilter + personFilter
+            if request.form.get('product'):
+                productID = request.form.get('product')
+                label_value = "`product_type`.`Title` AS `label`, COUNT(`product_type`.`ID`) AS `value`"
+                
+                productFilter = " AND `product`.`ID` = %s "
+                protoTuple.append(productID)
+               
+            if request.form.get('top') and request.form.get('top').isdigit():
+                LIMIT = "LIMIT %s"
+                protoTuple.append(int(request.form.get('top')))
+
+
+            filters = yearFilter + monthFilter + productFilter
             sqlQuery = f"""
                 SELECT
-                    `product`.`Title` AS `label`,
-                    COUNT(`product`.`ID`) AS `value`
+                    {label_value}
                 FROM `payment_details`
                     LEFT JOIN `purchase_history` ON `purchase_history`.`payment_details_id` = `payment_details`.`ID`
                     LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey`
@@ -6826,7 +6826,8 @@ def get_chart_data():
                     AND `product_type_relatives`.`Language_ID` = %s
                     {filters}
                 GROUP BY `label`
-                ORDER BY `value` DESC;
+                ORDER BY `value` DESC
+                {LIMIT};
             """
             print(sqlQuery)
             print(protoTuple)
@@ -6834,6 +6835,19 @@ def get_chart_data():
             result = sqlSelect(sqlQuery, sqlValTuple, True)
             chartData['data'] = result['data']
             print(result)
+
+            chartData['limit'] = limit
+
+            sqlQueryP = """SELECT 
+                        `product`.`ID`,
+                        `product`.`Title`
+                    FROM `product`
+                        LEFT JOIN `product_relatives` ON `product_relatives`.`P_ID` = `product`.`ID`
+                    WHERE `product`.`Product_Status` = 2
+                        AND `product_relatives`.`Language_ID` = %s;"""
+            sqlValTupleP = (languageID,)
+            resultP = sqlSelect(sqlQueryP, sqlValTupleP, True)
+            chartData['products'] = resultP['data']
                    
     if session.get('roll_id') == 3:
         pass

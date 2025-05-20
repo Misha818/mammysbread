@@ -1288,9 +1288,8 @@ msgstr ""
 #: templates/affiliate-order-details.html:280
 #: templates/confirmation-page.html:280 templates/order-details.html:317
 #: templates/promo-code-details.html:78
-#, fuzzy
 msgid "Product"
-msgstr "Products"
+msgstr "Product"
 
 #: templates/affiliate-order-details.html:282
 #: templates/affiliate-orders.html:195 templates/affiliate-orders.html:295
