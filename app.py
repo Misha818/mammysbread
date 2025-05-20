@@ -6733,55 +6733,108 @@ def get_chart_data():
         chartData['affiliates'] = affiliates['data']
 
     if session.get('roll_id') == 4:
-        orderBy = "ORDER BY `value` DESC"
-        monthFilter, personFilter, monthQuery, month = ['', '', '', '']
-        # Prepare protoTuple for SQL parameters
-        protoTuple = [datetime.now().year]
-        yearFilter = "AND YEAR(`payment_details`.`timestamp`) = %s "
-        if request.form.get('year'):
-            year = request.form.get('year')
-            protoTuple[0] = year
-        
-        if request.form.get('month'):
-            month = request.form.get('month')
-            protoTuple.append(month)
-            monthQuery = "DATE_FORMAT(`payment_details`.`timestamp`, '%m') AS `month`,"
-            month = "`month`,"
-            monthFilter = " AND DATE_FORMAT(`payment_details`.`timestamp`, '%m') = %s "
-
-        if request.form.get('person'):
-            person = request.form.get('person')
-            if person == '0':
-                personFilter = " AND `payment_details`.`affiliateID` IS NULL "
-            else:
-                protoTuple.append(person)
-                personFilter = " AND `payment_details`.`affiliateID` = %s "
+        if request.form.get('persons') == '1':
+            orderBy = "ORDER BY `value` DESC"
+            monthFilter, personFilter, monthQuery, month = ['', '', '', '']
+            # Prepare protoTuple for SQL parameters
+            protoTuple = [datetime.now().year]
+            yearFilter = "AND YEAR(`payment_details`.`timestamp`) = %s "
+            if request.form.get('year'):
+                year = request.form.get('year')
+                protoTuple[0] = year
             
-            if not request.form.get('month'):
+            if request.form.get('month'):
+                month = request.form.get('month')
+                protoTuple.append(month)
                 monthQuery = "DATE_FORMAT(`payment_details`.`timestamp`, '%m') AS `month`,"
                 month = "`month`,"
-                orderBy = "ORDER BY `month`"
+                monthFilter = " AND DATE_FORMAT(`payment_details`.`timestamp`, '%m') = %s "
 
-        filters = yearFilter + monthFilter + personFilter
-        sqlQuery = f"""
-            SELECT
-                DATE_FORMAT(`payment_details`.`timestamp`, '%Y') AS `year`,
-                {monthQuery}            
-                -- DATE_FORMAT(`payment_details`.`timestamp`, '%M') AS `monthname`,
-                CONCAT(`stuff`.`FirstName`, ' ', `stuff`.`LastName`) AS `person`,
-                SUM(`payment_details`.`final_price`) AS `value`,
-                `stuff`.`Email`
-            FROM `payment_details`
-                LEFT JOIN `stuff` ON `stuff`.`ID` = `payment_details`.`affiliateID`
-            WHERE  `payment_details`.`Status` = 5
-                {filters}
-                GROUP BY `year`, {month} `person`, `stuff`.`Email`
-                {orderBy}
-        """
-        sqlValTuple = tuple(protoTuple)
-        result = sqlSelect(sqlQuery, sqlValTuple, True)
-        chartData['data'] = result['data']
-        
+            if request.form.get('person'):
+                person = request.form.get('person')
+                if person == '0':
+                    personFilter = " AND `payment_details`.`affiliateID` IS NULL "
+                else:
+                    protoTuple.append(person)
+                    personFilter = " AND `payment_details`.`affiliateID` = %s "
+                
+                if not request.form.get('month'):
+                    monthQuery = "DATE_FORMAT(`payment_details`.`timestamp`, '%m') AS `month`,"
+                    month = "`month`,"
+                    orderBy = "ORDER BY `month`"
+
+            filters = yearFilter + monthFilter + personFilter
+            sqlQuery = f"""
+                SELECT
+                    DATE_FORMAT(`payment_details`.`timestamp`, '%Y') AS `year`,
+                    {monthQuery}            
+                    -- DATE_FORMAT(`payment_details`.`timestamp`, '%M') AS `monthname`,
+                    CONCAT(`stuff`.`FirstName`, ' ', `stuff`.`LastName`) AS `label`,
+                    SUM(`payment_details`.`final_price`) AS `value`
+                FROM `payment_details`
+                    LEFT JOIN `stuff` ON `stuff`.`ID` = `payment_details`.`affiliateID`
+                WHERE  `payment_details`.`Status` = 5
+                    {filters}
+                    GROUP BY `year`, {month} `label`
+                    {orderBy}
+                """
+            sqlValTuple = tuple(protoTuple)
+            result = sqlSelect(sqlQuery, sqlValTuple, True)
+            chartData['data'] = result['data']
+           
+        if request.form.get('sales') == '1':
+            orderBy = "ORDER BY `value` DESC"
+            monthFilter, personFilter, monthQuery, month = ['', '', '', '']
+            # Prepare protoTuple for SQL parameters
+            protoTuple = [languageID, datetime.now().year]
+            yearFilter = "AND YEAR(`payment_details`.`timestamp`) = %s "
+            if request.form.get('year'):
+                year = request.form.get('year')
+                protoTuple[1] = year
+            
+            if request.form.get('month'):
+                month = request.form.get('month')
+                protoTuple.append(month)
+                # monthQuery = "DATE_FORMAT(`payment_details`.`timestamp`, '%m') AS `month`,"
+                # month = "`month`,"
+                monthFilter = " AND DATE_FORMAT(`payment_details`.`timestamp`, '%m') = %s "
+
+            if request.form.get('person'):
+                person = request.form.get('person')
+                if person == '0':
+                    personFilter = " AND `payment_details`.`affiliateID` IS NULL "
+                else:
+                    protoTuple.append(person)
+                    personFilter = " AND `payment_details`.`affiliateID` = %s "
+                
+                if not request.form.get('month'):
+                    monthQuery = "DATE_FORMAT(`payment_details`.`timestamp`, '%m') AS `month`,"
+                    month = "`month`,"
+                    orderBy = "ORDER BY `month`"
+
+            filters = yearFilter + monthFilter + personFilter
+            sqlQuery = f"""
+                SELECT
+                    `product`.`Title` AS `label`,
+                    COUNT(`product`.`ID`) AS `value`
+                FROM `payment_details`
+                    LEFT JOIN `purchase_history` ON `purchase_history`.`payment_details_id` = `payment_details`.`ID`
+                    LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey`
+                    LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+                    LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
+                WHERE  `payment_details`.`Status` = 5
+                    AND `product_type_relatives`.`Language_ID` = %s
+                    {filters}
+                GROUP BY `label`
+                ORDER BY `value` DESC;
+            """
+            print(sqlQuery)
+            print(protoTuple)
+            sqlValTuple = tuple(protoTuple)
+            result = sqlSelect(sqlQuery, sqlValTuple, True)
+            chartData['data'] = result['data']
+            print(result)
+                   
     if session.get('roll_id') == 3:
         pass
 
