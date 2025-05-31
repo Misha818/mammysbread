@@ -78,24 +78,24 @@ def is_digit(value):
 
 
 # Initialize limiter with in-memory storage explicitly.
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    # default_limits=["200 per day", "50 per hour"],
-    default_limits=[],
-    storage_uri="memory://",  # explicitly using in-memory storage
-    strategy="fixed-window"
-)
-
-# Initialize limiter with redis storage (for production)
 # limiter = Limiter(
 #     app=app,
 #     key_func=get_remote_address,
-#    # default_limits=["200 per day", "50 per hour"],
+#     # default_limits=["200 per day", "50 per hour"],
 #     default_limits=[],
-#     storage_uri="redis://localhost:6379/0",  # Use Redis storage
+#     storage_uri="memory://",  # explicitly using in-memory storage
 #     strategy="fixed-window"
 # )
+
+# Initialize limiter with redis storage (for production)
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+   # default_limits=["200 per day", "50 per hour"],
+    default_limits=[],
+    storage_uri="redis://localhost:6379/0",  # Use Redis storage
+    strategy="fixed-window"
+)
 
 
 defLang = getDefLang()
@@ -121,6 +121,36 @@ cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 
 orderStatusList = get_order_status_list()
 
+
+from flask import render_template_string
+@app.route("/test", methods=["GET"])
+def test():    
+    data = {
+        "type": "mailersend",
+        "subject": "Test Email using Mailersend",
+        "mail_from": "info@mammysbread.am",
+        "mail_from_user": "CEO TEST",
+        "mail_to": "Mishayil Movsisyan",
+        "mail_to_email": "misha818m@gmail.com",
+        "user_name": "Test User",
+        "btn_0_content": gettext("Click here to sign up"),
+        "btn_0_href": get_full_website_name() + '/stuff-signup/' + 'jdsakjdkajdkasjdkjaskdjaskdkjafbas',
+        "text_0": "",
+        "text_1": "",
+        "text_2": "",
+        "text_3": "",
+        "title": gettext("Teammate Signup"),
+        "header": gettext("Teammate Signup"),
+        "company_name": gettext("company"),
+        "company_address": "",
+        "unsubscribe": gettext("unsubscribe"),
+        "unsubscribe_url": get_full_website_name() + '/unsubscribe',
+        "year": datetime.now().year
+    }
+    
+    resp = requests.post("http://localhost:8000/send", json=data)
+
+    return render_template_string(resp.text)
 
 
 @app.errorhandler(CSRFError)
