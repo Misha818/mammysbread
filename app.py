@@ -121,6 +121,8 @@ cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 
 orderStatusList = get_order_status_list()
 
+
+
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
     return render_template('csrf_error.html', reason=e.description), 400
@@ -308,6 +310,7 @@ babel = Babel(app, locale_selector=get_locale, timezone_selector=get_timezone)
 def setlang():
     defLang = getDefLang()
     lang = request.args.get('lang', defLang['Prefix'])
+
     refKey = request.args.get('RefKey', '')
     session['lang'] = lang
     if refKey != '':
@@ -318,13 +321,15 @@ def setlang():
         else:
             newUrl = url_for('home', _external=True) + translated_path_segment
             return redirect(newUrl)
-    
+    print(request.referrer)
     if request.referrer:
         if 'langID' in request.referrer:
             newUrl = request.referrer.split('&langID=')[0]
-            return redirect(newUrl)
-
-    return redirect(request.referrer)
+        else:
+            newUrl = request.referrer
+        return redirect(newUrl)
+    
+    return redirect(url_for('home', _external=True))  # Redirect to the home page with the new language
 
 @app.route('/setroll/<rollID>')
 def setroll(rollID):
@@ -6858,7 +6863,6 @@ def get_chart_data():
 # @app.route("/timer", methods=["GET"])
 # def random_reminder():
 #     return render_template('random-reminder.html')
-
 
 
 if __name__ == '__main__':
