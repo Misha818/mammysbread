@@ -159,9 +159,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (response.status === '1') {
 
+                    mistakesDiv.style.display = 'none';
+                    saveButton.classList.remove('hidden');
+                    saving.classList.add('hidden');
                     alert(response.answer)
-                    // Handle success
-                    let prURL = window.location.origin  + '/roles';
+                    // let prURL = window.location.origin  + '/roles';
                     // location.href = prURL;
 
                     // location.reload();

@@ -3,8 +3,8 @@ from mmb_db import get_db, close_db
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from products import submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import init_sysadmin_context, check_rol_id, check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_unique_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from products import email_text, submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
+from sysadmin import send_confirmation_email, get_create_email_id, inline_css, init_sysadmin_context, check_rol_id, check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_unique_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -125,31 +125,26 @@ orderStatusList = get_order_status_list()
 from flask import render_template_string
 @app.route("/test", methods=["GET"])
 def test():    
+
+    # result = [{'ID': 5, 'payment_method': 'Visa', 'CMD': 4242, 'promo_code': 'lalal', 'final_price': 5000.0, 'FirstName': 'kljkhkj', 'LastName': 'hkjhkjh', 'phone': '37433151580', 'email': "good@mail.com", 'address': '182 KHUDYAKOV STREET', 'note': None, 'prTitle': 'Թեսթավորման պրոդուկտ', 'ptTitle': 'Գին 1', 'quantity': 3, 'price': 1000.0, 'discount': None}, {'ID': 5, 'payment_method': 'Visa', 'CMD': 4242, 'promo_code': None, 'final_price': 5000.0, 'FirstName': 'kljkhkj', 'LastName': 'hkjhkjh', 'phone': '37433151580', 'email': None, 'address': '182 KHUDYAKOV STREET', 'note': None, 'prTitle': 'Թեսթավորման պրոդուկտ', 'ptTitle': 'Գին 2', 'quantity': 1, 'price': 2000.0, 'discount': None}]
+    # new_html = """<p style="margin: 0; padding: 0"><span style='font-size: 20px; font-family: "Montserrat", sans-serif'>Hola amigos</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><em style='font-size: 20px; color: rgb(40, 252, 85); font-family: "Montserrat", sans-serif'><u>Amigios Muchachos ketanios</u></em></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><em style='font-size: 20px; color: rgb(255, 255, 255); background-color: rgb(211, 26, 26); font-family: "Montserrat", sans-serif'><u>HaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA<span></span></u></em></p>"""
+
     data = {
-        "type": "mailersend",
-        "subject": "Test Email using Mailersend",
-        "mail_from": "info@mammysbread.am",
-        "mail_from_user": "CEO TEST",
-        "mail_to": "Mishayil Movsisyan",
-        "mail_to_email": "misha818m@gmail.com",
-        "user_name": "Test User",
-        "btn_0_content": gettext("Click here to sign up"),
-        "btn_0_href": get_full_website_name() + '/stuff-signup/' + 'jdsakjdkajdkasjdkjaskdjaskdkjafbas',
-        "text_0": "",
-        "text_1": "",
-        "text_2": "",
-        "text_3": "",
-        "title": gettext("Teammate Signup"),
-        "header": gettext("Teammate Signup"),
-        "company_name": gettext("company"),
-        "company_address": "",
-        "unsubscribe": gettext("unsubscribe"),
-        "unsubscribe_url": get_full_website_name() + '/unsubscribe',
-        "year": datetime.now().year
+        # For add teammate
+        'type': 'mailersend', 'langPrefix': 'en', 'template': 'static.html', 'subject': 'Teammate Signup Invitation', 'mail_from': 'info@mammysbread.am', 'mail_from_user': 'CEO TEST', 'mail_to': 'Mishayil Movsisyan', 'mail_to_email': 'misha818m@gmail.com', 'main_url': 'http://127.0.0.1:5000', 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg', 'logo_alt': "Mammy's Bread", 'user_name': 'Test User', 'btn_0_content': 'Click here to sign up', 'btn_0_href': 'http://127.0.0.1:5000/stuff-signup/jdsakjdkajdkasjdkjaskdjaskdkjafbas', 'greatings': 'Hello dear ', 'name': 'Sofia!', 'text_0': 'We are thrilled to invite you to join the Mammy’s Bread team! ', 'text_1': 'Simply click the button below to finish setting up your profile and get started:', 'text_2': '', 'text_3': '', 'title': 'Teammate Signup', 'header': 'Teammate Signup', 'company_name': "Mammy's Bread", 'company_address': '', 'unsubscribe': 'unsubscribe', 'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe', 'year': 2025, 'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png', 'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png', 'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png', 'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png', 'telegram_icon': '', 'fb_url': '', 'insta_url': '', 'youtube_url': '', 'whatsapp_url': '', 'telegram_url': ''
+        
+        # For send email
+        # 'data': '<p style="margin: 0; padding: 0"><span style=\'font-size: 20px; font-family: "Montserrat", sans-serif\'>Hello dear Misha!</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 20px; font-family: "Montserrat", sans-serif\'>I am here to test some functionallity. So I am going to write some text.</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: cursive, "Kurland"\'>In today’s fast-paced digital world, effective communication is more important than ever. Whether you\'re writing an email, crafting a blog post, or composing content for social media, clarity and conciseness can make your message stand out. Always consider your audience and choose language that resonates with them. Structure your text with short paragraphs and engaging headings. Proofread carefully to avoid errors. Great communication fosters trust, builds relationships, and drives success in any field.</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Wish y<span>\ufeff</span>ou all the best,</span></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Sincerly</span></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Misha\xa0</span></p>', 'langPrefix': 'en', 'type': 'mailersend', 'template': 'typed.html', 'subject': 'Testing typed email functionality', 'mail_from': 'info@mammysbread.am', 'mail_from_user': 'Satti Matti', 'mail_to_email': 'mishatab7@gmail.com', 'main_url': 'http://127.0.0.1:5000', 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg', 'logo_alt': "Mammy's Bread", 'continue_shopping': 'Continue Shopping', 'contact_us': 'Contact US', 'contact_us_url': 'http://127.0.0.1:5000/contacts', 'company_name': "Mammy's Bread", 'company_address': '', 'unsubscribe': 'unsubscribe', 'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe', 'year': 2025, 'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png', 'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png', 'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png', 'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png', 'telegram_icon': '', 'fb_url': '', 'insta_url': '', 'youtube_url': '', 'whatsapp_url': '', 'telegram_url': '', 'main_currency': '֏'
+
+        # for payment-confirmetion email
+        # 'data': [{'ID': 12, 'payment_method': 'Visa', 'CMD': 4242, 'promo_code': 'love', 'final_price': 2700.0, 'FirstName': 'Jhon', 'LastName': 'Matti', 'phone': '37433151580', 'email': 'mikhayil.movsisyan@gmail.com', 'address': '182 KHUDYAKOV STREET', 'note': None, 'prTitle': 'Product for testing', 'ptTitle': 'Price 1', 'quantity': 1, 'price': 1000.0, 'discount': 10.0}, {'ID': 12, 'payment_method': 'Visa', 'CMD': 4242, 'promo_code': 'love', 'final_price': 2700.0, 'FirstName': 'Jhon', 'LastName': 'Matti', 'phone': '37433151580', 'email': 'misha818m@gmail.com', 'address': '182 KHUDYAKOV STREET', 'note': None, 'prTitle': 'Product for testing', 'ptTitle': 'Price 2', 'quantity': 1, 'price': 2000.0, 'discount': 10.0}], 'langPrefix': 'en', 'type': 'mailersend', 'template': 'dynemic.html', 'subject': 'Payment Confirmation', 'mail_from': 'info@mammysbread.am', 'mail_from_user': "Mammy's Bread", 'mail_to': 'Jhon Matti', 'mail_to_email': 'misha818m@gmail.com', 'main_url': 'http://127.0.0.1:5000', 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg', 'logo_alt': "Mammy's Bread", 'text_0': 'Thank you for shopping with us. We are preparing your order now!', 'delivery_info': 'Delivery Information', 'Order': 'Order', 'order_number': '#12', 'order_details': 'Order Details', 'product': 'Product', 'price': 'Price', 'total': 'Total', 'discount': 'Discount', 'discounted_price': 'Discounted Price', 'display': '', 'cp_price': 'text-decoration: line-through !important;', 'payment_method': 'Payment Method', 'payment_details': 'Visa **** 4242', 'continue_shopping': 'Continue Shopping', 'continue_shopping_url': 'http://127.0.0.1:5000/products-client', 'contact_us': 'Contact US', 'contact_us_url': 'http://127.0.0.1:5000/contacts', 'track_order': 'Track Your Order', 'track_order_url': 'http://127.0.0.1:5000/order-tracker/uLwY7ibWVeuhOaxWMCK3z7e2KER0MLUA3SC', 'title': 'Payment Confirmed!', 'header': 'Payment Confirmed!', 'company_name': "Mammy's Bread", 'company_address': '', 'unsubscribe': 'unsubscribe', 'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe', 'year': 2025, 'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png', 'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png', 'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png', 'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png', 'telegram_icon': '', 'fb_url': '', 'insta_url': '', 'youtube_url': '', 'whatsapp_url': '', 'telegram_url': '', 'main_currency': '֏'
+        
+        
+    
     }
     
-    resp = requests.post("http://localhost:8000/send", json=data)
-
+    resp = requests.post("http://localhost:8000/test", json=data)
+    # print(resp)
     return render_template_string(resp.text)
 
 
@@ -770,13 +765,15 @@ def checkout():
             # answer = gettext('Payment passed successfully') + ' ' + str(amount) + ' ' + MAIN_CURRENCY
             purchseData = json.dumps(purchseData['answer'])
             uniqueURL = generate_random_unique_string('pd_buffer')
+            trackOrderUrl = get_full_website_name() + '/order-tracker/' + uniqueURL
 
             sqlInsertBuffer = "INSERT INTO `pd_buffer` (`pdID`, `Url`) VALUES (%s, %s);"
             sqlValTupleBuffer = (pdID, uniqueURL)
             resultBuffer = sqlInsert(sqlInsertBuffer, sqlValTupleBuffer)
             if resultBuffer['status'] == 0:
                 return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
-
+            if data.get('email') != '' and data.get('email') is not None:
+                send_confirmation_email(pdID, trackOrderUrl)
 
             return jsonify({'status': "1", 'pdID': uniqueURL, 'purchseData': purchseData, 'newCSRFtoken': newCSRFtoken})    
                 
@@ -3350,7 +3347,49 @@ def add_teammate():
             # Send email to the reciepient, do this on real server
             uniqueURL = get_full_website_name() + '/stuff-signup/' + r['data'][0]['Url']
             answer = r['data'][0]['Url']
-            return jsonify({'status': '0', 'answer': uniqueURL, 'newCSRFtoken': newCSRFtoken}) 
+
+            data = {
+                "type": "mailersend",
+                "langPrefix": session.get('lang', 'en'),
+                "template": "static.html",
+                "subject": gettext("Teammate Signup Invitation"),
+                "mail_from": "info@mammysbread.am",
+                "mail_to_email": Email,
+                "main_url": get_full_website_name(),
+                "logo_url": get_full_website_name() + '/static/images/logo.jpg',
+                "logo_alt": gettext("company"),
+                "btn_0_content": gettext("Click here to sign up"),
+                "btn_0_href": uniqueURL,
+                "greatings": gettext("Hello dear"),
+                "text_0": gettext("We are thrilled to invite you to join the Mammy’s Bread team! "),
+                "text_1": gettext("Simply click the button below to finish setting up your profile and get started:"),
+                "text_2": "",
+                "text_3": "",
+                "title": gettext("Teammate Signup"),
+                "header": gettext("Teammate Signup"),
+                "company_name": gettext("company"),
+                "company_address": "",
+                "unsubscribe": gettext("unsubscribe"),
+                "unsubscribe_url": get_full_website_name() + '/unsubscribe',
+                "year": datetime.now().year,
+                "fb_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png",
+                "insta_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png",
+                "youtube_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png",
+                "whatsapp_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png",
+                "telegram_icon": "",
+                "fb_url": "",
+                "insta_url": "",
+                "youtube_url": "",
+                "whatsapp_url": "",
+                "telegram_url": ""
+            }
+
+            resp = requests.post("http://localhost:8000/send", json=data)
+            if resp.status_code == 200:
+                return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
+            else:
+                return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+ 
         else:
             answer = gettext("Something is wrong!")
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
@@ -4942,7 +4981,7 @@ def send_email(filters=''):
             return jsonify({'status': "0", 'answer': gettext('Please specify recipient email address!'), 'newCSRFtoken': newCSRFtoken}) 
         
         # Validate email
-        emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'               
 
         sqlQueryCE = """SELECT 
                             CONCAT(`stuff`.`Firstname`, ' ', `stuff`.`Lastname`) AS `Initials`,
@@ -4957,6 +4996,7 @@ def send_email(filters=''):
             return jsonify({'status': '0', 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
         
         From = result['data'][0]['email']
+
         # Check if the email matches the pattern
         if not re.match(emailPattern, From) or not re.match(emailPattern, request.form.get('to')):
             answer = gettext('Invalid email format')
@@ -4969,23 +5009,69 @@ def send_email(filters=''):
             return jsonify({'status': "0", 'answer': gettext('Please specify email content!'), 'newCSRFtoken': newCSRFtoken}) 
 
         senderInitials = result['data'][0]['Initials']
-        credentials = {
-            'Sender': senderInitials,
-            'From': From,
-            'To': request.form.get('to'),
-            'Subject': request.form.get('subject'),
-            'Content': request.form.get('content')
+        
+        fwn = get_full_website_name()
+        urlList = [
+            fwn + '/static/styles.css',
+            fwn + '/static/quill.snow.css'
+        ]
+        content = inline_css(request.form.get('content'), urlList)
+
+
+        messageType = 5 # 5 for email
+        refID = get_create_email_id(request.form.get('to'))
+        addresseeType = 2 # 2 for clients
+        new_html = email_text(content, type, refID, addresseeType)
+
+        data = {
+            "data": new_html,
+            "langPrefix": session.get('lang', 'en'),
+            "type": "mailersend",
+            "template": "typed.html",
+            "subject": request.form.get('subject'),
+            "mail_from": "info@mammysbread.am",
+            "mail_from_user": senderInitials,
+            "mail_to_email": request.form.get('to'),
+            "main_url": get_full_website_name(),
+            "logo_url": get_full_website_name() + '/static/images/logo.jpg',
+            "logo_alt": gettext("company"),
+            "continue_shopping": gettext("Continue Shopping"),
+            "contact_us": gettext("Contact US"),
+            "contact_us_url": get_full_website_name() + '/contacts',
+            "company_name": gettext("company"),
+            "company_address": "",
+            "unsubscribe": gettext("unsubscribe"),
+            "unsubscribe_url": get_full_website_name() + '/unsubscribe',
+            "year": datetime.now().year,
+            "fb_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png",
+            "insta_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png",
+            "youtube_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png",
+            "whatsapp_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png",
+            "telegram_icon": "",
+            "fb_url": "",
+            "insta_url": "",
+            "youtube_url": "",
+            "whatsapp_url": "",
+            "telegram_url": "",
+            "main_currency": MAIN_CURRENCY
         }
-        msg_id = send_email_mailgun(credentials)
-        if msg_id.get('emailID'):
-            emailID = msg_id.get('emailID')[1:-1]
-            dst = check_delivery_status(emailID) #returns Bool
-            if dst: 
-                return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
-            else:
-                return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
-        else:
-            return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+
+    resp = requests.post("http://localhost:8000/send", json=data)
+    if resp.status_code == 200:
+        return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
+    else:
+        return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+
+        # msg_id = send_email_mailgun(credentials)
+        # if msg_id.get('emailID'):
+        #     emailID = msg_id.get('emailID')[1:-1]
+        #     dst = check_delivery_status(emailID) #returns Bool
+        #     if dst: 
+        #         return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
+        #     else:
+        #         return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
+        # else:
+        #     return jsonify({'status': "0", 'answer': gettext('Something went wrong. Please try again!'), 'newCSRFtoken': newCSRFtoken})
 
 # Event: delivered, Timestamp: 1745149909.2146144
 

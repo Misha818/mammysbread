@@ -4,18 +4,18 @@ from dotenv import load_dotenv
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from werkzeug.utils import secure_filename
 from functools import wraps
-
+from bs4 import BeautifulSoup
+from datetime import datetime, date
 import logging
 import mysql.connector
 from mysql.connector import pooling, Error
 import os
 import re
-import base64
-import uuid
 import random
 import string
 import time
 import requests
+import cssutils
 
 
 def with_conn(f):
@@ -35,39 +35,7 @@ static_folder_path = os.path.join(current_dir, 'static')
 target_directory = os.path.join(static_folder_path, 'images/quilljs')
 os.makedirs(target_directory, exist_ok=True)
 
-# Create a connection to the MySQL database
-# db_connection = mysql.connector.connect(
-#     host=os.getenv('LOCALHOST'),
-#     user=os.getenv('USER'),
-#     password=os.getenv('PASSWORD'),
-#     database=os.getenv('DATABASE'),
-#     connection_timeout=10
-# )
-
-
-# dbconfig = {
-#     "database": os.getenv('DATABASE'),
-#     "user": os.getenv('MYSQL_USER'),
-#     "password": os.getenv('PASSWORD'),
-#     "host": os.getenv('LOCALHOST')
-# }
-
-# dbconfig = {
-#     "database": os.getenv('MYSQL_DATABASE'),
-#     "user": os.getenv('MYSQL_USER'),
-#     "password": os.getenv('MYSQL_PASSWORD'),
-#     "host": os.getenv('MYSQL_HOST', 'db'),
-#     "port": int(os.getenv('MYSQL_PORT', 3306))  # Use the correct port number
-# }
-
-# pool = mysql.connector.pooling.MySQLConnectionPool(
-#     pool_name="mypool",
-#     pool_size=5,
-#     **dbconfig
-# )
-
-# To get a connection from the pool
-# db_connection = pool.get_connection()
+MAIN_CURRENCY = os.getenv('MAIN_CURRENCY')
 
 def action_info():
     return session.get('action_info')
@@ -135,76 +103,6 @@ def sqlSelect(
             "length": 0,
             "error": str(e)
         }
-    # finally:
-    #     cursor.close()
-
-# def sqlSelect(sqlQuery, sqlParams, myDict):
-#     # db_connection = get_db() 
-#     error_message = 'No errors detected'
-#     myData = []
-#     dataLen = 0
-
-#     try:
-#         conn, cursor = get_db(dictionary=myDict)
-#         cursor.execute(sqlQuery, sqlParams or ())
-#         # if myDict:
-#         #     myData = {}
-#         #     # cursor = db_connection.cursor(dictionary=True)
-#         #     db_connection, cursor = get_db_connection(True)
-#         # else:
-#         #     db_connection, cursor = get_db_connection()
-
-#         # if sqlValuesTuple:
-#         #     cursor.execute(sqlQuery, sqlValuesTuple)
-#         # else:
-#         #     cursor.execute(sqlQuery)
-
-#         rows = cursor.fetchall()
-#         # db_connection.commit()
-#         # close_connection(db_connection)
-#         # cursor.close()
-#         if rows is not None:
-#             dataLen = len(rows)
-        
-#     except mysql.connector.Error as e:
-#         logging.exception("Failed to execute SELECT")
-#         error_message = f"An error occurred: {e}"
-
-#     return {'data': rows, 'length': dataLen, 'error': error_message}
-
-
-# def sqlInsert(sqlQuery, sqlValuesTuple):
-#     # Insert the content into the MySQL database
-#     db_connection = get_db()
-#     inserted_id = None
-#     rows_affected = None
-#     status = 0
-#     try:
-#         cursor = db_connection.cursor()
-#         cursor.execute(sqlQuery, sqlValuesTuple)
-        
-#         # Commit the transaction
-#         db_connection.commit()
-        
-#         # Check how many rows were affected
-#         rows_affected = cursor.rowcount
-#         inserted_id = cursor.lastrowid        
-
-#         # Close the cursor
-#         cursor.close()
-        
-#         # Check if rows were affected
-#         if rows_affected > 0:
-#             status = 1
-#             answer = f"Query executed successfully, {rows_affected} rows affected."
-#         else:
-#             status = 1
-#             answer = "Query executed successfully, but no rows were affected."
-
-#     except Exception as e:
-#         answer = f"An error occurred: {e}"
-
-#     return {'answer': answer, 'inserted_id': inserted_id, 'rows_affected': rows_affected, 'status': status}
 
 @with_conn
 def sqlInsert(
@@ -982,6 +880,16 @@ def get_promo_code_id_affiliateID(promo):
         return result['data'][0]
     else:
         return False
+
+def get_create_email_id(email):
+    sqlQuery = "SELECT `ID` FROM `emails` WHERE `email` = %s;"
+    result = sqlSelect(sqlQuery, (email,), True)
+    if result['length'] > 0:
+        return result['data'][0]['ID']
+    else:
+        sqlQueryInsert = "INSERT INTO `emails` (`email`) VALUES (%s);"
+        result = sqlInsert(sqlQueryInsert, (email,))    
+        return result['inserted_id']
     
 
 def calculate_price_promo(products, promo):
@@ -1524,6 +1432,184 @@ def check_rol_id(rollID):
         return False
     return True
 
+
+# ── Silence cssutils warnings (they validate against CSS 2.1 by default) ──
+cssutils.log.setLevel(logging.CRITICAL)
+
+def inline_css(html_str: str, css_urls: list[str]) -> str:
+    """
+    Inlines class-based CSS from the given list of external stylesheets
+    directly into each element’s `style` attribute, then removes `class="…"`
+    from every element. Also adds `margin: 0; padding: 0;` to all <p> tags.
+
+    Args:
+        html_str (str): The input HTML as a unified string.
+        css_urls (list[str]): Full URLs to CSS files (e.g. ["https://…/quill.snow.css"]).
+
+    Returns:
+        str: The modified HTML where every class-based rule has been inlined,
+             all `class` attributes are stripped, and every <p> has zero margins/padding.
+    """
+    # 1) Build a mapping of classname -> concatenated CSS rules (cssText).
+    class_styles: dict[str, str] = {}
+
+    for url in css_urls:
+        resp = requests.get(url)
+        resp.raise_for_status()
+        sheet = cssutils.parseString(resp.text)
+
+        for rule in sheet:
+            if rule.type == rule.STYLE_RULE:
+                style_text = rule.style.cssText.strip()
+                if not style_text:
+                    continue
+
+                for sel in rule.selectorText.split(','):
+                    found = re.findall(r'\.([A-Za-z0-9_-]+)', sel)
+                    for cls_name in found:
+                        if cls_name in class_styles:
+                            class_styles[cls_name] += '; ' + style_text
+                        else:
+                            class_styles[cls_name] = style_text
+
+    # 2) Parse the HTML and inline all matching class styles onto each element.
+    soup = BeautifulSoup(html_str, 'html.parser')
+
+    for elem in soup.find_all(attrs={'class': True}):
+        classes = elem.get('class', [])
+        combined_rules: list[str] = []
+
+        for cls in classes:
+            if cls in class_styles:
+                combined_rules.append(class_styles[cls])
+
+        if combined_rules:
+            existing = elem.get('style', '').rstrip(';')
+            class_css = '; '.join(combined_rules).strip()
+            if existing:
+                new_style = existing + '; ' + class_css
+            else:
+                new_style = class_css
+            elem['style'] = new_style.strip()
+
+        del elem['class']
+
+    # 3) Ensure every <p> has margin: 0; padding: 0;
+    for p in soup.find_all('p'):
+        existing = p.get('style', '').rstrip(';')
+        extra = 'margin: 0; padding: 0'
+        if existing:
+            p['style'] = existing + '; ' + extra
+        else:
+            p['style'] = extra
+
+    return str(soup)
+
+
+def send_confirmation_email(pdID, trackOrderUrl):
+    """
+    Sends a confirmation email to the user after successful order placement.
+    """
+
+    sqlQuery = f"""
+    SELECT 
+        `payment_details`.`ID`,
+        `payment_details`.`payment_method`,
+        `payment_details`.`CMD`,
+        `payment_details`.`promo_code`,   
+        `payment_details`.`final_price`,   
+        `clients`.`FirstName`,
+        `clients`.`LastName`,
+        `phones`.`phone`,
+        `emails`.`email`,
+        `addresses`.`address`,    
+        `notes`.`note`,
+        `product`.`Title` AS `prTitle`,
+        `product_type`.`Title` AS `ptTitle`,
+        `purchase_history`.`quantity`,
+        `purchase_history`.`price`,
+        `purchase_history`.`discount`
+    FROM `payment_details` 
+            LEFT JOIN `clients` ON `payment_details`.`clientID` = `clients`.`ID`
+            LEFT JOIN `client_contacts` ON `payment_details`.`contactID` = `client_contacts`.`ID`
+            LEFT JOIN `phones` ON `client_contacts`.`phoneID` = `phones`.`ID`
+            LEFT JOIN `emails` ON `client_contacts`.`emailID` = `emails`.`ID`
+            LEFT JOIN `addresses` ON `client_contacts`.`addressID` = `addresses`.`ID`
+            LEFT JOIN `notes` ON `payment_details`.`notesID` = `notes`.`ID`
+            LEFT JOIN `purchase_history` ON `payment_details`.`ID` = `purchase_history`.`payment_details_id`
+            LEFT JOIN `product_type_relatives` ON `product_type_relatives`.`PT_Ref_Key` = `purchase_history`.`ptRefKey` 
+            LEFT JOIN `product_type` ON `product_type`.`ID` = `product_type_relatives`.`PT_ID`
+            -- LEFT JOIN `product_type` ON ``.`ptID` = `product_type`.`ID`
+            LEFT JOIN `product` ON `product`.`ID` = `product_type`.`product_ID`
+    WHERE `payment_details`.`ID` = %s AND `product_type_relatives`.`Language_ID` = %s
+    ORDER BY `product`.`Order`, `product_type`.`Order`;
+"""
+    result = sqlSelect(sqlQuery, (pdID, getLangID()), True)
+    if result['length'] == 0:
+        return False
+    
+    display = "display: none;"
+    cp_price = ""
+    if any(map(lambda row: row.get('discount'), result['data'])):
+        display = ""
+        cp_price = "text-decoration: line-through !important;"
+
+    
+    data = {
+        "data": result['data'],
+        "langPrefix": session.get('lang', 'en'),
+        "type": "mailersend",
+        "template": "dynemic.html",
+        "subject": gettext("Payment Confirmation"),
+        "mail_from": "info@mammysbread.am",
+        "mail_from_user": gettext("company"),
+        "mail_to": result['data'][0]['FirstName'] + ' ' + result['data'][0]['LastName'],
+        "mail_to_email": result['data'][0]['email'],
+        "main_url": get_full_website_name(),
+        "logo_url": get_full_website_name() + '/static/images/logo.jpg',
+        "logo_alt": gettext("company"),
+        "text_0": gettext("Thank you for shopping with us. We are preparing your order now!"),
+        "delivery_info": gettext("Delivery Information"),
+        "Order": gettext("Order"),
+        "order_number": "#" + str(pdID),
+        "order_details": gettext("Order Details"),
+        "product": gettext("Product"),
+        "price": gettext("Price"),
+        "total": gettext("Total"),
+        "discount": gettext("Discount"),
+        "discounted_price": gettext("Discounted Price"),
+        "display": display,
+        "cp_price": cp_price,
+        "payment_method": gettext("Payment Method"),
+        "payment_details": result['data'][0]["payment_method"] + " **** " + str(result['data'][0]["CMD"]),
+        "continue_shopping": gettext("Continue Shopping"),
+        "continue_shopping_url": get_full_website_name() + '/products-client',
+        "contact_us": gettext("Contact US"),
+        "contact_us_url": get_full_website_name() + '/contacts',
+        "track_order": gettext("Track Your Order"),
+        "track_order_url": trackOrderUrl,
+        "title": gettext("Order Confirmed!"),
+        "header": gettext("Order Confirmed!"),
+        "company_name": gettext("company"),
+        "company_address": "",
+        "unsubscribe": gettext("unsubscribe"),
+        "unsubscribe_url": get_full_website_name() + '/unsubscribe',
+        "year": datetime.now().year,
+        "fb_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png",
+        "insta_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png",
+        "youtube_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png",
+        "whatsapp_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png",
+        "telegram_icon": "",
+        "fb_url": "",
+        "insta_url": "",
+        "youtube_url": "",
+        "whatsapp_url": "",
+        "telegram_url": "",
+        "main_currency": MAIN_CURRENCY
+    }
+    
+    resp = requests.post("http://localhost:8000/send", json=data)
+    return True if resp.status_code == 200 else False
 
 # Usage
 # msg_id = send_email_mailgun()

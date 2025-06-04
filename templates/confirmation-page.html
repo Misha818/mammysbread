@@ -15,6 +15,7 @@
             background-color: #fdf6ec;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #333;
+            font-family: 'Kurland', cursive, Georgia, 'Times New Roman', Times, serif; color:#333;
         }
         .card {
             border: none;
@@ -195,7 +196,7 @@
                 <!-- <p>March 25, 2025 (Standard Shipping)</p> -->
                 <p style="margin-bottom: unset;">💳 {{ _('Payment Method') }}:</p>
                 {% if (result[0].payment_method == 'Visa') %}
-                <p>Visa ending **** {{ result[0].CMD }}</p>
+                <p>{{ result[0].payment_method | safe }} **** {{ result[0].CMD }}</p>
                 {% endif %}
             </div>
         </div>
@@ -248,7 +249,7 @@
             discountPrice = row.price * row.quantity - row.price * row.quantity * row.discount / 100;
             hidden = '';
             cpPrice = 'cp-price';
-            discount = `(${row.discount}%)`;
+            discount = `${row.discount}%`;
             display='display: table-cell;';
         }
 
@@ -256,8 +257,6 @@
             productTitle = row.prTitle + ' ' + row.ptTitle + ' (' + row.quantity + ')';
         }
         let discountedPriceVal = '';
-        console.log(discountPrice)
-        console.log(typeof(discountPrice))
         if (discountPrice > 0) {
             discountedPriceVal = "{{ mainCurrency }} " + discountPrice.toString();
         }
@@ -375,7 +374,7 @@ function formatInternationalNumber(phoneNumber) {
 
 let phone = formatInternationalNumber(result[0].phone);
 
-document.getElementById('phone').innerHTML = "{{ _('phone') }} : " + phone;
+document.getElementById('phone').innerHTML = "📞 " + phone;
 
 // Examples:
 // console.log(formatInternationalNumber("37433151580"));  // +374 (33) 151-580 (Armenia)

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
-{% if 2 < resultActions.data[0]['rolID'] < 5 %}
+{% if resultActions.data[0]['rolID'] == 4 %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
@@ -127,7 +127,7 @@
 {% block content %}
 
 {% set margins = "margin: 5% 0% 3% 0%;" %}
-{% if 2 < resultActions.data[0]['rolID'] < 5 %}
+{% if resultActions.data[0]['rolID'] == 4 %}
 {% set margins = "margin: 3% 0% 3% 0%;" %}
 <div class="chart-container" >
   <div class="chart-wrapper persons">
@@ -231,7 +231,7 @@
 {% endif %}
 </div>
 
-{% if 2 < resultActions.data[0]['rolID'] < 5 %}
+{% if resultActions.data[0]['rolID'] == 4 %}
 <script>
     let csrfToken = "{{ csrf_token() }}";
 
