@@ -78,24 +78,24 @@ def is_digit(value):
 
 
 # Initialize limiter with in-memory storage explicitly.
-# limiter = Limiter(
-#     app=app,
-#     key_func=get_remote_address,
-#     # default_limits=["200 per day", "50 per hour"],
-#     default_limits=[],
-#     storage_uri="memory://",  # explicitly using in-memory storage
-#     strategy="fixed-window"
-# )
-
-# Initialize limiter with redis storage (for production)
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-   # default_limits=["200 per day", "50 per hour"],
+    # default_limits=["200 per day", "50 per hour"],
     default_limits=[],
-    storage_uri="redis://localhost:6379/0",  # Use Redis storage
+    storage_uri="memory://",  # explicitly using in-memory storage
     strategy="fixed-window"
 )
+
+# Initialize limiter with redis storage (for production)
+# limiter = Limiter(
+#     app=app,
+#     key_func=get_remote_address,
+#    # default_limits=["200 per day", "50 per hour"],
+#     default_limits=[],
+#     storage_uri="redis://localhost:6379/0",  # Use Redis storage
+#     strategy="fixed-window"
+# )
 
 
 defLang = getDefLang()
@@ -131,14 +131,165 @@ def test():
 
     data = {
         # For add teammate
-        'type': 'mailersend', 'langPrefix': 'en', 'template': 'static.html', 'subject': 'Teammate Signup Invitation', 'mail_from': 'info@mammysbread.am', 'mail_from_user': 'CEO TEST', 'mail_to': 'Mishayil Movsisyan', 'mail_to_email': 'misha818m@gmail.com', 'main_url': 'http://127.0.0.1:5000', 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg', 'logo_alt': "Mammy's Bread", 'user_name': 'Test User', 'btn_0_content': 'Click here to sign up', 'btn_0_href': 'http://127.0.0.1:5000/stuff-signup/jdsakjdkajdkasjdkjaskdjaskdkjafbas', 'greatings': 'Hello dear ', 'name': 'Sofia!', 'text_0': 'We are thrilled to invite you to join the Mammy’s Bread team! ', 'text_1': 'Simply click the button below to finish setting up your profile and get started:', 'text_2': '', 'text_3': '', 'title': 'Teammate Signup', 'header': 'Teammate Signup', 'company_name': "Mammy's Bread", 'company_address': '', 'unsubscribe': 'unsubscribe', 'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe', 'year': 2025, 'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png', 'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png', 'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png', 'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png', 'telegram_icon': '', 'fb_url': '', 'insta_url': '', 'youtube_url': '', 'whatsapp_url': '', 'telegram_url': ''
+        
+        # 'type': 'mailersend',
+        # 'langPrefix': 'en',
+        # 'template': 'static.html',
+        # 'subject': 'Teammate Signup Invitation',
+        # 'mail_from': 'info@mammysbread.am',
+        # 'mail_from_user': 'CEO TEST',
+        # 'mail_to': 'Mishayil Movsisyan',
+        # 'mail_to_email': 'misha818m@gmail.com',
+        # 'main_url': 'http://127.0.0.1:5000',
+        # 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg',
+        # 'logo_alt': "Mammy's Bread",
+        # 'user_name': 'Test User',
+        # 'btn_0_content': 'Click here to sign up',
+        # 'btn_0_href': 'http://127.0.0.1:5000/stuff-signup/jdsakjdkajdkasjdkjaskdjaskdkjafbas',
+        # 'greatings': gettext("Hello dear"),
+        # 'text_0': 'We are thrilled to invite you to join the Mammy’s Bread team! ',
+        # 'text_1': 'Simply click the button below to finish setting up your profile and get started:',
+        # 'text_2': gettext("If you’re having trouble with the button above, copy and paste the URL below into your web browser."),
+        # 'text_3': gettext("cheers"),
+        # 'company_team': gettext("Mammy's Bread Team"),
+        # 'title': 'Teammate Signup',
+        # 'header': 'Teammate Signup',
+        # 'company_name': gettext("Your Company. All rights reserved."),
+        # 'company_address': '',       
+        # 'year': 2025,
+        # 'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png',
+        # 'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png',
+        # 'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png',
+        # 'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png',
+        # 'telegram_icon': '',
+        # 'fb_url': '',
+        # 'insta_url': '',
+        # 'youtube_url': '',
+        # 'whatsapp_url': '',
+        # 'telegram_url': ''
         
         # For send email
-        # 'data': '<p style="margin: 0; padding: 0"><span style=\'font-size: 20px; font-family: "Montserrat", sans-serif\'>Hello dear Misha!</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 20px; font-family: "Montserrat", sans-serif\'>I am here to test some functionallity. So I am going to write some text.</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: cursive, "Kurland"\'>In today’s fast-paced digital world, effective communication is more important than ever. Whether you\'re writing an email, crafting a blog post, or composing content for social media, clarity and conciseness can make your message stand out. Always consider your audience and choose language that resonates with them. Structure your text with short paragraphs and engaging headings. Proofread carefully to avoid errors. Great communication fosters trust, builds relationships, and drives success in any field.</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Wish y<span>\ufeff</span>ou all the best,</span></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Sincerly</span></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Misha\xa0</span></p>', 'langPrefix': 'en', 'type': 'mailersend', 'template': 'typed.html', 'subject': 'Testing typed email functionality', 'mail_from': 'info@mammysbread.am', 'mail_from_user': 'Satti Matti', 'mail_to_email': 'mishatab7@gmail.com', 'main_url': 'http://127.0.0.1:5000', 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg', 'logo_alt': "Mammy's Bread", 'continue_shopping': 'Continue Shopping', 'contact_us': 'Contact US', 'contact_us_url': 'http://127.0.0.1:5000/contacts', 'company_name': "Mammy's Bread", 'company_address': '', 'unsubscribe': 'unsubscribe', 'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe', 'year': 2025, 'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png', 'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png', 'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png', 'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png', 'telegram_icon': '', 'fb_url': '', 'insta_url': '', 'youtube_url': '', 'whatsapp_url': '', 'telegram_url': '', 'main_currency': '֏'
+        
+        # 'data': '<p style="margin: 0; padding: 0"><span style=\'font-size: 20px; font-family: "Montserrat", sans-serif\'>Hello dear Misha!</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 20px; font-family: "Montserrat", sans-serif\'>I am here to test some functionallity. So I am going to write some text.</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: cursive, "Kurland"\'>In today’s fast-paced digital world, effective communication is more important than ever. Whether you\'re writing an email, crafting a blog post, or composing content for social media, clarity and conciseness can make your message stand out. Always consider your audience and choose language that resonates with them. Structure your text with short paragraphs and engaging headings. Proofread carefully to avoid errors. Great communication fosters trust, builds relationships, and drives success in any field.</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Wish y<span>\ufeff</span>ou all the best,</span></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Sincerly</span></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Misha\xa0</span></p>',
+        # 'langPrefix': 'en',
+        # 'type': 'mailersend',
+        # 'template': 'typed.html',
+        # 'subject': 'Testing typed email functionality',
+        # 'mail_from': 'info@mammysbread.am',
+        # 'mail_from_user': 'Satti Matti',
+        # 'mail_to_email': 'mishatab7@gmail.com',
+        # 'main_url': 'http://127.0.0.1:5000',
+        # 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg',
+        # 'logo_alt': "Mammy's Bread",
+        # 'continue_shopping': 'Continue Shopping',
+        # 'contact_us': 'Contact US',
+        # 'contact_us_url': 'http://127.0.0.1:5000/contacts',
+        # 'company_name': gettext("Your Company. All rights reserved."),
+        # 'company_address': '',
+        # 'unsubscribe': 'unsubscribe',
+        # 'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe',
+        # 'year': 2025,
+        # 'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png',
+        # 'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png',
+        # 'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png',
+        # 'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png',
+        # 'telegram_icon': '',
+        # 'fb_url': '',
+        # 'insta_url': '',
+        # 'youtube_url': '',
+        # 'whatsapp_url': '',
+        # 'telegram_url': '',
+        # 'main_currency': '֏'
 
         # for payment-confirmetion email
-        # 'data': [{'ID': 12, 'payment_method': 'Visa', 'CMD': 4242, 'promo_code': 'love', 'final_price': 2700.0, 'FirstName': 'Jhon', 'LastName': 'Matti', 'phone': '37433151580', 'email': 'mikhayil.movsisyan@gmail.com', 'address': '182 KHUDYAKOV STREET', 'note': None, 'prTitle': 'Product for testing', 'ptTitle': 'Price 1', 'quantity': 1, 'price': 1000.0, 'discount': 10.0}, {'ID': 12, 'payment_method': 'Visa', 'CMD': 4242, 'promo_code': 'love', 'final_price': 2700.0, 'FirstName': 'Jhon', 'LastName': 'Matti', 'phone': '37433151580', 'email': 'misha818m@gmail.com', 'address': '182 KHUDYAKOV STREET', 'note': None, 'prTitle': 'Product for testing', 'ptTitle': 'Price 2', 'quantity': 1, 'price': 2000.0, 'discount': 10.0}], 'langPrefix': 'en', 'type': 'mailersend', 'template': 'dynemic.html', 'subject': 'Payment Confirmation', 'mail_from': 'info@mammysbread.am', 'mail_from_user': "Mammy's Bread", 'mail_to': 'Jhon Matti', 'mail_to_email': 'misha818m@gmail.com', 'main_url': 'http://127.0.0.1:5000', 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg', 'logo_alt': "Mammy's Bread", 'text_0': 'Thank you for shopping with us. We are preparing your order now!', 'delivery_info': 'Delivery Information', 'Order': 'Order', 'order_number': '#12', 'order_details': 'Order Details', 'product': 'Product', 'price': 'Price', 'total': 'Total', 'discount': 'Discount', 'discounted_price': 'Discounted Price', 'display': '', 'cp_price': 'text-decoration: line-through !important;', 'payment_method': 'Payment Method', 'payment_details': 'Visa **** 4242', 'continue_shopping': 'Continue Shopping', 'continue_shopping_url': 'http://127.0.0.1:5000/products-client', 'contact_us': 'Contact US', 'contact_us_url': 'http://127.0.0.1:5000/contacts', 'track_order': 'Track Your Order', 'track_order_url': 'http://127.0.0.1:5000/order-tracker/uLwY7ibWVeuhOaxWMCK3z7e2KER0MLUA3SC', 'title': 'Payment Confirmed!', 'header': 'Payment Confirmed!', 'company_name': "Mammy's Bread", 'company_address': '', 'unsubscribe': 'unsubscribe', 'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe', 'year': 2025, 'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png', 'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png', 'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png', 'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png', 'telegram_icon': '', 'fb_url': '', 'insta_url': '', 'youtube_url': '', 'whatsapp_url': '', 'telegram_url': '', 'main_currency': '֏'
-        
+        'data': [
+            {
+                'ID': 17,
+                'payment_method': 'Visa',
+                'CMD': 4242,
+                'promo_code': None,
+                'final_price': 4000.0,
+                'FirstName': 'Jhon',
+                'LastName': 'Matti',
+                'phone': '37433151580',
+                'email': 'mishatab7@gmail.com',
+                'address': '182 KHUDYAKOV STREET',
+                'note': None,
+                'prTitle': 'Թեսթավորման պրոդուկտ',
+                'ptTitle': 'Գին 1',
+                'quantity': 2,
+                'price': 1000.0,
+                'discount': None
+            },
+            {
+                'ID': 17,
+                'payment_method': 'Visa',
+                'CMD': 4242,
+                'promo_code': None,
+                'final_price': 4000.0,
+                'FirstName': 'Jhon',
+                'LastName': 'Matti',
+                'phone': '37433151580',
+                'email': 'mishatab7@gmail.com',
+                'address': '182 KHUDYAKOV STREET',
+                'note': None,
+                'prTitle': 'Թեսթավորման պրոդուկտ',
+                'ptTitle': 'Գին 2',
+                'quantity': 1,
+                'price': 2000.0,
+                'discount': None
+            }
+        ],
+        'langPrefix': 'hy',
+        'type': 'mailersend',
+        'template': 'dynemic.html',
+        'subject': 'Վճարման հաստատում',
+        'mail_from': 'info@mammysbread.am',
+        'mail_from_user': 'Մայրիկի Հացը',
+        'mail_to': 'Jhon Matti',
+        'mail_to_email': 'mishatab7@gmail.com',
+        'main_url': 'http://127.0.0.1:5000',
+        'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg',
+        'logo_alt': 'Մայրիկի Հացը',
+        'text_0': 'Շնորհակալություն մեր ծառայություններից օգտվելու համար։ Ձեր պատվերը ընթացքի մեջ է։',
+        'delivery_info': 'Առաքման տվյալներ',
+        'Order': 'Պատվեր',
+        'order_number': '#17',
+        'order_details': 'Պատվերի մանրամասներ',
+        'product': 'Ապրանք',
+        'price': 'Գին',
+        'total': 'Ընդհամենը',
+        'discount': 'Զեղչ',
+        'discounted_price': 'Զեղչված գին',
+        'display': 'display: none;',
+        'cp_price': '',
+        'payment_method': 'Վճարման եղանակ',
+        'continue_shopping': 'Շարունակել գնումները',
+        'continue_shopping_url': 'http://127.0.0.1:5000/products-client',
+        'contact_us': 'Կապ',
+        'contact_us_url': 'http://127.0.0.1:5000/contacts',
+        'track_order': 'Հետևեք Ձեր պատվերին',
+        'track_order_url': 'http://127.0.0.1:5000/order-tracker/BEGIzENqLnWe2rTNAEbZBGK1uAQNTennq2ta2d85',
+        'title': 'Գնումը հաստատված է։',
+        'header': 'Գնումը հաստատված է։',
+        'company_name': 'Մայրիկի Հացը',
+        'company_rights': 'Մայրիկի Հացը։ Բոլորս իրավունքները պաշտպանված են։',
+        'company_address': '',
+        'unsubscribe': 'հրաժարվել բաժանորդագրությունից։',
+        'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe',
+        'year': 2025,
+        'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png',
+        'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png',
+        'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png',
+        'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png',
+        'telegram_icon': '',
+        'fb_url': '',
+        'insta_url': '',
+        'youtube_url': '',
+        'whatsapp_url': '',
+        'telegram_url': '',
+        'main_currency': '֏'
+
         
     
     }
@@ -3322,7 +3473,7 @@ def add_teammate():
             answer = f""" Specified email  "{Email}" already exists """
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})
          
-        sqlQuery = "SELECT `Email` FROM `buffer` WHERE `Email` = %s;"
+        sqlQuery = "SELECT `Email` FROM `buffer` WHERE `Email` = %s AND `Deadline` > NOW();"
         sqlValTuple = (Email,)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
 
@@ -3363,14 +3514,13 @@ def add_teammate():
                 "greatings": gettext("Hello dear"),
                 "text_0": gettext("We are thrilled to invite you to join the Mammy’s Bread team! "),
                 "text_1": gettext("Simply click the button below to finish setting up your profile and get started:"),
-                "text_2": "",
-                "text_3": "",
+                'text_2': gettext("If you’re having trouble with the button above, copy and paste the URL below into your web browser."),
+                'text_3': gettext("cheers"),
+                'company_team': gettext("Mammy's Bread Team"),
                 "title": gettext("Teammate Signup"),
                 "header": gettext("Teammate Signup"),
-                "company_name": gettext("company"),
-                "company_address": "",
-                "unsubscribe": gettext("unsubscribe"),
-                "unsubscribe_url": get_full_website_name() + '/unsubscribe',
+                "company_name": gettext("Your Company. All rights reserved."),
+                "company_address": "",                
                 "year": datetime.now().year,
                 "fb_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png",
                 "insta_icon": "https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png",
@@ -5038,7 +5188,7 @@ def send_email(filters=''):
             "continue_shopping": gettext("Continue Shopping"),
             "contact_us": gettext("Contact US"),
             "contact_us_url": get_full_website_name() + '/contacts',
-            "company_name": gettext("company"),
+            "company_name": gettext("Your Company. All rights reserved."),
             "company_address": "",
             "unsubscribe": gettext("unsubscribe"),
             "unsubscribe_url": get_full_website_name() + '/unsubscribe',

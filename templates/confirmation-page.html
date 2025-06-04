@@ -15,7 +15,8 @@
             background-color: #fdf6ec;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #333;
-            font-family: 'Kurland', cursive, Georgia, 'Times New Roman', Times, serif; color:#333;
+            font-family: 'Kurland', cursive, Georgia, 'Times New Roman', Times, serif; 
+            color:#333;
         }
         .card {
             border: none;
@@ -157,7 +158,7 @@
 <div class="container py-5">
     <div class="card p-5 text-center">
         <h2 class="mb-3 text-success">🎉 {{ _('Order Confirmed!') }} 🎉</h2>
-        <p class="mb-4">{{ _('Thank you for shopping with us. We are preparing your order now!') }}</p>
+        <p class="mb-4">{{ _("Dear") + ' ' + result[0]['FirstName'] + '! ' + _('Thank you for shopping with us. We are preparing your order now!') }}</p>
         <h6 class="text-muted">{{ _('Order') }} #{{ result[0]['ID'] }}</h6>
 
         <div class="row my-4">

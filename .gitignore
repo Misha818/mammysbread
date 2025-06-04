@@ -2,3 +2,5 @@ __pycache__/products.cpython-312.pyc
 env~/replacement.txt
 env~/ToDo.txt
 .env
+gunicorn.txt
+ToDo.txt

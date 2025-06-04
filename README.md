@@ -79,7 +79,6 @@ git restore --source=origin/main --staged -- templates/
 # 3. Discard any unstaged (working‐tree) changes in templates/
 git restore --source=origin/main -- templates/
 
-
 ======================
 
 # Instal and run redis server
@@ -89,4 +88,3 @@ sudo apt install redis-server
 
 sudo systemctl enable redis-server
 sudo systemctl start  redis-server
-

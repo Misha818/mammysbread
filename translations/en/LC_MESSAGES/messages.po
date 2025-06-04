@@ -2593,7 +2593,7 @@ msgstr ""
 
 #: templates/public.html:171
 msgid "Your Company. All rights reserved."
-msgstr "Mammys Bread. All rights reserved."
+msgstr "Mammy's Bread. All rights reserved."
 
 #: templates/public.html:181
 msgid "Home"

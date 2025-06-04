@@ -1568,7 +1568,7 @@ def send_confirmation_email(pdID, trackOrderUrl):
         "main_url": get_full_website_name(),
         "logo_url": get_full_website_name() + '/static/images/logo.jpg',
         "logo_alt": gettext("company"),
-        "text_0": gettext("Thank you for shopping with us. We are preparing your order now!"),
+        "text_0": gettext("Dear") + ' ' + result['data'][0]['FirstName'] + '! ' + gettext("Thank you for shopping with us. We are preparing your order now!"),
         "delivery_info": gettext("Delivery Information"),
         "Order": gettext("Order"),
         "order_number": "#" + str(pdID),
@@ -1581,7 +1581,7 @@ def send_confirmation_email(pdID, trackOrderUrl):
         "display": display,
         "cp_price": cp_price,
         "payment_method": gettext("Payment Method"),
-        "payment_details": result['data'][0]["payment_method"] + " **** " + str(result['data'][0]["CMD"]),
+        # "payment_details": result['data'][0]["payment_method"] + " **** " + str(result['data'][0]["CMD"]),
         "continue_shopping": gettext("Continue Shopping"),
         "continue_shopping_url": get_full_website_name() + '/products-client',
         "contact_us": gettext("Contact US"),
@@ -1590,7 +1590,8 @@ def send_confirmation_email(pdID, trackOrderUrl):
         "track_order_url": trackOrderUrl,
         "title": gettext("Order Confirmed!"),
         "header": gettext("Order Confirmed!"),
-        "company_name": gettext("company"),
+        'company_name': gettext("company"),
+        'company_rights': gettext("Your Company. All rights reserved."),
         "company_address": "",
         "unsubscribe": gettext("unsubscribe"),
         "unsubscribe_url": get_full_website_name() + '/unsubscribe',
@@ -1607,7 +1608,8 @@ def send_confirmation_email(pdID, trackOrderUrl):
         "telegram_url": "",
         "main_currency": MAIN_CURRENCY
     }
-    
+    # print(data)
+    # resp = {'status_code': None}
     resp = requests.post("http://localhost:8000/send", json=data)
     return True if resp.status_code == 200 else False
 
