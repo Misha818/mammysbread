@@ -1,7 +1,15 @@
-__pycache__/products.cpython-312.pyc
-env~/replacement.txt
-env~/ToDo.txt
+# Python
+__pycache__/
+
+# Virtualenvs
+env/
+venv/
+.venv/
+
+# Sensitive / config
 .env
-gunicorn.txt
+
+# Misc
 ToDo.txt
-.env
+
+gunicorn.txt
