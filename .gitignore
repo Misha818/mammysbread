@@ -4,3 +4,4 @@ env~/ToDo.txt
 .env
 gunicorn.txt
 ToDo.txt
+.env
