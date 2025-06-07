@@ -167,7 +167,7 @@ def submit_notes_text(html_content, type, refID, addresseeType):
     return result
 
 
-def email_text(html_content, type, refID, addresseeType):
+def email_text(html_content, fielsType, refID, addresseeType):
     # Regular expression to extract the base64 string from the <img> tag
     pattern = r'<img\s+[^>]*src="data:image/([^;]+);filename=([^;]+);base64,([^"]+)"[^>]*>'
     matches = re.findall(pattern, html_content)
@@ -227,8 +227,8 @@ def email_text(html_content, type, refID, addresseeType):
     new_img_urls = set(re.findall(img_src_pattern, modified_html))
 
     sqlInsertQuery =   "INSERT INTO `notes` (`note`, `type`, `refID`, `addressee_type`, `add_user_id`, `Status`) VALUES (%s, %s, %s, %s, %s, %s)"
-    sqlInsertValTuple = (modified_html, type, refID, addresseeType, session['user_id'], 1)
-    result = sqlInsert(sqlInsertQuery, sqlInsertValTuple)
+    sqlInsertValTuple = (modified_html, fielsType, refID, addresseeType, session['user_id'], 1)
+    sqlInsert(sqlInsertQuery, sqlInsertValTuple)
 
     return modified_html
     
