@@ -5171,7 +5171,7 @@ def send_email(filters=''):
         messageType = 5 # 5 for email
         refID = get_create_email_id(request.form.get('to'))
         addresseeType = 2 # 2 for clients
-        new_html = email_text(content, type, refID, addresseeType)
+        new_html = email_text(content, messageType, refID, addresseeType)
 
         data = {
             "data": new_html,
