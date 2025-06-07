@@ -1610,7 +1610,7 @@ def send_confirmation_email(pdID, trackOrderUrl):
     }
     # print(data)
     # resp = {'status_code': None}
-    resp = requests.post("http://localhost:8000/send", json=data)
+    resp = requests.post(os.getenv('SMAIL_API'), json=data)
     return True if resp.status_code == 200 else False
 
 # Usage
