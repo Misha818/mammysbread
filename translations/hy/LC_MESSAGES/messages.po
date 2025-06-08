@@ -668,7 +668,7 @@ msgstr "Վճարման հաստատում"
 
 #: sysadmin.py:1580 templates/confirmation-page.html:161
 msgid "Dear"
-msgstr "Հարգելի"
+msgstr "Հարգելի՛"
 
 #: sysadmin.py:1580 templates/confirmation-page.html:161
 msgid "Thank you for shopping with us. We are preparing your order now!"
