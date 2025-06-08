@@ -78,24 +78,24 @@ def is_digit(value):
 
 
 # Initialize limiter with in-memory storage explicitly
-# limiter = Limiter(
-#     app=app,
-#     key_func=get_remote_address,
-#     # default_limits=["200 per day", "50 per hour"],
-#     default_limits=[],
-#     storage_uri="memory://",  # explicitly using in-memory storage
-#     strategy="fixed-window"
-# )
-
-# Initialize limiter with redis storage (for production)
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-   # default_limits=["200 per day", "50 per hour"],
+    # default_limits=["200 per day", "50 per hour"],
     default_limits=[],
-    storage_uri="redis://localhost:6379/0",  # Use Redis storage
+    storage_uri="memory://",  # explicitly using in-memory storage
     strategy="fixed-window"
 )
+
+# Initialize limiter with redis storage (for production)
+# limiter = Limiter(
+#     app=app,
+#     key_func=get_remote_address,
+#    # default_limits=["200 per day", "50 per hour"],
+#     default_limits=[],
+#     storage_uri="redis://localhost:6379/0",  # Use Redis storage
+#     strategy="fixed-window"
+# )
 
 
 defLang = getDefLang()
@@ -122,14 +122,14 @@ cert_file = os.path.join(basedir, 'certs', 'certificate.crt')
 orderStatusList = get_order_status_list()
 
 
-# from flask import render_template_string
-# @app.route("/test", methods=["GET"])
-# def test():    
+from flask import render_template_string
+@app.route("/test", methods=["GET"])
+def test():    
 
     # result = [{'ID': 5, 'payment_method': 'Visa', 'CMD': 4242, 'promo_code': 'lalal', 'final_price': 5000.0, 'FirstName': 'kljkhkj', 'LastName': 'hkjhkjh', 'phone': '37433151580', 'email': "good@mail.com", 'address': '182 KHUDYAKOV STREET', 'note': None, 'prTitle': 'Թեսթավորման պրոդուկտ', 'ptTitle': 'Գին 1', 'quantity': 3, 'price': 1000.0, 'discount': None}, {'ID': 5, 'payment_method': 'Visa', 'CMD': 4242, 'promo_code': None, 'final_price': 5000.0, 'FirstName': 'kljkhkj', 'LastName': 'hkjhkjh', 'phone': '37433151580', 'email': None, 'address': '182 KHUDYAKOV STREET', 'note': None, 'prTitle': 'Թեսթավորման պրոդուկտ', 'ptTitle': 'Գին 2', 'quantity': 1, 'price': 2000.0, 'discount': None}]
     # new_html = """<p style="margin: 0; padding: 0"><span style='font-size: 20px; font-family: "Montserrat", sans-serif'>Hola amigos</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><em style='font-size: 20px; color: rgb(40, 252, 85); font-family: "Montserrat", sans-serif'><u>Amigios Muchachos ketanios</u></em></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><em style='font-size: 20px; color: rgb(255, 255, 255); background-color: rgb(211, 26, 26); font-family: "Montserrat", sans-serif'><u>HaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA<span></span></u></em></p>"""
 
-    # data = {
+    data = {
         # For add teammate
         
         # 'type': 'mailersend',
@@ -140,7 +140,7 @@ orderStatusList = get_order_status_list()
         # 'mail_from_user': 'CEO TEST',
         # 'mail_to': 'Mishayil Movsisyan',
         # 'mail_to_email': 'misha818m@gmail.com',
-        # 'main_url': 'http://127.0.0.1:5000',
+        # 'main_url': 'http://127.0.0.1:5000' + '/setlang?lang=' + session.get('lang', 'en'),
         # 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg',
         # 'logo_alt': "Mammy's Bread",
         # 'user_name': 'Test User',
@@ -178,7 +178,7 @@ orderStatusList = get_order_status_list()
         # 'mail_from': 'info@mammysbread.am',
         # 'mail_from_user': 'Satti Matti',
         # 'mail_to_email': 'mishatab7@gmail.com',
-        # 'main_url': 'http://127.0.0.1:5000',
+        # 'main_url': 'http://127.0.0.1:5000' + '/setlang?lang=' + session.get('lang', 'en'),
         # 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg',
         # 'logo_alt': "Mammy's Bread",
         # 'continue_shopping': 'Continue Shopping',
@@ -202,101 +202,101 @@ orderStatusList = get_order_status_list()
         # 'main_currency': '֏'
 
         # for payment-confirmetion email
-    #     'data': [
-    #         {
-    #             'ID': 17,
-    #             'payment_method': 'Visa',
-    #             'CMD': 4242,
-    #             'promo_code': None,
-    #             'final_price': 4000.0,
-    #             'FirstName': 'Jhon',
-    #             'LastName': 'Matti',
-    #             'phone': '37433151580',
-    #             'email': 'mishatab7@gmail.com',
-    #             'address': '182 KHUDYAKOV STREET',
-    #             'note': None,
-    #             'prTitle': 'Թեսթավորման պրոդուկտ',
-    #             'ptTitle': 'Գին 1',
-    #             'quantity': 2,
-    #             'price': 1000.0,
-    #             'discount': None
-    #         },
-    #         {
-    #             'ID': 17,
-    #             'payment_method': 'Visa',
-    #             'CMD': 4242,
-    #             'promo_code': None,
-    #             'final_price': 4000.0,
-    #             'FirstName': 'Jhon',
-    #             'LastName': 'Matti',
-    #             'phone': '37433151580',
-    #             'email': 'mishatab7@gmail.com',
-    #             'address': '182 KHUDYAKOV STREET',
-    #             'note': None,
-    #             'prTitle': 'Թեսթավորման պրոդուկտ',
-    #             'ptTitle': 'Գին 2',
-    #             'quantity': 1,
-    #             'price': 2000.0,
-    #             'discount': None
-    #         }
-    #     ],
-    #     'langPrefix': 'hy',
-    #     'type': 'mailersend',
-    #     'template': 'dynemic.html',
-    #     'subject': 'Վճարման հաստատում',
-    #     'mail_from': 'info@mammysbread.am',
-    #     'mail_from_user': 'Մայրիկի Հացը',
-    #     'mail_to': 'Jhon Matti',
-    #     'mail_to_email': 'mishatab7@gmail.com',
-    #     'main_url': 'http://127.0.0.1:5000',
-    #     'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg',
-    #     'logo_alt': 'Մայրիկի Հացը',
-    #     'text_0': 'Շնորհակալություն մեր ծառայություններից օգտվելու համար։ Ձեր պատվերը ընթացքի մեջ է։',
-    #     'delivery_info': 'Առաքման տվյալներ',
-    #     'Order': 'Պատվեր',
-    #     'order_number': '#17',
-    #     'order_details': 'Պատվերի մանրամասներ',
-    #     'product': 'Ապրանք',
-    #     'price': 'Գին',
-    #     'total': 'Ընդհամենը',
-    #     'discount': 'Զեղչ',
-    #     'discounted_price': 'Զեղչված գին',
-    #     'display': 'display: none;',
-    #     'cp_price': '',
-    #     'payment_method': 'Վճարման եղանակ',
-    #     'continue_shopping': 'Շարունակել գնումները',
-    #     'continue_shopping_url': 'http://127.0.0.1:5000/products-client',
-    #     'contact_us': 'Կապ',
-    #     'contact_us_url': 'http://127.0.0.1:5000/contacts',
-    #     'track_order': 'Հետևեք Ձեր պատվերին',
-    #     'track_order_url': 'http://127.0.0.1:5000/order-tracker/BEGIzENqLnWe2rTNAEbZBGK1uAQNTennq2ta2d85',
-    #     'title': 'Գնումը հաստատված է։',
-    #     'header': 'Գնումը հաստատված է։',
-    #     'company_name': 'Մայրիկի Հացը',
-    #     'company_rights': 'Մայրիկի Հացը։ Բոլորս իրավունքները պաշտպանված են։',
-    #     'company_address': '',
-    #     'unsubscribe': 'հրաժարվել բաժանորդագրությունից։',
-    #     'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe',
-    #     'year': 2025,
-    #     'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png',
-    #     'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png',
-    #     'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png',
-    #     'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png',
-    #     'telegram_icon': '',
-    #     'fb_url': '',
-    #     'insta_url': '',
-    #     'youtube_url': '',
-    #     'whatsapp_url': '',
-    #     'telegram_url': '',
-    #     'main_currency': '֏'
+        'data': [
+            {
+                'ID': 17,
+                'payment_method': 'Visa',
+                'CMD': 4242,
+                'promo_code': None,
+                'final_price': 4000.0,
+                'FirstName': 'Jhon',
+                'LastName': 'Matti',
+                'phone': '37433151580',
+                'email': 'mishatab7@gmail.com',
+                'address': '182 KHUDYAKOV STREET',
+                'note': None,
+                'prTitle': 'Թեսթավորման պրոդուկտ',
+                'ptTitle': 'Գին 1',
+                'quantity': 2,
+                'price': 1000.0,
+                'discount': 10
+            },
+            {
+                'ID': 17,
+                'payment_method': 'Visa',
+                'CMD': 4242,
+                'promo_code': None,
+                'final_price': 4000.0,
+                'FirstName': 'Jhon',
+                'LastName': 'Matti',
+                'phone': '37433151580',
+                'email': 'mishatab7@gmail.com',
+                'address': '182 KHUDYAKOV STREET',
+                'note': None,
+                'prTitle': 'Թեսթավորման պրոդուկտ',
+                'ptTitle': 'Գին 2',
+                'quantity': 1,
+                'price': 2000.0,
+                'discount': 10
+            }
+        ],
+        'langPrefix': 'hy',
+        'type': 'mailersend',
+        'template': 'dynemic.html',
+        'subject': 'Վճարման հաստատում',
+        'mail_from': 'info@mammysbread.am',
+        'mail_from_user': 'Մայրիկի Հացը',
+        'mail_to': 'Jhon Matti',
+        'mail_to_email': 'mishatab7@gmail.com',
+        'main_url': 'http://127.0.0.1:5000' + '/setlang?lang=' + session.get('lang', 'en'),
+        'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg',
+        'logo_alt': 'Մայրիկի Հացը',
+        'text_0': 'Շնորհակալություն մեր ծառայություններից օգտվելու համար։ Ձեր պատվերը ընթացքի մեջ է։',
+        'delivery_info': 'Առաքման տվյալներ',
+        'Order': 'Պատվեր',
+        'order_number': '#17',
+        'order_details': 'Պատվերի մանրամասներ',
+        'product': 'Ապրանք',
+        'price': 'Գին',
+        'total': 'Ընդհամենը',
+        'discount': 'Զեղչ',
+        'discounted_price': 'Զեղչված գին',
+        'display': '',
+        'cp_price': '3600',
+        'payment_method': 'Վճարման եղանակ',
+        'continue_shopping': 'Շարունակել գնումները',
+        'continue_shopping_url': 'http://127.0.0.1:5000/products-client',
+        'contact_us': 'Կապ',
+        'contact_us_url': 'http://127.0.0.1:5000/contacts',
+        'track_order': 'Հետևեք Ձեր պատվերին',
+        'track_order_url': 'http://127.0.0.1:5000/order-tracker/BEGIzENqLnWe2rTNAEbZBGK1uAQNTennq2ta2d85',
+        'title': 'Գնումը հաստատված է։',
+        'header': 'Գնումը հաստատված է։',
+        'company_name': 'Մայրիկի Հացը',
+        'company_rights': 'Մայրիկի Հացը։ Բոլորս իրավունքները պաշտպանված են։',
+        'company_address': '',
+        'unsubscribe': 'հրաժարվել բաժանորդագրությունից։',
+        'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe',
+        'year': 2025,
+        'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png',
+        'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png',
+        'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png',
+        'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png',
+        'telegram_icon': '',
+        'fb_url': '',
+        'insta_url': '',
+        'youtube_url': '',
+        'whatsapp_url': '',
+        'telegram_url': '',
+        'main_currency': '֏'
 
         
     
-    # }
+    }
     
-    # resp = requests.post(os.getenv('SMAIL_API'), json=data)
+    resp = requests.post(os.getenv('SMAIL_API'), json=data)
     # # print(resp)
-    # return render_template_string(resp.text)
+    return render_template_string(resp.text)
 
 
 @app.errorhandler(CSRFError)
@@ -3506,7 +3506,7 @@ def add_teammate():
                 "subject": gettext("Teammate Signup Invitation"),
                 "mail_from": "info@mammysbread.am",
                 "mail_to_email": Email,
-                "main_url": get_full_website_name(),
+                "main_url": get_full_website_name() + '/setlang?lang=' + session.get('lang', 'en'),
                 "logo_url": get_full_website_name() + '/static/images/logo.jpg',
                 "logo_alt": gettext("company"),
                 "btn_0_content": gettext("Click here to sign up"),
@@ -5182,7 +5182,7 @@ def send_email(filters=''):
             "mail_from": "info@mammysbread.am",
             "mail_from_user": senderInitials,
             "mail_to_email": request.form.get('to'),
-            "main_url": get_full_website_name(),
+            "main_url": get_full_website_name() + '/setlang?lang=' + session.get('lang', 'en'),
             "logo_url": get_full_website_name() + '/static/images/logo.jpg',
             "logo_alt": gettext("company"),
             "continue_shopping": gettext("Continue Shopping"),

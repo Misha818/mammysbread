@@ -1450,7 +1450,7 @@ def inline_css(html_str: str, css_urls: list[str]) -> str:
         str: The modified HTML where every class-based rule has been inlined,
              all `class` attributes are stripped, and every <p> has zero margins/padding.
     """
-    # 1) Build a mapping of classname -> concatenated CSS rules (cssText).
+    # Build a mapping of classname -> concatenated CSS rules (cssText).
     class_styles: dict[str, str] = {}
 
     for url in css_urls:
@@ -1472,7 +1472,7 @@ def inline_css(html_str: str, css_urls: list[str]) -> str:
                         else:
                             class_styles[cls_name] = style_text
 
-    # 2) Parse the HTML and inline all matching class styles onto each element.
+    # Parse the HTML and inline all matching class styles onto each element.
     soup = BeautifulSoup(html_str, 'html.parser')
 
     for elem in soup.find_all(attrs={'class': True}):
@@ -1494,7 +1494,7 @@ def inline_css(html_str: str, css_urls: list[str]) -> str:
 
         del elem['class']
 
-    # 3) Ensure every <p> has margin: 0; padding: 0;
+    # Ensure every <p> has margin: 0; padding: 0;
     for p in soup.find_all('p'):
         existing = p.get('style', '').rstrip(';')
         extra = 'margin: 0; padding: 0'
@@ -1502,6 +1502,15 @@ def inline_css(html_str: str, css_urls: list[str]) -> str:
             p['style'] = existing + '; ' + extra
         else:
             p['style'] = extra
+
+    # Ensure every <p> has margin: 0; padding: 0;
+    for img in soup.find_all('img'):
+        existing = img.get('style', '').rstrip(';')
+        extra = 'width: 100%'
+        if existing:
+            img['style'] = existing + '; ' + extra
+        else:
+            img['style'] = extra
 
     return str(soup)
 
@@ -1565,7 +1574,7 @@ def send_confirmation_email(pdID, trackOrderUrl):
         "mail_from_user": gettext("company"),
         "mail_to": result['data'][0]['FirstName'] + ' ' + result['data'][0]['LastName'],
         "mail_to_email": result['data'][0]['email'],
-        "main_url": get_full_website_name(),
+        "main_url": get_full_website_name() + '/setlang?lang=' + session.get('lang', 'en'),
         "logo_url": get_full_website_name() + '/static/images/logo.jpg',
         "logo_alt": gettext("company"),
         "text_0": gettext("Dear") + ' ' + result['data'][0]['FirstName'] + '! ' + gettext("Thank you for shopping with us. We are preparing your order now!"),
