@@ -962,6 +962,7 @@ def confirmation_page(pdID):
         `emails`.`email`,
         `addresses`.`address`,    
         `notes`.`note`,
+        `product`.`Url`,
         `product`.`Title` AS `prTitle`,
         `product_type`.`Title` AS `ptTitle`,
         `purchase_history`.`quantity`,

@@ -1533,6 +1533,7 @@ def send_confirmation_email(pdID, trackOrderUrl):
         `emails`.`email`,
         `addresses`.`address`,    
         `notes`.`note`,
+        `product`.`Url`,
         `product`.`Title` AS `prTitle`,
         `product_type`.`Title` AS `ptTitle`,
         `purchase_history`.`quantity`,
