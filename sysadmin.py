@@ -1578,7 +1578,7 @@ def send_confirmation_email(pdID, trackOrderUrl):
         "main_url": get_full_website_name(),
         "logo_url": get_full_website_name() + '/static/images/logo.jpg',
         "logo_alt": gettext("company"),
-        "text_0": gettext("Dear") + ' ' + result['data'][0]['FirstName'] + '! ' + gettext("Thank you for shopping with us. We are preparing your order now!"),
+        "text_0": gettext("Dear") + ' ' + result['data'][0]['FirstName'] + ', ' + gettext("Thank you for shopping with us. We are preparing your order now!"),
         "delivery_info": gettext("Delivery Information"),
         "Order": gettext("Order"),
         "order_number": "#" + str(pdID),

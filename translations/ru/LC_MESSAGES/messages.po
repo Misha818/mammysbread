@@ -666,7 +666,7 @@ msgstr "Уважаемый / уважаемая"
 
 #: sysadmin.py:1580 templates/confirmation-page.html:161
 msgid "Thank you for shopping with us. We are preparing your order now!"
-msgstr "Спасибо за покупку. Мы готовим ваш заказ!"
+msgstr "спасибо за покупку. Мы готовим ваш заказ!"
 
 #: sysadmin.py:1581 templates/confirmation-page.html:185
 msgid "Delivery Information"

@@ -737,7 +737,7 @@ msgstr "Dear"
 
 #: sysadmin.py:1580 templates/confirmation-page.html:161
 msgid "Thank you for shopping with us. We are preparing your order now!"
-msgstr "Thank you for shopping with us. We are preparing your order now!"
+msgstr "thank you for shopping with us. We are preparing your order now!"
 
 #: sysadmin.py:1581 templates/confirmation-page.html:185
 msgid "Delivery Information"
