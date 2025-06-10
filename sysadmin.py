@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, jsonify, request, g
+from flask import Flask, session, redirect, jsonify, request, g, abort
 from mmb_db import get_db
 from dotenv import load_dotenv
 from flask_babel import Babel, _, lazy_gettext as _l, gettext
@@ -558,6 +558,47 @@ def get_meta_tags(content):
 
     metaTags = metaMetaTags + googleMetaTags
     return metaTags
+
+
+# The patterns we want to catch
+BLACKLIST_PATTERNS = [
+    # SQL keywords / operators
+    r"(?i)\b(select|update|delete|insert|drop|alter|union|exec)\b",
+    r"--",                     # SQL comment
+    r";",                      # statement terminator
+    # XSS patterns
+    r"(?i)<\s*script",         # <script> tag
+    r"(?i)on\w+\s*=",          # event handlers like onload=
+    r"(?i)javascript:",        # javascript: URI
+    # Shell-injection
+    r"`",                      # backticks
+    r"\$\(",                   # $(…) subshell
+    r"\|\|", r"\&\&",          # logical or/and in shell
+]
+
+# precompile
+COMPILED = [re.compile(p) for p in BLACKLIST_PATTERNS]
+
+def contains_bad_pattern(value: str) -> bool:
+    """Returns True if any blacklist pattern is found in value."""
+    for pat in COMPILED:
+        if pat.search(value):
+            return True
+    return False
+
+def validate_request(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        # combine GET & POST; use .lists() to catch multi‐valued params
+        for key, values in request.values.lists():
+            for v in values:
+                if type(v) is str:
+                    if contains_bad_pattern(v):
+                        # you could log key/v here for audit
+                        abort(400, description=gettext('Something went wrong. Please try again!'))
+                        # abort(400, description=f"Suspicious input in '{key}'")
+        return f(*args, **kwargs)
+    return wrapper
 
 
 def login_required(f):

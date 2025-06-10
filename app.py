@@ -4,7 +4,7 @@ from flask_babel import Babel, _, lazy_gettext as _l, gettext
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from products import email_text, submit_notes_text, get_pr_order, slidesToEdit, checkCategoryName, checkProductCategoryName, get_RefKey_LangID_by_link, get_article_category_images, get_product_category_images, edit_p_h, submit_reach_text, submit_product_text, add_p_c_sql, edit_p_c_view, edit_a_c_view, edit_p_c_sql, get_product_categories, get_ar_thumbnail_images, get_pr_thumbnail_images, add_product, productDetails, constructPrData, add_product_lang
-from sysadmin import send_confirmation_email, get_create_email_id, inline_css, init_sysadmin_context, check_rol_id, check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_unique_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
+from sysadmin import validate_request, send_confirmation_email, get_create_email_id, inline_css, init_sysadmin_context, check_rol_id, check_delivery_status, send_email_mailgun, getSupportedLangIDs, getLangdata, check_alias, get_order_status_list, get_affiliates, get_affiliate_reward_progress, get_promo_code_id_affiliateID, deletePUpdateP, insertPUpdateP, insertIntoBuffer, calculate_price_promo, clientID_contactID, checkSPSSDataLen, replace_spaces_in_text_nodes, totalNumRows, filter_multy_dict, getLangdatabyID, supported_langs, get_full_website_name, generate_random_unique_string, get_meta_tags, removeRedundantFiles, checkForRedundantFiles, getFileName, fileUpload, get_ar_id_by_lang, get_pr_id_by_lang, getDefLang, getSupportedLangs, getLangID, sqlSelect, sqlInsert, sqlUpdate, sqlDelete, get_pc_id_by_lang, get_pc_ref_key, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -124,6 +124,7 @@ orderStatusList = get_order_status_list()
 
 from flask import render_template_string
 @app.route("/test", methods=["GET"])
+@validate_request
 def test():    
 
     # result = [{'ID': 5, 'payment_method': 'Visa', 'CMD': 4242, 'promo_code': 'lalal', 'final_price': 5000.0, 'FirstName': 'kljkhkj', 'LastName': 'hkjhkjh', 'phone': '37433151580', 'email': "good@mail.com", 'address': '182 KHUDYAKOV STREET', 'note': None, 'prTitle': 'Թեսթավորման պրոդուկտ', 'ptTitle': 'Գին 1', 'quantity': 3, 'price': 1000.0, 'discount': None}, {'ID': 5, 'payment_method': 'Visa', 'CMD': 4242, 'promo_code': None, 'final_price': 5000.0, 'FirstName': 'kljkhkj', 'LastName': 'hkjhkjh', 'phone': '37433151580', 'email': None, 'address': '182 KHUDYAKOV STREET', 'note': None, 'prTitle': 'Թեսթավորման պրոդուկտ', 'ptTitle': 'Գին 2', 'quantity': 1, 'price': 2000.0, 'discount': None}]
@@ -354,6 +355,7 @@ def side_bar_stuff():
 
 @app.route("/login", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
+@validate_request
 def login():
     if request.method == "POST":
         session.clear()
@@ -428,6 +430,7 @@ def ratelimit_handler(e):
 
 @app.route('/submit_product_text', methods=['POST'])
 @login_required
+@validate_request
 def submit_product_t():
     newCSRFtoken = generate_csrf()
         
@@ -444,6 +447,7 @@ def submit_product_t():
 
 @app.route('/submit_reach_text', methods=['POST'])
 @login_required
+@validate_request
 def submit_r_t():
     newCSRFtoken = generate_csrf()
         
@@ -483,6 +487,7 @@ babel = Babel(app, locale_selector=get_locale, timezone_selector=get_timezone)
 
 
 @app.route('/setlang')
+@validate_request
 def setlang():
     defLang = getDefLang()
     lang = request.args.get('lang', defLang['Prefix'])
@@ -508,6 +513,8 @@ def setlang():
     return redirect(url_for('home', _external=True))  # Redirect to the home page with the new language
 
 @app.route('/setroll/<rollID>')
+# @login_required
+@validate_request
 def setroll(rollID):
    
     if rollID is None or not rollID.isdigit():
@@ -520,6 +527,7 @@ def setroll(rollID):
 
 @app.route('/changeprorder', methods=['POST'])
 @login_required
+@validate_request
 def change_pr_order():
     status = '0'
     if not request.form.get('order') or not request.form.get('order'):
@@ -576,6 +584,7 @@ def inject_babel():
 
 
 @app.route('/')
+@validate_request
 def home():
     if session.get('lang') == None:
         setlang()
@@ -595,6 +604,7 @@ def home():
     return render_template('index.html', result=result, languageID=languageID, MAIN_CURRENCY=MAIN_CURRENCY, current_locale=get_locale()) # current_locale is babel variable for multilingual purposes
 
 @app.route('/about')
+@validate_request
 def about():
     languageID = getLangID()
     sqlQuery =  f"""SELECT * FROM `product` 
@@ -612,6 +622,7 @@ def about():
 
 
 @app.route('/contacts')
+@validate_request
 def contacts():
     languageID = getLangID()
     sqlQuery =  f"""SELECT * FROM `product` 
@@ -629,6 +640,7 @@ def contacts():
 
 
 @app.route('/favorites')
+@validate_request
 def favorites():
     languageID = getLangID()
     sqlQuery =  f"""SELECT * FROM `product` 
@@ -646,6 +658,7 @@ def favorites():
 
 
 @app.route('/products-client')
+@validate_request
 def products_client():
     languageID = getLangID()
     sqlQuery =  f"""SELECT * FROM `product` 
@@ -663,6 +676,7 @@ def products_client():
 
 
 @app.route('/order-tracker/<pdID>')
+@validate_request
 def order_tracker(pdID):
     languageID = getLangID()
 
@@ -688,6 +702,7 @@ def order_tracker(pdID):
 
 
 @app.route('/other-products', methods=['POST'])
+@validate_request
 def other_products():
     if request.form.get('prID'):
         prID = request.form.get('prID')
@@ -712,6 +727,7 @@ def other_products():
 # Edit thumbnail image
 @app.route('/pr-thumbnail/<RefKey>', methods=['GET'])
 @login_required
+@validate_request
 def pr_thumbnail(RefKey):
     languageID = getLangID()
     sqlQuery = f"""
@@ -750,6 +766,7 @@ def pr_thumbnail(RefKey):
 
 
 @app.route('/buy-now/<surl>', methods=['GET'])
+@validate_request
 def buy_now(surl):
     if session.get('lang') == None:
         setlang()
@@ -761,6 +778,7 @@ def buy_now(surl):
     
 
 @app.route('/checkout', methods=['GET', 'POST'])
+@validate_request
 def checkout():
     newCSRFtoken = generate_csrf()
     if session.get('lang') == None:
@@ -937,6 +955,7 @@ def checkout():
         
 
 @app.route('/confirmation-page/<pdID>', methods=['GET'])
+@validate_request
 def confirmation_page(pdID):
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -992,6 +1011,7 @@ def confirmation_page(pdID):
 
 @app.route('/orders/<filter>', methods=['Get'])
 @login_required
+@validate_request
 def orders(filter): 
     newCSRFtoken = generate_csrf()
     filters = {}
@@ -1082,6 +1102,7 @@ def orders(filter):
 
 @app.route('/affiliate-orders/<filter>', methods=['Get'])
 @login_required
+@validate_request
 def affiliate_orders(filter): 
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -1205,6 +1226,7 @@ def affiliate_orders(filter):
 
 @app.route('/stuff-affiliate-orders/<filter>', methods=['Get'])
 @login_required
+@validate_request
 def stuff_affiliate_orders(filter): 
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -1330,6 +1352,7 @@ def stuff_affiliate_orders(filter):
 
 @app.route('/order-details/<pdID>', methods=['GET'])
 @login_required
+@validate_request
 def order_details(pdID):
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -1383,6 +1406,7 @@ def order_details(pdID):
 
 @app.route('/affiliate-order-details/<pdID>', methods=['GET'])
 @login_required
+@validate_request
 def affiliate_order_details(pdID):
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -1462,6 +1486,7 @@ def affiliate_order_details(pdID):
 
 @app.route('/get-affiliate-transfer-details', methods=['POST'])
 @login_required
+@validate_request
 def get_affiliate_transfer_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('notesID'):
@@ -1484,6 +1509,7 @@ def get_affiliate_transfer_details():
 
 @app.route('/get-transfer-details', methods=['POST'])
 @login_required
+@validate_request
 def get_transfer_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('notesID'):
@@ -1501,6 +1527,7 @@ def get_transfer_details():
 
 @app.route('/get-email-content', methods=['POST'])
 @login_required
+@validate_request
 def get_email_content():
     newCSRFtoken = generate_csrf()
             
@@ -1533,6 +1560,7 @@ def get_email_content():
 
 @app.route('/get-associated-employees', methods=['POST'])
 @login_required
+@validate_request
 def get_associated_employees():
     newCSRFtoken = generate_csrf()
             
@@ -1570,6 +1598,7 @@ def get_associated_employees():
 
 @app.route('/get-order-details', methods=['POST'])
 @login_required
+@validate_request
 def get_order_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('orderID'):
@@ -1608,6 +1637,7 @@ def get_order_details():
 
 @app.route('/remove-email-from-employee', methods=['POST'])
 @login_required
+@validate_request
 def rm_email_em():
     newCSRFtoken = generate_csrf()
     if not request.form.get('stuffID') or not request.form.get('emailID'):
@@ -1624,6 +1654,7 @@ def rm_email_em():
 
 @app.route('/edit-corporate-email-view', methods=['POST'])
 @login_required
+@validate_request
 def edit_ce_view():
     newCSRFtoken = generate_csrf()
     if not request.form.get('emailID') or not request.form.get('emailID').isdigit():
@@ -1640,6 +1671,7 @@ def edit_ce_view():
 
 @app.route('/edit-corporate-email', methods=['POST'])
 @login_required
+@validate_request
 def edit_ce():
     newCSRFtoken = generate_csrf()
     if not request.form.get('emailID') or not request.form.get('emailID').isdigit() or not request.form.get('emailToEdit'):
@@ -1669,6 +1701,7 @@ def edit_ce():
 
 @app.route('/edit-order-details', methods=['POST'])
 @login_required
+@validate_request
 def edit_order_details():
     newCSRFtoken = generate_csrf()
     if not request.form.get('orderID') or not request.form.get('firstname') or not request.form.get('lastname') or not request.form.get('phone') or not request.form.get('address') or not request.form.get('status'):
@@ -1786,6 +1819,7 @@ def edit_order_details():
 
 @app.route('/get_slides', methods=['POST'])
 @login_required
+@validate_request
 def get_slides():
     if not request.form.get('ProductID') or not request.form.get('languageID'):
         return []
@@ -1799,6 +1833,7 @@ def get_slides():
 
 @app.route('/add-price/<prID_RefKey>', methods=["GET"])
 @login_required
+@validate_request
 def add_price(prID_RefKey):
     languageID = getLangID()
     if 'langID' in prID_RefKey:
@@ -1876,6 +1911,7 @@ def add_price(prID_RefKey):
 # Edit price view
 @app.route('/edit-price/<ptID>', methods=['GET'])
 @login_required
+@validate_request
 def edit_price(ptID):    
     languageID = getLangID()
     oldLangID = languageID
@@ -2004,6 +2040,7 @@ def edit_price(ptID):
 # Edit price action
 @app.route('/editprice', methods=['POST'])
 @login_required
+@validate_request
 def editprice():
     newCSRFtoken = generate_csrf()
     ptID = request.form.get('PtID')
@@ -2233,6 +2270,7 @@ def editprice():
 # View and Edit Product 
 @app.route('/product/<RefKey>', methods=['GET'])
 @login_required
+@validate_request
 def pd(RefKey):
     productTemplate = 'product.html'
     root_url = url_for('home', _external=True)
@@ -2342,6 +2380,7 @@ def product_categories_translate(defLangID, defLangPrCategory, productCategory):
 # Edit product'd thumbnail client-server transaction
 @app.route('/upload_slides', methods=['POST'])
 @login_required
+@validate_request
 def upload_slides():
     
     answer = gettext('Something went wrong. Please try again!')
@@ -2587,6 +2626,7 @@ def upload_slides():
 # Edit product'd thumbnail client-server transaction
 @app.route('/edit_pr_thumbnail', methods=['POST'])
 @login_required
+@validate_request
 def edit_pr_thumbnail():
     newCSRFtoken = generate_csrf()
         
@@ -2667,6 +2707,7 @@ def edit_pr_thumbnail():
 # add_product client-server transaction
 @app.route('/add_product', methods=['POST'])
 @login_required
+@validate_request
 def add_pr():
     newCSRFtoken = generate_csrf()
         
@@ -2715,6 +2756,7 @@ def add_pr():
 # edit product headers client-server transaction
 @app.route('/edit_product_headers', methods=['POST'])
 @login_required
+@validate_request
 def edit_pr_headers():
     newCSRFtoken = generate_csrf()
     if not request.form.get('RefKey') or request.form.get('RefKey').isdigit() is not True or request.form.get('RefKey') == '0':
@@ -2754,6 +2796,7 @@ def edit_pr_headers():
 # Render the add_product_category.html template
 @app.route('/add-product-category', methods=['GET'])
 @login_required
+@validate_request
 def addPC():
     languageID = getLangID()
     sqlQuery = f"""SELECT 
@@ -2774,6 +2817,7 @@ def addPC():
 # add_product_category client-server transaction
 @app.route('/add_product_category', methods=['POST'])
 @login_required
+@validate_request
 def add_p_c():
     newCSRFtoken = generate_csrf()
     categoryName = request.form.get('categoryName')
@@ -2797,6 +2841,7 @@ def add_p_c():
 # Render the edit_product_category.html template
 @app.route('/edit-product-category/<RefKey>', methods=['GET'])
 @login_required
+@validate_request
 def edit_product_category(RefKey):
 
     languageID = getLangID()
@@ -2822,6 +2867,7 @@ def edit_product_category(RefKey):
 # edit_product_category client-server transaction
 @app.route('/edit_product_category', methods=['POST'])
 @login_required
+@validate_request
 def edit_p_c():
     newCSRFtoken = generate_csrf()
         
@@ -2922,6 +2968,7 @@ def edit_p_c():
 # Publish/Unpublish product
 @app.route('/publish-product', methods=['POST'])
 @login_required
+@validate_request
 def publishP():
 
     languageID = request.form.get('languageID').strip()
@@ -2966,6 +3013,7 @@ def publishP():
 # Product categories view
 @app.route('/product-categories', methods=['GET'])
 @login_required
+@validate_request
 def product_categories():
     languageID = getLangID()
     sqlQuery = """
@@ -2989,6 +3037,7 @@ def product_categories():
 
 @app.route('/team', methods=['GET'])
 @login_required
+@validate_request
 def team():
     languageID = getLangID()
     sqlQuery = f"""
@@ -3017,6 +3066,7 @@ def team():
 
 @app.route('/affiliates', methods=['GET'])
 @login_required
+@validate_request
 def affiliates():
     
     where = "WHERE find_in_set('1', `position`.`rolIDs`) AND `stuff`.`Status` = 1 "
@@ -3048,6 +3098,7 @@ def affiliates():
 
 @app.route('/team/<page>', methods=['Get'])
 @login_required
+@validate_request
 def teampage(page): 
     languageID = getLangID()
     newCSRFtoken = generate_csrf()
@@ -3080,6 +3131,7 @@ def teampage(page):
 
 @app.route('/edit-teammate/<teammateID>', methods=['GET', 'POST'])
 @login_required
+@validate_request
 def edit_teammate(teammateID):
     languageID = getLangID()
     if request.method == 'POST':
@@ -3256,6 +3308,7 @@ def edit_teammate(teammateID):
 
 @app.route('/roles', methods=['GET'])
 @login_required
+@validate_request
 def roles():
     languageID = getLangID()
     sqlQuery = """
@@ -3277,6 +3330,7 @@ def roles():
 
 @app.route('/add-role', methods=['GET', 'POST'])
 @login_required
+@validate_request
 def add_role():
     if request.method == "POST":
         newCSRFtoken = generate_csrf()
@@ -3339,6 +3393,7 @@ def add_role():
 
 @app.route('/positions', methods=['GET'])
 @login_required
+@validate_request
 def positions():
     languageID = getLangID()
     sqlQuery = """
@@ -3360,6 +3415,7 @@ def positions():
 
 @app.route('/edit-position/<positionID>', methods=['GET', 'POST'])
 @login_required
+@validate_request
 def edit_position(positionID):
     if request.method == "POST":
         newCSRFtoken = generate_csrf()
@@ -3435,6 +3491,7 @@ def edit_position(positionID):
 
 @app.route('/add-teammate', methods=['GET', 'POST'])
 @login_required
+@validate_request
 def add_teammate():
     if request.method == "POST":
         newCSRFtoken = generate_csrf()
@@ -3563,6 +3620,7 @@ def add_teammate():
 
 @app.route('/create-email', methods=['GET', 'POST'])
 @login_required
+@validate_request
 def create_email():
     if request.method == "POST":
       
@@ -3635,6 +3693,7 @@ def create_email():
 
 @app.route('/assign-email', methods=['GET', 'POST'])
 @login_required
+@validate_request
 def assign_email():
     if request.method == "POST":
         newCSRFtoken = generate_csrf()
@@ -3708,6 +3767,7 @@ def assign_email():
 
 
 @app.route('/stuff-signup/<uniqueURL>', methods=['GET', 'POST'])
+@validate_request
 def stuff_signup(uniqueURL):
     newCSRFtoken = generate_csrf()        
     if request.method == "POST":
@@ -3843,9 +3903,8 @@ def stuff_signup(uniqueURL):
 
 @app.route('/edit-profile/<stuffID>', methods=['GET', 'POST'])
 @login_required
-def edit_profile(stuffID):
-
-    
+@validate_request
+def edit_profile(stuffID):    
     newCSRFtoken = generate_csrf()        
     if request.method == 'GET':
         if int(stuffID) != session['user_id']:
@@ -3992,6 +4051,7 @@ def edit_profile(stuffID):
 
 @app.route('/edit-role/<RoleID>', methods=['GET', 'POST'])
 @login_required
+@validate_request
 def edit_role(RoleID):
     if request.method == "POST":
         newCSRFtoken = generate_csrf()
@@ -4070,6 +4130,7 @@ def edit_role(RoleID):
 
 @app.route('/stuff', methods=['GET'])
 @login_required
+@validate_request
 def stuff():
     newCSRFtoken = generate_csrf()
     stuffID = session['user_id']
@@ -4159,6 +4220,7 @@ def stuff():
 
 @app.route('/affiliate/<affID>', methods=['GET'])
 @login_required
+@validate_request
 def affiliate(affID):
     supportedLangsData = supported_langs()
     
@@ -4196,6 +4258,7 @@ def affiliate(affID):
 
 @app.route('/promo-code-details/<promo>', methods=['GET'])
 @login_required
+@validate_request
 def promo_code_details(promo):
     languageID = getLangID()
     sqlQuery = """
@@ -4243,6 +4306,7 @@ def promo_code_details(promo):
 
 @app.route('/stuff-promo-code-details/<filters>', methods=['GET'])
 @login_required
+@validate_request
 def stuff_promo_code_details(filters):
     languageID = getLangID()
     promo, affID = (item.split('=')[1] for item in filters.split('&'))
@@ -4291,6 +4355,7 @@ def stuff_promo_code_details(filters):
 
 @app.route('/products', methods=['GET', 'POST'])
 @login_required
+@validate_request
 def products():
     languageID = getLangID()
     DefLangID = getDefLang()['id']
@@ -4352,6 +4417,7 @@ def products():
 
 @app.route('/store', methods=['GET', 'POST'])
 @login_required
+@validate_request
 def store():    
     newCSRFtoken = generate_csrf()
     if request.method == 'GET':
@@ -4465,6 +4531,7 @@ def store():
 
 @app.route("/pt-specifications", methods=['GET', 'POST'])
 @login_required
+@validate_request
 def pt_specifications():
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -4511,6 +4578,7 @@ def pt_specifications():
 # Edit product type specification (subproduct)
 @app.route("/edit-pts/<ptsRefKey>", methods=['GET'])
 @login_required
+@validate_request
 def edit_pts_view(ptsRefKey):
     languageID = getLangID()
 
@@ -4551,6 +4619,7 @@ def edit_pts_view(ptsRefKey):
 # Change order of product types of a product
 @app.route("/change-type-order", methods=['POST'])
 @login_required
+@validate_request
 def change_type_order():
     newCSRFtoken = generate_csrf()
     if not request.form.get('prID'):
@@ -4596,6 +4665,7 @@ def change_type_order():
 
 @app.route("/chaneg-pt-status", methods=['POST'])
 @login_required
+@validate_request
 def chaneg_pt_status():
     newCSRFtoken = generate_csrf()
     ptID = request.form.get('ptID') 
@@ -4621,6 +4691,7 @@ def chaneg_pt_status():
 
 @app.route("/edit-pts", methods=['POST'])
 @login_required
+@validate_request
 def edit_pts():
     newCSRFtoken = generate_csrf()
     spsName = request.form.get('spsName') 
@@ -4745,6 +4816,7 @@ def edit_pts():
 @app.route("/add-sps/<spsRefKey>", methods=['GET'])
 @app.route("/add-sps", methods=['GET'])
 @login_required
+@validate_request
 def add_sps_view(spsRefKey=None):
     data = []
     num=1
@@ -4779,6 +4851,7 @@ def add_sps_view(spsRefKey=None):
 
 @app.route("/emails/<filters>", methods=['GET'])
 @login_required
+@validate_request
 def emails(filters):
     languageID = getLangID()
     if request.method == "GET":
@@ -4864,6 +4937,7 @@ def emails(filters):
 
 @app.route("/corporate-emails/<filters>", methods=['GET'])
 @login_required
+@validate_request
 def corporate_emails(filters):
     languageID = getLangID()
     if request.method == "GET":
@@ -4946,6 +5020,7 @@ def corporate_emails(filters):
 
 @app.route("/transfers/<filters>", methods=['GET'])
 @login_required
+@validate_request
 def transfers(filters):
     if request.method == "GET":
         newCSRFtoken = generate_csrf()
@@ -5006,6 +5081,7 @@ def transfers(filters):
 
 @app.route("/affiliate-transfers/<page>", methods=['GET'])
 @login_required
+@validate_request
 def affiliate_transfers(page):
     if request.method == "GET":
         newCSRFtoken = generate_csrf()
@@ -5049,6 +5125,7 @@ def affiliate_transfers(page):
 @app.route("/transfer-funds/<stuffID>", methods=['GET', 'POST'])
 @app.route("/transfer-funds", methods=['GET', 'POST'])
 @login_required
+@validate_request
 def transfer_funds(stuffID=0):
     newCSRFtoken = generate_csrf()
     if request.method == "GET":
@@ -5095,6 +5172,7 @@ def transfer_funds(stuffID=0):
 @app.route("/send-email/<filters>", methods=['GET', 'POST'])
 @app.route("/send-email", methods=['GET', 'POST'])
 @login_required
+@validate_request
 def send_email(filters=''):
     newCSRFtoken = generate_csrf()
     if request.method == "GET":
@@ -5232,6 +5310,7 @@ def send_email(filters=''):
 # Subproduct situation and situations adding function
 @app.route("/add_sps", methods=['POST'])
 @login_required
+@validate_request
 def add_sps():
     newCSRFtoken = generate_csrf()
     # Checking spsName
@@ -5332,18 +5411,8 @@ def add_sps():
     return response
 
 
-# @app.route("/superpassword", methods=['GET'])
-# def superpassword1234():
-#     password = generate_password_hash('1234')
-
-#     sqlQuery = "UPDATE `stuff` SET `Password` = %s WHERE `ID` = %s"
-#     sqlValTuple = (password, 2)
-
-#     result = sqlUpdate(sqlQuery, sqlValTuple)
-
-#     return result['answer']
-
 @app.route("/logout")
+@validate_request
 def logout():
     # Forget any user_id
     session.clear()
@@ -5383,18 +5452,6 @@ def validate_password(password):
         errors.append(gettext('The password must contain at least one special character.'))
 
     return errors
-
-
-# def table(structure):
-
-#     structure = {
-#         'rows': [], # [{}, {}, {}, ... ]
-#         'header': [], # ['ID', 'Name', 'Status', ... ]
-#         'buttons': [], # ['url', 'name']
-#         'pagination': [] # True, False
-#     }
-    
-#     return render_template('table.html', structure=structure, current_locale=get_locale())
 
 
 def getSlides(PrID, languageID):
@@ -5497,6 +5554,7 @@ def getSlides(PrID, languageID):
 
 @app.route("/get-spacifications", methods=["POST"])
 @login_required
+@validate_request
 def get_specifications():
     newCSRFtoken = generate_csrf()
     if not request.form.get('LanguageID') or not request.form.get('spsID'):
@@ -5529,6 +5587,7 @@ def get_specifications():
 
 @app.route("/get-product-types", methods=["POST"])
 @login_required
+@validate_request
 def get_product_types():
     newCSRFtoken = generate_csrf()
     if not request.form.get('prID'):
@@ -5598,6 +5657,7 @@ def get_product_types():
 
 @app.route("/get-product-types-quantity", methods=["POST"])
 @login_required
+@validate_request
 def get_product_types_quantity():
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -5687,6 +5747,7 @@ def typeof(var):
 
 @app.route("/cart/<productTypesQuantity>", methods=["GET", "POST"])
 @app.route("/cart", methods=["GET", "POST"])
+@validate_request
 def cart(productTypesQuantity=None):
     if request.method == "GET":
         if session.get('lang') == None:
@@ -5787,61 +5848,8 @@ def analyse_cart_data(cartData):
     return content
 
 
-
-# @app.route("/cart/<productTypesQuantity>", methods=["GET", "POST"])
-# @app.route("/cart", methods=["GET", "POST"])
-# def cart(productTypesQuantity=None):
-#     languageID = getLangID() 
-#     if request.method == "GET":
-#         result = {'length': 0}
-#         findInSetPtIDs = ''
-#         ptIdQuantity = []
-#         if productTypesQuantity is not None:
-#             if '&' in productTypesQuantity:
-#                 array = productTypesQuantity.split('&')
-#                 for val in array:
-#                     arr = val.split('-')
-#                     ptID = arr[0]
-#                     clientQuantity = arr[1]
-
-#                     findInSetPtIDs = findInSetPtIDs + ptID + ','    
-#                     ptIdQuantity.append([int(ptID), int(clientQuantity)])
-#                 findInSetPtIDs = findInSetPtIDs[0:-1]
-#             elif '-' in productTypesQuantity:
-#                 array = productTypesQuantity.split('-')
-#                 findInSetPtIDs = array[0]
-#                 ptIdQuantity.append([int(array[0]), int(array[1])])
-
-#         sqlQuery =  f"""
-#                         SELECT 
-#                             `product`.`Title` AS `prTitle`,
-#                             `product`.`url`,
-#                             `product_type`.`Title` AS `ptTitle`,
-#                             `product_type`.`Price`,
-#                             (SELECT `Name` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 AND `slider`.`Order` = 0 LIMIT 1) AS `imgName`,
-#                             (SELECT `AltText` FROM `slider` WHERE `slider`.`ProductID` = `product_type`.`ID` AND `slider`.`Type` = 2 LIMIT 1) AS `AltText`,
-#                             (SELECT SUM(`Quantity`) FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE()) AS `quantity`,
-#                             (SELECT `maxQuantity` FROM `quantity` WHERE `quantity`.`productTypeID` = `product_type`.`ID` AND `quantity`.`expDate` > CURDATE() ORDER BY `maxQuantity` DESC LIMIT 1) AS `maxAllowdQuantity`,
-#                             `product_type`.`ID` AS `ptID`        
-#                         FROM `product_type`
-#                             LEFT JOIN `product` ON `product`.`ID` = `product_type`.`Product_ID`
-#                         WHERE `product`.`Language_ID` = %s AND find_in_set(`product_type`.`ID`, %s)
-#                         ORDER BY `product`.`ID`, `product_type`.`Order`; 
-#                     """
-        
-#         sqlValTuple = (languageID, findInSetPtIDs)
-#         result = sqlSelect(sqlQuery, sqlValTuple, True)
-#         cartMessage = [ 
-#                     gettext("You have already added this product to the basket. You can change the quantity if You would like to."),
-#                     generate_csrf(),
-#                     gettext("In Basket")
-#     ]
-#         return render_template('cart.html', result=result, ptIdQuantity=ptIdQuantity, MAIN_CURRENCY=MAIN_CURRENCY, cartMessage=cartMessage, current_locale=get_locale())
-#     else:
-#         pass
-
-
 @app.route("/get-pt-quantities", methods=["POST"])
+@validate_request
 def get_pt_quantities():     
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -5920,6 +5928,7 @@ def get_pt_quantities():
 
 
 @app.route("/get-pt-quantity", methods=["POST"])
+@validate_request
 def get_pt_quantity():     
     newCSRFtoken = generate_csrf()
     if not request.form.get('ptID') or not request.form.get('quantity'):
@@ -5976,6 +5985,7 @@ def get_pt_quantity():
 @app.route("/edit-store/<quantity_pt_IDs>", methods=["GET"])
 @app.route("/edit-store", methods=["POST"])
 @login_required
+@validate_request
 def edit_store(quantity_pt_IDs=None):
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -6112,6 +6122,7 @@ def edit_store(quantity_pt_IDs=None):
 @app.route("/add-to-store", methods=["GET", "POST"])
 @app.route("/add-to-store/<ptID>", methods=["GET", "POST"])
 @login_required
+@validate_request
 def add_to_store(ptID=None):
     newCSRFtoken = generate_csrf()
     if request.method == "GET":
@@ -6209,6 +6220,7 @@ def add_to_store(ptID=None):
 
 @app.route("/create-promo-code", methods=["GET", "POST"])
 @login_required
+@validate_request
 def create_promo_code():
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -6320,6 +6332,7 @@ def create_promo_code():
 
 @app.route('/promo-codes', methods=['GET'])
 @login_required
+@validate_request
 def promo_codes():
 
     sqlQuery = """
@@ -6347,6 +6360,7 @@ def promo_codes():
     
 @app.route('/edit-promo', methods=['POST'])
 @login_required
+@validate_request
 def edit_promo():
     newCSRFtoken = generate_csrf()
     if not request.form.get('products') or not request.form.get('promoID') or not request.form.get('expDate') or not request.form.get('promo'):
@@ -6499,6 +6513,7 @@ def edit_promo():
 
 @app.route('/edit-promo-code/<promoID>', methods=['GET'])
 @login_required
+@validate_request
 def edit_promo_code(promoID):
     languageID = getLangID()
 
@@ -6568,6 +6583,7 @@ def edit_promo_code(promoID):
     
 # Get Discounts With Promo Code
 @app.route('/get-promo-discounts', methods=['POST'])
+@validate_request
 def get_promo_discounts():
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -6634,6 +6650,7 @@ def get_promo_discounts():
 
 # Check weather promo code exists
 @app.route('/check-promo-code', methods=['POST'])
+@validate_request
 def check_promo_code():
     newCSRFtoken = generate_csrf()
     if not request.form.get('promo'):
@@ -6653,6 +6670,7 @@ def check_promo_code():
 
 # Check if product type exists in specified quantity
 @app.route('/check-pt-quantity', methods=['POST'])
+@validate_request
 def check_pt_quantity():
     newCSRFtoken = generate_csrf()
     
@@ -6701,6 +6719,7 @@ def check_pt_quantity():
 
 
 @app.route('/<myLinks>')
+@validate_request
 def index(myLinks):
     
     content = get_RefKey_LangID_by_link(myLinks)
@@ -6771,6 +6790,7 @@ def index(myLinks):
 
 
 @app.route("/get_langs", methods=["POST"])
+@validate_request
 def get_langs():
 
     arr = supported_langs()
@@ -6788,6 +6808,7 @@ def get_langs():
 
 
 @app.route("/subscribe", methods=["POST"])
+@validate_request
 def subscribe():
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -6850,6 +6871,7 @@ def subscribe():
 
 
 @app.route("/client-message", methods=["POST"])
+@validate_request
 def client_message():
     newCSRFtoken = generate_csrf()
     languageID = getLangID()
@@ -6921,6 +6943,7 @@ def client_message():
 
 
 @app.route("/get-available-pts", methods=["POST"])
+@validate_request
 def get_available_pts():
     newCSRFtoken = generate_csrf()
     if not request.form.get('prID'):
@@ -6993,6 +7016,7 @@ ORDER BY `product`.`Order`, `product_type`.`Order`;   """
 
 @app.route("/get-chart-data", methods=["POST"])
 # @login_required
+@validate_request
 def get_chart_data():
  
     newCSRFtoken = generate_csrf()
@@ -7127,11 +7151,6 @@ def get_chart_data():
         pass
 
     return jsonify({'status': "1", 'chartData': chartData, 'answer': gettext('Done!'), 'newCSRFtoken': newCSRFtoken})
-
-
-# @app.route("/timer", methods=["GET"])
-# def random_reminder():
-#     return render_template('random-reminder.html')
 
 
 if __name__ == '__main__':
