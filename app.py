@@ -110,6 +110,9 @@ PAGINATION = os.getenv('PAGINATION')
 PAGINATION_BUTTONS_COUNT = os.getenv('PAGINATION_BUTTONS_COUNT')
 MAIN_CURRENCY = os.getenv('MAIN_CURRENCY')
 
+SMAIL_API_KEY = os.getenv('SMAIL_API_KEY')
+SMAIL_API = os.getenv('SMAIL_API')
+
 # basedir = os.path.abspath(os.path.dirname(__file__))
 # SSL context creation
 # context = SSL.Context(SSL.TLSv1_2_METHOD)
@@ -171,112 +174,23 @@ def test():
         
         # For send email
         
-        # 'data': '<p style="margin: 0; padding: 0"><span style=\'font-size: 20px; font-family: "Montserrat", sans-serif\'>Hello dear Misha!</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 20px; font-family: "Montserrat", sans-serif\'>I am here to test some functionallity. So I am going to write some text.</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: cursive, "Kurland"\'>In today’s fast-paced digital world, effective communication is more important than ever. Whether you\'re writing an email, crafting a blog post, or composing content for social media, clarity and conciseness can make your message stand out. Always consider your audience and choose language that resonates with them. Structure your text with short paragraphs and engaging headings. Proofread carefully to avoid errors. Great communication fosters trust, builds relationships, and drives success in any field.</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Wish y<span>\ufeff</span>ou all the best,</span></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Sincerly</span></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Misha\xa0</span></p>',
-        # 'langPrefix': 'en',
-        # 'type': 'mailersend',
-        # 'template': 'typed.html',
-        # 'subject': 'Testing typed email functionality',
-        # 'mail_from': 'info@mammysbread.am',
-        # 'mail_from_user': 'Satti Matti',
-        # 'mail_to_email': 'mishatab7@gmail.com',
-        # 'main_url': 'http://127.0.0.1:5000',
-        # 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg',
-        # 'logo_alt': "Mammy's Bread",
-        # 'continue_shopping': 'Continue Shopping',
-        # 'contact_us': 'Contact US',
-        # 'contact_us_url': 'http://127.0.0.1:5000/contacts',
-        # 'company_name': gettext("Your Company. All rights reserved."),
-        # 'company_address': '',
-        # 'unsubscribe': 'unsubscribe',
-        # 'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe',
-        # 'year': 2025,
-        # 'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png',
-        # 'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png',
-        # 'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png',
-        # 'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png',
-        # 'telegram_icon': '',
-        # 'fb_url': '',
-        # 'insta_url': '',
-        # 'youtube_url': '',
-        # 'whatsapp_url': '',
-        # 'telegram_url': '',
-        # 'main_currency': '֏'
-
-        # for payment-confirmetion email
-        'data': [
-            {
-                'ID': 17,
-                'payment_method': 'Visa',
-                'CMD': 4242,
-                'promo_code': None,
-                'final_price': 4000.0,
-                'FirstName': 'Jhon',
-                'LastName': 'Matti',
-                'phone': '37433151580',
-                'email': 'mishatab7@gmail.com',
-                'address': '182 KHUDYAKOV STREET',
-                'note': None,
-                'prTitle': 'Թեսթավորման պրոդուկտ',
-                'ptTitle': 'Գին 1',
-                'quantity': 2,
-                'price': 1000.0,
-                'discount': 10
-            },
-            {
-                'ID': 17,
-                'payment_method': 'Visa',
-                'CMD': 4242,
-                'promo_code': None,
-                'final_price': 4000.0,
-                'FirstName': 'Jhon',
-                'LastName': 'Matti',
-                'phone': '37433151580',
-                'email': 'mishatab7@gmail.com',
-                'address': '182 KHUDYAKOV STREET',
-                'note': None,
-                'prTitle': 'Թեսթավորման պրոդուկտ',
-                'ptTitle': 'Գին 2',
-                'quantity': 1,
-                'price': 2000.0,
-                'discount': 10
-            }
-        ],
-        'langPrefix': 'hy',
+        'data': '<p style="margin: 0; padding: 0"><span style=\'font-size: 20px; font-family: "Montserrat", sans-serif\'>Hello dear Misha!</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 20px; font-family: "Montserrat", sans-serif\'>I am here to test some functionallity. So I am going to write some text.</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: cursive, "Kurland"\'>In today’s fast-paced digital world, effective communication is more important than ever. Whether you\'re writing an email, crafting a blog post, or composing content for social media, clarity and conciseness can make your message stand out. Always consider your audience and choose language that resonates with them. Structure your text with short paragraphs and engaging headings. Proofread carefully to avoid errors. Great communication fosters trust, builds relationships, and drives success in any field.</span></p><p style="margin: 0; padding: 0"><br/></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Wish y<span>\ufeff</span>ou all the best,</span></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Sincerly</span></p><p style="margin: 0; padding: 0"><span style=\'font-size: 18px; font-family: "Montserrat", sans-serif\'>Misha\xa0</span></p>',
+        'langPrefix': 'en',
         'type': 'mailersend',
-        'template': 'dynemic.html',
-        'subject': 'Վճարման հաստատում',
+        'template': 'typed.html',
+        'subject': 'Testing typed email functionality',
         'mail_from': 'info@mammysbread.am',
-        'mail_from_user': 'Մայրիկի Հացը',
-        'mail_to': 'Jhon Matti',
+        'mail_from_user': 'Satti Matti',
         'mail_to_email': 'mishatab7@gmail.com',
         'main_url': 'http://127.0.0.1:5000',
         'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg',
-        'logo_alt': 'Մայրիկի Հացը',
-        'text_0': 'Շնորհակալություն մեր ծառայություններից օգտվելու համար։ Ձեր պատվերը ընթացքի մեջ է։',
-        'delivery_info': 'Առաքման տվյալներ',
-        'Order': 'Պատվեր',
-        'order_number': '#17',
-        'order_details': 'Պատվերի մանրամասներ',
-        'product': 'Ապրանք',
-        'price': 'Գին',
-        'total': 'Ընդհամենը',
-        'discount': 'Զեղչ',
-        'discounted_price': 'Զեղչված գին',
-        'display': '',
-        'cp_price': '3600',
-        'payment_method': 'Վճարման եղանակ',
-        'continue_shopping': 'Շարունակել գնումները',
-        'continue_shopping_url': 'http://127.0.0.1:5000/products-client',
-        'contact_us': 'Կապ',
+        'logo_alt': "Mammy's Bread",
+        'continue_shopping': 'Continue Shopping',
+        'contact_us': 'Contact US',
         'contact_us_url': 'http://127.0.0.1:5000/contacts',
-        'track_order': 'Հետևեք Ձեր պատվերին',
-        'track_order_url': 'http://127.0.0.1:5000/order-tracker/BEGIzENqLnWe2rTNAEbZBGK1uAQNTennq2ta2d85',
-        'title': 'Գնումը հաստատված է։',
-        'header': 'Գնումը հաստատված է։',
-        'company_name': 'Մայրիկի Հացը',
-        'company_rights': 'Մայրիկի Հացը։ Բոլորս իրավունքները պաշտպանված են։',
+        'company_name': gettext("Your Company. All rights reserved."),
         'company_address': '',
-        'unsubscribe': 'հրաժարվել բաժանորդագրությունից։',
+        'unsubscribe': 'unsubscribe',
         'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe',
         'year': 2025,
         'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png',
@@ -291,12 +205,104 @@ def test():
         'telegram_url': '',
         'main_currency': '֏'
 
-        
+        # for payment-confirmetion email
+        # 'data': [
+        #     {
+        #         'ID': 17,
+        #         'payment_method': 'Visa',
+        #         'CMD': 4242,
+        #         'promo_code': None,
+        #         'final_price': 4000.0,
+        #         'FirstName': 'Jhon',
+        #         'LastName': 'Matti',
+        #         'phone': '37433151580',
+        #         'email': 'mishatab7@gmail.com',
+        #         'address': '182 KHUDYAKOV STREET',
+        #         'note': None,
+        #         'prTitle': 'Թեսթավորման պրոդուկտ',
+        #         'ptTitle': 'Գին 1',
+        #         'quantity': 2,
+        #         'price': 1000.0,
+        #         'discount': 10
+        #     },
+        #     {
+        #         'ID': 17,
+        #         'payment_method': 'Visa',
+        #         'CMD': 4242,
+        #         'promo_code': None,
+        #         'final_price': 4000.0,
+        #         'FirstName': 'Jhon',
+        #         'LastName': 'Matti',
+        #         'phone': '37433151580',
+        #         'email': 'mishatab7@gmail.com',
+        #         'address': '182 KHUDYAKOV STREET',
+        #         'note': None,
+        #         'prTitle': 'Թեսթավորման պրոդուկտ',
+        #         'ptTitle': 'Գին 2',
+        #         'quantity': 1,
+        #         'price': 2000.0,
+        #         'discount': 10
+        #     }
+        # ],
+        # 'langPrefix': 'hy',
+        # 'type': 'mailersend',
+        # 'template': 'dynemic.html',
+        # 'subject': 'Վճարման հաստատում',
+        # 'mail_from': 'info@mammysbread.am',
+        # 'mail_from_user': 'Մայրիկի Հացը',
+        # 'mail_to': 'Jhon Matti',
+        # 'mail_to_email': 'mishatab7@gmail.com',
+        # 'main_url': 'http://127.0.0.1:5000',
+        # 'logo_url': 'http://127.0.0.1:5000/static/images/logo.jpg',
+        # 'logo_alt': 'Մայրիկի Հացը',
+        # 'text_0': 'Շնորհակալություն մեր ծառայություններից օգտվելու համար։ Ձեր պատվերը ընթացքի մեջ է։',
+        # 'delivery_info': 'Առաքման տվյալներ',
+        # 'Order': 'Պատվեր',
+        # 'order_number': '#17',
+        # 'order_details': 'Պատվերի մանրամասներ',
+        # 'product': 'Ապրանք',
+        # 'price': 'Գին',
+        # 'total': 'Ընդհամենը',
+        # 'discount': 'Զեղչ',
+        # 'discounted_price': 'Զեղչված գին',
+        # 'display': '',
+        # 'cp_price': '3600',
+        # 'payment_method': 'Վճարման եղանակ',
+        # 'continue_shopping': 'Շարունակել գնումները',
+        # 'continue_shopping_url': 'http://127.0.0.1:5000/products-client',
+        # 'contact_us': 'Կապ',
+        # 'contact_us_url': 'http://127.0.0.1:5000/contacts',
+        # 'track_order': 'Հետևեք Ձեր պատվերին',
+        # 'track_order_url': 'http://127.0.0.1:5000/order-tracker/BEGIzENqLnWe2rTNAEbZBGK1uAQNTennq2ta2d85',
+        # 'title': 'Գնումը հաստատված է։',
+        # 'header': 'Գնումը հաստատված է։',
+        # 'company_name': 'Մայրիկի Հացը',
+        # 'company_rights': 'Մայրիկի Հացը։ Բոլորս իրավունքները պաշտպանված են։',
+        # 'company_address': '',
+        # 'unsubscribe': 'հրաժարվել բաժանորդագրությունից։',
+        # 'unsubscribe_url': 'http://127.0.0.1:5000/unsubscribe',
+        # 'year': 2025,
+        # 'fb_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png',
+        # 'insta_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-instagram-48.png',
+        # 'youtube_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png',
+        # 'whatsapp_icon': 'https://cdn-images.mailchimp.com/icons/social-block-v2/color-whatsapp-48.png',
+        # 'telegram_icon': '',
+        # 'fb_url': '',
+        # 'insta_url': '',
+        # 'youtube_url': '',
+        # 'whatsapp_url': '',
+        # 'telegram_url': '',
+        # 'main_currency': '֏'
     
     }
-    
-    resp = requests.post(os.getenv('SMAIL_API'), json=data)
-    # # print(resp)
+
+    headers = {
+        "X-API-KEY": SMAIL_API_KEY,
+        "Content-Type": "application/json"
+    }
+    resp = requests.post(SMAIL_API, headers=headers, json=data)
+
+    # print(resp)
     return render_template_string(resp.text)
 
 
@@ -3593,7 +3599,14 @@ def add_teammate():
                 "telegram_url": ""
             }
 
-            resp = requests.post(os.getenv('SMAIL_API'), json=data)
+            # resp = requests.post(os.getenv('SMAIL_API'), json=data)
+       
+            headers = {
+                "X-API-KEY": SMAIL_API_KEY,
+                "Content-Type": "application/json"
+            }
+            resp = requests.post(SMAIL_API, headers=headers, json=data)
+
             if resp.status_code == 200:
                 return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
             else:
@@ -5287,7 +5300,13 @@ def send_email(filters=''):
             "main_currency": MAIN_CURRENCY
         }
 
-    resp = requests.post(os.getenv('SMAIL_API'), json=data)
+    headers = {
+        "X-API-KEY": SMAIL_API_KEY,
+        "Content-Type": "application/json"
+    }
+    resp = requests.post(SMAIL_API, headers=headers, json=data)
+
+    # resp = requests.post(os.getenv('SMAIL_API'), json=data)
     if resp.status_code == 200:
         return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
     else:
