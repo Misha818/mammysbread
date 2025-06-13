@@ -296,11 +296,13 @@ def test():
     
     }
 
+    SMAIL_API='http://localhost:8001/test'
     headers = {
         "X-API-KEY": SMAIL_API_KEY,
         "Content-Type": "application/json"
     }
-    resp = requests.post(SMAIL_API, headers=headers, json=data)
+    # resp = requests.post(SMAIL_API, headers=headers, json=data)
+    resp = requests.post(SMAIL_API, headers=headers, json=data, timeout=(2,5), verify='/etc/ssl/certs/smail.crt')
 
     # print(resp)
     return render_template_string(resp.text)
@@ -3605,7 +3607,8 @@ def add_teammate():
                 "X-API-KEY": SMAIL_API_KEY,
                 "Content-Type": "application/json"
             }
-            resp = requests.post(SMAIL_API, headers=headers, json=data)
+            # resp = requests.post(SMAIL_API, headers=headers, json=data)
+            resp = requests.post(SMAIL_API, headers=headers, json=data, timeout=(2,5), verify='/etc/ssl/certs/smail.crt')
 
             if resp.status_code == 200:
                 return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
@@ -5304,7 +5307,8 @@ def send_email(filters=''):
         "X-API-KEY": SMAIL_API_KEY,
         "Content-Type": "application/json"
     }
-    resp = requests.post(SMAIL_API, headers=headers, json=data)
+    # resp = requests.post(SMAIL_API, headers=headers, json=data)
+    resp = requests.post(SMAIL_API, headers=headers, json=data, timeout=(2,5), verify='/etc/ssl/certs/smail.crt')
 
     # resp = requests.post(os.getenv('SMAIL_API'), json=data)
     if resp.status_code == 200:
