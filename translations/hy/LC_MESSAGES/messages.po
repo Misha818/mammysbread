@@ -868,6 +868,9 @@ msgstr "Ընտրեք գործողություններ"
 msgid "Add Teammate"
 msgstr "Ավելացնել աշխատակից"
 
+msgid "Add teammate"
+msgstr "Ավելացնել աշխատակից"
+
 #: templates/add-teammate.html:44 templates/buy-now.html:178
 #: templates/checkout.html:182 templates/confirmation-page.html:192
 #: templates/corporate-emails.html:139 templates/corporate-emails.html:171
