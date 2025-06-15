@@ -5310,6 +5310,7 @@ def send_email(filters=''):
     # resp = requests.post(SMAIL_API, headers=headers, json=data)
     resp = requests.post(SMAIL_API, headers=headers, json=data, timeout=(2,5), verify='/etc/ssl/certs/smail.crt')
 
+    print('Response from SMAIL API:', resp.status_code, resp.text)
     # resp = requests.post(os.getenv('SMAIL_API'), json=data)
     if resp.status_code == 200:
         return jsonify({'status': "1", 'answer': gettext('Email sent successfully!'), 'newCSRFtoken': newCSRFtoken})
