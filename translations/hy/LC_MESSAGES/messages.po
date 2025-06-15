@@ -2508,105 +2508,72 @@ msgstr "Ֆիլտրել աշխատակցով"
 msgid "Staff member"
 msgstr "Աշխատակից"
 
-#~ msgid "Please specify lastname"
-#~ msgstr "Խնդրում ենք մուտքագրել ազգանվանումը։"
-
-#~ msgid "Dashboards"
-#~ msgstr "Կառավարման վահանակ"
-
-#~ msgid "Click me to edit this price"
-#~ msgstr "Սեղմեք ինձ վրա այս գինը խմբագրելու համար"
-
-#~ msgid "Click me to add quantity"
-#~ msgstr "Սեղմեք ինձ վրա քանակ ավելացնելու համար"
-
-#~ msgid "Add Article"
-#~ msgstr "Ավելացնել հոդված"
-
-#~ msgid "Article Title"
-#~ msgstr "Հոդվածի վերնագիր"
-
-#~ msgid "Article Url"
-#~ msgstr "Հոդվածի հղում"
-
-#~ msgid "This-is-Your-Article-Link"
-#~ msgstr "Սա է ձեր հոդվածի հղումը"
-
-#~ msgid "Choose article category"
-#~ msgstr "Ընտրեք հոդվածի կատեգորիան"
-
-#~ msgid "You have not entered any article category yet."
-#~ msgstr "Դուք դեռ չեք մուտքագրել որևէ հոդվածի կատեգորիա։"
-
-#~ msgid "Click on the link below to add an article category!"
-#~ msgstr "Սեղմեք ներքևի հղման վրա՝ հոդվածի կատեգորիա ավելացնելու համար։"
-
-#~ msgid "Article Category Name"
-#~ msgstr "Հոդվածի կատեգորիայի անվանումը"
-
-#~ msgid "Article Categories"
-#~ msgstr "Հոդվածների կատեգորիաներ"
-
-#~ msgid "Edit Article Category"
-#~ msgstr "Խմբագրել հոդվածի կատեգորիան"
-
-#~ msgid "phone"
-#~ msgstr "հեռախոս"
-
-#~ msgid "Saveing"
-#~ msgstr "Պահպանում"
-
-#~ msgid "Add Product Type Specification"
-#~ msgstr "Ավելացնել ապրանքատեսակի բնութագիր։"
-
-#~ msgid "Add teammate"
-#~ msgstr "Ավելացնել աշխատակից"
-
-#~ msgid "Transfers"
-#~ msgstr "Փոխանցումներ"
-
-#~ msgid "Transfer Funds"
-#~ msgstr "Փոխանցել գումար"
-
-#~ msgid "Assign Email"
-#~ msgstr "Կցել էլ․ հասցե"
-
-#~ msgid "Affiliate Orders"
-#~ msgstr "Գործընկերոջ պատվերները"
-
-#~ msgid "Affiliate Transfers"
-#~ msgstr "Գործընկերային փոխանցումներ"
-
-#~ msgid "Manager"
-#~ msgstr "Կառավարիչ"
-
-#~ msgid "Sales AND Marketing"
-#~ msgstr "Վաճառք և մարքեթինգ"
-
-#~ msgid "HR"
-#~ msgstr "Մարդկային ռեսուրսներ"
-
-#~ msgid "CEO"
-#~ msgstr "Գործադիր տնօրեն"
-
-#~ msgid "Edit Product Type Specification"
-#~ msgstr "Խմբագրել ապրանքատեսակի բնութագրերը"
-
-#~ msgid "Edit Promo"
-#~ msgstr "Խմբագրել պռոմո կոդը"
-
-#~ msgid "Edit Order Details"
-#~ msgstr "Խմբագրել պատվերը"
-
-#~ msgid "Edit Corporate Email View"
-#~ msgstr "Խմբագրել կորպորատիվ էլ.փոստը"
-
-#~ msgid "Edit Corporate Email"
-#~ msgstr "Խմբագրել կորպորատիվ էլ.փոստը"
-
-#~ msgid "Edit Positions"
-#~ msgstr "Խմբագրել պաշտոնը"
-
-#~ msgid "recipient"
-#~ msgstr "ստացող"
+msgid "Please specify lastname"
+msgstr "Խնդրում ենք մուտքագրել ազգանվանումը
+msgid "Dashboards"
+msgstr "Կառավարման վահանա
+msgid "Click me to edit this price"
+msgstr "Սեղմեք ինձ վրա այս գինը խմբագրելու համա
+msgid "Click me to add quantity"
+msgstr "Սեղմեք ինձ վրա քանակ ավելացնելու համա
+msgid "Add Article"
+msgstr "Ավելացնել հոդվա
+msgid "Article Title"
+msgstr "Հոդվածի վերնագի
+msgid "Article Url"
+msgstr "Հոդվածի հղու
+msgid "This-is-Your-Article-Link"
+msgstr "Սա է ձեր հոդվածի հղում
+msgid "Choose article category"
+msgstr "Ընտրեք հոդվածի կատեգորիա
+msgid "You have not entered any article category yet."
+msgstr "Դուք դեռ չեք մուտքագրել որևէ հոդվածի կատեգորիա
+msgid "Click on the link below to add an article category!"
+msgstr "Սեղմեք ներքևի հղման վրա՝ հոդվածի կատեգորիա ավելացնելու համար
+msgid "Article Category Name"
+msgstr "Հոդվածի կատեգորիայի անվանում
+msgid "Article Categories"
+msgstr "Հոդվածների կատեգորիանե
+msgid "Edit Article Category"
+msgstr "Խմբագրել հոդվածի կատեգորիա
+msgid "phone"
+msgstr "հեռախո
+msgid "Saveing"
+msgstr "Պահպանու
+msgid "Add Product Type Specification"
+msgstr "Ավելացնել ապրանքատեսակի բնութագիր
+msgid "Add teammate"
+msgstr "Ավելացնել աշխատակի
+msgid "Transfers"
+msgstr "Փոխանցումնե
+msgid "Transfer Funds"
+msgstr "Փոխանցել գումա
+msgid "Assign Email"
+msgstr "Կցել էլ․ հասց
+msgid "Affiliate Orders"
+msgstr "Գործընկերոջ պատվերներ
+msgid "Affiliate Transfers"
+msgstr "Գործընկերային փոխանցումնե
+msgid "Manager"
+msgstr "Կառավարի
+msgid "Sales AND Marketing"
+msgstr "Վաճառք և մարքեթին
+msgid "HR"
+msgstr "Մարդկային ռեսուրսնե
+msgid "CEO"
+msgstr "Գործադիր տնօրե
+msgid "Edit Product Type Specification"
+msgstr "Խմբագրել ապրանքատեսակի բնութագրեր
+msgid "Edit Promo"
+msgstr "Խմբագրել պռոմո կոդ
+msgid "Edit Order Details"
+msgstr "Խմբագրել պատվեր
+msgid "Edit Corporate Email View"
+msgstr "Խմբագրել կորպորատիվ էլ.փոստ
+msgid "Edit Corporate Email"
+msgstr "Խմբագրել կորպորատիվ էլ.փոստ
+msgid "Edit Positions"
+msgstr "Խմբագրել պաշտոն
+msgid "recipient"
+msgstr "ստացող"
 
