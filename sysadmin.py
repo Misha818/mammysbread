@@ -1662,7 +1662,7 @@ def send_confirmation_email(pdID, trackOrderUrl):
     # resp = {'status_code': None}
     # resp = requests.post(os.getenv('SMAIL_API'), json=data)
 
-    smailUrl = os.getenv('SMAIL_API')
+    SMAIL_API = os.getenv('SMAIL_API')
     headers = {
         "X-API-KEY": os.getenv('SMAIL_API_KEY'),
         "Content-Type": "application/json"
