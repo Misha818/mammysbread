@@ -1,0 +1,82 @@
+#=========================================================================#
+# Default Web Domain Template                                             #
+# DO NOT MODIFY THIS FILE! CHANGES WILL BE LOST WHEN REBUILDING DOMAINS   #
+# https://hestiacp.com/docs/server-administration/web-templates.html      #
+#=========================================================================#
+
+# server {
+#         listen      84.200.24.188:80;
+#         server_name mammysbread.am www.mammysbread.am;
+#         error_log   /var/log/apache2/domains/mammysbread.am.error.log error;
+
+#         include /home/rootDB/conf/web/mammysbread.am/nginx.forcessl.conf*;
+
+#         location ~ /\.(?!well-known\/|file) {
+#                 deny all;
+#                 return 404;
+#         }
+
+#         location / {
+#                 proxy_pass http://84.200.24.188:8080;
+
+#                 location ~* ^.+\.(css|htm|html|js|mjs|json|xml|apng|avif|bmp|cur|gif|ico|jfif|jpg|jpeg|pjp|pjpeg|png|svg|tif|tiff|webp|aac|caf|flac|m4a|midi|mp3|ogg|opus|wav|3gp|av1|avi|m4v|mkv|mov|mpg|mpeg|mp4|mp4v|webm|otf|ttf|woff|woff2|doc|docx|odf|odp|ods|odt|pdf|ppt|pptx|rtf|txt|xls|xlsx|7z|bz2|gz|rar|tar|tgz|zip|apk|appx|bin|dmg|exe|img|iso|jar|msi|webmanifest)$ {
+#                         try_files  $uri @fallback;
+
+#                         root       /home/rootDB/web/mammysbread.am/public_html;
+#                         access_log /var/log/apache2/domains/mammysbread.am.log combined;
+#                         access_log /var/log/apache2/domains/mammysbread.am.bytes bytes;
+
+#                         expires    max;
+#                 }
+#         }
+
+#         location @fallback {
+#                 proxy_pass http://84.200.24.188:8080;
+#         }
+
+#         location /error/ {
+#                 alias /home/rootDB/web/mammysbread.am/document_errors/;
+#         }
+
+#         include /home/rootDB/conf/web/mammysbread.am/nginx.conf_*;
+# }
+
+
+
+# New Add that should fix 522 Error from cloudflare 23/07/2025
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name mammysbread.am www.mammysbread.am;
+
+    ssl_certificate     /etc/ssl/certs/cloudflare-origin.pem;
+    ssl_certificate_key /etc/ssl/private/cloudflare-origin.key;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    # Corrected static file serving using 'alias'
+    location /static/ {
+        alias /var/www/mammysbread/static/;
+        try_files $uri =404;
+        access_log off;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+    }
+
+    #location ~* ^.+\.(css|htm|html|js|mjs|json|xml|apng|avif|bmp|cur|gif|ico|jfif|jpg|jpeg|pjp|pjpeg|png|svg|tif|tiff|webp|aac|caf|flac|m4a|midi|mp3|ogg|opus|wav|3gp|av1|avi|m4v|mkv|mov|mpg|mpeg|mp4|mp4v|webm|otf|ttf|woff|woff2|doc|docx|odf|odp|ods|odt|pdf|ppt|pptx|rtf|txt|xls|xlsx|7z|bz2|gz|rar|tar|tgz|zip|apk|appx|bin|dmg|exe|img|iso|jar|msi|webmanifest)$ {
+    #    root   /var/www/mammysbread/static;
+    #    try_files $uri =404;
+    #    access_log    off;
+    #    expires       30d;
+    #    add_header    Cache-Control "public, immutable";
+    #}
+
+    location / {
+        proxy_pass         http://127.0.0.1:8000;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 90s;
+    }
+}
