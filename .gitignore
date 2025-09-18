@@ -2,9 +2,11 @@
 __pycache__/
 
 # Virtualenvs
+env~
 env/
 venv/
 .venv/
+static/images/uploads/
 
 # Sensitive / config
 .env
