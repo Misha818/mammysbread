@@ -2577,3 +2577,6 @@ msgstr "Խմբագրել պաշտոնը"
 msgid "recipient"
 msgstr "ստացող"
 
+msgid "Add more products?"
+msgstr "Ապրանքն հաջողությամբ ավելացվեց։ Ցանկանու՞մ եք ավելացնել նոր ապրանք"
+

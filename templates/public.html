@@ -42,7 +42,7 @@
       <input type="hidden" id="empty-basket" value="{{ url_for('static', filename='images/icons/empty-basket.png') }}">
       <input type="hidden" id="redFields" value="{{ _('Please improve all field marked in red') }}">
       {% set ns = namespace(selectedOption='', options='') %}
-      {% if supportedLangsData | length > 1%}
+      {% if supportedLangsData | length > 1 %}
 
         {% for row in supportedLangsData %}
           {% if row['Prefix'] == activeLangPrefix %}
@@ -565,9 +565,7 @@
         let mobileNavSelect = document.querySelector('.custom-language-select').cloneNode(true);
 
         mobileNavSelect.className = "change-language-menu";
-        // mobileNavSelect.addEventListener("change", function() {
-        //   window.location.href = '/setlang?lang=' + this.value;
-        // });
+        
 
         // Add an event listener for the change language menu
         mobileNavSelect.addEventListener("change", function() {

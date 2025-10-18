@@ -2675,6 +2675,10 @@ msgstr "Filter by staff member"
 msgid "Staff member"
 msgstr "Staff member"
 
+msgid "Add more products?"
+msgstr "Add more products?"
+
+
 #~ msgid "Dashboards"
 #~ msgstr "Dashboards"
 

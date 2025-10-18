@@ -2492,6 +2492,9 @@ msgstr "Фильтр по сотруднику"
 msgid "Staff member"
 msgstr "Сотрудник"
 
+msgid "Add more products?"
+msgstr "Товар успешно добавлен. Хотите добавить новый товар?"
+
 #~ msgid "Dashboards"
 #~ msgstr "Панели управления"
 

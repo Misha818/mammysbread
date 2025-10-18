@@ -257,7 +257,7 @@
 </div>
 
 
-
+<script type="text/javascript" src="{{ url_for('static', filename='JS/custom.js')}}"></script>
 <script>
 let csrfToken = "{{ csrf_token() }}";
 window.addEventListener('load', () => {
@@ -643,7 +643,7 @@ function myLoader(color) {
       dataValues.forEach(item => {
         const option = document.createElement('option');
         option.value = item[0];
-        option.textContent = item[1];
+        option.textContent = restoreUnwantedJsonChars(item[1]);
         storeSelect.appendChild(option);
       }); 
       

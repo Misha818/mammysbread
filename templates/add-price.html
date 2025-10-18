@@ -498,9 +498,8 @@
                         uploadButton.style.display = 'inline-block';
 
                         // Handle success
-                        alert(response.answer);
-                        let currentUrl = window.location.href;
-                        location.href = currentUrl;
+                        let redirectTo = window.location.origin + '/add-to-store/' + response.PT_Ref_Key;
+                        location.href = redirectTo;
                     }
                 } else {
                     // Handle error response
