@@ -2493,7 +2493,7 @@ msgid "Staff member"
 msgstr "Сотрудник"
 
 msgid "Add more products?"
-msgstr "Товар успешно добавлен. Хотите добавить новый товар?"
+msgstr "Количество успешно добавлено. Хотите добавить новое количество?"
 
 #~ msgid "Dashboards"
 #~ msgstr "Панели управления"

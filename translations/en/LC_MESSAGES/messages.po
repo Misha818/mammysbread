@@ -2676,7 +2676,7 @@ msgid "Staff member"
 msgstr "Staff member"
 
 msgid "Add more products?"
-msgstr "Add more products?"
+msgstr "Add another price?"
 
 
 #~ msgid "Dashboards"
