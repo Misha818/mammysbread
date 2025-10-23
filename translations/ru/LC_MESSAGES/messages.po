@@ -124,7 +124,7 @@ msgstr "Пожалуйста, укажите название!"
 
 #: app.py:2020 app.py:2375 app.py:2676 app.py:2726
 msgid "Max allowed number of chars for title is 20"
-msgstr "Максимально допустимое количество символов для названия — 20."
+msgstr "Максимально допустимое количество символов для названия — "
 
 #: app.py:2033 app.py:2384
 msgid "Product Type Title Already Exists!"
@@ -2494,6 +2494,10 @@ msgstr "Сотрудник"
 
 msgid "Add more products?"
 msgstr "Количество успешно добавлено. Хотите добавить новое количество?"
+
+msgid "Add Position"
+msgstr "Добавить дилжность"
+
 
 #~ msgid "Dashboards"
 #~ msgstr "Панели управления"

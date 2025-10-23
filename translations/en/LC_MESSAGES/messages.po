@@ -136,7 +136,7 @@ msgstr "Please specify the type!"
 
 #: app.py:2020 app.py:2375 app.py:2676 app.py:2726
 msgid "Max allowed number of chars for title is 20"
-msgstr ""
+msgstr "Max allowed number of chars for title is "
 
 #: app.py:2033 app.py:2384
 #, fuzzy
@@ -171,9 +171,8 @@ msgstr "image size is more than 3MB"
 #: app.py:2228 app.py:2582 app.py:2917 app.py:3611 app.py:3682 app.py:4736
 #: app.py:5090 app.py:7126 products.py:474 templates/add_to_store.html:202
 #: templates/edit_store.html:210
-#, fuzzy
 msgid "Done!"
-msgstr "Phone"
+msgstr "Done!"
 
 #: app.py:2319
 #, fuzzy
@@ -261,9 +260,8 @@ msgid "Please specify email"
 msgstr "Please specify the amount!"
 
 #: app.py:3141
-#, fuzzy
 msgid "Please specify the position!"
-msgstr "Please specify the type!"
+msgstr "Please specify the position!"
 
 #: app.py:3148
 #, fuzzy
@@ -2677,6 +2675,9 @@ msgstr "Staff member"
 
 msgid "Add more products?"
 msgstr "Add another price?"
+
+msgid "Add Position"
+msgstr "Add Position"
 
 
 #~ msgid "Dashboards"

@@ -447,7 +447,7 @@ saveButton.addEventListener('click', function (event) {
 </script>
 <!-- End of thumbnail image manipulations -->
 
-<!-- Include jQuery library -->
+<script type="text/javascript" src="{{ url_for('static', filename='JS/custom.js')}}"></script>
 <script type="text/javascript">
  
     // Dynemically creat drop-down elements
@@ -460,14 +460,14 @@ saveButton.addEventListener('click', function (event) {
         
         let flag = prData[0].ID;
         let firstElse = 0;
-        let newDivTitle = prData[0].Title;
+        let newDivTitle = restoreUnwantedJsonChars(prData[0].Title);
         let childerenData = '';
       
         prData.forEach((row) => {
             
             if (flag === row['ID']) {
 
-                childerenData = childerenData + row['ptID'] + '_sp_' + row['ptTitle'] + '_sppr_';
+                childerenData = childerenData + row['ptID'] + '_sp_' + restoreUnwantedJsonChars(row['ptTitle']) + '_sppr_';
             } else {
 
                 if (firstElse == 0) {
@@ -1075,8 +1075,8 @@ saveButton.addEventListener('click', function (event) {
                 dropDownContent.append(newDiv);
 
                 flag = row['ID']
-                newDivTitle = row['Title']
-                childerenData = row['ptID'] + '_sp_' + row['ptTitle'] + '_sppr_';
+                newDivTitle = restoreUnwantedJsonChars(row['Title'])
+                childerenData = row['ptID'] + '_sp_' + restoreUnwantedJsonChars(row['ptTitle']) + '_sppr_';
 
             }               
 
@@ -1430,7 +1430,7 @@ saveButton.addEventListener('click', function (event) {
         prData.forEach((row) => {
             if (parseInt(ptID) === row['ptID']) {
                 
-                const parentDiv = document.querySelector(`[data-parent="${row['Title']}"]`);
+                const parentDiv = document.querySelector(`[data-parent="${restoreUnwantedJsonChars(row['Title'])}"]`);
                 const childContainer = parentDiv.querySelector('.child-options');
                 const children = parentDiv.getAttribute('data-children').split('_sppr_');
                 children.forEach((childInfo) => {
@@ -1454,7 +1454,7 @@ saveButton.addEventListener('click', function (event) {
 
 
                 const selectedLabel = document.getElementById('selected-label');
-                    selectedLabel.textContent = row['Title'] + ': ' + row['ptTitle'];
+                    selectedLabel.textContent = restoreUnwantedJsonChars(row['Title']) + ': ' + restoreUnwantedJsonChars(row['ptTitle']);
                     selectedLabel.dataset.value = row['ptID'];
 
                 childContainer.classList.remove('hidden');    

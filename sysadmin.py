@@ -1695,6 +1695,10 @@ def jsonSanitaizer(data, invalidChars):
                 for key, val in invalidChars.items():
                     row['Title'] = row['Title'].replace(key, val)
             
+            if row.get('prTitle') is not None:
+                for key, val in invalidChars.items():
+                    row['prTitle'] = row['prTitle'].replace(key, val)
+       
             if row.get('ptTitle') is not None:
                 for key, val in invalidChars.items():
                     row['ptTitle'] = row['ptTitle'].replace(key, val)

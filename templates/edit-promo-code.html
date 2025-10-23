@@ -211,6 +211,7 @@
     </form>
 </div>
 
+<script type="text/javascript" src="{{ url_for('static', filename='JS/custom.js')}}"></script>
 <script>
 
 let csrfToken = "{{ csrf_token() }}";
@@ -472,7 +473,6 @@ saveButton.addEventListener('click', function (event) {
     // Dynemically creat drop-down elements
     const ptID = "{{ ptID|safe }}" 
     const dataLength = "{{ dataLength|safe }}"
-    // const jsonToBeParsed = JSON.stringify('{{ prData|safe }}'); // automatically escapes quotes
     const prData = JSON.parse(`{{ prData|safe }}`);
     const discounts = JSON.parse(`{{ discounts|safe }}`);
  
@@ -481,13 +481,13 @@ saveButton.addEventListener('click', function (event) {
         
         let flagID = prData[0].ID;
         let firstElse = 0;
-        let newDivTitle = prData[0].Title;
+        let newDivTitle = restoreUnwantedJsonChars(prData[0].Title);
         let childerenData = '';
             
         prData.forEach((row, index) => {
          
             if (flagID === row['ID']) {
-                childerenData = childerenData + row['ptID'] + '_sp_' + row['ptTitle'] + '_sppr_';
+                childerenData = childerenData + row['ptID'] + '_sp_' + restoreUnwantedJsonChars(row['ptTitle']) + '_sppr_';
   
             } else {
 
@@ -537,7 +537,7 @@ saveButton.addEventListener('click', function (event) {
                     input.classList = "form-control parent-discount";
                     input.setAttribute('aria-label', "Username");
                     input.setAttribute('aria-describedby', "addon-wrapping");
-                    input.setAttribute('title', "Add Discount Rate");
+                    input.setAttribute('title', `{{ _("Add Discount Rate") }}`);
 
                     input.addEventListener('input', function() {
                         
@@ -614,7 +614,7 @@ saveButton.addEventListener('click', function (event) {
                     inputElement.classList = "form-control revard-input-parent";
                     inputElement.setAttribute('aria-label', 'Username');
                     inputElement.setAttribute('aria-describedby', 'addon-wrapping');
-                    inputElement.title = "Revard Value";
+                    inputElement.title = `{{ _("Revard value") }}`;
                     // inputElement.id = "parent_revard_value_" + row.ID;
 
                 
@@ -667,7 +667,7 @@ saveButton.addEventListener('click', function (event) {
                     selectElement.classList = "form-select form-select-revard-parent";
                     selectElement.id = "inputGroupSelect03";
                     selectElement.setAttribute('aria-label', 'Example select with button addon');
-                    selectElement.title = "Revard Options";
+                    selectElement.title = `{{ _("Revard Options") }}`;
 
                     // Set inline styles for the select
                     selectElement.style.height = "33px";
@@ -845,7 +845,7 @@ saveButton.addEventListener('click', function (event) {
                 input.id = flagID;
                 input.setAttribute('aria-label', "Username");
                 input.setAttribute('aria-describedby', "addon-wrapping");
-                input.setAttribute('title', "Add Discount Rate");
+                input.setAttribute('title', `{{ _("Add Discount Rate") }}`);
 
                 input.addEventListener('input', function() {
                     
@@ -924,7 +924,7 @@ saveButton.addEventListener('click', function (event) {
                 inputElement.classList = "form-control revard-input-parent";
                 inputElement.setAttribute('aria-label', 'Username');
                 inputElement.setAttribute('aria-describedby', 'addon-wrapping');
-                inputElement.title = "Revard Value";
+                inputElement.title = `{{ _("Revard value") }}`;
                 inputElement.id = "parent_revard_value_" + flagID;
 
                
@@ -977,7 +977,7 @@ saveButton.addEventListener('click', function (event) {
                 selectElement.classList = "form-select form-select-revard-parent";
                 selectElement.id = "inputGroupSelect03";
                 selectElement.setAttribute('aria-label', 'Example select with button addon');
-                selectElement.title = "Revard Options";
+                selectElement.title = `{{ _("Revard Options") }}`;
 
                 // Set inline styles for the select
                 selectElement.style.height = "33px";
@@ -1107,8 +1107,8 @@ saveButton.addEventListener('click', function (event) {
                 dropDownContent.append(newDiv);
 
                 flagID = row['ID']
-                newDivTitle = row['Title']
-                childerenData = row['ptID'] + '_sp_' + row['ptTitle'] + '_sppr_';
+                newDivTitle = restoreUnwantedJsonChars(row['Title'])
+                childerenData = row['ptID'] + '_sp_' + restoreUnwantedJsonChars(row['ptTitle']) + '_sppr_';
               
                 
             }               
@@ -1163,7 +1163,7 @@ saveButton.addEventListener('click', function (event) {
             input.id = flagID;
             input.setAttribute('aria-label', "Username");
             input.setAttribute('aria-describedby', "addon-wrapping");
-            input.setAttribute('title', "Add Discount Rate");
+            input.setAttribute('title', `{{ _("Add Discount Rate") }}`);
 
             input.addEventListener('input', function() {
                 
@@ -1241,7 +1241,7 @@ saveButton.addEventListener('click', function (event) {
             inputElement.classList = "form-control revard-input-parent";
             inputElement.setAttribute('aria-label', 'Username');
             inputElement.setAttribute('aria-describedby', 'addon-wrapping');
-            inputElement.title = "Revard Value";
+            inputElement.title = `{{ _("Revard Value") }}`;
             inputElement.id = "parent_revard_value_" + flagID;
 
             
@@ -1294,7 +1294,7 @@ saveButton.addEventListener('click', function (event) {
             selectElement.classList = "form-select form-select-revard-parent";
             selectElement.id = "inputGroupSelect03";
             selectElement.setAttribute('aria-label', 'Example select with button addon');
-            selectElement.title = "Revard Options";
+            selectElement.title = `{{ _("Revard Options") }}`;
 
             // Set inline styles for the select
             selectElement.style.height = "33px";
@@ -1595,7 +1595,7 @@ saveButton.addEventListener('click', function (event) {
                                     input.classList = "form-control child-discount";
                                     input.setAttribute('aria-label', "Username");
                                     input.setAttribute('aria-describedby', "addon-wrapping");
-                                    input.setAttribute('title', "Add Discount Rate");
+                                    input.setAttribute('title', `{{ _("Add Discount Rate") }}`);
                                     // Set inline styles for input
                                     input.style.padding = "3px";
                                     input.style.width = "33px";
@@ -1677,7 +1677,7 @@ saveButton.addEventListener('click', function (event) {
                                     inputElement.classList = "form-control revard-input";
                                     inputElement.setAttribute('aria-label', 'Username');
                                     inputElement.setAttribute('aria-describedby', 'addon-wrapping');
-                                    inputElement.title = "Revard Value";
+                                    inputElement.title = `{{ _("Revard Value") }}`;
                                     inputElement.id = "revard_" + childValue;
                                     inputElement.value = revardInputVal;
 
@@ -1734,7 +1734,7 @@ saveButton.addEventListener('click', function (event) {
                                     selectElement.className = "form-select form-select-revard";
                                     selectElement.id = "inputGroupSelect03";
                                     selectElement.setAttribute('aria-label', 'Example select with button addon');
-                                    selectElement.title = "Revard Options";
+                                    selectElement.title = `{{ _("Revard Options") }}`;
                                     // Set inline styles for the select
                                     selectElement.style.height = "33px";
                                     selectElement.style.padding = "0px 30px 0px 11px";
@@ -1784,7 +1784,7 @@ saveButton.addEventListener('click', function (event) {
                                     // Create the outer div with class "promo-publish"
                                     const promoPublish = document.createElement('div');
                                     promoPublish.classList = 'promo-publish promo-publish-parent';
-                                    promoPublish.title = 'Discount state is disabled';
+                                    promoPublish.title = `{{ _('Discount state is disabled') }}`;
                                     
                                     // Build the structure by appending the span to the label, then the label to the div
                                     labelSwitch.appendChild(spanSlider);

@@ -548,7 +548,7 @@ VALUES
     ('Manager', '33,15,16,17,18,19,20,40,59,60,61,62,66,67,81', 1),
     ('Sales AND Marketing', '47,48,49,50,51,52,53,54,55,56,57,58,59,62,81', 1),
     ('HR', '26,27,28,29,63,69,64,65,68,70,71,72,73,81', 1),
-    ('CEO', '33,30,31,32,79,80,81', 1);
+    ('CEO', '33,30,31,32,79,80,81,82', 1);
 
 
 -- If ActionType = 1 show on dushboard, 2 => actions with POST requests.
@@ -650,7 +650,8 @@ VALUES
     ('positions', 'positions', 'Positions', 16, 1, 'fas fa-chair'),
     ('edit_position', 'edit-position/', 'Edit Positions', 16, 2, ''),
 
-    ('edit_profile', 'edit-profile/', 'Edit Profile', 17, 2, '')
+    ('edit_profile', 'edit-profile/', 'Edit Profile', 17, 2, ''),
+    ('add_position', 'add-position', 'Add Position', 16, 1, 'fas fa-plus')
     ;
 
     INSERT INTO `position` (`Position`, `rolIDs`, `Status`)

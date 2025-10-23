@@ -2725,7 +2725,7 @@ def add_pr():
         answer = gettext('Title is empty!')
         return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     elif len(request.form.get('productName')) > 20:
-        answer = gettext('Max allowed number of chars for title is 20')
+        answer = gettext('Max allowed number of chars for title is 20') + '20'
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
     elif not request.form.get('productLink'): 
         answer = gettext('Link is empty!')
@@ -3497,6 +3497,68 @@ def edit_position(positionID):
         sideBar = side_bar_stuff()
 
         return render_template('edit-position.html', row=result['data'][0], sideBar=sideBar, resultActions=resultRols, languageID=languageID, current_locale=get_locale())
+
+
+@app.route('/add-position', methods=['GET', 'POST'])
+@login_required
+@validate_request
+def add_position():
+    if request.method == "POST":
+        newCSRFtoken = generate_csrf()
+                        
+        if not request.form.get('Position'):
+            answer = gettext('Please specify the position!')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+        
+        Position  = request.form.get('Position').strip()
+        
+        if request.form.get('languageID'):
+            languageID  = request.form.get('languageID')
+        else:
+            languageID = getLangID()    
+
+        if not request.form.get('Roles'):
+            answer = gettext('Please choose at least on role')
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
+
+        Roles = request.form.get('Roles').strip()
+
+        # Check whether the position exists or not
+        sqlQuery = "SELECT `Position` FROM `positions` WHERE `Position` = %s "
+        sqlValTuple = (Position,)
+        result = sqlSelect(sqlQuery, sqlValTuple, True)
+
+        if result['length'] > 0:
+            answer = f""" There is already a position called "{Position}" """
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+        
+
+        sqlQuery = "INSERT INTO `position` SET `Position` = %s, `rolIDs` = %s;"
+        sqlValTuple = (Position, Roles)
+        result = sqlUpdate(sqlQuery, sqlValTuple)
+        
+        if result['status'] == '1':
+            # answer = result['answer']
+            answer = gettext('Done')
+            return jsonify({'status': '1', 'answer': answer}) 
+        else:
+            # answer = result['answer']
+            answer = gettext("Something is wrong!")
+            return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
+    else:
+        languageID = getLangID()
+        sqlQueryRols = """
+                    SELECT 
+                        `ID`,
+                        `Rol` AS `Name`
+                    FROM `rol`
+                    ; 
+                """
+        sqlValTupleRols = ()
+        resultRols = sqlSelect(sqlQueryRols, sqlValTupleRols, True)
+        sideBar = side_bar_stuff()
+
+        return render_template('add-position.html', sideBar=sideBar, resultActions=resultRols, languageID=languageID, current_locale=get_locale())
 
 
 @app.route('/add-teammate', methods=['GET', 'POST'])
@@ -6277,7 +6339,8 @@ def create_promo_code():
                     """
         sqlValTuple = (languageID,)
         result = sqlSelect(sqlQuery, sqlValTuple, True)
-        prData = json.dumps(result['data']) 
+        sanitizedData = jsonSanitaizer(result['data'], INVALID_CHARS_IN_JSON)
+        prData = json.dumps(sanitizedData) 
 
         sqlQueryAffiliate = """SELECT 
                                 `stuff`.`ID`, 
@@ -6585,7 +6648,9 @@ def edit_promo_code(promoID):
         return render_template('error.html', current_locale=get_locale())
 
 
-    discounts = json.dumps(discountsResult['data']) 
+    # discounts = json.dumps(discountsResult['data']) 
+    sanitizedDiscounts = jsonSanitaizer(discountsResult['data'], INVALID_CHARS_IN_JSON)
+    discounts = json.dumps(sanitizedDiscounts) 
 
 
     sqlQueryAffiliate = """SELECT 
@@ -6612,7 +6677,8 @@ def edit_promo_code(promoID):
                 """
     sqlValTuple = (languageID,)
     result = sqlSelect(sqlQuery, sqlValTuple, True)
-    prData = json.dumps(result['data']) 
+    sanitizedData = jsonSanitaizer(result['data'], INVALID_CHARS_IN_JSON)
+    prData = json.dumps(sanitizedData) 
 
     newCSRFtoken = generate_csrf()
     sideBar = side_bar_stuff()

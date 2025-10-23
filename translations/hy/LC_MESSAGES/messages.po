@@ -128,7 +128,7 @@ msgstr "Խնդրում ենք մուտքագրել անվանումը։"
 
 #: app.py:2020 app.py:2375 app.py:2676 app.py:2726
 msgid "Max allowed number of chars for title is 20"
-msgstr "Տառերի առավելագույն թույլատրելի քանակը քսան է"
+msgstr "Տառերի առավելագույն թույլատրելի քանակն է "
 
 #: app.py:2033 app.py:2384
 msgid "Product Type Title Already Exists!"
@@ -2579,4 +2579,7 @@ msgstr "ստացող"
 
 msgid "Add more products?"
 msgstr "Քանակն հաջողությամբ ավելացվեց։ Ցանկանու՞մ եք ավելացնել նոր քանակ"
+
+msgid "Add Position"
+msgstr "Ավելացնել պաշտոն"
 
