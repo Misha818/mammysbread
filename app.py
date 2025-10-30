@@ -2063,7 +2063,7 @@ def editprice():
     
     
     if len(request.form.get('title')) > 20:
-        answer = gettext('Max allowed number of chars for title is 20')
+        answer = gettext('Max allowed number of chars for title is 20') + '20'
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
 
     # Check weather Product Type Title exists for current product
@@ -2422,7 +2422,7 @@ def upload_slides():
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
         
         if len(request.form.get('title')) > 20:
-            answer = gettext('Max allowed number of chars for title is 20')
+            answer = gettext('Max allowed number of chars for title is 20') + '20'
             return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})    
 
         # Check weather Product Type Title exists for current product
@@ -2776,7 +2776,7 @@ def edit_pr_headers():
         answer = gettext('Product name is empty!')
         return jsonify({'status': '2', 'answer': answer, 'newCSRFtoken': newCSRFtoken}) 
     elif len(request.form.get('productName')) > 20:
-        answer = gettext('Max allowed number of chars for title is 20')
+        answer = gettext('Max allowed number of chars for title is 20') + '20'
         return jsonify({'status': '0', 'answer': answer, 'newCSRFtoken': newCSRFtoken})  
     elif not request.form.get('productLink'):
         answer = gettext('Product link is empty!')
